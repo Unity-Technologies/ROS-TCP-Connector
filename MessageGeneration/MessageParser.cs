@@ -83,8 +83,6 @@ namespace RosMessageGeneration
 
             using (StreamWriter writer = new StreamWriter(outFilePath, false))
             {
-                writer.Write(MsgAutoGenUtilities.BLOCK_COMMENT + "\n");
-
                 // Message -> Lines
                 // Lines -> Line Lines | e
                 while (!IsEmpty())

@@ -209,9 +209,6 @@ namespace RosMessageGeneration
 
             using (StreamWriter writer = new StreamWriter(outPath, false))
             {
-                // Write block comment
-                writer.Write(MsgAutoGenUtilities.BLOCK_COMMENT + "\n");
-
                 // Write imports
                 writer.Write(imports);
 
@@ -262,9 +259,6 @@ namespace RosMessageGeneration
 
             using (StreamWriter writer = new StreamWriter(outPath, false))
             {
-                // Write block comment
-                writer.Write(MsgAutoGenUtilities.BLOCK_COMMENT + "\n");
-
                 // Write imports
                 writer.Write(imports);
 
