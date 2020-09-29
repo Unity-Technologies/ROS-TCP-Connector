@@ -202,8 +202,8 @@ namespace RosMessageGeneration
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
-                "using RosSharp.RosBridgeClient.MessageTypes.Std;\n" +
-                "using RosSharp.RosBridgeClient.MessageTypes.Actionlib;\n\n";
+                "using RosMessageTypes.Std;\n" +
+                "using RosMessageTypes.Actionlib;\n\n";
 
             symbolTable = new Dictionary<string, string>();
 
@@ -214,7 +214,7 @@ namespace RosMessageGeneration
 
                 // Write namespace
                 writer.Write(
-                    "namespace RosSharp.RosBridgeClient.MessageTypes." + MsgAutoGenUtilities.ResolvePackageName(rosPackageName) + "\n" +
+                    "namespace RosMessageTypes." + MsgAutoGenUtilities.ResolvePackageName(rosPackageName) + "\n" +
                     "{\n"
                     );
 
@@ -264,7 +264,7 @@ namespace RosMessageGeneration
 
                 // Write namespace
                 writer.Write(
-                    "namespace RosSharp.RosBridgeClient.MessageTypes." + MsgAutoGenUtilities.ResolvePackageName(rosPackageName) + "\n" +
+                    "namespace RosMessageTypes." + MsgAutoGenUtilities.ResolvePackageName(rosPackageName) + "\n" +
                     "{\n"
                     );
 
