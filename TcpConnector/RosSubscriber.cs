@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +24,8 @@ using UnityEngine;
 public class RosSubscriber : MonoBehaviour
 {
 	public int hostPort = 5005;
-	
+	public string hostName = "192.168.99.1";
+
     private TcpConnector tcpCon;
     
     static object _lock = new object(); // sync lock 
@@ -136,7 +138,7 @@ public class RosSubscriber : MonoBehaviour
 	    while (true)
 	    {
 		    try {
-			    var tcpListener = TcpListener.Create(hostPort);  
+			    var tcpListener = new TcpListener(IPAddress.Parse(hostName), hostPort);  
 			    tcpListener.Start();
 
 			    while (true)   //we wait for a connection
