@@ -23,8 +23,8 @@ using UnityEngine;
 /// </summary>
 public class RosSubscriber : MonoBehaviour
 {
-	public int hostPort = 5005;
-	public string hostName = "192.168.99.1";
+	public int unityHostPort = 5005;
+	public string unityHostName = "192.168.99.1";
 
     private TcpConnector tcpCon;
     
@@ -133,12 +133,12 @@ public class RosSubscriber : MonoBehaviour
     /// 	Creates the TcpListener with the appropriate functions to handle incoming connections.
     /// </summary>
     /// <param name="hostPort"></param> Port on local machine to listen for incoming connections
-    protected async void StartMessageServer(int hostPort)
+    protected async void StartMessageServer()
     {
 	    while (true)
 	    {
 		    try {
-			    var tcpListener = new TcpListener(IPAddress.Parse(hostName), hostPort);  
+			    var tcpListener = new TcpListener(IPAddress.Parse(unityHostName), unityHostPort);  
 			    tcpListener.Start();
 
 			    while (true)   //we wait for a connection
