@@ -259,22 +259,14 @@ namespace RosMessageGeneration
                     ". '" + identifier + "' is a ROS message built-in type.");
             }
 
-#if NETFRAMEWORK
-            CodeDomProvider provider = CodeDomProvider.CreateProvider("C#");
             // Check if identifier is a C# keyword
-            if (!provider.IsValidIdentifier(identifier))
+            if (MsgAutoGenUtilities.CSharpKeywords.Contains(identifier))
             {
                 Warn(
-                    "'" + identifier + "' is a C# keyword. We have appended \"_\" at the front to avoid C# compile-time issues." +
+                    "'" + identifier + "' is a C# keyword. It can be accessed under the name @"+identifier+"." +
                     "(" + inFilePath + ":" + lineNum + ")");
-                declaration = MsgAutoGenUtilities.TWO_TABS + "[JsonProperty(\"" + identifier + "\")]\n" + declaration; 
-                identifier = "_" + identifier;
+                identifier = "@" + identifier;
             }
-#else
-            Warn(
-                "'CodeDomProvider class might not exist on your platform. We did not check whether " + identifier + "' is a C# keyword." +
-                "(" + inFilePath + ":" + lineNum + ")");
-#endif
 
             symbolTable.Add(identifier, type);
 
@@ -301,7 +293,7 @@ namespace RosMessageGeneration
                 }
             }
             else {
-                declaration += type + " " + identifier + MsgAutoGenUtilities.PROPERTY_EXTENSION + "\n";
+                declaration += type + " " + identifier + ";\n";
             }
             body += declaration;
         }
