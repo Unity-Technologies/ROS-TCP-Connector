@@ -9,7 +9,7 @@ using UnityEngine;
 public class ROSConnection : MonoBehaviour
 {
     // Variables required for ROS communication
-    public string hostName = "192.168.1.116";
+    public string hostName = "192.168.1.1";
     public int hostPort = 10000;
 
     private int networkTimeout = 2000;
@@ -138,15 +138,15 @@ public class ROSConnection : MonoBehaviour
 
         // Poll every 1 second(s) for available data on the stream
         int attempts = 0;
-        while (!networkStream.DataAvailable && attempts <= this.dataWaitMaxRetries)
+        while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
         {
-            if (attempts == this.dataWaitMaxRetries)
+            if (attempts == this.awaitDataMaxRetries)
             {
-                Debug.LogError("No data available on network stream after " + dataWaitMaxRetries + " attempts.");
+                Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
                 goto finish;
             }
             attempts++;
-            yield return new WaitForSecondsRealtime(dataWaitSleepSeconds);
+            yield return new WaitForSecondsRealtime(awaitDataSleepSeconds);
         }
 
         int numberOfBytesRead = 0;
