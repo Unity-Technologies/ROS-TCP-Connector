@@ -14,7 +14,7 @@ public class ROSConnection : MonoBehaviour
 
     private int networkTimeout = 2000;
 
-    public int awaitDataMaxRetries = 3;
+    public int awaitDataMaxRetries = 10;
     public float awaitDataSleepSeconds = 1.0f;
 
     /// <summary>
