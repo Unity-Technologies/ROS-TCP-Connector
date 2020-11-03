@@ -25,8 +25,6 @@ public class RosSubscriber : MonoBehaviour
 {
 	public int unityHostPort = 5005;
 	public string unityHostName = "192.168.99.1";
-
-    private TcpConnector tcpCon;
     
     static object _lock = new object(); // sync lock 
     static List<Task> _connections = new List<Task>(); // pending connections
