@@ -267,7 +267,7 @@ public class ROSConnection : MonoBehaviour
         return messageBuffer;
     }
 
-    public void Send(string rosTopicName, Message message)
+    public async void Send(string rosTopicName, Message message)
     {
         try
         {
@@ -275,7 +275,7 @@ public class ROSConnection : MonoBehaviour
             byte[] messageBytes = GetMessageBytes(rosTopicName, message);
 
             TcpClient client = new TcpClient();
-            client.Connect(hostName, hostPort);
+            await client.ConnectAsync(hostName, hostPort);
 
             NetworkStream networkStream = client.GetStream();
             networkStream.ReadTimeout = networkTimeout;
@@ -295,18 +295,13 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    public void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
-    {
-        StartCoroutine(SendServiceMessageCO(rosServiceName, serviceRequest, callback));
-    }
-
-    IEnumerator SendServiceMessageCO<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
+    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
     {
         // Serialize the message in service name, message size, and message bytes format
         byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
 
         TcpClient client = new TcpClient();
-        client.Connect(hostName, hostPort);
+        await client.ConnectAsync(hostName, hostPort);
 
         NetworkStream networkStream = client.GetStream();
         networkStream.ReadTimeout = networkTimeout;
@@ -340,7 +335,7 @@ public class ROSConnection : MonoBehaviour
                 goto finish;
             }
             attempts++;
-            yield return new WaitForSecondsRealtime(awaitDataSleepSeconds);
+            await Task.Delay((int)(awaitDataSleepSeconds*1000));
         }
 
         int numberOfBytesRead = 0;
