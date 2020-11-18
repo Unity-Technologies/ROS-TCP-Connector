@@ -26,7 +26,10 @@ public class ROSConnection : MonoBehaviour
     public float awaitDataSleepSeconds = 1.0f;
 
     static object _lock = new object(); // sync lock 
-    static List<Task> _connections = new List<Task>(); // pending connections
+    static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
+
+    const string ERROR_TOPIC_NAME = "__error";
+    const string HANDSHAKE_TOPIC_NAME = "__handshake";
 
     struct SubscriberCallback
     {
@@ -38,38 +41,39 @@ public class ROSConnection : MonoBehaviour
 
     void Start()
     {
-        Listen<RosUnityError>("__error", RosUnityErrorCallback);
+        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
         if (overrideUnityIP != "")
         {
             StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
         }
 
-        SendServiceMessage<RosUnityHandshakeResponse>("__handshake", new RosUnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+        SendServiceMessage<RosUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new RosUnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
     }
 
     void RosUnityHandshakeCallback(RosUnityHandshakeResponse response)
-	{
+    {
         StartMessageServer(response.ip, unityPort);
-	}
+    }
 
     void RosUnityErrorCallback(RosUnityError error)
     {
-        Debug.LogError("ROS-Unity error: "+error.message);
+        Debug.LogError("ROS-Unity error: " + error.message);
     }
 
-    public void Listen<T>(string topic, Action<T> callback) where T:Message, new()
+    public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
     {
         SubscriberCallback subCallbacks;
         if (!subscribers.TryGetValue(topic, out subCallbacks))
         {
-            subCallbacks = new SubscriberCallback{
+            subCallbacks = new SubscriberCallback
+            {
                 messageConstructor = typeof(T).GetConstructor(new Type[0]),
                 callbacks = new List<Action<Message>> { }
             };
             subscribers.Add(topic, subCallbacks);
         }
 
-        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); } );
+        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
     }
 
     /// <summary>
@@ -110,22 +114,22 @@ public class ROSConnection : MonoBehaviour
                 offset += 4;
                 int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
 
-                var readBuffer = new byte[full_message_size];
+                byte[] readBuffer = new byte[full_message_size];
                 int numberOfBytesRead = 0;
 
                 while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
                 {
-                    var bytesRead = networkStream.Read(readBuffer, 0, readBuffer.Length);
+                    int bytesRead = networkStream.Read(readBuffer, 0, readBuffer.Length);
                     offset += bytesRead;
                     numberOfBytesRead += bytesRead;
                 }
 
                 SubscriberCallback subs;
-                if(subscribers.TryGetValue(topicName, out subs))
+                if (subscribers.TryGetValue(topicName, out subs))
                 {
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(readBuffer, 0);
-                    foreach(Action<Message> callback in subs.callbacks)
+                    foreach (Action<Message> callback in subs.callbacks)
                     {
                         callback(msg);
                     }
@@ -144,14 +148,11 @@ public class ROSConnection : MonoBehaviour
     /// <param name="tcpClient"></param> TcpClient to read byte stream from.
     private async Task StartHandleConnectionAsync(TcpClient tcpClient)
     {
-        // start the new connection task
         var connectionTask = HandleConnectionAsync(tcpClient);
 
-        // add it to the list of pending task 
         lock (_lock)
-            _connections.Add(connectionTask);
+            activeConnectionTasks.Add(connectionTask);
 
-        // catch all errors of HandleConnectionAsync
         try
         {
             await connectionTask;
@@ -163,9 +164,8 @@ public class ROSConnection : MonoBehaviour
         }
         finally
         {
-            // remove pending task
             lock (_lock)
-                _connections.Remove(connectionTask);
+                activeConnectionTasks.Remove(connectionTask);
         }
     }
 
@@ -335,7 +335,7 @@ public class ROSConnection : MonoBehaviour
                 goto finish;
             }
             attempts++;
-            await Task.Delay((int)(awaitDataSleepSeconds*1000));
+            await Task.Delay((int)(awaitDataSleepSeconds * 1000));
         }
 
         int numberOfBytesRead = 0;
