@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RosMessageGeneration
 {
@@ -13,6 +14,7 @@ namespace RosMessageGeneration
         private readonly string inFileName;
 
         private readonly string rosPackageName;
+        private readonly string rosPackageNamespace;
         private readonly string className;
         private readonly string rosMsgName;
 
@@ -43,6 +45,7 @@ namespace RosMessageGeneration
             this.inFileName = Path.GetFileNameWithoutExtension(inFilePath);
 
             this.rosPackageName = rosPackageName;
+            this.rosPackageNamespace = MsgAutoGenUtilities.ResolvePackageName(rosPackageName);
 
             if (className.Equals("")) {
                 this.className = MsgAutoGenUtilities.CapitalizeFirstLetter(inFileName);
@@ -94,7 +97,7 @@ namespace RosMessageGeneration
 
                 // Write namespace
                 writer.Write(
-                    "namespace RosMessageTypes." + MsgAutoGenUtilities.ResolvePackageName(rosPackageName) + "\n" +
+                    "namespace RosMessageTypes." + rosPackageNamespace + "\n" +
                     "{\n"
                     );
 
@@ -205,8 +208,8 @@ namespace RosMessageGeneration
                             "(" + inFilePath + ":" + lineNum + ")");
                         }
                         string package = MsgAutoGenUtilities.ResolvePackageName(hierarchy[0]);
-                        imports.Add(package);
-                        type = hierarchy[1];
+                        // Do not add package name if exists in current namespace
+                        type = package.Equals(rosPackageNamespace) ? hierarchy[1] : package + "." + hierarchy[1];
                         break;
                     default:
                         throw new MessageParserException(
@@ -497,6 +500,7 @@ namespace RosMessageGeneration
             importsStr += "using System.Collections.Generic;\n";
             importsStr += "using System.Text;\n";
             importsStr += "using RosMessageGeneration;\n";
+            importsStr += "using RosMessageTypes;\n";
 
             if (imports.Count > 0) {
                 foreach (string s in imports)
@@ -798,4 +802,3 @@ namespace RosMessageGeneration
         public MessageParserException(string msg) : base(msg) { }
     }
 }
-
