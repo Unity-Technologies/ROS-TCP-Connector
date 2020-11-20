@@ -500,7 +500,6 @@ namespace RosMessageGeneration
             importsStr += "using System.Collections.Generic;\n";
             importsStr += "using System.Text;\n";
             importsStr += "using RosMessageGeneration;\n";
-            importsStr += "using RosMessageTypes;\n";
 
             if (imports.Count > 0) {
                 foreach (string s in imports)
