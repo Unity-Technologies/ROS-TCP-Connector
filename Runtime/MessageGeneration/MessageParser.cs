@@ -725,10 +725,15 @@ namespace RosMessageGeneration
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
                                     "listOfSerializations.Add(SerializeString(this." + identifier + "));\n";
                     }
-                    else if (type.Equals("byte") || type.Equals("sbyte") )
+                    else if (type.Equals("byte"))
                     {
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
                                     "listOfSerializations.Add(new[]{this." + identifier + "});\n";
+                    }
+                    else if (type.Equals("sbyte") )
+                    {
+                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                    "listOfSerializations.Add(new[]{(byte)this." + identifier + "});\n";
                     }
                     // Message is a custom type and call it's serialization function
                     else if (!MsgAutoGenUtilities.builtInTypesMapping.ContainsValue(type) || type.Equals("Time") || type.Equals("Duration"))
