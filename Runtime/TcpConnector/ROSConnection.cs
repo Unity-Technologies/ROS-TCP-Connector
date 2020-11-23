@@ -1,9 +1,13 @@
 using RosMessageGeneration;
+using RosMessageTypes.TcpEndpoint;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ROSConnection : MonoBehaviour
@@ -11,11 +15,201 @@ public class ROSConnection : MonoBehaviour
     // Variables required for ROS communication
     public string hostName = "192.168.1.1";
     public int hostPort = 10000;
+    [Tooltip("If blank, determine IP automatically.")]
+    public string overrideUnityIP = "";
+    public int unityPort = 5005;
+    bool alreadyStartedServer = false;
 
     private int networkTimeout = 2000;
 
     public int awaitDataMaxRetries = 10;
     public float awaitDataSleepSeconds = 1.0f;
+
+    static object _lock = new object(); // sync lock 
+    static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
+
+    const string ERROR_TOPIC_NAME = "__error";
+    const string HANDSHAKE_TOPIC_NAME = "__handshake";
+
+    struct SubscriberCallback
+    {
+        public ConstructorInfo messageConstructor;
+        public List<Action<Message>> callbacks;
+    }
+
+    Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
+
+    void Start()
+    {
+        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+        if (overrideUnityIP != "")
+        {
+            StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
+        }
+
+        SendServiceMessage<RosUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new RosUnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+    }
+
+    void RosUnityHandshakeCallback(RosUnityHandshakeResponse response)
+    {
+        StartMessageServer(response.ip, unityPort);
+    }
+
+    void RosUnityErrorCallback(RosUnityError error)
+    {
+        Debug.LogError("ROS-Unity error: " + error.message);
+    }
+
+    public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
+    {
+        SubscriberCallback subCallbacks;
+        if (!subscribers.TryGetValue(topic, out subCallbacks))
+        {
+            subCallbacks = new SubscriberCallback
+            {
+                messageConstructor = typeof(T).GetConstructor(new Type[0]),
+                callbacks = new List<Action<Message>> { }
+            };
+            subscribers.Add(topic, subCallbacks);
+        }
+
+        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
+    }
+
+    /// <summary>
+    /// 	Function is meant to be overridden by inheriting classes to specify how to handle read messages.
+    /// </summary>
+    /// <param name="tcpClient"></param> TcpClient to read byte stream from.
+    protected async Task HandleConnectionAsync(TcpClient tcpClient)
+    {
+        await Task.Yield();
+        // continue asynchronously on another threads
+
+        ReadMessage(tcpClient.GetStream());
+    }
+
+    void ReadMessage(NetworkStream networkStream)
+    {
+        try
+        {
+            if (networkStream.CanRead)
+            {
+                int offset = 0;
+
+                // Get first bytes to determine length of topic name
+                byte[] rawTopicBytes = new byte[4];
+                networkStream.Read(rawTopicBytes, 0, rawTopicBytes.Length);
+                offset += 4;
+                int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
+
+                // Read and convert topic name
+                byte[] topicNameBytes = new byte[topicLength];
+                networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
+                offset += topicNameBytes.Length;
+                string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
+                // TODO: use topic name to confirm proper received location
+
+                byte[] full_message_size_bytes = new byte[4];
+                networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
+                offset += 4;
+                int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
+
+                byte[] readBuffer = new byte[full_message_size];
+                int numberOfBytesRead = 0;
+
+                while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
+                {
+                    int bytesRead = networkStream.Read(readBuffer, 0, readBuffer.Length);
+                    offset += bytesRead;
+                    numberOfBytesRead += bytesRead;
+                }
+
+                SubscriberCallback subs;
+                if (subscribers.TryGetValue(topicName, out subs))
+                {
+                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+                    msg.Deserialize(readBuffer, 0);
+                    foreach (Action<Message> callback in subs.callbacks)
+                    {
+                        callback(msg);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Exception raised!! " + e);
+        }
+    }
+
+    /// <summary>
+    /// 	Handles multiple connections and locks.
+    /// </summary>
+    /// <param name="tcpClient"></param> TcpClient to read byte stream from.
+    private async Task StartHandleConnectionAsync(TcpClient tcpClient)
+    {
+        var connectionTask = HandleConnectionAsync(tcpClient);
+
+        lock (_lock)
+            activeConnectionTasks.Add(connectionTask);
+
+        try
+        {
+            await connectionTask;
+            // we may be on another thread after "await"
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex.ToString());
+        }
+        finally
+        {
+            lock (_lock)
+                activeConnectionTasks.Remove(connectionTask);
+        }
+    }
+
+    protected async void StartMessageServer(string ip, int port)
+    {
+        if (alreadyStartedServer)
+            return;
+
+        alreadyStartedServer = true;
+        while (true)
+        {
+            TcpListener tcpListener;
+            try
+            {
+                tcpListener = new TcpListener(IPAddress.Parse(ip), port);
+                tcpListener.Start();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Exception raised!! " + e);
+                return;
+            }
+
+            Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
+
+            try
+            {
+                while (true)   //we wait for a connection
+                {
+                    var tcpClient = await tcpListener.AcceptTcpClientAsync();
+
+                    var task = StartHandleConnectionAsync(tcpClient);
+                    // if already faulted, re-throw any error on the calling context
+                    if (task.IsFaulted)
+                        await task;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Exception raised!! " + e);
+            }
+        }
+    }
+
 
     /// <summary>
     ///    Given some input values, fill a byte array in the desired format to use with
@@ -73,7 +267,7 @@ public class ROSConnection : MonoBehaviour
         return messageBuffer;
     }
 
-    public void Send(string rosTopicName, Message message)
+    public async void Send(string rosTopicName, Message message)
     {
         try
         {
@@ -81,7 +275,7 @@ public class ROSConnection : MonoBehaviour
             byte[] messageBytes = GetMessageBytes(rosTopicName, message);
 
             TcpClient client = new TcpClient();
-            client.Connect(hostName, hostPort);
+            await client.ConnectAsync(hostName, hostPort);
 
             NetworkStream networkStream = client.GetStream();
             networkStream.ReadTimeout = networkTimeout;
@@ -101,18 +295,13 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    public void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
-    {
-        StartCoroutine(SendServiceMessageCO(rosServiceName, serviceRequest, callback));
-    }
-
-    IEnumerator SendServiceMessageCO<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
+    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
     {
         // Serialize the message in service name, message size, and message bytes format
         byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
 
         TcpClient client = new TcpClient();
-        client.Connect(hostName, hostPort);
+        await client.ConnectAsync(hostName, hostPort);
 
         NetworkStream networkStream = client.GetStream();
         networkStream.ReadTimeout = networkTimeout;
@@ -146,7 +335,7 @@ public class ROSConnection : MonoBehaviour
                 goto finish;
             }
             attempts++;
-            yield return new WaitForSecondsRealtime(awaitDataSleepSeconds);
+            await Task.Delay((int)(awaitDataSleepSeconds * 1000));
         }
 
         int numberOfBytesRead = 0;
