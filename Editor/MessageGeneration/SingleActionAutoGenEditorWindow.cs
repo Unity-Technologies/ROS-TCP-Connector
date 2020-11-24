@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
- namespace RosMessageGeneration
+namespace RosMessageGeneration
 {
     public class SingleActionAutoGenEditorWindow : SingleAutoGenEditorWindow
     {

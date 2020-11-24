@@ -7,18 +7,21 @@
         public string content;
         public uint lineNum = 0;
 
-        public MessageToken(MessageTokenType type, string content, uint lineNum) {
+        public MessageToken(MessageTokenType type, string content, uint lineNum)
+        {
             this.type = type;
             this.content = content;
             this.lineNum = lineNum;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return type + ": " + content + " (" + lineNum + ")";
         }
     }
 
-    public enum MessageTokenType{
+    public enum MessageTokenType
+    {
         Undefined,
         FilePath,
         Comment,
