@@ -213,6 +213,41 @@ namespace RosMessageGeneration
             return constructor;
         }
 
+        private string GenerateSerializationStatements()
+        {
+            string function = "";
+            function += MsgAutoGenUtilities.TWO_TABS + "public override List<byte[]> SerializationStatements()\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "{\n";
+            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "var listOfSerializations = new List<byte[]>();\n";
+
+            foreach (string identifier in symbolTable.Keys)
+            {
+                function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + identifier + ".SerializationStatements());\n";
+            }
+
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return listOfSerializations;\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
+
+            return function;
+        }
+
+        private string GenerateDeserializationStatements()
+        {
+            string function = "";
+            function += MsgAutoGenUtilities.TWO_TABS + "public override int Deserialize(byte[] data, int offset)\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "{\n";
+
+            foreach (string identifier in symbolTable.Keys)
+            {
+                function += TWO_TABS + ONE_TAB + "offset = this." + identifier + ".Deserialize(data, offset);\n";
+            }
+
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return offset;\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
+
+            return function;
+        }
+
         public void WrapActionSections(string type)
         {
             string wrapperName = inFileName + "Action" + type;
@@ -221,6 +256,7 @@ namespace RosMessageGeneration
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
+                "using System.Collections.Generic;\n"+
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
 
@@ -259,6 +295,9 @@ namespace RosMessageGeneration
                 // Write parameterized constructor
                 writer.Write(GenerateParameterizedConstructor(wrapperName, type));
 
+                writer.Write(GenerateSerializationStatements());
+                writer.Write(GenerateDeserializationStatements());
+
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
                 // Close namespace
@@ -272,7 +311,9 @@ namespace RosMessageGeneration
 
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
-            string imports = "\n\n";
+            string imports =
+                "using System.Collections.Generic;\n"+
+                "\n\n";
 
             symbolTable = new Dictionary<string, string>();
 
@@ -316,6 +357,9 @@ namespace RosMessageGeneration
 
                 // Write default value constructor
                 writer.Write("\n" + GenerateDefaultValueConstructor(wrapperName) + "\n");
+
+                writer.Write(GenerateSerializationStatements());
+                writer.Write(GenerateDeserializationStatements());
 
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
