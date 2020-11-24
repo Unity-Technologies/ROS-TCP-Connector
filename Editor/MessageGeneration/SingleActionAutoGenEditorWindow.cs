@@ -30,8 +30,7 @@ namespace RosMessageGeneration
             get { return "action"; }
         }
 
-        // TODO: Implement and test ROS Action serialization and deserialization
-        //[MenuItem("RosMessageGeneration/Auto Generate Actions/Single Action...", false, 20)]
+        [MenuItem("RosMessageGeneration/Auto Generate Actions/Single Action...", false, 20)]
         private static void OpenWindow()
         {
             SingleActionAutoGenEditorWindow window = GetWindow<SingleActionAutoGenEditorWindow>(false, "Action Auto Generation", true);
