@@ -7,7 +7,6 @@ using System.Linq;
 
 namespace RosMessageGeneration
 {
-
     public class MessageAutoGen
     {
         public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
