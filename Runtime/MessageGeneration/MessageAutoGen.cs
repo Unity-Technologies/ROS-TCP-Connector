@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace RosMessageGeneration
 {
-
     public class MessageAutoGen
     {
         public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path
-            if (rosPackageName.Equals("")) {
+            if (rosPackageName.Equals(""))
+            {
                 string[] hierarchy = inPath.Split(new char[] { '/', '\\' });
                 rosPackageName = hierarchy[hierarchy.Length - 3];
             }
@@ -24,7 +24,8 @@ namespace RosMessageGeneration
 
             if (!(rosPackageName.Equals("std_msgs") && (inFileName.Equals("Time") || inFileName.Equals("Duration"))))
             {
-                if (verbose) {
+                if (verbose)
+                {
                     Console.WriteLine("Parsing: " + inPath);
                     Console.WriteLine("Output Location: " + outPath);
                 }
@@ -41,22 +42,27 @@ namespace RosMessageGeneration
                 parser.Parse();
                 return parser.GetWarnings();
             }
-            else {
-                if (verbose) {
+            else
+            {
+                if (verbose)
+                {
                     Console.WriteLine(inFileName + " will not be generated");
                 }
                 return new List<string>();
             }
         }
 
-        public static List<string> GeneratePackageMessages(string inPath, string outPath, string rosPackageName = "", bool verbose = false) {
+        public static List<string> GeneratePackageMessages(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
+        {
             List<string> warnings = new List<string>();
 
-            if (inPath.EndsWith("/") || inPath.EndsWith("\\")) {
-                inPath = inPath.Remove(inPath.Length-1);
+            if (inPath.EndsWith("/") || inPath.EndsWith("\\"))
+            {
+                inPath = inPath.Remove(inPath.Length - 1);
             }
 
-            if (rosPackageName.Equals("")) {
+            if (rosPackageName.Equals(""))
+            {
                 rosPackageName = inPath.Split(new char[] { '/', '\\' }).Last();
             }
 
@@ -67,19 +73,22 @@ namespace RosMessageGeneration
                 Console.Error.WriteLine("No message files found!");
                 return warnings;
             }
-            else {
+            else
+            {
                 if (verbose)
                 {
                     Console.WriteLine("Found " + files.Length + " message files.");
                 }
-                foreach (string file in files) {
+                foreach (string file in files)
+                {
                     warnings.AddRange(GenerateSingleMessage(file, outPath, rosPackageName, verbose));
                 }
             }
             return warnings;
         }
 
-        public static List<string> GenerateDirectoryMessages(string inPath, string outPath, bool verbose = false) {
+        public static List<string> GenerateDirectoryMessages(string inPath, string outPath, bool verbose = false)
+        {
             List<string> warnings = new List<string>();
 
             if (inPath.EndsWith("/") || inPath.EndsWith("\\"))
@@ -94,12 +103,14 @@ namespace RosMessageGeneration
                 Console.Error.WriteLine("No message files found!");
                 return warnings;
             }
-            else {
+            else
+            {
                 if (verbose)
                 {
                     Console.WriteLine("Found " + files.Length + " message files.");
                 }
-                foreach (string file in files) {
+                foreach (string file in files)
+                {
                     warnings.AddRange(GenerateSingleMessage(file, outPath, verbose: verbose));
                 }
             }

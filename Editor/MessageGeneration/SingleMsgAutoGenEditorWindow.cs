@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
- 
- namespace RosMessageGeneration
+
+namespace RosMessageGeneration
 {
     public class SingleMsgAutoGenEditorWindow : SingleAutoGenEditorWindow
     {
