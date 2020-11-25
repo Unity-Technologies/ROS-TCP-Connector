@@ -6,9 +6,10 @@ namespace RosMessageGeneration
 {
     public class ActionAutoGen
     {
-        private static readonly string[] types = {"Goal", "Result", "Feedback"};
+        private static readonly string[] types = { "Goal", "Result", "Feedback" };
 
-        public static List<string> GenerateSingleAction(string inPath, string outPath, string rosPackageName = "", bool verbose = false) {
+        public static List<string> GenerateSingleAction(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
+        {
             // If no ROS package name is provided, extract from path
             if (rosPackageName.Equals(""))
             {
@@ -38,7 +39,8 @@ namespace RosMessageGeneration
 
             ActionWrapper actionWrapper = new ActionWrapper(inPath, rosPackageName, outPath);
 
-            for (int i = 0; i < listsOfTokens.Count; i++) {
+            for (int i = 0; i < listsOfTokens.Count; i++)
+            {
                 List<MessageToken> tokens = listsOfTokens[i];
 
                 // Action is made up of goal, result, feedback
@@ -116,7 +118,8 @@ namespace RosMessageGeneration
         }
     }
 
-    public class ActionWrapper {
+    public class ActionWrapper
+    {
 
         private const string ONE_TAB = "    ";
         private const string TWO_TABS = "        ";
@@ -130,7 +133,8 @@ namespace RosMessageGeneration
 
         private Dictionary<string, string> symbolTable;
 
-        public ActionWrapper(string inPath, string rosPackageName, string outPath) {
+        public ActionWrapper(string inPath, string rosPackageName, string outPath)
+        {
             this.inPath = inPath;
             this.inFileName = Path.GetFileNameWithoutExtension(inPath);
             this.rosPackageName = rosPackageName;
@@ -169,7 +173,8 @@ namespace RosMessageGeneration
                 paramsIn += "Header header, GoalID goal_id, ";
                 paramsOut += "header, goal_id";
             }
-            else if (msgType.Equals("Result") || msgType.Equals("Feedback")) {
+            else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
+            {
                 paramsIn += "Header header, GoalStatus status, ";
                 paramsOut += "header, status";
             }
@@ -220,7 +225,7 @@ namespace RosMessageGeneration
 
                 // Write class declaration
                 writer.Write(
-                    ONE_TAB + "public class " + wrapperName + " : Action" + type + "<" + inFileName + type +  ">\n" +
+                    ONE_TAB + "public class " + wrapperName + " : Action" + type + "<" + inFileName + type + ">\n" +
                     ONE_TAB + "{\n"
                     );
 
@@ -278,7 +283,7 @@ namespace RosMessageGeneration
                     inFileName + "Feedback"
                 };
                 writer.Write(
-                    ONE_TAB + "public class " + wrapperName + " : Action<" + string.Join(", ", genericParams) +  ">\n" +
+                    ONE_TAB + "public class " + wrapperName + " : Action<" + string.Join(", ", genericParams) + ">\n" +
                     ONE_TAB + "{\n"
                     );
 

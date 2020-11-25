@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
- namespace RosMessageGeneration
+namespace RosMessageGeneration
 {
     public abstract class SingleAutoGenEditorWindow : EditorWindow
     {
