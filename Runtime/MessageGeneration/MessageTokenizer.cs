@@ -354,7 +354,7 @@ namespace RosMessageGeneration
             }
 
             // Otherwise, consume input until seperator or EOF
-            while (reader.Peek() != ' ' && reader.Peek() != '\n' && reader.Peek() != '=' && !reader.EndOfStream)
+            while (reader.Peek() != ' ' && reader.Peek() != '\n' && reader.Peek() != '\t' && reader.Peek() != '=' && !reader.EndOfStream)
             {
                 if (reader.Peek() == '\r')
                 {
@@ -363,9 +363,7 @@ namespace RosMessageGeneration
                 }
                 if (!Char.IsLetterOrDigit((char)reader.Peek()) && reader.Peek() != '_')
                 {
-                    {
-                        throw new MessageTokenizerException("Invalid character in identifier: " + (char)reader.Peek() + " " + CurrentFileAndLine());
-                    }
+                    throw new MessageTokenizerException("Invalid character in identifier: " + (char)reader.Peek() + " " + CurrentFileAndLine());
                 }
                 tokenStr += (char)reader.Read();
             }
