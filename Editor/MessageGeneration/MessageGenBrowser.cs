@@ -15,19 +15,25 @@ namespace RosMessageGeneration
 
         private string inPath = "";
         private string outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
+
+        // we actually only want the hashset, but Unity can't serialize that - so we keep foldedOutList as a backup.
+        private HashSet<string> foldedOutHash;
+
+        [SerializeField]
         private List<string> foldedOutList = new List<string> { };
+        [SerializeField]
+        private Vector2 scrollPos;
+
+        const int BUTTON_WIDTH = 100;
 
         [MenuItem("RosMessageGeneration/Browse...", false, 2)]
         public static void OpenWindow()
         {
             MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "Message Auto Generation", true);
-            window.minSize = new Vector2(500, 300);
+            window.minSize = new Vector2(300, 300);
             window.maxSize = new Vector2(800, 1200);
             window.Show();
         }
-
-        protected string FileExtension { get; }
-        Vector2 scrollPos;
 
         protected virtual void OnGUI()
         {
@@ -58,32 +64,35 @@ namespace RosMessageGeneration
             {
                 EditorGUILayout.LabelField(inPath+":");
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-                ShowContents(inPath);
+                foreach (string folder in Directory.EnumerateDirectories(inPath))
+                {
+                    ShowFolder(folder);
+                }
                 EditorGUILayout.EndScrollView();
             }
         }
 
-        void ShowContents(string path)
+        void ShowFolder(string path)
         {
-            foreach (string folder in Directory.EnumerateDirectories(path))
+            string shortName = Path.GetFileName(path);
+            if (shortName == "msg" || shortName == "srv")
             {
-                string shortName = Path.GetFileName(folder);
-                if (shortName == "msg" || shortName == "srv")
+                ShowMsgFolder(path);
+            }
+            else
+            {
+                //GUIStyle hstyle = GUI.skin.
+                EditorGUILayout.BeginHorizontal();
+                bool isFoldedOut = HashsetFoldout(path, shortName);
+                EditorGUILayout.EndHorizontal();
+                if (isFoldedOut)
                 {
-                    ShowMsgFolder(folder);
-                }
-                else
-                {
-                    //GUIStyle hstyle = GUI.skin.
-                    EditorGUILayout.BeginHorizontal();
-                    bool isFoldedOut = HashsetFoldout(folder, shortName);
-                    EditorGUILayout.EndHorizontal();
-                    if (isFoldedOut)
+                    EditorGUI.indentLevel++;
+                    foreach (string folder in Directory.EnumerateDirectories(path))
                     {
-                        EditorGUI.indentLevel++;
-                        ShowContents(folder);
-                        EditorGUI.indentLevel--;
+                        ShowFolder(folder);
                     }
+                    EditorGUI.indentLevel--;
                 }
             }
         }
@@ -112,7 +121,7 @@ namespace RosMessageGeneration
                 }
                 if (numMsgs > 0)
                 {
-                    if(GUILayout.Button("Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : ""), GUILayout.Width(200)))
+                    if(GUILayout.Button("Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : ""), GUILayout.Width(BUTTON_WIDTH)))
                     {
                         MessageAutoGen.GenerateDirectoryMessages(path, outPath);
                         AssetDatabase.Refresh();
@@ -120,7 +129,7 @@ namespace RosMessageGeneration
                 }
                 if (numSrvs > 0)
                 {
-                    if(GUILayout.Button("Build " + numSrvs + " srv" + (numSrvs > 1 ? "s" : ""), GUILayout.Width(200)))
+                    if(GUILayout.Button("Build " + numSrvs + " srv" + (numSrvs > 1 ? "s" : ""), GUILayout.Width(BUTTON_WIDTH)))
                     {
                         MessageAutoGen.GenerateDirectoryMessages(path, outPath);
                         AssetDatabase.Refresh();
@@ -137,6 +146,10 @@ namespace RosMessageGeneration
                     if (ext == ".msg" || ext == ".srv")
                         ShowSingleBuildLine(file);
                 }
+                foreach (string folder in Directory.EnumerateDirectories(path))
+                {
+                    ShowFolder(folder);
+                }
                 EditorGUI.indentLevel--;
             }
         }
@@ -145,6 +158,10 @@ namespace RosMessageGeneration
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(Path.GetFileName(file));
+/*            if(GUILayout.Button(Path.GetFileName(file), EditorStyles.label))
+            {
+                UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(file, 0);
+            }*/
 
             if (Path.GetExtension(file) == ".srv")
             {
@@ -152,7 +169,7 @@ namespace RosMessageGeneration
                 bool exists = fileOutPath.All(path=>File.Exists(path));
                 string buildStr = (exists ? "Rebuild" : "Build");
 
-                if (GUILayout.Button(buildStr + " srv", GUILayout.Width(200)))
+                if (GUILayout.Button(buildStr + " srv", GUILayout.Width(BUTTON_WIDTH)))
                 {
                     ServiceAutoGen.GenerateSingleService(file, outPath);
                     AssetDatabase.Refresh();
@@ -164,7 +181,7 @@ namespace RosMessageGeneration
                 bool exists = File.Exists(fileOutPath);
                 string buildStr = (exists ? "Rebuild" : "Build");
 
-                if (GUILayout.Button(buildStr+" msg", GUILayout.Width(200)))
+                if (GUILayout.Button(buildStr+" msg", GUILayout.Width(BUTTON_WIDTH)))
                 {
                     MessageAutoGen.GenerateSingleMessage(file, outPath);
                     AssetDatabase.Refresh();
@@ -175,34 +192,27 @@ namespace RosMessageGeneration
 
         bool HashsetFoldout(string key, string label)
         {
-            bool isFoldedOut = foldedOutList.Contains(key);
+            if(foldedOutHash == null)
+            {
+                foldedOutHash = new HashSet<string>();
+                foreach (string s in foldedOutList)
+                    foldedOutHash.Add(s);
+            }
+
+            bool isFoldedOut = foldedOutHash.Contains(key);
             bool shouldBeFoldedOut = EditorGUILayout.Foldout(isFoldedOut, label, true, EditorStyles.foldout);
 
             if (shouldBeFoldedOut && !isFoldedOut)
             {
                 foldedOutList.Add(key);
+                foldedOutHash.Add(key);
             }
             else if (!shouldBeFoldedOut && isFoldedOut)
             {
                 foldedOutList.Remove(key);
+                foldedOutHash.Remove(key);
             }
             return shouldBeFoldedOut;
-        }
-
-        private void OnInspectorUpdate()
-        {
-            Repaint();
-        }
-
-        private void Reset()
-        {
-            inPath = "";
-            outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
-        }
-
-        protected List<string> Generate(string inPath, string outPath, string rosPackageName = "")
-        {
-            return new List<string>();
         }
     }
 }
