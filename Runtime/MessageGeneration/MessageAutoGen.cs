@@ -9,16 +9,34 @@ namespace RosMessageGeneration
 {
     public class MessageAutoGen
     {
+        public static string GetRosPackageName(string inPath, string rosPackageNameOverride = "")
+        {
+            if (!rosPackageNameOverride.Equals(""))
+                return rosPackageNameOverride;
+
+            string[] hierarchy = inPath.Split(new char[] { '/', '\\' });
+            return hierarchy[hierarchy.Length - 3];
+        }
+
+        public static string GetMessageOutFolder(string outPath, string rosPackageName)
+        {
+            return Path.Combine(outPath, MsgAutoGenUtilities.ResolvePackageName(rosPackageName));
+        }
+
+        public static string GetMessageClassPath(string inFilePath, string outPath)
+        {
+            string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
+            string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
+            string extension = Path.GetExtension(inFilePath);
+            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+            return Path.Combine(outFolder, "msg", className + ".cs");
+        }
+
         public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path
-            if (rosPackageName.Equals(""))
-            {
-                string[] hierarchy = inPath.Split(new char[] { '/', '\\' });
-                rosPackageName = hierarchy[hierarchy.Length - 3];
-            }
-
-            outPath = Path.Combine(outPath, MsgAutoGenUtilities.ResolvePackageName(rosPackageName));
+            rosPackageName = GetRosPackageName(inPath, rosPackageName);
+            outPath = GetMessageOutFolder(outPath, rosPackageName);
 
             string inFileName = Path.GetFileNameWithoutExtension(inPath);
 
