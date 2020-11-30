@@ -115,6 +115,8 @@ namespace RosMessageGeneration
                 // Write ROS package name
                 writer.Write(MsgAutoGenUtilities.TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + rosMsgName + "\";\n\n");
 
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + "public override string RosClassName => \"" + rosPackageName + ".msg." + rosMsgName + "\";\n\n");
+
                 // Write body
                 writer.Write(body);
                 writer.Write("\n");

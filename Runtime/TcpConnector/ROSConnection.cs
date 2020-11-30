@@ -29,7 +29,11 @@ public class ROSConnection : MonoBehaviour
     static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
     const string ERROR_TOPIC_NAME = "__error";
+    const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
     const string HANDSHAKE_TOPIC_NAME = "__handshake";
+
+    const string SYSCOMMAND_SUBSCRIBE = "subscribe";
+    const string SYSCOMMAND_PUBLISH = "publish";
 
     struct SubscriberCallback
     {
@@ -38,10 +42,133 @@ public class ROSConnection : MonoBehaviour
     }
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
+    HashSet<string> publishers = new HashSet<string>();
 
-    void Start()
+    public void Subscribe<T>(string topic, Action<T> callback, bool notifyRos = true) where T : Message, new()
     {
-        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+        SubscriberCallback subCallbacks;
+        if (!subscribers.TryGetValue(topic, out subCallbacks))
+        {
+            subCallbacks = new SubscriberCallback
+            {
+                messageConstructor = typeof(T).GetConstructor(new Type[0]),
+                callbacks = new List<Action<Message>> { }
+            };
+            subscribers.Add(topic, subCallbacks);
+            if (notifyRos)
+                SendSubscribeCommand(topic);
+        }
+
+        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
+    }
+
+    public void Publish(string topic, Message message)
+    {
+        if (!publishers.Contains(topic))
+        {
+            SendPublishCommand(topic, message.RosClassName);
+            publishers.Add(topic);
+        }
+        Send(topic, message);
+    }
+
+    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
+    {
+        // Serialize the message in service name, message size, and message bytes format
+        byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
+
+        TcpClient client = new TcpClient();
+        await client.ConnectAsync(hostName, hostPort);
+
+        NetworkStream networkStream = client.GetStream();
+        networkStream.ReadTimeout = networkTimeout;
+
+        RESPONSE serviceResponse = new RESPONSE();
+
+        // Send the message
+        try
+        {
+            networkStream.Write(messageBytes, 0, messageBytes.Length);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("SocketException: " + e);
+            goto finish;
+        }
+
+        if (!networkStream.CanRead)
+        {
+            Debug.LogError("Sorry, you cannot read from this NetworkStream.");
+            goto finish;
+        }
+
+        // Poll every 1 second(s) for available data on the stream
+        int attempts = 0;
+        while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
+        {
+            if (attempts == this.awaitDataMaxRetries)
+            {
+                Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
+                goto finish;
+            }
+            attempts++;
+            await Task.Delay((int)(awaitDataSleepSeconds * 1000));
+        }
+
+        int numberOfBytesRead = 0;
+        try
+        {
+            // Get first bytes to determine length of service name
+            byte[] rawServiceBytes = new byte[4];
+            networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
+            int topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
+
+            // Create container and read service name from network stream
+            byte[] serviceNameBytes = new byte[topicLength];
+            networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
+            string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
+
+            // Get leading bytes to determine length of remaining full message
+            byte[] full_message_size_bytes = new byte[4];
+            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
+            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
+
+            // Create container and read message from network stream
+            byte[] readBuffer = new byte[full_message_size];
+            while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
+            {
+                var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
+                numberOfBytesRead += readBytes;
+            }
+
+            serviceResponse.Deserialize(readBuffer, 0);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Exception raised!! " + e);
+        }
+
+        finish:
+        callback(serviceResponse);
+        if (client.Connected)
+            client.Close();
+    }
+
+    public void SendSubscribeCommand(string topic)
+    {
+        SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic });
+    }
+
+    public void SendPublishCommand(string topic, string messageClassname)
+    {
+        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, msgclass = messageClassname });
+    }
+
+
+void Start()
+    {
+        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback, notifyRos:false);
+
         if (overrideUnityIP != "")
         {
             StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
@@ -58,22 +185,6 @@ public class ROSConnection : MonoBehaviour
     void RosUnityErrorCallback(RosUnityError error)
     {
         Debug.LogError("ROS-Unity error: " + error.message);
-    }
-
-    public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
-    {
-        SubscriberCallback subCallbacks;
-        if (!subscribers.TryGetValue(topic, out subCallbacks))
-        {
-            subCallbacks = new SubscriberCallback
-            {
-                messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                callbacks = new List<Action<Message>> { }
-            };
-            subscribers.Add(topic, subCallbacks);
-        }
-
-        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
     }
 
     /// <summary>
@@ -267,7 +378,23 @@ public class ROSConnection : MonoBehaviour
         return messageBuffer;
     }
 
-    public async void Send(string rosTopicName, Message message)
+    struct SysCommand_Subscribe
+    {
+        public string topic;
+    }
+
+    struct SysCommand_Publish
+    {
+        public string topic;
+        public string msgclass;
+    }
+
+    void SendSysCommand(string command, object param)
+    {
+        Send(SYSCOMMAND_TOPIC_NAME, new RosMessageTypes.TcpEndpoint.RosUnitySysCommand(command, JsonUtility.ToJson(param)));
+    }
+
+    async void Send(string rosTopicName, Message message)
     {
         try
         {
@@ -293,87 +420,5 @@ public class ROSConnection : MonoBehaviour
         {
             Debug.LogError("TCPConnector Exception: " + e);
         }
-    }
-
-    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
-    {
-        // Serialize the message in service name, message size, and message bytes format
-        byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
-
-        TcpClient client = new TcpClient();
-        await client.ConnectAsync(hostName, hostPort);
-
-        NetworkStream networkStream = client.GetStream();
-        networkStream.ReadTimeout = networkTimeout;
-
-        RESPONSE serviceResponse = new RESPONSE();
-
-        // Send the message
-        try
-        {
-            networkStream.Write(messageBytes, 0, messageBytes.Length);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("SocketException: " + e);
-            goto finish;
-        }
-
-        if (!networkStream.CanRead)
-        {
-            Debug.LogError("Sorry, you cannot read from this NetworkStream.");
-            goto finish;
-        }
-
-        // Poll every 1 second(s) for available data on the stream
-        int attempts = 0;
-        while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
-        {
-            if (attempts == this.awaitDataMaxRetries)
-            {
-                Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
-                goto finish;
-            }
-            attempts++;
-            await Task.Delay((int)(awaitDataSleepSeconds * 1000));
-        }
-
-        int numberOfBytesRead = 0;
-        try
-        {
-            // Get first bytes to determine length of service name
-            byte[] rawServiceBytes = new byte[4];
-            networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
-            int topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
-
-            // Create container and read service name from network stream
-            byte[] serviceNameBytes = new byte[topicLength];
-            networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
-            string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
-
-            // Get leading bytes to determine length of remaining full message
-            byte[] full_message_size_bytes = new byte[4];
-            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
-            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
-
-            // Create container and read message from network stream
-            byte[] readBuffer = new byte[full_message_size];
-            while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
-            {
-                var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
-                numberOfBytesRead += readBytes;
-            }
-
-            serviceResponse.Deserialize(readBuffer, 0);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Exception raised!! " + e);
-        }
-
-        finish:
-        callback(serviceResponse);
-        if (client.Connected)
-            client.Close();
     }
 }
