@@ -7,8 +7,6 @@ namespace RosMessageGeneration
 {
     public abstract class Message
     {
-        public virtual string RosClassName => "";
-
         /// <summary>
         ///    Read four bytes from an array of bytes and covert to an int32.
         ///     

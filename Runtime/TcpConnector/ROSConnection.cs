@@ -44,7 +44,7 @@ public class ROSConnection : MonoBehaviour
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
     HashSet<string> publishers = new HashSet<string>();
 
-    public void Subscribe<T>(string topic, Action<T> callback, bool notifyRos = true) where T : Message, new()
+    public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
     {
         SubscriberCallback subCallbacks;
         if (!subscribers.TryGetValue(topic, out subCallbacks))
@@ -55,21 +55,9 @@ public class ROSConnection : MonoBehaviour
                 callbacks = new List<Action<Message>> { }
             };
             subscribers.Add(topic, subCallbacks);
-            if (notifyRos)
-                SendSubscribeCommand(topic);
         }
 
         subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
-    }
-
-    public void Publish(string topic, Message message)
-    {
-        if (!publishers.Contains(topic))
-        {
-            SendPublishCommand(topic, message.RosClassName);
-            publishers.Add(topic);
-        }
-        Send(topic, message);
     }
 
     public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
@@ -154,20 +142,20 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
-    public void SendSubscribeCommand(string topic)
+    public void RegisterSubscriber(string topic)
     {
         SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic });
     }
 
-    public void SendPublishCommand(string topic, string messageClassname)
+    public void RegisterPublisher(string topic, string messageClassname)
     {
-        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, msgclass = messageClassname });
+        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = messageClassname });
     }
 
 
-void Start()
+    void Awake()
     {
-        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback, notifyRos:false);
+        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
         if (overrideUnityIP != "")
         {
@@ -386,7 +374,7 @@ void Start()
     struct SysCommand_Publish
     {
         public string topic;
-        public string msgclass;
+        public string message_name;
     }
 
     void SendSysCommand(string command, object param)
@@ -394,7 +382,7 @@ void Start()
         Send(SYSCOMMAND_TOPIC_NAME, new RosMessageTypes.TcpEndpoint.RosUnitySysCommand(command, JsonUtility.ToJson(param)));
     }
 
-    async void Send(string rosTopicName, Message message)
+    public async void Send(string rosTopicName, Message message)
     {
         try
         {
