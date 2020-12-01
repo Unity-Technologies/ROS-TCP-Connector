@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace RosMessageGeneration
 {
-    public class MessageTokenizer {
-
+    public class MessageTokenizer
+    {
         private string inFilePath = "";
         private uint lineNum = 1;
 
@@ -16,7 +16,8 @@ namespace RosMessageGeneration
         private readonly HashSet<char> allowedSpecialCharacterForTypeIdentifier = new HashSet<char>()
         { '_', '/'};
 
-        public MessageTokenizer(string inFilePath, HashSet<string> builtInTypes) {
+        public MessageTokenizer(string inFilePath, HashSet<string> builtInTypes)
+        {
             this.inFilePath = inFilePath;
             this.reader = new StreamReader(inFilePath);
             this.builtInTypes = builtInTypes;
@@ -26,7 +27,8 @@ namespace RosMessageGeneration
         /// Tokenizes the stream input
         /// </summary>
         /// <returns> A list of MessageTokens read from the stream </returns>
-        public List<List<MessageToken>> Tokenize() {
+        public List<List<MessageToken>> Tokenize()
+        {
 
             List<List<MessageToken>> listsOfTokens = new List<List<MessageToken>>();
 
@@ -39,10 +41,12 @@ namespace RosMessageGeneration
             while (!reader.EndOfStream)
             {
                 DiscardEmpty();
-                if (reader.EndOfStream) {
+                if (reader.EndOfStream)
+                {
                     break;
                 }
-                if (reader.Peek() == '\n') {
+                if (reader.Peek() == '\n')
+                {
                     // If line is empty, move on
                     reader.Read();
                     lineNum++;
@@ -93,7 +97,8 @@ namespace RosMessageGeneration
                     DiscardEmpty();
 
                     // A constant may be declared
-                    if (reader.Peek() == '=') {
+                    if (reader.Peek() == '=')
+                    {
                         listsOfTokens[listIndex].Add(NextConstantDeclaration());
                     }
 
@@ -153,9 +158,11 @@ namespace RosMessageGeneration
         /// Removes start and end trailing spaces
         /// </summary>
         /// <returns> All content before '\n' </returns>
-        private string ReadUntilNewLineAndTrim() {
+        private string ReadUntilNewLineAndTrim()
+        {
             string content = "";
-            while (reader.Peek() != '\n' && !reader.EndOfStream) {
+            while (reader.Peek() != '\n' && !reader.EndOfStream)
+            {
                 if (reader.Peek() != '\r')
                 {
                     content += (char)reader.Read();
@@ -227,7 +234,8 @@ namespace RosMessageGeneration
         /// Only allows "---" on its own line
         /// </summary>
         /// <returns> Next seperator token in the stream </returns>
-        private MessageToken NextSeperator() {
+        private MessageToken NextSeperator()
+        {
             string token = ReadUntilNewLineAndTrim();
             if (token.Equals("---"))
             {
@@ -235,7 +243,8 @@ namespace RosMessageGeneration
                 lineNum++;
                 return new MessageToken(MessageTokenType.Seperator, token, lineNum - 1);
             }
-            else {
+            else
+            {
                 throw new MessageTokenizerException("Unexpected token '" + token + "'. Did you mean '---' (ROS Service/Action seperator)?");
             }
         }
@@ -259,7 +268,8 @@ namespace RosMessageGeneration
             // Otherwise, consume input until seperator, EOF or '['
             while (reader.Peek() != ' ' && reader.Peek() != '[' && !reader.EndOfStream)
             {
-                if (!Char.IsLetterOrDigit((char)reader.Peek()) && !allowedSpecialCharacterForTypeIdentifier.Contains((char)reader.Peek())) {
+                if (!Char.IsLetterOrDigit((char)reader.Peek()) && !allowedSpecialCharacterForTypeIdentifier.Contains((char)reader.Peek()))
+                {
                     throw new MessageTokenizerException("Invalid character in type identifier: " + (char)reader.Peek() + " " + CurrentFileAndLine());
                 }
                 tokenStr += (char)reader.Read();
@@ -312,7 +322,8 @@ namespace RosMessageGeneration
                 {
                     tokenStr += arraySize;
                 }
-                else {
+                else
+                {
                     // Invalid Array Declaration
                     throw new MessageTokenizerException("Invalid array declaration: [" + arraySizeStr + "] " + CurrentFileAndLine());
                 }
@@ -343,7 +354,7 @@ namespace RosMessageGeneration
             }
 
             // Otherwise, consume input until seperator or EOF
-            while (reader.Peek() != ' ' && reader.Peek() != '\n' && reader.Peek() != '=' && !reader.EndOfStream)
+            while (reader.Peek() != ' ' && reader.Peek() != '\n' && reader.Peek() != '\t' && reader.Peek() != '=' && !reader.EndOfStream)
             {
                 if (reader.Peek() == '\r')
                 {
@@ -352,9 +363,7 @@ namespace RosMessageGeneration
                 }
                 if (!Char.IsLetterOrDigit((char)reader.Peek()) && reader.Peek() != '_')
                 {
-                    {
-                        throw new MessageTokenizerException("Invalid character in identifier: " + (char)reader.Peek() + " " + CurrentFileAndLine());
-                    }
+                    throw new MessageTokenizerException("Invalid character in identifier: " + (char)reader.Peek() + " " + CurrentFileAndLine());
                 }
                 tokenStr += (char)reader.Read();
             }
@@ -381,7 +390,8 @@ namespace RosMessageGeneration
         /// Returns the current file path and line number
         /// </summary>
         /// <returns> Returns the current file path and line number </returns>
-        private string CurrentFileAndLine() {
+        private string CurrentFileAndLine()
+        {
             return "(" + this.inFilePath + ":" + lineNum + ")";
         }
 

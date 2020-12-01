@@ -19,9 +19,9 @@ namespace RosMessageGeneration
         /// <returns> Number of bytes to read to be able to deserialize the following value. </returns>
         public int DeserializeLength(byte[] data, int offset)
         {
-            int byteLength = BitConverter.ToInt32 (data, offset);
+            int byteLength = BitConverter.ToInt32(data, offset);
             return byteLength;
-            
+
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace RosMessageGeneration
             string deserializedString = System.Text.Encoding.UTF8.GetString(data, offset, stringLength);
             return deserializedString;
         }
-        
+
         /// <summary>
         ///     Take an input string and convert it to a byte array while adhering to the convention
         ///     that the first four bytes are used to tell to deserializer how many bytes are needed
@@ -68,7 +68,7 @@ namespace RosMessageGeneration
             if (!omitMessageSize)
             {
                 var messageLength = listOfSerializations.SelectMany(a => a).ToArray().Length;
-                listOfSerializations.Insert(0,BitConverter.GetBytes(messageLength));
+                listOfSerializations.Insert(0, BitConverter.GetBytes(messageLength));
             }
 
             byte[] serializedMessage = listOfSerializations.SelectMany(a => a).ToArray();

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
- namespace RosMessageGeneration
+namespace RosMessageGeneration
 {
     public abstract class PackageAutoGenEditorWindow : EditorWindow
     {

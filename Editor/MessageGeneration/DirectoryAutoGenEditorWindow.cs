@@ -8,9 +8,9 @@ namespace RosMessageGeneration
     public abstract class DirectoryAutoGenEditorWindow : EditorWindow
     {
         [SerializeField]
-        private static string lastInputDirectory = string.Empty;
+        private static string lastInputDirectory = "";
         [SerializeField]
-        private static string lastOutputDirectory = string.Empty;
+        private static string lastOutputDirectory = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
 
         private string inPath = "";
         private string outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
@@ -138,8 +138,8 @@ namespace RosMessageGeneration
 
         private void Reset()
         {
-            inPath = "";
-            outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
+            inPath = lastInputDirectory;
+            outPath = lastOutputDirectory;
         }
 
         protected abstract List<string> Generate(string inPath, string outPath, string rosPackageName = "");
