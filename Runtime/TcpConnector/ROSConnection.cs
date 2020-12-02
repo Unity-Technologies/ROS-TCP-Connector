@@ -142,9 +142,9 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
-    public void RegisterSubscriber(string topic)
+    public void RegisterSubscriber(string topic, string messageClassname)
     {
-        SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic });
+        SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = messageClassname });
     }
 
     public void RegisterPublisher(string topic, string messageClassname)
@@ -369,6 +369,7 @@ public class ROSConnection : MonoBehaviour
     struct SysCommand_Subscribe
     {
         public string topic;
+        public string message_name;
     }
 
     struct SysCommand_Publish
@@ -379,7 +380,7 @@ public class ROSConnection : MonoBehaviour
 
     void SendSysCommand(string command, object param)
     {
-        Send(SYSCOMMAND_TOPIC_NAME, new RosMessageTypes.TcpEndpoint.RosUnitySysCommand(command, JsonUtility.ToJson(param)));
+        Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
     }
 
     public async void Send(string rosTopicName, Message message)
