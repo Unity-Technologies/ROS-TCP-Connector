@@ -142,14 +142,14 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
-    public void RegisterSubscriber(string topic, string messageClassname)
+    public void RegisterSubscriber(string topic, string rosMessageName)
     {
-        SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = messageClassname });
+        SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = rosMessageName });
     }
 
-    public void RegisterPublisher(string topic, string messageClassname)
+    public void RegisterPublisher(string topic, string rosMessageName)
     {
-        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = messageClassname });
+        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
     }
 
 
