@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+/// <summary>
+/// Connection from Unity to a ROS node
+/// </summary>
 public class ROSConnection : MonoBehaviour
 {
     // Variables required for ROS communication
