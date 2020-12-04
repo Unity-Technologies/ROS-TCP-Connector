@@ -55,7 +55,7 @@ namespace RosMessageTypes.Sensor
             var axesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.axes= new float[axesArrayLength];
-            for(var i =0; i <axesArrayLength; i++)
+            for(var i = 0; i < axesArrayLength; i++)
             {
                 this.axes[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
@@ -64,7 +64,7 @@ namespace RosMessageTypes.Sensor
             var buttonsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.buttons= new int[buttonsArrayLength];
-            for(var i =0; i <buttonsArrayLength; i++)
+            for(var i = 0; i < buttonsArrayLength; i++)
             {
                 this.buttons[i] = BitConverter.ToInt32(data, offset);
                 offset += 4;

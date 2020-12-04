@@ -72,7 +72,7 @@ namespace RosMessageTypes.Shape
             var dimensionsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.dimensions= new double[dimensionsArrayLength];
-            for(var i =0; i <dimensionsArrayLength; i++)
+            for(var i = 0; i < dimensionsArrayLength; i++)
             {
                 this.dimensions[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

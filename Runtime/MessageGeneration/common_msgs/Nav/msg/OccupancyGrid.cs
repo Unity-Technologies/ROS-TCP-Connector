@@ -53,7 +53,7 @@ namespace RosMessageTypes.Nav
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.data= new sbyte[dataArrayLength];
-            for(var i =0; i <dataArrayLength; i++)
+            for(var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = (sbyte)data[offset];
                 offset += 1;

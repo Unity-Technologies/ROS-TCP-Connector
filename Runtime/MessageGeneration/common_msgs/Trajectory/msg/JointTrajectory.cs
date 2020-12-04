@@ -51,7 +51,7 @@ namespace RosMessageTypes.Trajectory
             var joint_namesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.joint_names= new string[joint_namesArrayLength];
-            for(var i =0; i <joint_namesArrayLength; i++)
+            for(var i = 0; i < joint_namesArrayLength; i++)
             {
                 var joint_namesStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;
@@ -62,7 +62,7 @@ namespace RosMessageTypes.Trajectory
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.points= new JointTrajectoryPoint[pointsArrayLength];
-            for(var i =0; i <pointsArrayLength; i++)
+            for(var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new JointTrajectoryPoint();
                 offset = this.points[i].Deserialize(data, offset);

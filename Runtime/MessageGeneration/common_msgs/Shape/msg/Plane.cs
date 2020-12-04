@@ -30,7 +30,7 @@ namespace RosMessageTypes.Shape
         {
             var listOfSerializations = new List<byte[]>();
             
-            listOfSerializations.Add(BitConverter.GetBytes(coef.Length));
+            Array.Resize(ref coef, 4);
             foreach(var entry in coef)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
@@ -40,10 +40,8 @@ namespace RosMessageTypes.Shape
         public override int Deserialize(byte[] data, int offset)
         {
             
-            var coefArrayLength = DeserializeLength(data, offset);
-            offset += 4;
-            this.coef= new double[coefArrayLength];
-            for(var i =0; i <coefArrayLength; i++)
+            this.coef= new double[4];
+            for(var i = 0; i < 4; i++)
             {
                 this.coef[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

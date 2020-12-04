@@ -117,7 +117,7 @@ namespace RosMessageTypes.Sensor
             var rangesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.ranges= new float[rangesArrayLength];
-            for(var i =0; i <rangesArrayLength; i++)
+            for(var i = 0; i < rangesArrayLength; i++)
             {
                 this.ranges[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
@@ -126,7 +126,7 @@ namespace RosMessageTypes.Sensor
             var intensitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.intensities= new float[intensitiesArrayLength];
-            for(var i =0; i <intensitiesArrayLength; i++)
+            for(var i = 0; i < intensitiesArrayLength; i++)
             {
                 this.intensities[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

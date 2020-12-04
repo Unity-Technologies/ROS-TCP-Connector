@@ -91,7 +91,7 @@ namespace RosMessageTypes.Visualization
             var menu_entriesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.menu_entries= new MenuEntry[menu_entriesArrayLength];
-            for(var i =0; i <menu_entriesArrayLength; i++)
+            for(var i = 0; i < menu_entriesArrayLength; i++)
             {
                 this.menu_entries[i] = new MenuEntry();
                 offset = this.menu_entries[i].Deserialize(data, offset);
@@ -100,7 +100,7 @@ namespace RosMessageTypes.Visualization
             var controlsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.controls= new InteractiveMarkerControl[controlsArrayLength];
-            for(var i =0; i <controlsArrayLength; i++)
+            for(var i = 0; i < controlsArrayLength; i++)
             {
                 this.controls[i] = new InteractiveMarkerControl();
                 offset = this.controls[i].Deserialize(data, offset);
