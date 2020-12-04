@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using RosMessageGeneration;
 
-namespace RosMessageTypes.TcpEndpoint
+namespace RosMessageTypes.RosTcpEndpoint
 {
     public class RosUnitySysCommand : Message
     {
-        public const string RosMessageName = "tcp_endpoint/RosUnitySysCommand";
+        public const string RosMessageName = "ros_tcp_endpoint/RosUnitySysCommand";
 
         public string command;
         public string params_json;

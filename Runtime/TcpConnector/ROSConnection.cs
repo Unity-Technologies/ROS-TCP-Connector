@@ -1,5 +1,5 @@
 using RosMessageGeneration;
-using RosMessageTypes.TcpEndpoint;
+using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -162,10 +162,10 @@ public class ROSConnection : MonoBehaviour
             StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
         }
 
-        SendServiceMessage<RosUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new RosUnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+        SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
     }
 
-    void RosUnityHandshakeCallback(RosUnityHandshakeResponse response)
+    void RosUnityHandshakeCallback(UnityHandshakeResponse response)
     {
         StartMessageServer(response.ip, unityPort);
     }
