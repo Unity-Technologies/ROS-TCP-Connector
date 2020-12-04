@@ -26,7 +26,7 @@ namespace RosMessageTypes.Shape
         {
             var listOfSerializations = new List<byte[]>();
             
-            listOfSerializations.Add(BitConverter.GetBytes(vertex_indices.Length));
+            Array.Resize(ref vertex_indices, 3);
             foreach(var entry in vertex_indices)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
@@ -36,10 +36,8 @@ namespace RosMessageTypes.Shape
         public override int Deserialize(byte[] data, int offset)
         {
             
-            var vertex_indicesArrayLength = DeserializeLength(data, offset);
-            offset += 4;
-            this.vertex_indices= new uint[vertex_indicesArrayLength];
-            for(var i =0; i <vertex_indicesArrayLength; i++)
+            this.vertex_indices= new uint[3];
+            for(var i = 0; i < 3; i++)
             {
                 this.vertex_indices[i] = BitConverter.ToUInt32(data, offset);
                 offset += 4;

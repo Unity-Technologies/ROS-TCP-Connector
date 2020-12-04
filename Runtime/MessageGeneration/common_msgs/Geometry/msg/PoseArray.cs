@@ -45,7 +45,7 @@ namespace RosMessageTypes.Geometry
             var posesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.poses= new Pose[posesArrayLength];
-            for(var i =0; i <posesArrayLength; i++)
+            for(var i = 0; i < posesArrayLength; i++)
             {
                 this.poses[i] = new Pose();
                 offset = this.poses[i].Deserialize(data, offset);

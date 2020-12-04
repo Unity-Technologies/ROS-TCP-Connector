@@ -170,7 +170,7 @@ namespace RosMessageTypes.Sensor
             var cell_voltageArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.cell_voltage= new float[cell_voltageArrayLength];
-            for(var i =0; i <cell_voltageArrayLength; i++)
+            for(var i = 0; i < cell_voltageArrayLength; i++)
             {
                 this.cell_voltage[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
@@ -179,7 +179,7 @@ namespace RosMessageTypes.Sensor
             var cell_temperatureArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.cell_temperature= new float[cell_temperatureArrayLength];
-            for(var i =0; i <cell_temperatureArrayLength; i++)
+            for(var i = 0; i < cell_temperatureArrayLength; i++)
             {
                 this.cell_temperature[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

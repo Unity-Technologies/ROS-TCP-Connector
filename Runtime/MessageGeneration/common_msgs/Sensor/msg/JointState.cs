@@ -83,7 +83,7 @@ namespace RosMessageTypes.Sensor
             var nameArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.name= new string[nameArrayLength];
-            for(var i =0; i <nameArrayLength; i++)
+            for(var i = 0; i < nameArrayLength; i++)
             {
                 var nameStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;
@@ -94,7 +94,7 @@ namespace RosMessageTypes.Sensor
             var positionArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.position= new double[positionArrayLength];
-            for(var i =0; i <positionArrayLength; i++)
+            for(var i = 0; i < positionArrayLength; i++)
             {
                 this.position[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
@@ -103,7 +103,7 @@ namespace RosMessageTypes.Sensor
             var velocityArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.velocity= new double[velocityArrayLength];
-            for(var i =0; i <velocityArrayLength; i++)
+            for(var i = 0; i < velocityArrayLength; i++)
             {
                 this.velocity[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
@@ -112,7 +112,7 @@ namespace RosMessageTypes.Sensor
             var effortArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.effort= new double[effortArrayLength];
-            for(var i =0; i <effortArrayLength; i++)
+            for(var i = 0; i < effortArrayLength; i++)
             {
                 this.effort[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

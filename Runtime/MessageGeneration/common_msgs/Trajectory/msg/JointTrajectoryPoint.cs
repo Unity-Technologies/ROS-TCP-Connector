@@ -67,7 +67,7 @@ namespace RosMessageTypes.Trajectory
             var positionsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.positions= new double[positionsArrayLength];
-            for(var i =0; i <positionsArrayLength; i++)
+            for(var i = 0; i < positionsArrayLength; i++)
             {
                 this.positions[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
@@ -76,7 +76,7 @@ namespace RosMessageTypes.Trajectory
             var velocitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.velocities= new double[velocitiesArrayLength];
-            for(var i =0; i <velocitiesArrayLength; i++)
+            for(var i = 0; i < velocitiesArrayLength; i++)
             {
                 this.velocities[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
@@ -85,7 +85,7 @@ namespace RosMessageTypes.Trajectory
             var accelerationsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.accelerations= new double[accelerationsArrayLength];
-            for(var i =0; i <accelerationsArrayLength; i++)
+            for(var i = 0; i < accelerationsArrayLength; i++)
             {
                 this.accelerations[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
@@ -94,7 +94,7 @@ namespace RosMessageTypes.Trajectory
             var effortArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.effort= new double[effortArrayLength];
-            for(var i =0; i <effortArrayLength; i++)
+            for(var i = 0; i < effortArrayLength; i++)
             {
                 this.effort[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
