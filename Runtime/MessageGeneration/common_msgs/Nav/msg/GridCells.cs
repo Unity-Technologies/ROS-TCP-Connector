@@ -57,7 +57,7 @@ namespace RosMessageTypes.Nav
             var cellsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.cells= new Geometry.Point[cellsArrayLength];
-            for(var i =0; i <cellsArrayLength; i++)
+            for(var i = 0; i < cellsArrayLength; i++)
             {
                 this.cells[i] = new Geometry.Point();
                 offset = this.cells[i].Deserialize(data, offset);

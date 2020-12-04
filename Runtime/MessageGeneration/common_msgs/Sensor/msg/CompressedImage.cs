@@ -62,7 +62,7 @@ namespace RosMessageTypes.Sensor
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.data= new byte[dataArrayLength];
-            for(var i =0; i <dataArrayLength; i++)
+            for(var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = data[offset];
                 offset += 1;

@@ -80,7 +80,7 @@ namespace RosMessageTypes.Diagnostic
             var valuesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.values= new KeyValue[valuesArrayLength];
-            for(var i =0; i <valuesArrayLength; i++)
+            for(var i = 0; i < valuesArrayLength; i++)
             {
                 this.values[i] = new KeyValue();
                 offset = this.values[i].Deserialize(data, offset);

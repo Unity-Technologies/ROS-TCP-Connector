@@ -61,7 +61,7 @@ namespace RosMessageTypes.Visualization
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.markers= new InteractiveMarker[markersArrayLength];
-            for(var i =0; i <markersArrayLength; i++)
+            for(var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new InteractiveMarker();
                 offset = this.markers[i].Deserialize(data, offset);

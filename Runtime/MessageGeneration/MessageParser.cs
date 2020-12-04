@@ -634,14 +634,29 @@ namespace RosMessageGeneration
                     {
                         // Remove trailing brackets
                         type = type.Substring(0, type.Length - 2);
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "\n";
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
-                                    "var " + identifier + "ArrayLength = DeserializeLength(data, offset);\n";
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "offset += 4;\n";
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "this." + identifier + "= new " + type + "[" + identifier + "ArrayLength];\n";
+                        int arraySize = arraySizes[identifier];
 
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
-                                    "for(var i =0; i <" + identifier + "ArrayLength; i++)\n";
+                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "\n";
+                        if (arraySize == 0)
+                        {
+                            // variable length array, read the length
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "var " + identifier + "ArrayLength = DeserializeLength(data, offset);\n";
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "offset += 4;\n";
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "this." + identifier + "= new " + type + "[" + identifier + "ArrayLength];\n";
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "for(var i = 0; i < " + identifier + "ArrayLength; i++)\n";
+                        }
+                        else
+                        {
+                            // fixed length array, we already know the length
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "this." + identifier + "= new " + type + "[" + arraySize + "];\n";
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "for(var i = 0; i < " + arraySize + "; i++)\n";
+                        }
+
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "{\n";
 
                         // TODO: Replace with Array.Copy() https://docs.microsoft.com/en-us/dotnet/api/system.array.copy?view=netcore-3.1
@@ -734,8 +749,19 @@ namespace RosMessageGeneration
                         // Remove trailing brackets
                         type = type.Substring(0, type.Length - 2);
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "\n";
-                        function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
-                                    "listOfSerializations.Add(BitConverter.GetBytes(" + identifier + ".Length));\n";
+
+                        int arraySize = arraySizes[identifier];
+                        if (arraySize == 0)
+                        {
+                            // for a variable length array, send length first
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +
+                                        "listOfSerializations.Add(BitConverter.GetBytes(" + identifier + ".Length));\n";
+                        }
+                        else
+                        {
+                            // for a fixed length array, force the array to the correct length
+                            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "Array.Resize(ref " + identifier + ", " + arraySize + ");\n";
+                        }
 
                         if (type == "byte")
                         {

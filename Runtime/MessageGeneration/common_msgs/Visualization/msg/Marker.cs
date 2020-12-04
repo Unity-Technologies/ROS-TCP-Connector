@@ -148,7 +148,7 @@ namespace RosMessageTypes.Visualization
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.points= new Geometry.Point[pointsArrayLength];
-            for(var i =0; i <pointsArrayLength; i++)
+            for(var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Geometry.Point();
                 offset = this.points[i].Deserialize(data, offset);
@@ -157,7 +157,7 @@ namespace RosMessageTypes.Visualization
             var colorsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.colors= new Std.ColorRGBA[colorsArrayLength];
-            for(var i =0; i <colorsArrayLength; i++)
+            for(var i = 0; i < colorsArrayLength; i++)
             {
                 this.colors[i] = new Std.ColorRGBA();
                 offset = this.colors[i].Deserialize(data, offset);
