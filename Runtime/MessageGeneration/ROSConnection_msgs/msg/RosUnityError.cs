@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using RosMessageGeneration;
 
-namespace RosMessageTypes.TcpEndpoint
+namespace RosMessageTypes.RosTcpEndpoint
 {
     public class RosUnityError : Message
     {
-        public const string RosMessageName = "tcp_endpoint/RosUnityError";
+        public const string RosMessageName = "ros_tcp_endpoint/RosUnityError";
 
         public string message;
 
