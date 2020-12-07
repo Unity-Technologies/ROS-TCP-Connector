@@ -8,15 +8,7 @@ namespace RosMessageGeneration
 {
     public class MessageGenBrowser : EditorWindow
     {
-        [SerializeField]
-        private static string lastInputDirectory = string.Empty;
-        [SerializeField]
-        private static string lastOutputDirectory = string.Empty;
-
-        private string inPath = "";
-        private string outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
-
-        // we actually only want the hashset, but Unity can't serialize that - so we keep foldedOutList as a backup.
+        // we actually only want the hashset, but Unity won't serialize that - so we keep foldedOutList as a backup.
         private HashSet<string> foldedOutHash;
 
         [SerializeField]
@@ -25,6 +17,29 @@ namespace RosMessageGeneration
         private Vector2 scrollPos;
 
         const int BUTTON_WIDTH = 100;
+
+        bool isCacheDirty = true;
+        CachedEntry cacheRoot;
+
+        enum CachedEntryStatus
+        {
+            NormalFolder,
+            MsgFolder,
+            IgnoredFile,
+            UnbuiltMsgFile,
+            BuiltMsgFile,
+            UnbuiltSrvFile,
+            BuiltSrvFile,
+        }
+
+        struct CachedEntry
+        {
+            public string path;
+            public string label => Path.GetFileName(path);
+            public CachedEntryStatus status;
+            public List<CachedEntry> contents;
+            public int numMsgs;
+        }
 
         [MenuItem("RosMessageGeneration/Browse...", false, 2)]
         public static void OpenWindow()
@@ -38,18 +53,23 @@ namespace RosMessageGeneration
         protected virtual void OnGUI()
         {
             EditorGUILayout.BeginHorizontal();
+            MessageGenBrowserSettings settings = MessageGenBrowserSettings.Get();
+            string inPath = settings.inputPath;
             inPath = EditorGUILayout.TextField("Input Path", inPath);
             if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
             {
-                inPath = EditorUtility.OpenFolderPanel("Select Folder...", lastInputDirectory, "");
+                inPath = EditorUtility.OpenFolderPanel("Select Folder...", inPath, "");
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            outPath = EditorGUILayout.TextField("Output Location", outPath);
+            string relativeOutPath = settings.relativeOutPath;
+            relativeOutPath = EditorGUILayout.TextField("Output Location", relativeOutPath);
             if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
             {
-                outPath = EditorUtility.OpenFolderPanel("Select Folder...", lastOutputDirectory, "");
+                string absOutPath = EditorUtility.OpenFolderPanel("Select Folder...", settings.outputPath, "");
+                if(absOutPath != "")
+                    relativeOutPath = MessageGenBrowserSettings.ToRelativePath(absOutPath);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -57,162 +77,187 @@ namespace RosMessageGeneration
             {
                 if (GUILayout.Button("Select a folder", GUILayout.Width(200)))
                 {
-                    inPath = EditorUtility.OpenFolderPanel("Select Folder...", lastInputDirectory, "");
+                    inPath = EditorUtility.OpenFolderPanel("Select Folder...", inPath, "");
                 }
             }
             else
             {
                 EditorGUILayout.LabelField(inPath+":");
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-                foreach (string folder in Directory.EnumerateDirectories(inPath))
-                {
-                    ShowFolder(folder);
-                }
+                if (isCacheDirty || cacheRoot.path == null)
+                    RefreshCache(inPath);
+
+                ShowCachedEntry(cacheRoot);
                 EditorGUILayout.EndScrollView();
+            }
+
+            if(inPath != settings.inputPath || relativeOutPath != settings.relativeOutPath)
+            {
+                if(inPath != "")
+                    settings.inputPath = inPath;
+                settings.relativeOutPath = relativeOutPath;
+                settings.Save();
+                isCacheDirty = true;
             }
         }
 
-        void ShowFolder(string path)
+        void ShowCachedEntry(CachedEntry entry)
         {
-            string shortName = Path.GetFileName(path);
-            if (shortName == "msg" || shortName == "srv")
+            bool isFolder = false;
+            string buildLabel = null;
+            switch (entry.status)
             {
-                ShowMsgFolder(path);
+                case CachedEntryStatus.IgnoredFile:
+                    return;
+                case CachedEntryStatus.BuiltMsgFile:
+                    buildLabel = "Rebuild msg";
+                    break;
+                case CachedEntryStatus.BuiltSrvFile:
+                    buildLabel = "Rebuild srv";
+                    break;
+                case CachedEntryStatus.UnbuiltMsgFile:
+                    buildLabel = "Build msg";
+                    break;
+                case CachedEntryStatus.UnbuiltSrvFile:
+                    buildLabel = "Build srv";
+                    break;
+                case CachedEntryStatus.NormalFolder:
+                case CachedEntryStatus.MsgFolder:
+                    isFolder = true;
+                    buildLabel = entry.numMsgs > 0 ? "Build " + entry.numMsgs + " msgs" : null;
+                    break;
+            }
+
+            if(!isFolder)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(entry.label);
+
+                if(buildLabel != null)
+                {
+                    if (GUILayout.Button(buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                    {
+                        // build this msg/srv file
+                        switch(entry.status)
+                        {
+                            case CachedEntryStatus.BuiltMsgFile:
+                            case CachedEntryStatus.UnbuiltMsgFile:
+                                MessageAutoGen.GenerateSingleMessage(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                                break;
+                            case CachedEntryStatus.BuiltSrvFile:
+                            case CachedEntryStatus.UnbuiltSrvFile:
+                                ServiceAutoGen.GenerateSingleService(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                                break;
+                        }
+                        AssetDatabase.Refresh();
+                        isCacheDirty = true;
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
             }
             else
             {
-                //GUIStyle hstyle = GUI.skin.
+                bool isFoldedOut = foldedOutHash.Contains(entry.path);
                 EditorGUILayout.BeginHorizontal();
-                bool isFoldedOut = HashsetFoldout(path, shortName);
+                bool shouldBeFoldedOut = EditorGUILayout.Foldout(isFoldedOut, entry.label, true, EditorStyles.foldout);
+                if (buildLabel != null && GUILayout.Button(buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                {
+                    // build this directory
+                    MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                    AssetDatabase.Refresh();
+                    isCacheDirty = true;
+                }
                 EditorGUILayout.EndHorizontal();
+
                 if (isFoldedOut)
                 {
                     EditorGUI.indentLevel++;
-                    foreach (string folder in Directory.EnumerateDirectories(path))
+                    foreach (CachedEntry subEntry in entry.contents)
                     {
-                        ShowFolder(folder);
+                        ShowCachedEntry(subEntry);
                     }
                     EditorGUI.indentLevel--;
                 }
+
+                if (shouldBeFoldedOut && !isFoldedOut)
+                {
+                    isCacheDirty = true;
+                    foldedOutList.Add(entry.path);
+                    foldedOutHash.Add(entry.path);
+                }
+                else if (!shouldBeFoldedOut && isFoldedOut)
+                {
+                    isCacheDirty = true;
+                    foldedOutList.Remove(entry.path);
+                    foldedOutHash.Remove(entry.path);
+                }
             }
         }
 
-        void ShowMsgFolder(string path)
+        void RefreshCache(string inPath)
         {
-            EditorGUILayout.BeginHorizontal();
-            string shortName = Path.GetFileName(path);
-            bool isFoldedOut = HashsetFoldout(path, shortName);
-            if (!isFoldedOut)
-            {
-                int numMsgs = 0;
-                int numSrvs = 0;
-                foreach (string file in Directory.EnumerateFiles(path))
-                {
-                    string ext = Path.GetExtension(file);
-                    switch (ext)
-                    {
-                        case ".msg":
-                            numMsgs++;
-                            break;
-                        case ".srv":
-                            numSrvs++;
-                            break;
-                    }
-                }
-                if (numMsgs > 0)
-                {
-                    if(GUILayout.Button("Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : ""), GUILayout.Width(BUTTON_WIDTH)))
-                    {
-                        MessageAutoGen.GenerateDirectoryMessages(path, outPath);
-                        AssetDatabase.Refresh();
-                    }
-                }
-                if (numSrvs > 0)
-                {
-                    if(GUILayout.Button("Build " + numSrvs + " srv" + (numSrvs > 1 ? "s" : ""), GUILayout.Width(BUTTON_WIDTH)))
-                    {
-                        MessageAutoGen.GenerateDirectoryMessages(path, outPath);
-                        AssetDatabase.Refresh();
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            if (isFoldedOut)
-            {
-                EditorGUI.indentLevel++;
-                foreach (string file in Directory.EnumerateFiles(path))
-                {
-                    string ext = Path.GetExtension(file);
-                    if (ext == ".msg" || ext == ".srv")
-                        ShowSingleBuildLine(file);
-                }
-                foreach (string folder in Directory.EnumerateDirectories(path))
-                {
-                    ShowFolder(folder);
-                }
-                EditorGUI.indentLevel--;
-            }
+            cacheRoot = CacheFolder(inPath);
+            isCacheDirty = false;
         }
 
-        void ShowSingleBuildLine(string file)
+        CachedEntry CacheFolder(string path)
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(Path.GetFileName(file));
-/*            if(GUILayout.Button(Path.GetFileName(file), EditorStyles.label))
-            {
-                UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(file, 0);
-            }*/
-
-            if (Path.GetExtension(file) == ".srv")
-            {
-                string[] fileOutPath = ServiceAutoGen.GetServiceClassPaths(file, outPath);
-                bool exists = fileOutPath.All(path=>File.Exists(path));
-                string buildStr = (exists ? "Rebuild" : "Build");
-
-                if (GUILayout.Button(buildStr + " srv", GUILayout.Width(BUTTON_WIDTH)))
-                {
-                    ServiceAutoGen.GenerateSingleService(file, outPath);
-                    AssetDatabase.Refresh();
-                }
-            }
-            else
-            {
-                string fileOutPath = MessageAutoGen.GetMessageClassPath(file, outPath);
-                bool exists = File.Exists(fileOutPath);
-                string buildStr = (exists ? "Rebuild" : "Build");
-
-                if (GUILayout.Button(buildStr+" msg", GUILayout.Width(BUTTON_WIDTH)))
-                {
-                    MessageAutoGen.GenerateSingleMessage(file, outPath);
-                    AssetDatabase.Refresh();
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        bool HashsetFoldout(string key, string label)
-        {
-            if(foldedOutHash == null)
+            if (foldedOutHash == null)
             {
                 foldedOutHash = new HashSet<string>();
                 foreach (string s in foldedOutList)
                     foldedOutHash.Add(s);
             }
 
-            bool isFoldedOut = foldedOutHash.Contains(key);
-            bool shouldBeFoldedOut = EditorGUILayout.Foldout(isFoldedOut, label, true, EditorStyles.foldout);
+            List<CachedEntry> contents = new List<CachedEntry>();
 
-            if (shouldBeFoldedOut && !isFoldedOut)
+            bool isExpanded = foldedOutHash.Contains(path);
+            if(isExpanded)
             {
-                foldedOutList.Add(key);
-                foldedOutHash.Add(key);
+                foreach (string folder in Directory.EnumerateDirectories(path))
+                {
+                    contents.Add(CacheFolder(folder));
+                }
             }
-            else if (!shouldBeFoldedOut && isFoldedOut)
+
+            int numMsgs = 0;
+            foreach (string file in Directory.EnumerateFiles(path))
             {
-                foldedOutList.Remove(key);
-                foldedOutHash.Remove(key);
+                CachedEntryStatus status = GetFileStatus(file);
+                if (status == CachedEntryStatus.IgnoredFile)
+                    continue;
+
+                numMsgs++;
+                if(isExpanded)
+                    contents.Add(new CachedEntry()
+                    {
+                        path = file,
+                        status = status
+                    });
             }
-            return shouldBeFoldedOut;
+
+            return new CachedEntry()
+            {
+                path = path,
+                contents = contents,
+                status = CachedEntryStatus.NormalFolder,
+                numMsgs = numMsgs,
+            };
+        }
+
+        CachedEntryStatus GetFileStatus(string path)
+        {
+            switch (Path.GetExtension(path))
+            {
+                case ".msg":
+                    string builtPath = MessageAutoGen.GetMessageClassPath(path, MessageGenBrowserSettings.Get().outputPath);
+                    return File.Exists(builtPath) ? CachedEntryStatus.BuiltMsgFile : CachedEntryStatus.UnbuiltMsgFile;
+                case ".srv":
+                    string[] builtPaths = ServiceAutoGen.GetServiceClassPaths(path, MessageGenBrowserSettings.Get().outputPath);
+                    return builtPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltSrvFile : CachedEntryStatus.UnbuiltSrvFile;
+            }
+
+            return CachedEntryStatus.IgnoredFile;
         }
     }
 }
