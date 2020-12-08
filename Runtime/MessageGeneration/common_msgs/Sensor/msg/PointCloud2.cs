@@ -95,7 +95,7 @@ namespace RosMessageTypes.Sensor
             var fieldsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.fields= new PointField[fieldsArrayLength];
-            for(var i =0; i <fieldsArrayLength; i++)
+            for(var i = 0; i < fieldsArrayLength; i++)
             {
                 this.fields[i] = new PointField();
                 offset = this.fields[i].Deserialize(data, offset);
@@ -110,7 +110,7 @@ namespace RosMessageTypes.Sensor
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.data= new byte[dataArrayLength];
-            for(var i =0; i <dataArrayLength; i++)
+            for(var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = data[offset];
                 offset += 1;

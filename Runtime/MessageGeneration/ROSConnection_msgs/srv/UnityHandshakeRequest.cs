@@ -4,27 +4,31 @@ using System.Collections.Generic;
 using System.Text;
 using RosMessageGeneration;
 
-namespace RosMessageTypes.TcpEndpoint
+namespace RosMessageTypes.RosTcpEndpoint
 {
-    public class RosUnityHandshakeResponse : Message
+    public class UnityHandshakeRequest : Message
     {
-        public const string RosMessageName = "tcp_endpoint/RosUnityHandshake";
+        public const string RosMessageName = "ros_tcp_endpoint/UnityHandshake";
 
         public string ip;
+        public ushort port;
 
-        public RosUnityHandshakeResponse()
+        public UnityHandshakeRequest()
         {
             this.ip = "";
+            this.port = 0;
         }
 
-        public RosUnityHandshakeResponse(string ip)
+        public UnityHandshakeRequest(string ip, ushort port)
         {
             this.ip = ip;
+            this.port = port;
         }
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.ip));
+            listOfSerializations.Add(BitConverter.GetBytes(this.port));
 
             return listOfSerializations;
         }
@@ -35,6 +39,8 @@ namespace RosMessageTypes.TcpEndpoint
             offset += 4;
             this.ip = DeserializeString(data, offset, ipStringBytesLength);
             offset += ipStringBytesLength;
+            this.port = BitConverter.ToUInt16(data, offset);
+            offset += 2;
 
             return offset;
         }

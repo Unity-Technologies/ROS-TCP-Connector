@@ -39,7 +39,7 @@ namespace RosMessageTypes.Geometry
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.points= new Point32[pointsArrayLength];
-            for(var i =0; i <pointsArrayLength; i++)
+            for(var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Point32();
                 offset = this.points[i].Deserialize(data, offset);

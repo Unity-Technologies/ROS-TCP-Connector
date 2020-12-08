@@ -59,7 +59,7 @@ namespace RosMessageTypes.Sensor
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.points= new Geometry.Point32[pointsArrayLength];
-            for(var i =0; i <pointsArrayLength; i++)
+            for(var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Geometry.Point32();
                 offset = this.points[i].Deserialize(data, offset);
@@ -68,7 +68,7 @@ namespace RosMessageTypes.Sensor
             var channelsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.channels= new ChannelFloat32[channelsArrayLength];
-            for(var i =0; i <channelsArrayLength; i++)
+            for(var i = 0; i < channelsArrayLength; i++)
             {
                 this.channels[i] = new ChannelFloat32();
                 offset = this.channels[i].Deserialize(data, offset);

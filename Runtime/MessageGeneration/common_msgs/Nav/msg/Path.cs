@@ -45,7 +45,7 @@ namespace RosMessageTypes.Nav
             var posesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.poses= new Geometry.PoseStamped[posesArrayLength];
-            for(var i =0; i <posesArrayLength; i++)
+            for(var i = 0; i < posesArrayLength; i++)
             {
                 this.poses[i] = new Geometry.PoseStamped();
                 offset = this.poses[i].Deserialize(data, offset);
