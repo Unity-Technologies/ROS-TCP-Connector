@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RosMessageGeneration
 {
-    public class DirectoryActionAutoGenEditorWindow : DirectoryAutoGenEditorWindow
+    internal class DirectoryActionAutoGenEditorWindow : DirectoryAutoGenEditorWindow
     {
         protected override string GenerationType
         {

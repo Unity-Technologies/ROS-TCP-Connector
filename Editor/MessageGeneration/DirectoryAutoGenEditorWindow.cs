@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RosMessageGeneration
 {
+    /// <summary>
+    /// Abstract baseclass for message generation editor windows
+    /// </summary>
     public abstract class DirectoryAutoGenEditorWindow : EditorWindow
     {
         [SerializeField]
@@ -15,7 +18,14 @@ namespace RosMessageGeneration
         private string inPath = "";
         private string outPath = Path.Combine(System.Environment.CurrentDirectory, "Assets", "RosMessages");
 
+        /// <summary>
+        /// Friendly name for the type of message to generate, e.g. "message" or "service"
+        /// </summary>
         protected abstract string GenerationType { get; }
+
+        /// <summary>
+        /// File extension for the type of messages to generate, e.g. "msg" or "srv"
+        /// </summary>
         protected abstract string FileExtension { get; }
 
         protected virtual void OnGUI()
