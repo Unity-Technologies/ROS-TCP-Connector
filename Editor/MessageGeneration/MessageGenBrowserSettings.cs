@@ -42,11 +42,12 @@ public class MessageGenBrowserSettings : ScriptableObject
 
     public static string ToRelativePath(string fullPath)
     {
+        string dataPath = Path.GetFullPath(Application.dataPath);
         fullPath = Path.GetFullPath(fullPath);
 
-        if (!fullPath.StartsWith(Application.dataPath))
+        if (!fullPath.StartsWith(dataPath))
             return "";
 
-        return fullPath.Substring(Application.dataPath.Length+1);
+        return fullPath.Substring(dataPath.Length+1);
     }
 }
