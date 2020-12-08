@@ -38,7 +38,7 @@ namespace RosMessageGeneration
             public string label => Path.GetFileName(path);
             public CachedEntryStatus status;
             public List<CachedEntry> contents;
-            public int numMsgs;
+            public string numMsgs;
         }
 
         [MenuItem("RosMessageGeneration/Browse...", false, 2)]
@@ -124,7 +124,7 @@ namespace RosMessageGeneration
                 case CachedEntryStatus.NormalFolder:
                 case CachedEntryStatus.MsgFolder:
                     isFolder = true;
-                    buildLabel = entry.numMsgs > 0 ? "Build " + entry.numMsgs + " msgs" : null;
+                    buildLabel = (entry.numMsgs != null) ? "Build " + entry.numMsgs : null;
                     break;
             }
 
@@ -164,6 +164,7 @@ namespace RosMessageGeneration
                 {
                     // build this directory
                     MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                    ServiceAutoGen.GenerateDirectoryServices(entry.path, MessageGenBrowserSettings.Get().outputPath);
                     AssetDatabase.Refresh();
                     isCacheDirty = true;
                 }
@@ -221,13 +222,18 @@ namespace RosMessageGeneration
             }
 
             int numMsgs = 0;
+            int numSrvs = 0;
             foreach (string file in Directory.EnumerateFiles(path))
             {
                 CachedEntryStatus status = GetFileStatus(file);
                 if (status == CachedEntryStatus.IgnoredFile)
                     continue;
 
-                numMsgs++;
+                if (status == CachedEntryStatus.BuiltSrvFile || status == CachedEntryStatus.UnbuiltSrvFile)
+                    numSrvs++;
+                else
+                    numMsgs++;
+
                 if(isExpanded)
                     contents.Add(new CachedEntry()
                     {
@@ -236,12 +242,22 @@ namespace RosMessageGeneration
                     });
             }
 
+            string numMsgsLabel = "";
+            if (numMsgs > 0 && numSrvs > 0)
+                numMsgsLabel = numMsgs + " msg"+(numMsgs>1?"s":"")+", " + numSrvs + " srv" + (numSrvs > 1 ? "s" : "");
+            else if (numMsgs > 0)
+                numMsgsLabel = numMsgs + " msg"+ (numMsgs > 1 ? "s" : "");
+            else if (numSrvs > 0)
+                numMsgsLabel = numSrvs + " srv"+ (numSrvs > 1 ? "s" : "");
+            else
+                numMsgsLabel = "";
+
             return new CachedEntry()
             {
                 path = path,
                 contents = contents,
                 status = CachedEntryStatus.NormalFolder,
-                numMsgs = numMsgs,
+                numMsgs = numMsgsLabel,
             };
         }
 
