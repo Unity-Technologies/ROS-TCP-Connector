@@ -29,7 +29,7 @@ public class MessageGenBrowserSettings : ScriptableObject
 
     public void Save()
     {
-        if (!File.Exists(Path.Combine(Application.dataPath, "Assets", SETTINGS_FILENAME)))
+        if (!File.Exists(Path.Combine(Application.dataPath, SETTINGS_FILENAME)))
         {
             AssetDatabase.CreateAsset(this, Path.Combine("Assets", SETTINGS_FILENAME));
             AssetDatabase.SaveAssets();

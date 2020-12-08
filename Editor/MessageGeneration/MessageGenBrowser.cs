@@ -213,11 +213,21 @@ namespace RosMessageGeneration
             List<CachedEntry> contents = new List<CachedEntry>();
 
             bool isExpanded = foldedOutHash.Contains(path);
-            if(isExpanded)
+            int numFolders = 0;
+            foreach (string folder in Directory.EnumerateDirectories(path))
             {
-                foreach (string folder in Directory.EnumerateDirectories(path))
+                if (isExpanded)
                 {
-                    contents.Add(CacheFolder(folder));
+                    CachedEntry entry = CacheFolder(folder);
+                    if (entry.status != CachedEntryStatus.IgnoredFile)
+                    {
+                        contents.Add(entry);
+                        numFolders++;
+                    }
+                }
+                else
+                {
+                    numFolders++;
                 }
             }
 
@@ -234,12 +244,14 @@ namespace RosMessageGeneration
                 else
                     numMsgs++;
 
-                if(isExpanded)
+                if (isExpanded)
+                {
                     contents.Add(new CachedEntry()
                     {
                         path = file,
                         status = status
                     });
+                }
             }
 
             string numMsgsLabel;
@@ -256,7 +268,7 @@ namespace RosMessageGeneration
             {
                 path = path,
                 contents = contents,
-                status = CachedEntryStatus.NormalFolder,
+                status = (numMsgs+numSrvs+numFolders == 0)? CachedEntryStatus.IgnoredFile: CachedEntryStatus.NormalFolder,
                 numMsgs = numMsgsLabel,
             };
         }
