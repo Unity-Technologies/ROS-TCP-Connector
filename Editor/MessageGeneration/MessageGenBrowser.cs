@@ -55,19 +55,19 @@ namespace RosMessageGeneration
             EditorGUILayout.BeginHorizontal();
             MessageGenBrowserSettings settings = MessageGenBrowserSettings.Get();
             string inPath = settings.inputPath;
-            inPath = EditorGUILayout.TextField("Input Path", inPath);
+            inPath = EditorGUILayout.TextField("ROS message path", inPath);
             if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
             {
-                inPath = EditorUtility.OpenFolderPanel("Select Folder...", inPath, "");
+                inPath = EditorUtility.OpenFolderPanel("Select ROS message folder", inPath, "");
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             string relativeOutPath = settings.relativeOutPath;
-            relativeOutPath = EditorGUILayout.TextField("Output Location", relativeOutPath);
+            relativeOutPath = EditorGUILayout.TextField("Built message path", relativeOutPath);
             if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
             {
-                string absOutPath = EditorUtility.OpenFolderPanel("Select Folder...", settings.outputPath, "");
+                string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder...", settings.outputPath, "");
                 if(absOutPath != "")
                     relativeOutPath = MessageGenBrowserSettings.ToRelativePath(absOutPath);
             }
@@ -75,9 +75,9 @@ namespace RosMessageGeneration
 
             if (!Directory.Exists(inPath))
             {
-                if (GUILayout.Button("Select a folder", GUILayout.Width(200)))
+                if (GUILayout.Button("Select ROS folder", GUILayout.Width(200)))
                 {
-                    inPath = EditorUtility.OpenFolderPanel("Select Folder...", inPath, "");
+                    inPath = EditorUtility.OpenFolderPanel("Select ROS message folder", inPath, "");
                 }
             }
             else
@@ -242,7 +242,7 @@ namespace RosMessageGeneration
                     });
             }
 
-            string numMsgsLabel = "";
+            string numMsgsLabel;
             if (numMsgs > 0 && numSrvs > 0)
                 numMsgsLabel = numMsgs + " msg"+(numMsgs>1?"s":"")+", " + numSrvs + " srv" + (numSrvs > 1 ? "s" : "");
             else if (numMsgs > 0)
@@ -250,7 +250,7 @@ namespace RosMessageGeneration
             else if (numSrvs > 0)
                 numMsgsLabel = numSrvs + " srv"+ (numSrvs > 1 ? "s" : "");
             else
-                numMsgsLabel = "";
+                numMsgsLabel = null;
 
             return new CachedEntry()
             {
