@@ -11,22 +11,25 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// Represents our connection to the ROS node, and manages all incoming and outgoing connections.
+/// Represents our connection to the ROS node, managing both incoming and outgoing connections.
 /// </summary>
+/// <remarks>
+/// This class communicates with the ROS TCP Server - see https://github.com/Unity-Technologies/ROS-TCP-Endpoint/blob/main/tcp_endpoint/src/tcp_endpoint/RosTCPServer.py
+/// </remarks>
 public class ROSConnection : MonoBehaviour
 {
     /// <summary>
-    /// IP to connect to the ROS node
+    /// IP address of the ROS node
     /// </summary>
     public string hostName = "192.168.1.1";
     
     /// <summary>
-    /// Port to connect to the ROS node
+    /// Port of the ROS node
     /// </summary>
     public int hostPort = 10000;
 
     /// <summary>
-    /// IP to listen on, if the automatic IP detection doesn't work for your networking setup
+    /// IP address to listen on, if the automatic IP detection doesn't work for your networking setup
     /// </summary>
     [Tooltip("If blank, determine IP automatically.")]
     public string overrideUnityIP = "";
@@ -41,12 +44,12 @@ public class ROSConnection : MonoBehaviour
     private int networkTimeout = 2000;
 
     /// <summary>
-    /// Number of retries while waiting for a service to respond
+    /// While waiting for a service to respond, the number of retries before giving up
     /// </summary>
     public int awaitDataMaxRetries = 10;
 
     /// <summary>
-    /// Time between retries while waiting for a service to respond
+    /// While waiting for a service to respond, the time between retries
     /// </summary>
     public float awaitDataSleepSeconds = 1.0f;
 
@@ -74,7 +77,7 @@ public class ROSConnection : MonoBehaviour
     /// </summary>
     /// <remarks>
     /// For Unity to actually receive a subscriber message, the ROS node must also subscribe to the given topic.
-    /// You can either add a subscriber to your server_endpoint code, or call the RegisterSubscriber method.
+    /// This can be done at compile time by adding a subscriber to the dictionary in your server_endpoint, or at runtime by calling the RegisterSubscriber method on your ROSConnection.
     /// </remarks>
     /// <typeparam name="T">The expected message type</typeparam>
     /// <param name="topic">The ROS topic name</param>
@@ -98,7 +101,7 @@ public class ROSConnection : MonoBehaviour
     /// <summary>
     /// Send a service message, and receive a callback with the response
     /// </summary>
-    /// <typeparam name="RESPONSE">The expected response type</typeparam>
+    /// <typeparam name="RESPONSE">The expected message type of the response</typeparam>
     /// <param name="rosServiceName">The ROS topic name</param>
     /// <param name="serviceRequest">The service message</param>
     /// <param name="callback">Your callback function</param>
@@ -185,24 +188,32 @@ public class ROSConnection : MonoBehaviour
     }
 
     /// <summary>
-    /// Instruct the ROS node to declare itself a subscriber to the given topic
+    /// Prepare the ROS node to receive messages on the given topic
     /// </summary>
     /// <param name="topic">The ROS topic name</param>
-    /// <param name="rosMessageName"> The ROS message name</param>
+    /// <param name="rosMessageName">The ROS message name</param>
     /// <remarks>
-    /// Each message has a RosMessageName static member that should be passed as the rosMessageName parameter, to
-    /// identify that message to ROS.
+    /// The value of the rosMessageName parameter should be the RosMessageName constant from the message class you're interested in.
     /// </remarks>
+	/// <example>
+	/// <code><![CDATA[ros.RegisterSubscriber("points", RosMessageTypes.Geometry.Point32.RosMessageName);]]></code>
+	/// </example>
     public void RegisterSubscriber(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = rosMessageName });
     }
 
     /// <summary>
-    /// Instruct the ROS node to declare itself a publisher on the given topic
+    /// Prepare the ROS node to publish messages on the given topic
     /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="rosMessageName"></param>
+    /// <param name="topic">The ROS topic name</param>
+    /// <param name="rosMessageName">The ROS message name</param>
+    /// <remarks>
+    /// The value of the rosMessageName parameter should be the RosMessageName constant from the message class you're interested in.
+    /// </remarks>
+	/// <example>
+	/// <code><![CDATA[ros.RegisterPublisher("points", RosMessageTypes.Geometry.Point32.RosMessageName);]]></code>
+	/// </example>
     public void RegisterPublisher(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
@@ -231,11 +242,7 @@ public class ROSConnection : MonoBehaviour
         Debug.LogError("ROS-Unity error: " + error.message);
     }
 
-    /// <summary>
-    /// 	Function is meant to be overridden by inheriting classes to specify how to handle read messages.
-    /// </summary>
-    /// <param name="tcpClient"></param> TcpClient to read byte stream from.
-    protected async Task HandleConnectionAsync(TcpClient tcpClient)
+    private async Task HandleConnectionAsync(TcpClient tcpClient)
     {
         await Task.Yield();
         // continue asynchronously on another threads
@@ -324,7 +331,7 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    protected async void StartMessageServer(string ip, int port)
+    private async void StartMessageServer(string ip, int port)
     {
         if (tcpListener != null)
             return;
@@ -383,35 +390,22 @@ public class ROSConnection : MonoBehaviour
     /// <param name="offset"></param> Index of where to start writing output data
     /// <param name="serviceName"></param> The name of the ROS service or topic that the message data is meant for
     /// <param name="fullMessageSizeBytes"></param> The full size of the already serialized message in bytes
-    /// <param name="messageToSend"></param> The serialized ROS message to send to ROS network
-    /// <returns></returns>
-    public int GetPrefixBytes(int offset, byte[] serviceName, byte[] fullMessageSizeBytes, byte[] messagBuffer)
+    /// <param name="messageBuffer"></param> The serialized ROS message to send to ROS network
+    /// <returns>The number of bytes written</returns>
+    private int GetPrefixBytes(int offset, byte[] serviceName, byte[] fullMessageSizeBytes, byte[] messageBuffer)
     {
         // Service Name bytes
-        System.Buffer.BlockCopy(serviceName, 0, messagBuffer, 0, serviceName.Length);
+        System.Buffer.BlockCopy(serviceName, 0, messageBuffer, 0, serviceName.Length);
         offset += serviceName.Length;
 
         // Full Message size bytes
-        System.Buffer.BlockCopy(fullMessageSizeBytes, 0, messagBuffer, offset, fullMessageSizeBytes.Length);
+        System.Buffer.BlockCopy(fullMessageSizeBytes, 0, messageBuffer, offset, fullMessageSizeBytes.Length);
         offset += fullMessageSizeBytes.Length;
 
         return offset;
     }
 
-    /// <summary>
-    ///    Serialize a ROS message in the expected format of
-    ///     https://github.com/Unity-Technologies/Robotics-Tutorials/tree/master/catkin_ws/src/tcp_endpoint
-    ///
-    /// 	All messages are expected to come in the format of:
-    /// 		first four bytes: int32 of the length of following string value
-    /// 		next N bytes determined from previous four bytes: ROS topic name as a string
-    /// 		next four bytes: int32 of the length of the remaining bytes for the ROS Message
-    /// 		last N bytes determined from previous four bytes: ROS Message variables
-    /// </summary>
-    /// <param name="topicServiceName"></param> The ROS topic or service name that is receiving the messsage
-    /// <param name="messsage"></param> The ROS message to send to a ROS publisher or service
-    /// <returns> byte array with serialized ROS message in appropriate format</returns>
-    public byte[] GetMessageBytes(string topicServiceName, Message message)
+    private byte[] GetMessageBytes(string topicServiceName, Message message)
     {
         byte[] topicName = message.SerializeString(topicServiceName);
         byte[] bytesMsg = message.Serialize();
@@ -443,6 +437,15 @@ public class ROSConnection : MonoBehaviour
         Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
     }
 
+	/// <summary>
+	/// Send a message to the ROS node to be published
+	/// </summary>
+	/// <param name="rosTopicName">The ROS topic name</param>
+	/// <param name="message">The message</param>
+    /// <remarks>
+    /// This will cause an error if the topic has not been registered in advance with the ROS node.
+    /// This can be done at compile time by adding a publisher to the dictionary in your server_endpoint, or at runtime by calling the RegisterPublisher method on your ROSConnection.
+    /// </remarks>
     public async void Send(string rosTopicName, Message message)
     {
         try
