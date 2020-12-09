@@ -5,7 +5,10 @@ using UnityEngine;
 
 namespace ROSGeometry
 {
-    // This struct implements a feature-compatible version of the Unity Quaternion, but in a generic coordinate space.
+    /// <summary>
+    /// A feature-compatible version of the Unity Quaternion, but in a coordinate space of your choice.
+    /// </summary>
+    /// <typeparam name="C">The coordinate space</typeparam>
     [Serializable]
     public struct Quaternion<C> where C : CoordinateSpace, new()
     {
@@ -19,6 +22,13 @@ namespace ROSGeometry
 
         static C coordinateSpace = new C();
 
+        /// <summary>
+        /// Construct a Quaternion&lt;C&gt; with these components. No coordinate conversion is performed.
+        /// </summary>
+        /// <param name="x">The X component.</param>
+        /// <param name="y">The Y component.</param>
+        /// <param name="z">The Z component.</param>
+        /// <param name="w">The W component.</param>
         public Quaternion(float x, float y, float z, float w)
         {
             internalQuat = new Quaternion(x, y, z, w);
