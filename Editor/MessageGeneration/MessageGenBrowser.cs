@@ -51,6 +51,7 @@ namespace RosMessageGeneration
             public CachedEntryStatus status;
             public List<CachedEntry> contents;
             public string buildLabel;
+            public bool hasBuildButton => buildLabel != null;
         }
 
         [MenuItem("RosMessageGeneration/Browse...", false, 2)]
@@ -124,8 +125,7 @@ namespace RosMessageGeneration
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(entry.label);
 
-                // null buildLabel = don't show a build button for this entry
-                if (entry.buildLabel != null && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                if (entry.hasBuildButton && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
                 {
                     // build this msg/srv file
                     switch (entry.status)
@@ -150,7 +150,7 @@ namespace RosMessageGeneration
 
                 EditorGUILayout.BeginHorizontal();
                 bool shouldBeFoldedOut = EditorGUILayout.Foldout(isFoldedOut, entry.label, true, EditorStyles.foldout);
-                if (entry.buildLabel != null && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                if (entry.hasBuildButton && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
                 {
                     // build this directory
                     MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
