@@ -6,26 +6,38 @@ using UnityEngine;
 
 namespace RosMessageGeneration
 {
-    public class MessageGenBrowser : EditorWindow
+    public class MessageGenBrowser : EditorWindow, ISerializationCallbackReceiver
     {
-        // we actually only want the hashset, but Unity won't serialize that - so we keep foldedOutList as a backup.
-        private HashSet<string> foldedOutHash;
+        HashSet<string> m_FoldedOutHash = new HashSet<string>();
+
+        // Unity doesn't know how to serialize a HashSet, so do it manually
+        [SerializeField]
+        List<string> m_FoldedOutHashSerialized = new List<string>();
+
+        public void OnBeforeSerialize()
+        {
+            m_FoldedOutHashSerialized = m_FoldedOutHash.ToList();
+        }
+
+        public void OnAfterDeserialize()
+        {
+            m_FoldedOutHash.Clear();
+            foreach (string s in m_FoldedOutHashSerialized)
+                m_FoldedOutHash.Add(s);
+        }
 
         [SerializeField]
-        private List<string> foldedOutList = new List<string> { };
-        [SerializeField]
-        private Vector2 scrollPos;
+        Vector2 m_ScrollPos;
+
+        bool m_IsCacheDirty = true;
+        CachedEntry m_CacheRoot;
 
         const int BUTTON_WIDTH = 100;
 
-        bool isCacheDirty = true;
-        CachedEntry cacheRoot;
-
         enum CachedEntryStatus
         {
-            NormalFolder,
-            MsgFolder,
-            IgnoredFile,
+            Folder,
+            Ignored,
             UnbuiltMsgFile,
             BuiltMsgFile,
             UnbuiltSrvFile,
@@ -38,7 +50,7 @@ namespace RosMessageGeneration
             public string label => Path.GetFileName(path);
             public CachedEntryStatus status;
             public List<CachedEntry> contents;
-            public string numMsgs;
+            public string buildLabel;
         }
 
         [MenuItem("RosMessageGeneration/Browse...", false, 2)]
@@ -68,7 +80,7 @@ namespace RosMessageGeneration
             if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
             {
                 string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder...", settings.outputPath, "");
-                if(absOutPath != "")
+                if (absOutPath != "")
                     relativeOutPath = MessageGenBrowserSettings.ToRelativePath(absOutPath);
             }
             EditorGUILayout.EndHorizontal();
@@ -82,91 +94,69 @@ namespace RosMessageGeneration
             }
             else
             {
-                EditorGUILayout.LabelField(inPath+":");
-                scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-                if (isCacheDirty || cacheRoot.path == null)
+                EditorGUILayout.LabelField(inPath + ":");
+                m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
+                if (m_IsCacheDirty || m_CacheRoot.path == null)
                     RefreshCache(inPath);
 
-                ShowCachedEntry(cacheRoot);
+                ShowCachedEntry(m_CacheRoot);
                 EditorGUILayout.EndScrollView();
             }
 
-            if(inPath != settings.inputPath || relativeOutPath != settings.relativeOutPath)
+            if (inPath != settings.inputPath || relativeOutPath != settings.relativeOutPath)
             {
-                if(inPath != "")
+                if (inPath != "")
                     settings.inputPath = inPath;
                 settings.relativeOutPath = relativeOutPath;
                 settings.Save();
-                isCacheDirty = true;
+                m_IsCacheDirty = true;
             }
         }
 
         void ShowCachedEntry(CachedEntry entry)
         {
-            bool isFolder = false;
-            string buildLabel = null;
-            switch (entry.status)
+            if (entry.status == CachedEntryStatus.Ignored)
             {
-                case CachedEntryStatus.IgnoredFile:
-                    return;
-                case CachedEntryStatus.BuiltMsgFile:
-                    buildLabel = "Rebuild msg";
-                    break;
-                case CachedEntryStatus.BuiltSrvFile:
-                    buildLabel = "Rebuild srv";
-                    break;
-                case CachedEntryStatus.UnbuiltMsgFile:
-                    buildLabel = "Build msg";
-                    break;
-                case CachedEntryStatus.UnbuiltSrvFile:
-                    buildLabel = "Build srv";
-                    break;
-                case CachedEntryStatus.NormalFolder:
-                case CachedEntryStatus.MsgFolder:
-                    isFolder = true;
-                    buildLabel = (entry.numMsgs != null) ? "Build " + entry.numMsgs : null;
-                    break;
+                return;
             }
-
-            if(!isFolder)
+            else if (entry.status != CachedEntryStatus.Folder)
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(entry.label);
 
-                if(buildLabel != null)
+                // null buildLabel = don't show a build button for this entry
+                if (entry.buildLabel != null && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
                 {
-                    if (GUILayout.Button(buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                    // build this msg/srv file
+                    switch (entry.status)
                     {
-                        // build this msg/srv file
-                        switch(entry.status)
-                        {
-                            case CachedEntryStatus.BuiltMsgFile:
-                            case CachedEntryStatus.UnbuiltMsgFile:
-                                MessageAutoGen.GenerateSingleMessage(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                                break;
-                            case CachedEntryStatus.BuiltSrvFile:
-                            case CachedEntryStatus.UnbuiltSrvFile:
-                                ServiceAutoGen.GenerateSingleService(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                                break;
-                        }
-                        AssetDatabase.Refresh();
-                        isCacheDirty = true;
+                        case CachedEntryStatus.BuiltMsgFile:
+                        case CachedEntryStatus.UnbuiltMsgFile:
+                            MessageAutoGen.GenerateSingleMessage(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                            break;
+                        case CachedEntryStatus.BuiltSrvFile:
+                        case CachedEntryStatus.UnbuiltSrvFile:
+                            ServiceAutoGen.GenerateSingleService(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                            break;
                     }
+                    AssetDatabase.Refresh();
+                    m_IsCacheDirty = true;
                 }
                 EditorGUILayout.EndHorizontal();
             }
             else
             {
-                bool isFoldedOut = foldedOutHash.Contains(entry.path);
+                bool isFoldedOut = m_FoldedOutHash.Contains(entry.path);
+
                 EditorGUILayout.BeginHorizontal();
                 bool shouldBeFoldedOut = EditorGUILayout.Foldout(isFoldedOut, entry.label, true, EditorStyles.foldout);
-                if (buildLabel != null && GUILayout.Button(buildLabel, GUILayout.Width(BUTTON_WIDTH)))
+                if (entry.buildLabel != null && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
                 {
                     // build this directory
                     MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
                     ServiceAutoGen.GenerateDirectoryServices(entry.path, MessageGenBrowserSettings.Get().outputPath);
                     AssetDatabase.Refresh();
-                    isCacheDirty = true;
+                    m_IsCacheDirty = true;
                 }
                 EditorGUILayout.EndHorizontal();
 
@@ -180,55 +170,42 @@ namespace RosMessageGeneration
                     EditorGUI.indentLevel--;
                 }
 
-                if (shouldBeFoldedOut && !isFoldedOut)
+                if (shouldBeFoldedOut != isFoldedOut)
                 {
-                    isCacheDirty = true;
-                    foldedOutList.Add(entry.path);
-                    foldedOutHash.Add(entry.path);
-                }
-                else if (!shouldBeFoldedOut && isFoldedOut)
-                {
-                    isCacheDirty = true;
-                    foldedOutList.Remove(entry.path);
-                    foldedOutHash.Remove(entry.path);
+                    m_IsCacheDirty = true;
+
+                    if (shouldBeFoldedOut)
+                        m_FoldedOutHash.Add(entry.path);
+                    else
+                        m_FoldedOutHash.Remove(entry.path);
                 }
             }
         }
 
         void RefreshCache(string inPath)
         {
-            cacheRoot = CacheFolder(inPath);
-            isCacheDirty = false;
+            m_CacheRoot = CacheFolder(inPath);
+            m_IsCacheDirty = false;
         }
 
         CachedEntry CacheFolder(string path)
         {
-            if (foldedOutHash == null)
-            {
-                foldedOutHash = new HashSet<string>();
-                foreach (string s in foldedOutList)
-                    foldedOutHash.Add(s);
-            }
-
             List<CachedEntry> contents = new List<CachedEntry>();
+            string buildLabel = null;
 
-            bool isExpanded = foldedOutHash.Contains(path);
+            bool isExpanded = m_FoldedOutHash.Contains(path);
             int numFolders = 0;
             foreach (string folder in Directory.EnumerateDirectories(path))
             {
                 if (isExpanded)
                 {
                     CachedEntry entry = CacheFolder(folder);
-                    if (entry.status != CachedEntryStatus.IgnoredFile)
+                    if (entry.status != CachedEntryStatus.Ignored)
                     {
                         contents.Add(entry);
-                        numFolders++;
                     }
                 }
-                else
-                {
-                    numFolders++;
-                }
+                numFolders++;
             }
 
             int numMsgs = 0;
@@ -236,40 +213,50 @@ namespace RosMessageGeneration
             foreach (string file in Directory.EnumerateFiles(path))
             {
                 CachedEntryStatus status = GetFileStatus(file);
-                if (status == CachedEntryStatus.IgnoredFile)
+                if (status == CachedEntryStatus.Ignored)
                     continue;
 
+                string type = "";
                 if (status == CachedEntryStatus.BuiltSrvFile || status == CachedEntryStatus.UnbuiltSrvFile)
+                {
                     numSrvs++;
+                    type = "srv";
+                }
                 else
+                {
                     numMsgs++;
+                    type = "msg";
+                }
 
                 if (isExpanded)
                 {
+                    if (status == CachedEntryStatus.BuiltMsgFile || status == CachedEntryStatus.BuiltSrvFile)
+                        buildLabel = "Rebuild " + type;
+                    else
+                        buildLabel = "Build " + type;
+
                     contents.Add(new CachedEntry()
                     {
                         path = file,
-                        status = status
+                        status = status,
+                        buildLabel = buildLabel,
                     });
                 }
             }
 
-            string numMsgsLabel;
             if (numMsgs > 0 && numSrvs > 0)
-                numMsgsLabel = numMsgs + " msg"+(numMsgs>1?"s":"")+", " + numSrvs + " srv" + (numSrvs > 1 ? "s" : "");
+                buildLabel = "Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : "") + ", " + numSrvs + " srv" + (numSrvs > 1 ? "s" : "");
             else if (numMsgs > 0)
-                numMsgsLabel = numMsgs + " msg"+ (numMsgs > 1 ? "s" : "");
+                buildLabel = "Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : "");
             else if (numSrvs > 0)
-                numMsgsLabel = numSrvs + " srv"+ (numSrvs > 1 ? "s" : "");
-            else
-                numMsgsLabel = null;
+                buildLabel = "Build " + numSrvs + " srv" + (numSrvs > 1 ? "s" : "");
 
             return new CachedEntry()
             {
                 path = path,
                 contents = contents,
-                status = (numMsgs+numSrvs+numFolders == 0)? CachedEntryStatus.IgnoredFile: CachedEntryStatus.NormalFolder,
-                numMsgs = numMsgsLabel,
+                status = (numMsgs + numSrvs + numFolders == 0) ? CachedEntryStatus.Ignored : CachedEntryStatus.Folder,
+                buildLabel = buildLabel,
             };
         }
 
@@ -285,7 +272,7 @@ namespace RosMessageGeneration
                     return builtPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltSrvFile : CachedEntryStatus.UnbuiltSrvFile;
             }
 
-            return CachedEntryStatus.IgnoredFile;
+            return CachedEntryStatus.Ignored;
         }
     }
 }
