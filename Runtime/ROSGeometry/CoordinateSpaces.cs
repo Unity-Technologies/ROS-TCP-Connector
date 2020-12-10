@@ -59,5 +59,10 @@ namespace ROSGeometry
         {
             return new Quaternion<C>(self);
         }
+
+        public static RosMessageTypes.Geometry.Transform To<C>(this Transform transform) where C : CoordinateSpace, new()
+        {
+            return new RosMessageTypes.Geometry.Transform(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
+        }
     }
 }
