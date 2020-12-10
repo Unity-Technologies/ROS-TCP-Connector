@@ -9,6 +9,20 @@ namespace RosMessageGeneration
     {
         private static readonly string[] types = {"Request", "Response"};
 
+        public static string[] GetServiceClassPaths(string inFilePath, string outPath)
+        {
+            string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
+            string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
+            string extension = Path.GetExtension(inFilePath);
+            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+            string[] result = new string[types.Length];
+            for (int Idx = 0; Idx < types.Length; ++Idx)
+            {
+                result[Idx] = Path.Combine(outFolder, "srv", className + types[Idx] + ".cs");
+            }
+            return result;
+        }
+
         public static List<string> GenerateSingleService(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path

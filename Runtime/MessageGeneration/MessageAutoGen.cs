@@ -4,21 +4,71 @@ using System.IO;
 using System.Collections.Generic;
 
 using System.Linq;
+using System.Xml;
 
 namespace RosMessageGeneration
 {
     public class MessageAutoGen
     {
+        static Dictionary<string, string> CachedRosPackages = new Dictionary<string, string>();
+
+        public static string GetRosPackageName(string messagePath)
+        {
+            string firstParentDir = Path.GetDirectoryName(messagePath);
+            if (CachedRosPackages.ContainsKey(firstParentDir))
+                return CachedRosPackages[firstParentDir];
+
+            // look for package.xml in a parent folder
+            string parentDir = firstParentDir;
+            while (true)
+            {
+                string packagePath = Path.Combine(parentDir, "package.xml");
+                if (File.Exists(packagePath))
+                {
+                    XmlReader reader = XmlReader.Create(File.OpenRead(packagePath));
+                    while(reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "name")
+                        {
+                            string result = reader.ReadElementContentAsString().Trim();
+                            CachedRosPackages[firstParentDir] = result;
+                            return result;
+                        }
+                    }
+                    // if reading the file didn't find a name, break out to the old method again
+                    break;
+                }
+                int oldLength = parentDir.Length;
+                parentDir = Path.GetDirectoryName(parentDir);
+                if (parentDir == null || parentDir.Length >= oldLength)
+                    break;
+            }
+
+            // Failed while reading package.xml! Fall back to the old simple method
+            string[] hierarchy = messagePath.Split(new char[] { '/', '\\' });
+            return hierarchy[hierarchy.Length - 3];
+        }
+
+        public static string GetMessageOutFolder(string outPath, string rosPackageName)
+        {
+            return Path.Combine(outPath, MsgAutoGenUtilities.ResolvePackageName(rosPackageName));
+        }
+
+        public static string GetMessageClassPath(string inFilePath, string outPath)
+        {
+            string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
+            string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
+            string extension = Path.GetExtension(inFilePath);
+            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+            return Path.Combine(outFolder, "msg", className + ".cs");
+        }
+
         public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path
-            if (rosPackageName.Equals(""))
-            {
-                string[] hierarchy = inPath.Split(new char[] { '/', '\\' });
-                rosPackageName = hierarchy[hierarchy.Length - 3];
-            }
-
-            outPath = Path.Combine(outPath, MsgAutoGenUtilities.ResolvePackageName(rosPackageName));
+            if(rosPackageName == "")
+                rosPackageName = GetRosPackageName(inPath);
+            outPath = GetMessageOutFolder(outPath, rosPackageName);
 
             string inFileName = Path.GetFileNameWithoutExtension(inPath);
 

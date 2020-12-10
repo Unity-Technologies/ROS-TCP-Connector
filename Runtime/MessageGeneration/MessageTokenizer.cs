@@ -173,7 +173,7 @@ namespace RosMessageGeneration
                     reader.Read();
                 }
             }
-            content.Trim();
+            content = content.Trim();
             return content;
         }
 

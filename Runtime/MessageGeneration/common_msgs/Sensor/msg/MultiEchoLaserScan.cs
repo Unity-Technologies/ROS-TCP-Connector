@@ -119,7 +119,7 @@ namespace RosMessageTypes.Sensor
             var rangesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.ranges= new LaserEcho[rangesArrayLength];
-            for(var i =0; i <rangesArrayLength; i++)
+            for(var i = 0; i < rangesArrayLength; i++)
             {
                 this.ranges[i] = new LaserEcho();
                 offset = this.ranges[i].Deserialize(data, offset);
@@ -128,7 +128,7 @@ namespace RosMessageTypes.Sensor
             var intensitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.intensities= new LaserEcho[intensitiesArrayLength];
-            for(var i =0; i <intensitiesArrayLength; i++)
+            for(var i = 0; i < intensitiesArrayLength; i++)
             {
                 this.intensities[i] = new LaserEcho();
                 offset = this.intensities[i].Deserialize(data, offset);

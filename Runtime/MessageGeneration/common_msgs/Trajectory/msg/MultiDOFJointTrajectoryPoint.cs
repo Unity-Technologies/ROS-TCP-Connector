@@ -60,7 +60,7 @@ namespace RosMessageTypes.Trajectory
             var transformsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.transforms= new Geometry.Transform[transformsArrayLength];
-            for(var i =0; i <transformsArrayLength; i++)
+            for(var i = 0; i < transformsArrayLength; i++)
             {
                 this.transforms[i] = new Geometry.Transform();
                 offset = this.transforms[i].Deserialize(data, offset);
@@ -69,7 +69,7 @@ namespace RosMessageTypes.Trajectory
             var velocitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.velocities= new Geometry.Twist[velocitiesArrayLength];
-            for(var i =0; i <velocitiesArrayLength; i++)
+            for(var i = 0; i < velocitiesArrayLength; i++)
             {
                 this.velocities[i] = new Geometry.Twist();
                 offset = this.velocities[i].Deserialize(data, offset);
@@ -78,7 +78,7 @@ namespace RosMessageTypes.Trajectory
             var accelerationsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.accelerations= new Geometry.Twist[accelerationsArrayLength];
-            for(var i =0; i <accelerationsArrayLength; i++)
+            for(var i = 0; i < accelerationsArrayLength; i++)
             {
                 this.accelerations[i] = new Geometry.Twist();
                 offset = this.accelerations[i].Deserialize(data, offset);
