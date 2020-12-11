@@ -37,3 +37,20 @@ Note, the calls to `To<FLU>()` above are essential. Normal Unity Vector3s or Qua
 Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So sending a Transform message typically looks like:
 
     ros.Send("topic", obj.transform.To<FLU>());
+
+# Converting incoming messages
+
+You can also convert Points, Point32s and Vector3s back into Unity coordinates. To convert a Point in coordinate space C directly into a Unity Vector3, you can write `From<C>`. For example:
+
+    void SubscriberCallback(Point p)
+	{
+	  transform.position = p.From<FLU>();
+	}
+
+Or, if you need to work with them in the FLU coordinate space for now, you can write:
+
+    Vector3<FLU> rosPos = p.As<FLU>();
+
+(Note that this does NOT do any coordinate conversion. It simply assumes the point is in the FLU coordinate frame already, and transfers it into an appropriate container.)
+
+And again, the same goes for converting a Quaternion message into a Unity Quaternion or `Quaternion<C>`.

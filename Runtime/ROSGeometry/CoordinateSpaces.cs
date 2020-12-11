@@ -60,6 +60,46 @@ namespace ROSGeometry
             return new Quaternion<C>(self);
         }
 
+        public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Point self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z);
+        }
+
+        public static Vector3 From<C>(this RosMessageTypes.Geometry.Point self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+        }
+
+        public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Point32 self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z);
+        }
+
+        public static Vector3 From<C>(this RosMessageTypes.Geometry.Point32 self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+        }
+
+        public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Vector3 self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z);
+        }
+
+        public static Vector3 From<C>(this RosMessageTypes.Geometry.Vector3 self) where C : CoordinateSpace, new()
+        {
+            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+        }
+
+        public static Quaternion<C> As<C>(this RosMessageTypes.Geometry.Quaternion self) where C : CoordinateSpace, new()
+        {
+            return new Quaternion<C>(self.x, self.y, self.z, self.w);
+        }
+
+        public static Quaternion From<C>(this RosMessageTypes.Geometry.Quaternion self) where C : CoordinateSpace, new()
+        {
+            return new Quaternion<C>(self.x, self.y, self.z, self.w).toUnity;
+        }
+
         public static RosMessageTypes.Geometry.Transform To<C>(this Transform transform) where C : CoordinateSpace, new()
         {
             return new RosMessageTypes.Geometry.Transform(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
