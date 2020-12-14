@@ -1,4 +1,4 @@
-You can find the original repo [here](https://github.com/siemens/ros-sharp).
+Two of the Unity Robotics repos (URDF Importer and TCP Connector) contain code that has been forked from Siemens [ROS#](https://github.com/siemens/ros-sharp) and as such we would like to offer a special thanks to the Siemens ROS# team for their work.
 
 ## ROS# Project Team ##
 
