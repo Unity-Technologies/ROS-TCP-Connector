@@ -62,12 +62,12 @@ namespace ROSGeometry
 
         public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Point self) where C : CoordinateSpace, new()
         {
-            return new Vector3<C>(self.x, self.y, self.z);
+            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z);
         }
 
         public static Vector3 From<C>(this RosMessageTypes.Geometry.Point self) where C : CoordinateSpace, new()
         {
-            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
         }
 
         public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Point32 self) where C : CoordinateSpace, new()
@@ -82,22 +82,22 @@ namespace ROSGeometry
 
         public static Vector3<C> As<C>(this RosMessageTypes.Geometry.Vector3 self) where C : CoordinateSpace, new()
         {
-            return new Vector3<C>(self.x, self.y, self.z);
+            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z);
         }
 
         public static Vector3 From<C>(this RosMessageTypes.Geometry.Vector3 self) where C : CoordinateSpace, new()
         {
-            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
         }
 
         public static Quaternion<C> As<C>(this RosMessageTypes.Geometry.Quaternion self) where C : CoordinateSpace, new()
         {
-            return new Quaternion<C>(self.x, self.y, self.z, self.w);
+            return new Quaternion<C>((float)self.x, (float)self.y, (float)self.z, (float)self.w);
         }
 
         public static Quaternion From<C>(this RosMessageTypes.Geometry.Quaternion self) where C : CoordinateSpace, new()
         {
-            return new Quaternion<C>(self.x, self.y, self.z, self.w).toUnity;
+            return new Quaternion<C>((float)self.x, (float)self.y, (float)self.z, (float)self.w).toUnity;
         }
 
         public static RosMessageTypes.Geometry.Transform To<C>(this Transform transform) where C : CoordinateSpace, new()
