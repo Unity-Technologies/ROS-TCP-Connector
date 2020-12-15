@@ -48,7 +48,7 @@ namespace RosMessageTypes.Shape
             var trianglesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.triangles= new MeshTriangle[trianglesArrayLength];
-            for(var i =0; i <trianglesArrayLength; i++)
+            for(var i = 0; i < trianglesArrayLength; i++)
             {
                 this.triangles[i] = new MeshTriangle();
                 offset = this.triangles[i].Deserialize(data, offset);
@@ -57,7 +57,7 @@ namespace RosMessageTypes.Shape
             var verticesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.vertices= new Geometry.Point[verticesArrayLength];
-            for(var i =0; i <verticesArrayLength; i++)
+            for(var i = 0; i < verticesArrayLength; i++)
             {
                 this.vertices[i] = new Geometry.Point();
                 offset = this.vertices[i].Deserialize(data, offset);

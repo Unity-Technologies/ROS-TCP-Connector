@@ -46,7 +46,7 @@ namespace RosMessageTypes.Actionlib
             var status_listArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.status_list= new GoalStatus[status_listArrayLength];
-            for(var i =0; i <status_listArrayLength; i++)
+            for(var i = 0; i < status_listArrayLength; i++)
             {
                 this.status_list[i] = new GoalStatus();
                 offset = this.status_list[i].Deserialize(data, offset);

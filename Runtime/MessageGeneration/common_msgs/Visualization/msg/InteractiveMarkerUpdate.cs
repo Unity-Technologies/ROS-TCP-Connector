@@ -90,7 +90,7 @@ namespace RosMessageTypes.Visualization
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.markers= new InteractiveMarker[markersArrayLength];
-            for(var i =0; i <markersArrayLength; i++)
+            for(var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new InteractiveMarker();
                 offset = this.markers[i].Deserialize(data, offset);
@@ -99,7 +99,7 @@ namespace RosMessageTypes.Visualization
             var posesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.poses= new InteractiveMarkerPose[posesArrayLength];
-            for(var i =0; i <posesArrayLength; i++)
+            for(var i = 0; i < posesArrayLength; i++)
             {
                 this.poses[i] = new InteractiveMarkerPose();
                 offset = this.poses[i].Deserialize(data, offset);
@@ -108,7 +108,7 @@ namespace RosMessageTypes.Visualization
             var erasesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.erases= new string[erasesArrayLength];
-            for(var i =0; i <erasesArrayLength; i++)
+            for(var i = 0; i < erasesArrayLength; i++)
             {
                 var erasesStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;

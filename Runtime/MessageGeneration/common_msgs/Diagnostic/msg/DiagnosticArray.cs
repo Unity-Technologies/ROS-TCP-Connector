@@ -47,7 +47,7 @@ namespace RosMessageTypes.Diagnostic
             var statusArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.status= new DiagnosticStatus[statusArrayLength];
-            for(var i =0; i <statusArrayLength; i++)
+            for(var i = 0; i < statusArrayLength; i++)
             {
                 this.status[i] = new DiagnosticStatus();
                 offset = this.status[i].Deserialize(data, offset);
