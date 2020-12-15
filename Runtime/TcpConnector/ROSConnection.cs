@@ -268,6 +268,8 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
+    TcpListener tcpListener;
+
     protected async void StartMessageServer(string ip, int port)
     {
         if (alreadyStartedServer)
@@ -276,7 +278,6 @@ public class ROSConnection : MonoBehaviour
         alreadyStartedServer = true;
         while (true)
         {
-            TcpListener tcpListener;
             try
             {
                 tcpListener = new TcpListener(IPAddress.Parse(ip), port);
@@ -300,6 +301,17 @@ public class ROSConnection : MonoBehaviour
                     // if already faulted, re-throw any error on the calling context
                     if (task.IsFaulted)
                         await task;
+
+                    // try to get through the message queue before doing another await
+                    // but if messages are arriving faster than we can process them, don't freeze up
+                    float abortAtRealtime = Time.realtimeSinceStartup + 0.1f;
+                    while (tcpListener.Pending() && Time.realtimeSinceStartup < abortAtRealtime)
+                    {
+                        tcpClient = tcpListener.AcceptTcpClient();
+                        task = StartHandleConnectionAsync(tcpClient);
+                        if (task.IsFaulted)
+                            await task;
+                    }
                 }
             }
             catch (Exception e)
@@ -307,6 +319,13 @@ public class ROSConnection : MonoBehaviour
                 Debug.LogError("Exception raised!! " + e);
             }
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (tcpListener != null)
+            tcpListener.Stop();
+        tcpListener = null;
     }
 
 
