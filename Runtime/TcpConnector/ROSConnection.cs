@@ -269,21 +269,18 @@ public class ROSConnection : MonoBehaviour
 
     public async void Send(string rosTopicName, Message message)
     {
+        TcpClient client = null;
         try
         {
-            // Serialize the message in topic name, message size, and message bytes format
-            byte[] messageBytes = GetMessageBytes(rosTopicName, message);
 
-            TcpClient client = new TcpClient();
+            client = new TcpClient();
             await client.ConnectAsync(hostName, hostPort);
 
             NetworkStream networkStream = client.GetStream();
             networkStream.ReadTimeout = networkTimeout;
 
-            networkStream.Write(messageBytes, 0, messageBytes.Length);
+            WriteDataStaggered(networkStream, rosTopicName, message);
 
-            if (client.Connected)
-                client.Close();
         }
         catch (NullReferenceException e)
         {
@@ -292,6 +289,40 @@ public class ROSConnection : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("TCPConnector Exception: " + e);
+        }
+        finally
+        {
+            if (client != null && client.Connected)
+            {
+                try
+                {
+                    client.Close();
+                }
+                catch (Exception)
+                {
+                    //Ignored.
+                }
+            }
+        }
+    }
+
+    private void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
+    {
+        byte[] topicName = message.SerializeString(rosTopicName);
+        List<byte[]> segments = message.SerializationStatements();
+        int messageLength = 0;
+        for (int i = 0; i < segments.Count; i++)
+        {
+            messageLength += segments[i].Length;
+        }
+        byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
+
+        networkStream.Write(topicName, 0, topicName.Length);
+        networkStream.Write(fullMessageSizeBytes, 0, fullMessageSizeBytes.Length);
+        for (int i = 0; i < segments.Count; i++)
+        {
+            byte[] segmentData = segments[i];
+            networkStream.Write(segmentData, 0, segmentData.Length);
         }
     }
 
