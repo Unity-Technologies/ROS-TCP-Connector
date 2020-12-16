@@ -283,22 +283,11 @@ public class ROSConnection : MonoBehaviour
             {
                 tcpListener = new TcpListener(IPAddress.Parse(ip), port);
                 tcpListener.Start();
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Exception raised!! " + e);
-                return;
-            }
 
-            Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
+                Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
 
-            try
-            {
                 while (true)   //we wait for a connection
                 {
-                    if (tcpListener == null)
-                        break;
-
                     var tcpClient = await tcpListener.AcceptTcpClientAsync();
 
                     var task = StartHandleConnectionAsync(tcpClient);
@@ -316,6 +305,17 @@ public class ROSConnection : MonoBehaviour
                         if (task.IsFaulted)
                             await task;
                     }
+                }
+            }
+            catch (ObjectDisposedException e)
+            {
+                if (tcpListener == null)
+                {
+                    // we're shutting down, that's fine
+                }
+                else
+                {
+                    Debug.LogError("Exception raised!! " + e);
                 }
             }
             catch (Exception e)
