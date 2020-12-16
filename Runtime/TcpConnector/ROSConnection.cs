@@ -295,6 +295,9 @@ public class ROSConnection : MonoBehaviour
             {
                 while (true)   //we wait for a connection
                 {
+                    if (tcpListener == null)
+                        break;
+
                     var tcpClient = await tcpListener.AcceptTcpClientAsync();
 
                     var task = StartHandleConnectionAsync(tcpClient);
