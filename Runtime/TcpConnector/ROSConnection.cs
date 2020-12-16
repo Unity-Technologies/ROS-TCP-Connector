@@ -3,6 +3,7 @@ using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -371,7 +372,7 @@ public class ROSConnection : MonoBehaviour
     /// 		last N bytes determined from previous four bytes: ROS Message variables
     /// </summary>
     /// <param name="topicServiceName"></param> The ROS topic or service name that is receiving the messsage
-    /// <param name="messsage"></param> The ROS message to send to a ROS publisher or service
+    /// <param name="message"></param> The ROS message to send to a ROS publisher or service
     /// <returns> byte array with serialized ROS message in appropriate format</returns>
     public byte[] GetMessageBytes(string topicServiceName, Message message)
     {
@@ -407,21 +408,16 @@ public class ROSConnection : MonoBehaviour
 
     public async void Send(string rosTopicName, Message message)
     {
+        TcpClient client = null;
         try
         {
-            // Serialize the message in topic name, message size, and message bytes format
-            byte[] messageBytes = GetMessageBytes(rosTopicName, message);
-
-            TcpClient client = new TcpClient();
+            client = new TcpClient();
             await client.ConnectAsync(hostName, hostPort);
 
             NetworkStream networkStream = client.GetStream();
             networkStream.ReadTimeout = networkTimeout;
 
-            networkStream.Write(messageBytes, 0, messageBytes.Length);
-
-            if (client.Connected)
-                client.Close();
+            WriteDataStaggered(networkStream, rosTopicName, message);
         }
         catch (NullReferenceException e)
         {
@@ -430,6 +426,48 @@ public class ROSConnection : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("TCPConnector Exception: " + e);
+        }
+        finally
+        {
+            if (client != null && client.Connected)
+            {
+                try
+                {
+                    client.Close();
+                }
+                catch (Exception)
+                {
+                    //Ignored.
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    ///    Serialize a ROS message in the expected format of
+    ///     https://github.com/Unity-Technologies/Robotics-Tutorials/tree/master/catkin_ws/src/tcp_endpoint
+    ///
+    /// 	All messages are expected to come in the format of:
+    /// 		first four bytes: int32 of the length of following string value
+    /// 		next N bytes determined from previous four bytes: ROS topic name as a string
+    /// 		next four bytes: int32 of the length of the remaining bytes for the ROS Message
+    /// 		last N bytes determined from previous four bytes: ROS Message variables
+    /// </summary>
+    /// <param name="networkStream"></param> The network stream that is transmitting the messsage
+    /// <param name="rosTopicName"></param> The ROS topic or service name that is receiving the messsage
+    /// <param name="message"></param> The ROS message to send to a ROS publisher or service
+    private void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
+    {
+        byte[] topicName = message.SerializeString(rosTopicName);
+        List<byte[]> segments = message.SerializationStatements();
+        int messageLength = segments.Select(s=>s.Length).Sum();
+        byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
+
+        networkStream.Write(topicName, 0, topicName.Length);
+        networkStream.Write(fullMessageSizeBytes, 0, fullMessageSizeBytes.Length);
+        foreach (byte[] segmentData in segments)
+        {
+            networkStream.Write(segmentData, 0, segmentData.Length);
         }
     }
 }
