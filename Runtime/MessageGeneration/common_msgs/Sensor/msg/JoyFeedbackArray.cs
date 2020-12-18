@@ -39,7 +39,7 @@ namespace RosMessageTypes.Sensor
             var arrayArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.array= new JoyFeedback[arrayArrayLength];
-            for(var i =0; i <arrayArrayLength; i++)
+            for(var i = 0; i < arrayArrayLength; i++)
             {
                 this.array[i] = new JoyFeedback();
                 offset = this.array[i].Deserialize(data, offset);

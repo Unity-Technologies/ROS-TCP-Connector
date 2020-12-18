@@ -84,7 +84,7 @@ namespace RosMessageTypes.Sensor
             var joint_namesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.joint_names= new string[joint_namesArrayLength];
-            for(var i =0; i <joint_namesArrayLength; i++)
+            for(var i = 0; i < joint_namesArrayLength; i++)
             {
                 var joint_namesStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;
@@ -95,7 +95,7 @@ namespace RosMessageTypes.Sensor
             var transformsArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.transforms= new Geometry.Transform[transformsArrayLength];
-            for(var i =0; i <transformsArrayLength; i++)
+            for(var i = 0; i < transformsArrayLength; i++)
             {
                 this.transforms[i] = new Geometry.Transform();
                 offset = this.transforms[i].Deserialize(data, offset);
@@ -104,7 +104,7 @@ namespace RosMessageTypes.Sensor
             var twistArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.twist= new Geometry.Twist[twistArrayLength];
-            for(var i =0; i <twistArrayLength; i++)
+            for(var i = 0; i < twistArrayLength; i++)
             {
                 this.twist[i] = new Geometry.Twist();
                 offset = this.twist[i].Deserialize(data, offset);
@@ -113,7 +113,7 @@ namespace RosMessageTypes.Sensor
             var wrenchArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.wrench= new Geometry.Wrench[wrenchArrayLength];
-            for(var i =0; i <wrenchArrayLength; i++)
+            for(var i = 0; i < wrenchArrayLength; i++)
             {
                 this.wrench[i] = new Geometry.Wrench();
                 offset = this.wrench[i].Deserialize(data, offset);

@@ -42,7 +42,7 @@ namespace RosMessageTypes.Sensor
             var echoesArrayLength = DeserializeLength(data, offset);
             offset += 4;
             this.echoes= new float[echoesArrayLength];
-            for(var i =0; i <echoesArrayLength; i++)
+            for(var i = 0; i < echoesArrayLength; i++)
             {
                 this.echoes[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
