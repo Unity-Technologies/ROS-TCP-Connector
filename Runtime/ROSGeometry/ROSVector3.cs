@@ -26,9 +26,6 @@ namespace ROSGeometry
         /// <summary>
         /// Construct a Vector&lt;C&gt; with exactly these components. No coordinate conversion is performed.
         /// </summary>
-        /// <param name="x">The vector's X components</param>
-        /// <param name="y">The vector's Y components</param>
-        /// <param name="z">The vector's Z components</param>
         public Vector3(float x, float y, float z)
         {
             internalVector = new Vector3(x, y, z);
@@ -218,9 +215,6 @@ namespace ROSGeometry
         /// <summary>
         /// Set the components of the vector to these X, Y and Z values. No coordinate conversion is performed.
         /// </summary>
-        /// <param name="newX"></param>
-        /// <param name="newY"></param>
-        /// <param name="newZ"></param>
         public void Set(float newX, float newY, float newZ)
         {
             internalVector.Set(newX, newY, newZ);

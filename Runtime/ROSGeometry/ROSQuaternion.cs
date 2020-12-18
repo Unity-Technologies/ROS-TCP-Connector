@@ -23,34 +23,40 @@ namespace ROSGeometry
         static C coordinateSpace = new C();
 
         /// <summary>
-        /// Construct a Quaternion&lt;C&gt; with these components. No coordinate conversion is performed.
+        /// Construct a Quaternion&lt;C&gt; with these exact components. No coordinate conversion is performed.
         /// </summary>
-        /// <param name="x">The X component.</param>
-        /// <param name="y">The Y component.</param>
-        /// <param name="z">The Z component.</param>
-        /// <param name="w">The W component.</param>
         public Quaternion(float x, float y, float z, float w)
         {
             internalQuat = new Quaternion(x, y, z, w);
         }
 
-        // The actual coordinate-space conversion functions
+        /// <summary>
+        /// Construct a Quaternion&lt;C&gt; in this coordinate space from a Quaternion in Unity coordinates
+        /// </summary>
         public Quaternion(Quaternion ruf)
         {
             internalQuat = coordinateSpace.ConvertFromRUF(ruf);
         }
 
+        /// <summary>
+        /// Convert into a Quaternion in Unity coordinates.
+        /// </summary>
         public Quaternion toUnity => coordinateSpace.ConvertToRUF(internalQuat);
 
         public static explicit operator Quaternion<C>(Quaternion quat) => new Quaternion<C>(quat);
         public static explicit operator Quaternion(Quaternion<C> rquat) => rquat.toUnity;
 
+        /// <summary>
+        /// Convert this Quaternion&lt;C&gt; into another coordinate space
+        /// </summary>
+        /// <typeparam name="C2">The new coordinate space.</typeparam>
+        /// <returns>The converted vector.</returns>
         public Quaternion<C2> To<C2>() where C2 : CoordinateSpace, new()
         {
             return new Quaternion<C2>(this.toUnity);
         }
 
-        // for internal use only - this function does not convert from Unity to ROS coordinate space
+        // for internal use only - this function does no coordinate conversion.
         private static Quaternion<C> MakeInternal(Quaternion q)
         {
             Quaternion<C> result = new Quaternion<C>();
