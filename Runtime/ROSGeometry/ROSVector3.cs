@@ -80,8 +80,9 @@ namespace ROSGeometry
             return result;
         }
 
-        //public static implicit operator RosMessageTypes.Geometry.Point(Vector3<C> rvec) => new RosMessageTypes.Geometry.Point(rvec.x, rvec.y, rvec.z);
-        //public static implicit operator RosMessageTypes.Geometry.Vector3(Vector3<C> rvec) => new RosMessageTypes.Geometry.Vector3(rvec.x, rvec.y, rvec.z);
+        public static implicit operator RosMessageTypes.Geometry.Point(Vector3<C> rvec) => new RosMessageTypes.Geometry.Point(rvec.x, rvec.y, rvec.z);
+        public static implicit operator RosMessageTypes.Geometry.Point32(Vector3<C> rvec) => new RosMessageTypes.Geometry.Point32(rvec.x, rvec.y, rvec.z);
+        public static implicit operator RosMessageTypes.Geometry.Vector3(Vector3<C> rvec) => new RosMessageTypes.Geometry.Vector3(rvec.x, rvec.y, rvec.z);
 
         public static Vector3<C> right => new Vector3<C>(Vector3.right);
         public static Vector3<C> left => new Vector3<C>(Vector3.left);
@@ -110,6 +111,7 @@ namespace ROSGeometry
         }
 
         public static float Distance(Vector3<C> a, Vector3<C> b) => Vector3.Distance(a.internalVector, b.internalVector);
+
         public static float Dot(Vector3<C> lhs, Vector3<C> rhs) => Vector3.Dot(lhs.internalVector, rhs.internalVector);
 
         public static Vector3<C> Lerp(Vector3<C> a, Vector3<C> b, float t)
@@ -123,7 +125,9 @@ namespace ROSGeometry
         }
 
         public static float Magnitude(Vector3<C> vector) => Vector3.Magnitude(vector.internalVector);
+
         public static Vector3<C> Max(Vector3<C> lhs, Vector3<C> rhs) => MakeInternal(Vector3.Max(lhs.internalVector, rhs.internalVector));
+
         public static Vector3<C> Min(Vector3<C> lhs, Vector3<C> rhs) => MakeInternal(Vector3.Min(lhs.internalVector, rhs.internalVector));
 
         public static Vector3<C> MoveTowards(Vector3<C> current, Vector3<C> target, float maxDistanceDelta)
@@ -200,6 +204,7 @@ namespace ROSGeometry
         }
         
         public bool Equals(Vector3<C> other) => internalVector == other.internalVector;
+
         public override int GetHashCode() => internalVector.GetHashCode();
         
         public void Normalize()

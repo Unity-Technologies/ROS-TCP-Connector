@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+<<<<<<< HEAD:Runtime/MessageGeneration/ROSConnection_msgs/msg/RosUnitySysCommand.cs.meta
+guid: 898eace77a62a6240b064ac16c66c8af
+=======
+guid: c444d6f85828f1b4f9b89c7c387f9ddd
+>>>>>>> main:Editor/MessageGeneration/MessageGenBrowserSettings.cs.meta
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

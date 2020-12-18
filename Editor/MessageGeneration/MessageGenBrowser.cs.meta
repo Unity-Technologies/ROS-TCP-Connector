@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+<<<<<<< HEAD:Runtime/MessageGeneration/ROSConnection_msgs/srv/UnityHandshakeRequest.cs.meta
+guid: aad78c8b1a49d0545b51cd5dd00ee422
+=======
+guid: 4c27bbcf5f3690848a1336bfed32ba5e
+>>>>>>> main:Editor/MessageGeneration/MessageGenBrowser.cs.meta
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
