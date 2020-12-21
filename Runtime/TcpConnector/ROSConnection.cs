@@ -332,6 +332,8 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
+    TcpListener tcpListener;
+
     protected async void StartMessageServer(string ip, int port)
     {
         if (tcpListener != null)
@@ -391,6 +393,7 @@ public class ROSConnection : MonoBehaviour
             tcpListener.Stop();
         tcpListener = null;
     }
+
 
     /// <summary>
     ///    Given some input values, fill a byte array in the desired format to use with
