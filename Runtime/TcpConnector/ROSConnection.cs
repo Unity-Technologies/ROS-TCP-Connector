@@ -1,7 +1,6 @@
 using RosMessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -28,7 +27,7 @@ public class ROSConnection : MonoBehaviour
     /// Port of the ROS node
     /// </summary>
     public int hostPort = 10000;
-
+    
     /// <summary>
     /// IP address to listen on, if the automatic IP detection doesn't work for your networking setup
     /// </summary>
@@ -71,7 +70,6 @@ public class ROSConnection : MonoBehaviour
     }
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
-    HashSet<string> publishers = new HashSet<string>();
 
     /// <summary>
     /// Request a callback whenever ROSConnection receives a message on the given topic
@@ -332,8 +330,6 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    TcpListener tcpListener;
-
     protected async void StartMessageServer(string ip, int port)
     {
         if (tcpListener != null)
@@ -343,6 +339,8 @@ public class ROSConnection : MonoBehaviour
         {
             try
             {
+                if (!Application.isPlaying)
+                    break;
                 tcpListener = new TcpListener(IPAddress.Parse(ip), port);
                 tcpListener.Start();
 
@@ -371,9 +369,9 @@ public class ROSConnection : MonoBehaviour
             }
             catch (ObjectDisposedException e)
             {
-                if (tcpListener == null)
+                if (!Application.isPlaying)
                 {
-                    // we're shutting down, that's fine
+                    // This only happened because we're shutting down. Not a problem.
                 }
                 else
                 {
@@ -384,6 +382,9 @@ public class ROSConnection : MonoBehaviour
             {
                 Debug.LogError("Exception raised!! " + e);
             }
+
+            // to avoid infinite loops, wait a frame before trying to restart the server
+            await Task.Yield();
         }
     }
 
