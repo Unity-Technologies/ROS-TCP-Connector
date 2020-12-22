@@ -268,6 +268,8 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
+    TcpListener tcpListener;
+
     protected async void StartMessageServer(string ip, int port)
     {
         if (alreadyStartedServer)
