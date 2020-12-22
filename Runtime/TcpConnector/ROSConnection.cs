@@ -1,7 +1,6 @@
 using RosMessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,6 +15,7 @@ public class ROSConnection : MonoBehaviour
     // Variables required for ROS communication
     public string hostName = "192.168.1.1";
     public int hostPort = 10000;
+
     [Tooltip("If blank, determine IP automatically.")]
     public string overrideUnityIP = "";
     public int unityPort = 5005;
@@ -43,7 +43,6 @@ public class ROSConnection : MonoBehaviour
     }
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
-    HashSet<string> publishers = new HashSet<string>();
 
     public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
     {
@@ -269,8 +268,6 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    TcpListener tcpListener;
-
     protected async void StartMessageServer(string ip, int port)
     {
         if (alreadyStartedServer)
@@ -281,6 +278,8 @@ public class ROSConnection : MonoBehaviour
         {
             try
             {
+                if (!Application.isPlaying)
+                    break;
                 tcpListener = new TcpListener(IPAddress.Parse(ip), port);
                 tcpListener.Start();
 
@@ -309,9 +308,9 @@ public class ROSConnection : MonoBehaviour
             }
             catch (ObjectDisposedException e)
             {
-                if (tcpListener == null)
+                if (!Application.isPlaying)
                 {
-                    // we're shutting down, that's fine
+                    // This only happened because we're shutting down. Not a problem.
                 }
                 else
                 {
@@ -322,6 +321,9 @@ public class ROSConnection : MonoBehaviour
             {
                 Debug.LogError("Exception raised!! " + e);
             }
+
+            // to avoid infinite loops, wait a frame before trying to restart the server
+            await Task.Yield();
         }
     }
 
