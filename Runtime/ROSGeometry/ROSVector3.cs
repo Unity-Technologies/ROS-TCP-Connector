@@ -5,7 +5,10 @@ using UnityEngine;
 
 namespace ROSGeometry
 {
-    // This struct implements a feature-compatible version of the Unity Vector3, but in a generic coordinate space.
+    /// <summary>
+    /// A feature-compatible version of the Unity Vector3, but in a coordinate space of your choice.
+    /// </summary>
+    /// <typeparam name="C">The coordinate space</typeparam>
     [Serializable]
     public struct Vector3<C> : IEquatable<Vector3<C>>, IFormattable where C : CoordinateSpace, new()
     {
@@ -20,34 +23,56 @@ namespace ROSGeometry
 
         static C coordinateSpace = new C();
 
+        /// <summary>
+        /// Construct a Vector&lt;C&gt; with exactly these components. No coordinate conversion is performed.
+        /// </summary>
         public Vector3(float x, float y, float z)
         {
             internalVector = new Vector3(x, y, z);
         }
 
+        /// <summary>
+        /// Construct a Vector3&lt;C&gt; in this coordinate space from a Vector3 in Unity coordinates
+        /// </summary>
+        /// <param name="vec_ruf">The Unity vector</param>
         public Vector3(Vector3 vec_ruf)
         {
             internalVector = coordinateSpace.ConvertFromRUF(vec_ruf);
         }
 
+        /// <summary>
+        /// Convert this Vector3&lt;C&gt; into a Vector3 in Unity coordinates.
+        /// </summary>
         public Vector3 toUnity => coordinateSpace.ConvertToRUF(internalVector);
 
+        /// <summary>
+        /// Convert this Vector3 from Unity coordinates into a Vector3&lt;C&gt;.
+        /// </summary>
+        /// <param name="vec">The Unity vector</param>
         public static explicit operator Vector3<C>(Vector3 vec)
         {
             return MakeInternal(coordinateSpace.ConvertFromRUF(vec));
         }
 
+        /// <summary>
+        /// Convert this Vector3&lt;C&gt; into Unity coordinates.
+        /// </summary>
         public static explicit operator Vector3(Vector3<C> vec)
         {
             return coordinateSpace.ConvertToRUF(vec.internalVector);
         }
 
+        /// <summary>
+        /// Convert this Vector3&lt;C&gt; into another coordinate space
+        /// </summary>
+        /// <typeparam name="C2">The new coordinate space.</typeparam>
+        /// <returns>The converted vector.</returns>
         public Vector3<C2> To<C2>() where C2 : CoordinateSpace, new()
         {
             return (Vector3<C2>)(Vector3)this;
         }
 
-        // for internal use only - this function does not convert coordinate spaces correctly
+        // for internal use only - no coordinate space conversion is performed.
         private static Vector3<C> MakeInternal(Vector3 vec)
         {
             Vector3<C> result = new Vector3<C>();
@@ -191,7 +216,10 @@ namespace ROSGeometry
         {
             internalVector.Scale(scale.internalVector);
         }
-        
+
+        /// <summary>
+        /// Set the components of the vector to these X, Y and Z values. No coordinate conversion is performed.
+        /// </summary>
         public void Set(float newX, float newY, float newZ)
         {
             internalVector.Set(newX, newY, newZ);

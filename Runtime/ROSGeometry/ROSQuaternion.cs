@@ -5,7 +5,10 @@ using UnityEngine;
 
 namespace ROSGeometry
 {
-    // This struct implements a feature-compatible version of the Unity Quaternion, but in a generic coordinate space.
+    /// <summary>
+    /// A feature-compatible version of the Unity Quaternion, but in a coordinate space of your choice.
+    /// </summary>
+    /// <typeparam name="C">The coordinate space</typeparam>
     [Serializable]
     public struct Quaternion<C> where C : CoordinateSpace, new()
     {
@@ -19,29 +22,42 @@ namespace ROSGeometry
 
         static C coordinateSpace = new C();
 
+        /// <summary>
+        /// Construct a Quaternion&lt;C&gt; with these exact components. No coordinate conversion is performed.
+        /// </summary>
         public Quaternion(float x, float y, float z, float w)
         {
             internalQuat = new Quaternion(x, y, z, w);
         }
 
-        // The actual coordinate-space conversion functions
+        /// <summary>
+        /// Construct a Quaternion&lt;C&gt; in this coordinate space from a Quaternion in Unity coordinates
+        /// </summary>
         public Quaternion(Quaternion ruf)
         {
             internalQuat = coordinateSpace.ConvertFromRUF(ruf);
         }
 
+        /// <summary>
+        /// Convert into a Quaternion in Unity coordinates.
+        /// </summary>
         public Quaternion toUnity => coordinateSpace.ConvertToRUF(internalQuat);
 
         public static implicit operator RosMessageTypes.Geometry.Quaternion(Quaternion<C> quat) => new RosMessageTypes.Geometry.Quaternion(quat.x, quat.y, quat.z, quat.w);
         public static explicit operator Quaternion<C>(Quaternion quat) => new Quaternion<C>(quat);
         public static explicit operator Quaternion(Quaternion<C> rquat) => rquat.toUnity;
 
+        /// <summary>
+        /// Convert this Quaternion&lt;C&gt; into another coordinate space
+        /// </summary>
+        /// <typeparam name="C2">The new coordinate space.</typeparam>
+        /// <returns>The converted vector.</returns>
         public Quaternion<C2> To<C2>() where C2 : CoordinateSpace, new()
         {
             return new Quaternion<C2>(this.toUnity);
         }
 
-        // for internal use only - this function does not convert from Unity to ROS coordinate space
+        // for internal use only - this function does no coordinate conversion.
         private static Quaternion<C> MakeInternal(Quaternion q)
         {
             Quaternion<C> result = new Quaternion<C>();
