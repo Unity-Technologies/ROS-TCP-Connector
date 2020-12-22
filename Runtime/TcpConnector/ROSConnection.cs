@@ -22,12 +22,12 @@ public class ROSConnection : MonoBehaviour
     /// IP address of the ROS node
     /// </summary>
     public string hostName = "192.168.1.1";
-    
+
     /// <summary>
     /// Port of the ROS node
     /// </summary>
     public int hostPort = 10000;
-    
+
     /// <summary>
     /// IP address to listen on, if the automatic IP detection doesn't work for your networking setup
     /// </summary>
@@ -532,7 +532,7 @@ public class ROSConnection : MonoBehaviour
     {
         byte[] topicName = message.SerializeString(rosTopicName);
         List<byte[]> segments = message.SerializationStatements();
-        int messageLength = segments.Select(s=>s.Length).Sum();
+        int messageLength = segments.Select(s => s.Length).Sum();
         byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
 
         networkStream.Write(topicName, 0, topicName.Length);
