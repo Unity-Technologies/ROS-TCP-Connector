@@ -213,12 +213,30 @@ namespace RosMessageGeneration
             return constructor;
         }
 
-        private string GenerateSerializationStatements()
+        private string GenerateSerializationStatements(string msgType)
         {
             string function = "";
             function += MsgAutoGenUtilities.TWO_TABS + "public override List<byte[]> SerializationStatements()\n";
             function += MsgAutoGenUtilities.TWO_TABS + "{\n";
             function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "var listOfSerializations = new List<byte[]>();\n";
+
+            string[] inheritedParams = new string[0];
+
+            // Inherited params
+            if (msgType.Equals("Goal"))
+            {
+                inheritedParams = new[] {"header", "goal_id"};
+
+            }
+            else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
+            {
+                inheritedParams = new[] {"header", "status"};
+            }
+
+            foreach (string paramName in inheritedParams)
+            {
+                function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + paramName + ".SerializationStatements());\n";
+            }
 
             foreach (string identifier in symbolTable.Keys)
             {
@@ -231,11 +249,29 @@ namespace RosMessageGeneration
             return function;
         }
 
-        private string GenerateDeserializationStatements()
+        private string GenerateDeserializationStatements(string msgType)
         {
             string function = "";
             function += MsgAutoGenUtilities.TWO_TABS + "public override int Deserialize(byte[] data, int offset)\n";
             function += MsgAutoGenUtilities.TWO_TABS + "{\n";
+
+            string[] inheritedParams = new string[0];
+
+            // Inherited params
+            if (msgType.Equals("Goal"))
+            {
+                inheritedParams = new[] {"header", "goal_id"};
+
+            }
+            else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
+            {
+                inheritedParams = new[] {"header", "status"};
+            }
+
+            foreach (string paramName in inheritedParams)
+            {
+                function += TWO_TABS + ONE_TAB + "offset = this." + paramName + ".Deserialize(data, offset);\n";
+            }
 
             foreach (string identifier in symbolTable.Keys)
             {
@@ -257,6 +293,7 @@ namespace RosMessageGeneration
 
             string imports =
                 "using System.Collections.Generic;\n"+
+                "using RosMessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
 
@@ -295,8 +332,8 @@ namespace RosMessageGeneration
                 // Write parameterized constructor
                 writer.Write(GenerateParameterizedConstructor(wrapperName, type));
 
-                writer.Write(GenerateSerializationStatements());
-                writer.Write(GenerateDeserializationStatements());
+                writer.Write(GenerateSerializationStatements(type));
+                writer.Write(GenerateDeserializationStatements(type));
 
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
@@ -308,11 +345,13 @@ namespace RosMessageGeneration
         public void WrapAction()
         {
             string wrapperName = inFileName + "Action";
+            string type = "wrapper";
 
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
                 "using System.Collections.Generic;\n"+
+                "using RosMessageGeneration;\n" +
                 "\n\n";
 
             symbolTable = new Dictionary<string, string>();
@@ -358,8 +397,8 @@ namespace RosMessageGeneration
                 // Write default value constructor
                 writer.Write("\n" + GenerateDefaultValueConstructor(wrapperName) + "\n");
 
-                writer.Write(GenerateSerializationStatements());
-                writer.Write(GenerateDeserializationStatements());
+                writer.Write(GenerateSerializationStatements(type));
+                writer.Write(GenerateDeserializationStatements(type));
 
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
