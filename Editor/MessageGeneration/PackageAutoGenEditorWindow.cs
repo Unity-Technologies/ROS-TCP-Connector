@@ -66,7 +66,7 @@ namespace RosMessageGeneration
                     EditorUtility.DisplayDialog(
                         title: "Error",
                         message: "Empty input package path!\nPlease specify input package",
-                        ok: "Bricks without straw");
+                        ok: "OK");
                 }
                 else
                 {
@@ -80,7 +80,7 @@ namespace RosMessageGeneration
                             EditorUtility.DisplayDialog(
                                 title: "No action files found!",
                                 message: "No action files found!",
-                                ok: "Bricks without straw");
+                                ok: "OK");
                             Reset();
                         }
                         else
@@ -104,7 +104,7 @@ namespace RosMessageGeneration
                                     EditorUtility.DisplayDialog(
                                         title: "Message Tokenizer Exception",
                                         message: e.Message,
-                                        ok: "Wait. That's illegal");
+                                        ok: "OK");
                                 }
                                 catch (MessageParserException e)
                                 {
@@ -112,7 +112,7 @@ namespace RosMessageGeneration
                                     EditorUtility.DisplayDialog(
                                         title: "Message Parser Exception",
                                         message: e.Message,
-                                        ok: "Sorry but you can't ignore errors.");
+                                        ok: "OK");
                                 }
                             }
                             // Done
@@ -123,7 +123,7 @@ namespace RosMessageGeneration
                                 EditorUtility.DisplayDialog(
                                     title: "Code Generation Complete",
                                     message: "Output at: " + outPkgPath + "\nYou have " + warnings.Count + " warning(s)",
-                                    ok: "I like to live dangerously");
+                                    ok: "OK");
                                 foreach (string w in warnings)
                                 {
                                     Debug.LogWarning(w);
@@ -134,7 +134,7 @@ namespace RosMessageGeneration
                                 EditorUtility.DisplayDialog(
                                     title: "Code Generation Complete",
                                     message: "Output at: " + outPkgPath,
-                                    ok: "Thank you!");
+                                    ok: "OK");
                             }
                             Reset();
                         }
@@ -144,7 +144,7 @@ namespace RosMessageGeneration
                         EditorUtility.DisplayDialog(
                             title: "Message Folder not found",
                             message: e.Message,
-                            ok: "Bricks without straw");
+                            ok: "OK");
                         Reset();
                     }
                 }

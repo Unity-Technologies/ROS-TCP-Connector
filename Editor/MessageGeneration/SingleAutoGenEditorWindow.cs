@@ -66,7 +66,7 @@ namespace RosMessageGeneration
                     EditorUtility.DisplayDialog(
                         title: "Error",
                         message: "Empty input file path!\nPlease specify input file",
-                        ok: "Bricks without straw");
+                        ok: "OK");
                 }
                 else
                 {
@@ -81,7 +81,7 @@ namespace RosMessageGeneration
                             EditorUtility.DisplayDialog(
                                 title: "Code Generation Complete",
                                 message: "Output at: " + outFilePath,
-                                ok: "Thank you!");
+                                ok: "OK");
                         }
                         else
                         {
@@ -92,7 +92,7 @@ namespace RosMessageGeneration
                             EditorUtility.DisplayDialog(
                                 title: "Code Generation Complete",
                                 message: "Output at: " + outFilePath + "\nYou have " + warnings.Count + " warning(s)",
-                                ok: "I like to live dangerously");
+                                ok: "OK");
                         }
                     }
                     catch (MessageTokenizerException e)
@@ -101,7 +101,7 @@ namespace RosMessageGeneration
                         EditorUtility.DisplayDialog(
                             title: "Message Tokenizer Exception",
                             message: e.Message,
-                            ok: "Wait. That's illegal");
+                            ok: "OK");
                     }
                     catch (MessageParserException e)
                     {
@@ -109,7 +109,7 @@ namespace RosMessageGeneration
                         EditorUtility.DisplayDialog(
                             title: "Message Parser Exception",
                             message: e.Message,
-                            ok: "Sorry but you can't ignore errors.");
+                            ok: "OK");
                     }
                 }
             }
