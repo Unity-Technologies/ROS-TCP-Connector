@@ -53,7 +53,7 @@ namespace RosMessageGeneration
 
             EditorGUILayout.BeginHorizontal();
             outFilePath = EditorGUILayout.TextField("Output File Location", outFilePath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(120)))
+            if (GUILayout.Button("Browse", GUILayout.Width(120)))
             {
                 outFilePath = EditorUtility.OpenFolderPanel("Select Folder...", lastOutputDirectory, "");
             }

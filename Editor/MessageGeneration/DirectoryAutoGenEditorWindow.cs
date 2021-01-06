@@ -37,7 +37,7 @@ namespace RosMessageGeneration
 
             EditorGUILayout.BeginHorizontal();
             inPath = EditorGUILayout.TextField("Input Path", inPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(150)))
             {
                 inPath = EditorUtility.OpenFolderPanel("Select Folder...", lastInputDirectory, "");
             }
@@ -45,7 +45,7 @@ namespace RosMessageGeneration
 
             EditorGUILayout.BeginHorizontal();
             outPath = EditorGUILayout.TextField("Output Location", outPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(150)))
             {
                 outPath = EditorUtility.OpenFolderPanel("Select Folder...", lastOutputDirectory, "");
             }
