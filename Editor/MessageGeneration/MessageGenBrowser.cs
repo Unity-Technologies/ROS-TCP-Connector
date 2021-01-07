@@ -69,7 +69,7 @@ namespace RosMessageGeneration
             MessageGenBrowserSettings settings = MessageGenBrowserSettings.Get();
             string inPath = settings.inputPath;
             inPath = EditorGUILayout.TextField("ROS message path", inPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(100)))
             {
                 inPath = EditorUtility.OpenFolderPanel("Select ROS message folder", inPath, "");
             }
@@ -78,9 +78,9 @@ namespace RosMessageGeneration
             EditorGUILayout.BeginHorizontal();
             string relativeOutPath = settings.relativeOutPath;
             relativeOutPath = EditorGUILayout.TextField("Built message path", relativeOutPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(100)))
             {
-                string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder...", settings.outputPath, "");
+                string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder", settings.outputPath, "");
                 if (absOutPath != "")
                     relativeOutPath = MessageGenBrowserSettings.ToRelativePath(absOutPath);
             }

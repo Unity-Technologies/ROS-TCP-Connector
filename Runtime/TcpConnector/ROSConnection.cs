@@ -9,12 +9,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class ROSConnection : MonoBehaviour
 {
     // Variables required for ROS communication
-    public string hostName = "192.168.1.1";
-    public int hostPort = 10000;
+    [FormerlySerializedAs("hostName")]
+    public string rosIPAddress = "192.168.1.1";
+    [FormerlySerializedAs("hostPort")]
+    public int rosPort = 10000;
 
     [Tooltip("If blank, determine IP automatically.")]
     public string overrideUnityIP = "";
@@ -23,7 +26,9 @@ public class ROSConnection : MonoBehaviour
 
     private int networkTimeout = 2000;
 
+    [Tooltip("While waiting for a service to respond, check this many times before giving up.")]
     public int awaitDataMaxRetries = 10;
+    [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
     public float awaitDataSleepSeconds = 1.0f;
 
     static object _lock = new object(); // sync lock 
@@ -66,7 +71,7 @@ public class ROSConnection : MonoBehaviour
         byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
 
         TcpClient client = new TcpClient();
-        await client.ConnectAsync(hostName, hostPort);
+        await client.ConnectAsync(rosIPAddress, rosPort);
 
         NetworkStream networkStream = client.GetStream();
         networkStream.ReadTimeout = networkTimeout;
@@ -416,7 +421,7 @@ public class ROSConnection : MonoBehaviour
         try
         {
             client = new TcpClient();
-            await client.ConnectAsync(hostName, hostPort);
+            await client.ConnectAsync(rosIPAddress, rosPort);
 
             NetworkStream networkStream = client.GetStream();
             networkStream.ReadTimeout = networkTimeout;
