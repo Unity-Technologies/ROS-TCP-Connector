@@ -54,7 +54,7 @@ namespace RosMessageGeneration
             public bool hasBuildButton => buildLabel != null;
         }
 
-        [MenuItem("RosMessageGeneration/Browse...", false, 2)]
+        [MenuItem("Robotics/Generate ROS Messages...", false, 2)]
         public static void OpenWindow()
         {
             MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "Message Auto Generation", true);
