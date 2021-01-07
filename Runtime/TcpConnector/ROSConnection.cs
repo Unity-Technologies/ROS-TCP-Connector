@@ -36,6 +36,13 @@ public class ROSConnection : MonoBehaviour
     const string SYSCOMMAND_SUBSCRIBE = "subscribe";
     const string SYSCOMMAND_PUBLISH = "publish";
 
+    // GUI window variables
+    internal HUDPanel hudPanel = null;
+
+    public bool showROSConnectionWindow = true;
+    [ReadOnly] public string lastMessageSent = "";
+    [ReadOnly] public string lastMessageReceived = "";
+
     struct SubscriberCallback
     {
         public ConstructorInfo messageConstructor;
@@ -76,7 +83,11 @@ public class ROSConnection : MonoBehaviour
         // Send the message
         try
         {
+            lastMessageSent = $"{rosServiceName} (time: {System.DateTime.Now.TimeOfDay})"; 
+            hudPanel.lastMessageSentMeta = lastMessageSent;
+            hudPanel.lastMessageSent = serviceRequest.ToString();
             networkStream.Write(messageBytes, 0, messageBytes.Length);
+            
         }
         catch (Exception e)
         {
@@ -115,6 +126,8 @@ public class ROSConnection : MonoBehaviour
             byte[] serviceNameBytes = new byte[topicLength];
             networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
             string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
+            lastMessageReceived = $"{serviceName} (time: {System.DateTime.Now.TimeOfDay})"; 
+            hudPanel.lastMessageReceivedMeta = lastMessageReceived;
 
             // Get leading bytes to determine length of remaining full message
             byte[] full_message_size_bytes = new byte[4];
@@ -138,6 +151,7 @@ public class ROSConnection : MonoBehaviour
 
         finish:
         callback(serviceResponse);
+        hudPanel.lastMessageReceived = serviceResponse.ToString();
         if (client.Connected)
             client.Close();
     }
@@ -163,6 +177,19 @@ public class ROSConnection : MonoBehaviour
         }
 
         SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+
+        hudPanel = gameObject.AddComponent<HUDPanel>();
+    }
+
+    void Start()
+    {
+        hudPanel.isEnabled = showROSConnectionWindow;
+        hudPanel.host = $"{hostName}:{hostPort}";
+    }
+
+    void OnValidate()
+    {
+        if (hudPanel != null) hudPanel.isEnabled = showROSConnectionWindow;
     }
 
     void RosUnityHandshakeCallback(UnityHandshakeResponse response)
@@ -207,6 +234,8 @@ public class ROSConnection : MonoBehaviour
                 offset += topicNameBytes.Length;
                 string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
                 // TODO: use topic name to confirm proper received location
+                lastMessageReceived = $"{topicName} (time: {System.DateTime.Now.TimeOfDay})"; 
+                hudPanel.lastMessageReceivedMeta = lastMessageReceived;
 
                 byte[] full_message_size_bytes = new byte[4];
                 networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
@@ -228,6 +257,7 @@ public class ROSConnection : MonoBehaviour
                 {
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(readBuffer, 0);
+                    hudPanel.lastMessageReceived = msg.ToString();
                     foreach (Action<Message> callback in subs.callbacks)
                     {
                         callback(msg);
@@ -437,6 +467,9 @@ public class ROSConnection : MonoBehaviour
             {
                 try
                 {
+                    lastMessageSent = $"{rosTopicName} (time: {System.DateTime.Now.TimeOfDay})"; 
+                    hudPanel.lastMessageSentMeta = lastMessageSent;
+                    hudPanel.lastMessageSent = message.ToString();
                     client.Close();
                 }
                 catch (Exception)
