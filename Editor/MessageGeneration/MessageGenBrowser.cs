@@ -57,7 +57,7 @@ namespace RosMessageGeneration
         [MenuItem("Robotics/Generate ROS Messages...", false, 2)]
         public static void OpenWindow()
         {
-            MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "Message Auto Generation", true);
+            MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "ROS Message Browser", true);
             window.minSize = new Vector2(300, 300);
             window.maxSize = new Vector2(800, 1200);
             window.Show();
