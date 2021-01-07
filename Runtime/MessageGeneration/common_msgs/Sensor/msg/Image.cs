@@ -106,5 +106,16 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Image: " +
+            "\nheader: " + header.ToString() +
+            "\nheight: " + height.ToString() +
+            "\nwidth: " + width.ToString() +
+            "\nencoding: " + encoding.ToString() +
+            "\nis_bigendian: " + is_bigendian.ToString() +
+            "\nstep: " + step.ToString() +
+            "\ndata: " + data.ToString();
+        }
     }
 }

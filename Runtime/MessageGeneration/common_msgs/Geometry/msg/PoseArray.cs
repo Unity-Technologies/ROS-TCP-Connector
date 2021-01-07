@@ -54,5 +54,11 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "PoseArray: " +
+            "\nheader: " + header.ToString() +
+            "\nposes: " + poses.ToString();
+        }
     }
 }

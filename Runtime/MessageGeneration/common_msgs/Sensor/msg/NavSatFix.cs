@@ -109,5 +109,16 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "NavSatFix: " +
+            "\nheader: " + header.ToString() +
+            "\nstatus: " + status.ToString() +
+            "\nlatitude: " + latitude.ToString() +
+            "\nlongitude: " + longitude.ToString() +
+            "\naltitude: " + altitude.ToString() +
+            "\nposition_covariance: " + position_covariance.ToString() +
+            "\nposition_covariance_type: " + position_covariance_type.ToString();
+        }
     }
 }

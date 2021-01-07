@@ -54,5 +54,12 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Pose2D: " +
+            "\nx: " + x.ToString() +
+            "\ny: " + y.ToString() +
+            "\ntheta: " + theta.ToString();
+        }
     }
 }

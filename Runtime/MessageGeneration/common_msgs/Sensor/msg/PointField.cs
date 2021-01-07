@@ -71,5 +71,13 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "PointField: " +
+            "\nname: " + name.ToString() +
+            "\noffset: " + offset.ToString() +
+            "\ndatatype: " + datatype.ToString() +
+            "\ncount: " + count.ToString();
+        }
     }
 }

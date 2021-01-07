@@ -860,7 +860,7 @@ namespace RosMessageGeneration
             {
                 if (!constants.Contains(identifier))
                 {
-                    toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + {identifier} +\n";
+                    toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + {identifier}.ToString() +\n";
                 }
             }
 

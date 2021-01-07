@@ -58,5 +58,12 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "RelativeHumidity: " +
+            "\nheader: " + header.ToString() +
+            "\nrelative_humidity: " + relative_humidity.ToString() +
+            "\nvariance: " + variance.ToString();
+        }
     }
 }

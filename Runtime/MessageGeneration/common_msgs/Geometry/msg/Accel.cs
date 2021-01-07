@@ -42,5 +42,11 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Accel: " +
+            "\nlinear: " + linear.ToString() +
+            "\nangular: " + angular.ToString();
+        }
     }
 }

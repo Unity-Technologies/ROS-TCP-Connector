@@ -73,5 +73,12 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Joy: " +
+            "\nheader: " + header.ToString() +
+            "\naxes: " + axes.ToString() +
+            "\nbuttons: " + buttons.ToString();
+        }
     }
 }

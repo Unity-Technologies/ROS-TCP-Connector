@@ -71,5 +71,12 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "CompressedImage: " +
+            "\nheader: " + header.ToString() +
+            "\nformat: " + format.ToString() +
+            "\ndata: " + data.ToString();
+        }
     }
 }

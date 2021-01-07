@@ -89,5 +89,14 @@ namespace RosMessageTypes.Diagnostic
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "DiagnosticStatus: " +
+            "\nlevel: " + level.ToString() +
+            "\nname: " + name.ToString() +
+            "\nmessage: " + message.ToString() +
+            "\nhardware_id: " + hardware_id.ToString() +
+            "\nvalues: " + values.ToString();
+        }
     }
 }

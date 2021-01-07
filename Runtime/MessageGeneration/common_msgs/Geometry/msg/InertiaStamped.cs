@@ -42,5 +42,11 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "InertiaStamped: " +
+            "\nheader: " + header.ToString() +
+            "\ninertia: " + inertia.ToString();
+        }
     }
 }

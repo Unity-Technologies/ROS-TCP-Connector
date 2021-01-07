@@ -122,5 +122,14 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "MultiDOFJointState: " +
+            "\nheader: " + header.ToString() +
+            "\njoint_names: " + joint_names.ToString() +
+            "\ntransforms: " + transforms.ToString() +
+            "\ntwist: " + twist.ToString() +
+            "\nwrench: " + wrench.ToString();
+        }
     }
 }

@@ -145,5 +145,17 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "InteractiveMarkerControl: " +
+            "\nname: " + name.ToString() +
+            "\norientation: " + orientation.ToString() +
+            "\norientation_mode: " + orientation_mode.ToString() +
+            "\ninteraction_mode: " + interaction_mode.ToString() +
+            "\nalways_visible: " + always_visible.ToString() +
+            "\nmarkers: " + markers.ToString() +
+            "\nindependent_marker_orientation: " + independent_marker_orientation.ToString() +
+            "\ndescription: " + description.ToString();
+        }
     }
 }

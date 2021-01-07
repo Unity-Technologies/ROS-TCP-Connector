@@ -104,5 +104,14 @@ namespace RosMessageTypes.Trajectory
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "JointTrajectoryPoint: " +
+            "\npositions: " + positions.ToString() +
+            "\nvelocities: " + velocities.ToString() +
+            "\naccelerations: " + accelerations.ToString() +
+            "\neffort: " + effort.ToString() +
+            "\ntime_from_start: " + time_from_start.ToString();
+        }
     }
 }

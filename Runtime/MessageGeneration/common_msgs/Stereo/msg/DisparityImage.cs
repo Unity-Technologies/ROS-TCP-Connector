@@ -95,5 +95,17 @@ namespace RosMessageTypes.Stereo
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "DisparityImage: " +
+            "\nheader: " + header.ToString() +
+            "\nimage: " + image.ToString() +
+            "\nf: " + f.ToString() +
+            "\nT: " + T.ToString() +
+            "\nvalid_window: " + valid_window.ToString() +
+            "\nmin_disparity: " + min_disparity.ToString() +
+            "\nmax_disparity: " + max_disparity.ToString() +
+            "\ndelta_d: " + delta_d.ToString();
+        }
     }
 }

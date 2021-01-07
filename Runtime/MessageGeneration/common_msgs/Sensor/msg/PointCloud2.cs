@@ -121,5 +121,18 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "PointCloud2: " +
+            "\nheader: " + header.ToString() +
+            "\nheight: " + height.ToString() +
+            "\nwidth: " + width.ToString() +
+            "\nfields: " + fields.ToString() +
+            "\nis_bigendian: " + is_bigendian.ToString() +
+            "\npoint_step: " + point_step.ToString() +
+            "\nrow_step: " + row_step.ToString() +
+            "\ndata: " + data.ToString() +
+            "\nis_dense: " + is_dense.ToString();
+        }
     }
 }

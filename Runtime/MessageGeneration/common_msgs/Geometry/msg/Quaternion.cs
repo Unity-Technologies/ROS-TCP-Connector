@@ -56,5 +56,13 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Quaternion: " +
+            "\nx: " + x.ToString() +
+            "\ny: " + y.ToString() +
+            "\nz: " + z.ToString() +
+            "\nw: " + w.ToString();
+        }
     }
 }

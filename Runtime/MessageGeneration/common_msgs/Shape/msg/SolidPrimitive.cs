@@ -81,5 +81,11 @@ namespace RosMessageTypes.Shape
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "SolidPrimitive: " +
+            "\ntype: " + type.ToString() +
+            "\ndimensions: " + dimensions.ToString();
+        }
     }
 }

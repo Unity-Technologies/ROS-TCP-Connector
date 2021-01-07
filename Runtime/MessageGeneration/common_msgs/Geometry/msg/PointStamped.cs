@@ -43,5 +43,11 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "PointStamped: " +
+            "\nheader: " + header.ToString() +
+            "\npoint: " + point.ToString();
+        }
     }
 }

@@ -107,5 +107,14 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "MenuEntry: " +
+            "\nid: " + id.ToString() +
+            "\nparent_id: " + parent_id.ToString() +
+            "\ntitle: " + title.ToString() +
+            "\ncommand: " + command.ToString() +
+            "\ncommand_type: " + command_type.ToString();
+        }
     }
 }

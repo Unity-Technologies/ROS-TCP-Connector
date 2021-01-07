@@ -145,5 +145,22 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "ImageMarker: " +
+            "\nheader: " + header.ToString() +
+            "\nns: " + ns.ToString() +
+            "\nid: " + id.ToString() +
+            "\ntype: " + type.ToString() +
+            "\naction: " + action.ToString() +
+            "\nposition: " + position.ToString() +
+            "\nscale: " + scale.ToString() +
+            "\noutline_color: " + outline_color.ToString() +
+            "\nfilled: " + filled.ToString() +
+            "\nfill_color: " + fill_color.ToString() +
+            "\nlifetime: " + lifetime.ToString() +
+            "\npoints: " + points.ToString() +
+            "\noutline_colors: " + outline_colors.ToString();
+        }
     }
 }

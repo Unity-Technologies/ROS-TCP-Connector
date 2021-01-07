@@ -71,5 +71,12 @@ namespace RosMessageTypes.Trajectory
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "JointTrajectory: " +
+            "\nheader: " + header.ToString() +
+            "\njoint_names: " + joint_names.ToString() +
+            "\npoints: " + points.ToString();
+        }
     }
 }

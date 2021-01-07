@@ -51,5 +51,11 @@ namespace RosMessageTypes.Actionlib
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "GoalID: " +
+            "\nstamp: " + stamp.ToString() +
+            "\nid: " + id.ToString();
+        }
     }
 }

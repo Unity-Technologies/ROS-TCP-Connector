@@ -70,5 +70,12 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "InteractiveMarkerInit: " +
+            "\nserver_id: " + server_id.ToString() +
+            "\nseq_num: " + seq_num.ToString() +
+            "\nmarkers: " + markers.ToString();
+        }
     }
 }

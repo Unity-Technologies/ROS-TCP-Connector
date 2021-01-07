@@ -84,5 +84,17 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Inertia: " +
+            "\nm: " + m.ToString() +
+            "\ncom: " + com.ToString() +
+            "\nixx: " + ixx.ToString() +
+            "\nixy: " + ixy.ToString() +
+            "\nixz: " + ixz.ToString() +
+            "\niyy: " + iyy.ToString() +
+            "\niyz: " + iyz.ToString() +
+            "\nizz: " + izz.ToString();
+        }
     }
 }

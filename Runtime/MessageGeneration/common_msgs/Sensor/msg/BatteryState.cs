@@ -196,5 +196,25 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "BatteryState: " +
+            "\nheader: " + header.ToString() +
+            "\nvoltage: " + voltage.ToString() +
+            "\ntemperature: " + temperature.ToString() +
+            "\ncurrent: " + current.ToString() +
+            "\ncharge: " + charge.ToString() +
+            "\ncapacity: " + capacity.ToString() +
+            "\ndesign_capacity: " + design_capacity.ToString() +
+            "\npercentage: " + percentage.ToString() +
+            "\npower_supply_status: " + power_supply_status.ToString() +
+            "\npower_supply_health: " + power_supply_health.ToString() +
+            "\npower_supply_technology: " + power_supply_technology.ToString() +
+            "\npresent: " + present.ToString() +
+            "\ncell_voltage: " + cell_voltage.ToString() +
+            "\ncell_temperature: " + cell_temperature.ToString() +
+            "\nlocation: " + location.ToString() +
+            "\nserial_number: " + serial_number.ToString();
+        }
     }
 }

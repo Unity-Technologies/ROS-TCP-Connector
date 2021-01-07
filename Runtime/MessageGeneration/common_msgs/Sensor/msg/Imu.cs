@@ -110,5 +110,16 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "Imu: " +
+            "\nheader: " + header.ToString() +
+            "\norientation: " + orientation.ToString() +
+            "\norientation_covariance: " + orientation_covariance.ToString() +
+            "\nangular_velocity: " + angular_velocity.ToString() +
+            "\nangular_velocity_covariance: " + angular_velocity_covariance.ToString() +
+            "\nlinear_acceleration: " + linear_acceleration.ToString() +
+            "\nlinear_acceleration_covariance: " + linear_acceleration_covariance.ToString();
+        }
     }
 }

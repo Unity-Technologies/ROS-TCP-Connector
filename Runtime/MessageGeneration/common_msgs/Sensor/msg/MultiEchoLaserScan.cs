@@ -137,5 +137,19 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "MultiEchoLaserScan: " +
+            "\nheader: " + header.ToString() +
+            "\nangle_min: " + angle_min.ToString() +
+            "\nangle_max: " + angle_max.ToString() +
+            "\nangle_increment: " + angle_increment.ToString() +
+            "\ntime_increment: " + time_increment.ToString() +
+            "\nscan_time: " + scan_time.ToString() +
+            "\nrange_min: " + range_min.ToString() +
+            "\nrange_max: " + range_max.ToString() +
+            "\nranges: " + ranges.ToString() +
+            "\nintensities: " + intensities.ToString();
+        }
     }
 }

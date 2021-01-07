@@ -56,5 +56,11 @@ namespace RosMessageTypes.Diagnostic
             return offset;
         }
 
+        public override string ToString()
+        {
+            return "DiagnosticArray: " +
+            "\nheader: " + header.ToString() +
+            "\nstatus: " + status.ToString();
+        }
     }
 }
