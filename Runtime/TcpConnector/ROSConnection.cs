@@ -39,7 +39,7 @@ public class ROSConnection : MonoBehaviour
     // GUI window variables
     internal HUDPanel hudPanel = null;
 
-    public bool showROSConnectionWindow = true;
+    public bool showHUD = true;
     [ReadOnly] public string lastMessageSent = "";
     [ReadOnly] public string lastMessageReceived = "";
 
@@ -183,13 +183,13 @@ public class ROSConnection : MonoBehaviour
 
     void Start()
     {
-        hudPanel.isEnabled = showROSConnectionWindow;
+        hudPanel.isEnabled = showHUD;
         hudPanel.host = $"{hostName}:{hostPort}";
     }
 
     void OnValidate()
     {
-        if (hudPanel != null) hudPanel.isEnabled = showROSConnectionWindow;
+        if (hudPanel != null) hudPanel.isEnabled = showHUD;
     }
 
     void RosUnityHandshakeCallback(UnityHandshakeResponse response)
