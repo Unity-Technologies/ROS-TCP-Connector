@@ -40,8 +40,8 @@ public class ROSConnection : MonoBehaviour
     internal HUDPanel hudPanel = null;
 
     public bool showHUD = true;
-    [ReadOnly] public string lastMessageSent = "";
-    [ReadOnly] public string lastMessageReceived = "";
+    [InspectorReadOnly(hideInEditMode:true)] public string lastMessageSent = "";
+    [InspectorReadOnly(hideInEditMode:true)] public string lastMessageReceived = "";
 
     struct SubscriberCallback
     {
