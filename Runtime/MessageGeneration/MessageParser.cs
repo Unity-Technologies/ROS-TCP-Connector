@@ -145,9 +145,6 @@ namespace RosMessageGeneration
                 writer.Write(GenerateSerializationStatements());
                 writer.Write(GenerateDeserializationStatements());
 
-                // Write ToString override
-                writer.Write(GenerateToString());
-
                 // Close class
                 writer.Write(MsgAutoGenUtilities.ONE_TAB + "}\n");
                 // Close namespace
@@ -847,32 +844,6 @@ namespace RosMessageGeneration
             function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
 
             return function;
-        }
-
-        private string GenerateToString()
-        {
-            string toString = "";
-            toString += MsgAutoGenUtilities.TWO_TABS + "public override string ToString()\n";
-            toString += MsgAutoGenUtilities.TWO_TABS + "{\n";
-            toString += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "return \"" + className + ": \" +\n";
-
-            foreach (string identifier in symbolTable.Keys)
-            {
-                if (!constants.Contains(identifier))
-                {
-                    toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + {identifier}.ToString() +\n";
-                }
-            }
-
-            if (!toString.Equals(""))
-            {
-                toString = toString.Substring(0, toString.Length - 3);
-            }
-
-            toString += ";\n";
-            toString += MsgAutoGenUtilities.TWO_TABS + "}\n";
-
-            return toString;
         }
 
         private string MatchByType(MessageTokenType type)

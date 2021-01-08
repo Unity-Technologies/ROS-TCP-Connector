@@ -43,11 +43,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Wrench: " +
-            "\nforce: " + force.ToString() +
-            "\ntorque: " + torque.ToString();
-        }
     }
 }

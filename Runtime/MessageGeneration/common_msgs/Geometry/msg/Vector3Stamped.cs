@@ -43,11 +43,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Vector3Stamped: " +
-            "\nheader: " + header.ToString() +
-            "\nvector: " + vector.ToString();
-        }
     }
 }

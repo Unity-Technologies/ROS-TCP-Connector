@@ -47,10 +47,5 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "MarkerArray: " +
-            "\nmarkers: " + markers.ToString();
-        }
     }
 }

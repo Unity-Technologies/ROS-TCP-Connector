@@ -57,12 +57,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "JoyFeedback: " +
-            "\ntype: " + type.ToString() +
-            "\nid: " + id.ToString() +
-            "\nintensity: " + intensity.ToString();
-        }
     }
 }

@@ -57,11 +57,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "NavSatStatus: " +
-            "\nstatus: " + status.ToString() +
-            "\nservice: " + service.ToString();
-        }
     }
 }

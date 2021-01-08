@@ -66,11 +66,5 @@ namespace RosMessageTypes.Shape
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Mesh: " +
-            "\ntriangles: " + triangles.ToString() +
-            "\nvertices: " + vertices.ToString();
-        }
     }
 }

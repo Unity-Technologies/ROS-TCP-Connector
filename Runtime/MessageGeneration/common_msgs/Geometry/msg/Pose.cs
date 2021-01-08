@@ -42,11 +42,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Pose: " +
-            "\nposition: " + position.ToString() +
-            "\norientation: " + orientation.ToString();
-        }
     }
 }

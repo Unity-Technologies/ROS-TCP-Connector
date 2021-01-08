@@ -121,14 +121,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "JointState: " +
-            "\nheader: " + header.ToString() +
-            "\nname: " + name.ToString() +
-            "\nposition: " + position.ToString() +
-            "\nvelocity: " + velocity.ToString() +
-            "\neffort: " + effort.ToString();
-        }
     }
 }

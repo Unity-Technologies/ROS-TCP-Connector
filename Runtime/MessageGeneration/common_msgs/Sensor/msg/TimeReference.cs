@@ -55,12 +55,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "TimeReference: " +
-            "\nheader: " + header.ToString() +
-            "\ntime_ref: " + time_ref.ToString() +
-            "\nsource: " + source.ToString();
-        }
     }
 }

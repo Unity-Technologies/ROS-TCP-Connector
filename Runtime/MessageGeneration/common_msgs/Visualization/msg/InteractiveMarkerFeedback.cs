@@ -113,18 +113,5 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "InteractiveMarkerFeedback: " +
-            "\nheader: " + header.ToString() +
-            "\nclient_id: " + client_id.ToString() +
-            "\nmarker_name: " + marker_name.ToString() +
-            "\ncontrol_name: " + control_name.ToString() +
-            "\nevent_type: " + event_type.ToString() +
-            "\npose: " + pose.ToString() +
-            "\nmenu_entry_id: " + menu_entry_id.ToString() +
-            "\nmouse_point: " + mouse_point.ToString() +
-            "\nmouse_point_valid: " + mouse_point_valid.ToString();
-        }
     }
 }

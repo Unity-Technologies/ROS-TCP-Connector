@@ -77,12 +77,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "PointCloud: " +
-            "\nheader: " + header.ToString() +
-            "\npoints: " + points.ToString() +
-            "\nchannels: " + channels.ToString();
-        }
     }
 }

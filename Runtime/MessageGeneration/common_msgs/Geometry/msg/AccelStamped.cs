@@ -43,11 +43,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "AccelStamped: " +
-            "\nheader: " + header.ToString() +
-            "\naccel: " + accel.ToString();
-        }
     }
 }

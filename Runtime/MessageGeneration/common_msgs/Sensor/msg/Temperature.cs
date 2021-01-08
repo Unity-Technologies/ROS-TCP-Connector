@@ -54,12 +54,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Temperature: " +
-            "\nheader: " + header.ToString() +
-            "\ntemperature: " + temperature.ToString() +
-            "\nvariance: " + variance.ToString();
-        }
     }
 }

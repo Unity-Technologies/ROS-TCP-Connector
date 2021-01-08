@@ -62,12 +62,5 @@ namespace RosMessageTypes.Nav
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "OccupancyGrid: " +
-            "\nheader: " + header.ToString() +
-            "\ninfo: " + info.ToString() +
-            "\ndata: " + data.ToString();
-        }
     }
 }

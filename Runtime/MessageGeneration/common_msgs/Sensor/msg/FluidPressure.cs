@@ -57,12 +57,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "FluidPressure: " +
-            "\nheader: " + header.ToString() +
-            "\nfluid_pressure: " + fluid_pressure.ToString() +
-            "\nvariance: " + variance.ToString();
-        }
     }
 }

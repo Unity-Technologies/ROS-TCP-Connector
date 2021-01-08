@@ -55,12 +55,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Vector3: " +
-            "\nx: " + x.ToString() +
-            "\ny: " + y.ToString() +
-            "\nz: " + z.ToString();
-        }
     }
 }

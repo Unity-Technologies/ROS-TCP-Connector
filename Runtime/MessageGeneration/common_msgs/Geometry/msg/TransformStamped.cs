@@ -57,12 +57,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "TransformStamped: " +
-            "\nheader: " + header.ToString() +
-            "\nchild_frame_id: " + child_frame_id.ToString() +
-            "\ntransform: " + transform.ToString();
-        }
     }
 }

@@ -48,10 +48,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "JoyFeedbackArray: " +
-            "\narray: " + array.ToString();
-        }
     }
 }

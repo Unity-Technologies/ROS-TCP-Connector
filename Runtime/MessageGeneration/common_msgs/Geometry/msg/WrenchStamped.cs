@@ -43,11 +43,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "WrenchStamped: " +
-            "\nheader: " + header.ToString() +
-            "\nwrench: " + wrench.ToString();
-        }
     }
 }

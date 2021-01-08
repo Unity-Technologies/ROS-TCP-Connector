@@ -50,10 +50,5 @@ namespace RosMessageTypes.Shape
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Plane: " +
-            "\ncoef: " + coef.ToString();
-        }
     }
 }

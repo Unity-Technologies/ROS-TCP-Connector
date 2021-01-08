@@ -88,13 +88,5 @@ namespace RosMessageTypes.Trajectory
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "MultiDOFJointTrajectoryPoint: " +
-            "\ntransforms: " + transforms.ToString() +
-            "\nvelocities: " + velocities.ToString() +
-            "\naccelerations: " + accelerations.ToString() +
-            "\ntime_from_start: " + time_from_start.ToString();
-        }
     }
 }

@@ -55,11 +55,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "PoseWithCovariance: " +
-            "\npose: " + pose.ToString() +
-            "\ncovariance: " + covariance.ToString();
-        }
     }
 }

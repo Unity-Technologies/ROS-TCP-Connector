@@ -51,10 +51,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "LaserEcho: " +
-            "\nechoes: " + echoes.ToString();
-        }
     }
 }

@@ -77,14 +77,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "RegionOfInterest: " +
-            "\nx_offset: " + x_offset.ToString() +
-            "\ny_offset: " + y_offset.ToString() +
-            "\nheight: " + height.ToString() +
-            "\nwidth: " + width.ToString() +
-            "\ndo_rectify: " + do_rectify.ToString();
-        }
     }
 }

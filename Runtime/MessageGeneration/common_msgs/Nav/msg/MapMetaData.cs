@@ -67,14 +67,5 @@ namespace RosMessageTypes.Nav
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "MapMetaData: " +
-            "\nmap_load_time: " + map_load_time.ToString() +
-            "\nresolution: " + resolution.ToString() +
-            "\nwidth: " + width.ToString() +
-            "\nheight: " + height.ToString() +
-            "\norigin: " + origin.ToString();
-        }
     }
 }

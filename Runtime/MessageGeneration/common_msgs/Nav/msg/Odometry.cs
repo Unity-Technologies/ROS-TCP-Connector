@@ -58,13 +58,5 @@ namespace RosMessageTypes.Nav
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Odometry: " +
-            "\nheader: " + header.ToString() +
-            "\nchild_frame_id: " + child_frame_id.ToString() +
-            "\npose: " + pose.ToString() +
-            "\ntwist: " + twist.ToString();
-        }
     }
 }

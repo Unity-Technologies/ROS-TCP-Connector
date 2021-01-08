@@ -74,11 +74,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "ChannelFloat32: " +
-            "\nname: " + name.ToString() +
-            "\nvalues: " + values.ToString();
-        }
     }
 }

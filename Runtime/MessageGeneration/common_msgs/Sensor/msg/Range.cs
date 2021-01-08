@@ -100,15 +100,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Range: " +
-            "\nheader: " + header.ToString() +
-            "\nradiation_type: " + radiation_type.ToString() +
-            "\nfield_of_view: " + field_of_view.ToString() +
-            "\nmin_range: " + min_range.ToString() +
-            "\nmax_range: " + max_range.ToString() +
-            "\nrange: " + range.ToString();
-        }
     }
 }

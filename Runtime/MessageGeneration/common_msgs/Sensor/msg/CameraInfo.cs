@@ -242,20 +242,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "CameraInfo: " +
-            "\nheader: " + header.ToString() +
-            "\nheight: " + height.ToString() +
-            "\nwidth: " + width.ToString() +
-            "\ndistortion_model: " + distortion_model.ToString() +
-            "\nD: " + D.ToString() +
-            "\nK: " + K.ToString() +
-            "\nR: " + R.ToString() +
-            "\nP: " + P.ToString() +
-            "\nbinning_x: " + binning_x.ToString() +
-            "\nbinning_y: " + binning_y.ToString() +
-            "\nroi: " + roi.ToString();
-        }
     }
 }

@@ -109,16 +109,5 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "InteractiveMarker: " +
-            "\nheader: " + header.ToString() +
-            "\npose: " + pose.ToString() +
-            "\nname: " + name.ToString() +
-            "\ndescription: " + description.ToString() +
-            "\nscale: " + scale.ToString() +
-            "\nmenu_entries: " + menu_entries.ToString() +
-            "\ncontrols: " + controls.ToString();
-        }
     }
 }

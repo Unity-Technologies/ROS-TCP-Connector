@@ -73,12 +73,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "MagneticField: " +
-            "\nheader: " + header.ToString() +
-            "\nmagnetic_field: " + magnetic_field.ToString() +
-            "\nmagnetic_field_covariance: " + magnetic_field_covariance.ToString();
-        }
     }
 }

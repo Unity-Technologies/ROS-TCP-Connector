@@ -176,24 +176,5 @@ namespace RosMessageTypes.Visualization
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Marker: " +
-            "\nheader: " + header.ToString() +
-            "\nns: " + ns.ToString() +
-            "\nid: " + id.ToString() +
-            "\ntype: " + type.ToString() +
-            "\naction: " + action.ToString() +
-            "\npose: " + pose.ToString() +
-            "\nscale: " + scale.ToString() +
-            "\ncolor: " + color.ToString() +
-            "\nlifetime: " + lifetime.ToString() +
-            "\nframe_locked: " + frame_locked.ToString() +
-            "\npoints: " + points.ToString() +
-            "\ncolors: " + colors.ToString() +
-            "\ntext: " + text.ToString() +
-            "\nmesh_resource: " + mesh_resource.ToString() +
-            "\nmesh_use_embedded_materials: " + mesh_use_embedded_materials.ToString();
-        }
     }
 }

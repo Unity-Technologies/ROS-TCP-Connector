@@ -65,12 +65,5 @@ namespace RosMessageTypes.Sensor
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Illuminance: " +
-            "\nheader: " + header.ToString() +
-            "\nilluminance: " + illuminance.ToString() +
-            "\nvariance: " + variance.ToString();
-        }
     }
 }

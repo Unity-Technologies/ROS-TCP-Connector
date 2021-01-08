@@ -43,11 +43,5 @@ namespace RosMessageTypes.Geometry
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "QuaternionStamped: " +
-            "\nheader: " + header.ToString() +
-            "\nquaternion: " + quaternion.ToString();
-        }
     }
 }

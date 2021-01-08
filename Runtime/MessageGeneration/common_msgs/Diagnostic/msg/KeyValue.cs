@@ -49,11 +49,5 @@ namespace RosMessageTypes.Diagnostic
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "KeyValue: " +
-            "\nkey: " + key.ToString() +
-            "\nvalue: " + value.ToString();
-        }
     }
 }

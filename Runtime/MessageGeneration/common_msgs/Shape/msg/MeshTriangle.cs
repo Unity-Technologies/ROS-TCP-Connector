@@ -46,10 +46,5 @@ namespace RosMessageTypes.Shape
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "MeshTriangle: " +
-            "\nvertex_indices: " + vertex_indices.ToString();
-        }
     }
 }

@@ -66,13 +66,5 @@ namespace RosMessageTypes.Nav
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "GridCells: " +
-            "\nheader: " + header.ToString() +
-            "\ncell_width: " + cell_width.ToString() +
-            "\ncell_height: " + cell_height.ToString() +
-            "\ncells: " + cells.ToString();
-        }
     }
 }

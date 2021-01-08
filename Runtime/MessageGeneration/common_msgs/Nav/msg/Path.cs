@@ -54,11 +54,5 @@ namespace RosMessageTypes.Nav
             return offset;
         }
 
-        public override string ToString()
-        {
-            return "Path: " +
-            "\nheader: " + header.ToString() +
-            "\nposes: " + poses.ToString();
-        }
     }
 }
