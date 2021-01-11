@@ -20,13 +20,13 @@ public class ROSSettingsEditor : EditorWindow
 
     protected virtual void OnGUI()
     {
-        if(prefab == null)
+        if (prefab == null)
         {
             prefabObj = Resources.Load<GameObject>("ROSConnectionPrefab");
-            if(prefabObj != null)
+            if (prefabObj != null)
                 prefab = prefabObj.GetComponent<ROSConnection>();
 
-            if(prefab == null)
+            if (prefab == null)
             {
                 GameObject sceneObj = new GameObject("ROSConnection");
                 sceneObj.AddComponent<ROSConnection>();
@@ -43,12 +43,12 @@ public class ROSSettingsEditor : EditorWindow
         prefab.rosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.rosIPAddress);
         prefab.rosPort = EditorGUILayout.IntField("ROS Port", prefab.rosPort);
         EditorGUILayout.Space();
-        prefab.overrideUnityIP = EditorGUILayout.TextField("Override Unity IP Address", prefab.overrideUnityIP);
+        prefab.overrideUnityIP = EditorGUILayout.TextField(new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."), prefab.overrideUnityIP);
         prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);
-        prefab.awaitDataMaxRetries = EditorGUILayout.IntField("Max Retries", prefab.awaitDataMaxRetries);
-        prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField("Sleep (seconds)", prefab.awaitDataSleepSeconds);
+        prefab.awaitDataMaxRetries = EditorGUILayout.IntField(new GUIContent("Max Retries", "While waiting for a service to respond, check this many times before giving up."), prefab.awaitDataMaxRetries);
+        prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField(new GUIContent("Sleep (seconds)", "While waiting for a service to respond, wait this many seconds between checks."), prefab.awaitDataSleepSeconds);
 
         if (GUI.changed)
         {
