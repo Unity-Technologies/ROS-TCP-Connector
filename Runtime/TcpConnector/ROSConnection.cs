@@ -108,33 +108,11 @@ public class ROSConnection : MonoBehaviour
             await Task.Delay((int)(awaitDataSleepSeconds * 1000));
         }
 
-        int numberOfBytesRead = 0;
         try
         {
-            // Get first bytes to determine length of service name
-            byte[] rawServiceBytes = new byte[4];
-            networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
-            int topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
-
-            // Create container and read service name from network stream
-            byte[] serviceNameBytes = new byte[topicLength];
-            networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
-            string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
-
-            // Get leading bytes to determine length of remaining full message
-            byte[] full_message_size_bytes = new byte[4];
-            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
-            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
-
-            // Create container and read message from network stream
-            byte[] readBuffer = new byte[full_message_size];
-            while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
-            {
-                var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
-                numberOfBytesRead += readBytes;
-            }
-
-            serviceResponse.Deserialize(readBuffer, 0);
+            string serviceName;
+            byte[] content = ReadMessageContents(networkStream, out serviceName);
+            serviceResponse.Deserialize(content, 0);
         }
         catch (Exception e)
         {
@@ -208,70 +186,81 @@ public class ROSConnection : MonoBehaviour
         Debug.LogError("ROS-Unity error: " + error.message);
     }
 
-    /// <summary>
-    /// 	Function is meant to be overridden by inheriting classes to specify how to handle read messages.
-    /// </summary>
     /// <param name="tcpClient"></param> TcpClient to read byte stream from.
     protected async Task HandleConnectionAsync(TcpClient tcpClient)
     {
         await Task.Yield();
-        // continue asynchronously on another threads
 
+        // continue asynchronously on another thread
         ReadMessage(tcpClient.GetStream());
     }
 
     void ReadMessage(NetworkStream networkStream)
     {
+        if (!networkStream.CanRead)
+            return;
+
+        SubscriberCallback subs;
+        Message msg;
+
         try
         {
-            if (networkStream.CanRead)
-            {
-                int offset = 0;
+            string topicName;
+            byte[] content = ReadMessageContents(networkStream, out topicName);
 
-                // Get first bytes to determine length of topic name
-                byte[] rawTopicBytes = new byte[4];
-                networkStream.Read(rawTopicBytes, 0, rawTopicBytes.Length);
-                offset += 4;
-                int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
-
-                // Read and convert topic name
-                byte[] topicNameBytes = new byte[topicLength];
-                networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
-                offset += topicNameBytes.Length;
-                string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
-                // TODO: use topic name to confirm proper received location
-
-                byte[] full_message_size_bytes = new byte[4];
-                networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
-                offset += 4;
-                int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
-
-                byte[] readBuffer = new byte[full_message_size];
-                int numberOfBytesRead = 0;
-
-                while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
-                {
-                    int bytesRead = networkStream.Read(readBuffer, 0, readBuffer.Length);
-                    offset += bytesRead;
-                    numberOfBytesRead += bytesRead;
-                }
-
-                SubscriberCallback subs;
-                if (subscribers.TryGetValue(topicName, out subs))
-                {
-                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
-                    msg.Deserialize(readBuffer, 0);
-                    foreach (Action<Message> callback in subs.callbacks)
-                    {
-                        callback(msg);
-                    }
-                }
-            }
+            if (!subscribers.TryGetValue(topicName, out subs))
+                return; // not interested in this topic
+            
+            msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+            msg.Deserialize(content, 0);
         }
         catch (Exception e)
         {
-            Debug.LogError("Exception raised!! " + e);
+            Debug.LogError("Error reading message!! "+e);
+            return;
         }
+
+        foreach (Action<Message> callback in subs.callbacks)
+        {
+            try
+            {
+                callback(msg);
+            }
+            catch(Exception e)
+            {
+                Debug.LogError("Subscriber callback problem: "+e);
+            }
+        }
+    }
+
+    byte[] ReadMessageContents(NetworkStream networkStream, out string topicName)
+    {
+        // Get first bytes to determine length of topic name
+        byte[] rawTopicBytes = new byte[4];
+        networkStream.Read(rawTopicBytes, 0, rawTopicBytes.Length);
+        int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
+
+        // Read and convert topic name
+        byte[] topicNameBytes = new byte[topicLength];
+        networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
+        topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
+
+        byte[] full_message_size_bytes = new byte[4];
+        networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
+        int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
+
+        byte[] readBuffer = new byte[full_message_size];
+        int bytesRemaining = full_message_size;
+        int totalBytesRead = 0;
+
+        while (networkStream.DataAvailable && bytesRemaining > 0)
+        {
+            int bytesRead = networkStream.Read(readBuffer, totalBytesRead, bytesRemaining);
+            totalBytesRead += bytesRead;
+            bytesRemaining -= bytesRead;
+        }
+
+        return readBuffer;
     }
 
     /// <summary>
