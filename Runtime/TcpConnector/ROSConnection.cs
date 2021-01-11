@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 public class ROSConnection : MonoBehaviour
@@ -36,7 +37,7 @@ public class ROSConnection : MonoBehaviour
     NetworkStream persistantPublisherNetworkStream;
 
     static object _lock = new object(); // sync lock 
-    static object _openPublisherConnectionLock = new object();
+    static readonly SemaphoreSlim _openPublisherConnectionAsyncLock = new SemaphoreSlim(1, 1);
     static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
     const string ERROR_TOPIC_NAME = "__error";
@@ -100,7 +101,7 @@ public class ROSConnection : MonoBehaviour
 
         if (keepConnections)
         {
-            Connect();
+            await Connect();
             client = persistantPublisherClient;
             networkStream = persistantPublisherNetworkStream;
         } else
@@ -442,20 +443,25 @@ public class ROSConnection : MonoBehaviour
         Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
     }
 
-    protected void Connect()
+    protected async Task Connect()
     {
         // prevent concurrent persistant connection opening
-        lock(_openPublisherConnectionLock)
+        await _openPublisherConnectionAsyncLock.WaitAsync();
+        try
         {
             if (persistantPublisherClient == null || !persistantPublisherClient.Connected )
             {
                 persistantPublisherClient = new TcpClient();            
                 Debug.Log("Connecting persistent publisher client ...");
-                persistantPublisherClient.Connect(hostName, hostPort);
+                await persistantPublisherClient.ConnectAsync(hostName, hostPort);
                 persistantPublisherNetworkStream = persistantPublisherClient.GetStream();
                 persistantPublisherNetworkStream.ReadTimeout = networkTimeout;
                 Debug.Log("Connected persistent publisher client");
             }
+        }
+        finally
+        {
+            _openPublisherConnectionAsyncLock.Release();
         }
     }
 
@@ -467,7 +473,7 @@ public class ROSConnection : MonoBehaviour
             NetworkStream networkStream = null;
             if (keepConnections)
             {
-                Connect();
+                await Connect();
                 client = persistantPublisherClient;
                 networkStream = persistantPublisherNetworkStream;
             } else
