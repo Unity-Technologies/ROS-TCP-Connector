@@ -553,6 +553,7 @@ namespace RosMessageGeneration
             string importsStr = "";
 
             importsStr += "using System;\n";
+            importsStr += "using System.Linq;\n";
             importsStr += "using System.Collections.Generic;\n";
             importsStr += "using System.Text;\n";
             importsStr += "using RosMessageGeneration;\n";
@@ -860,7 +861,16 @@ namespace RosMessageGeneration
             {
                 if (!constants.Contains(identifier))
                 {
-                    toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + {identifier}.ToString() +\n";
+                    if (arraySizes.ContainsKey(identifier))
+                    {
+                        string type = symbolTable[identifier];
+                        var parse = type.Substring(0, type.Length - 2);
+                        toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + System.String.Join(\", \", {identifier}.ToList()) +\n";
+                    }
+                    else
+                    {
+                        toString += $"{MsgAutoGenUtilities.TWO_TABS}{MsgAutoGenUtilities.ONE_TAB}\"\\n{identifier}: \" + {identifier}.ToString() +\n";
+                    }
                 }
             }
 

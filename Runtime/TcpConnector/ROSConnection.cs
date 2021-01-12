@@ -90,7 +90,7 @@ public class ROSConnection : MonoBehaviour
         {
             lastMessageSent = $"{rosServiceName} (time: {System.DateTime.Now.TimeOfDay})"; 
             hudPanel.lastMessageSentMeta = lastMessageSent;
-            hudPanel.lastMessageSent = serviceRequest.ToString();
+            hudPanel.lastMessageSent = serviceRequest;
             networkStream.Write(messageBytes, 0, messageBytes.Length);
             
         }
@@ -156,7 +156,7 @@ public class ROSConnection : MonoBehaviour
 
         finish:
         callback(serviceResponse);
-        hudPanel.lastMessageReceived = serviceResponse.ToString();
+        hudPanel.lastMessageReceived = serviceResponse;
         if (client.Connected)
             client.Close();
     }
@@ -202,6 +202,10 @@ public class ROSConnection : MonoBehaviour
 
     private void Start()
     {
+        hudPanel = gameObject.AddComponent<HUDPanel>();
+        hudPanel.isEnabled = showHUD;
+        hudPanel.host = $"{rosIPAddress}:{rosPort}";
+        
         Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
         if (overrideUnityIP != "")
@@ -210,14 +214,6 @@ public class ROSConnection : MonoBehaviour
         }
 
         SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
-
-        hudPanel = gameObject.AddComponent<HUDPanel>();
-    }
-
-    void Start()
-    {
-        hudPanel.isEnabled = showHUD;
-        hudPanel.host = $"{hostName}:{hostPort}";
     }
 
     void OnValidate()
@@ -290,7 +286,7 @@ public class ROSConnection : MonoBehaviour
                 {
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(readBuffer, 0);
-                    hudPanel.lastMessageReceived = msg.ToString();
+                    hudPanel.lastMessageReceived = msg;
                     foreach (Action<Message> callback in subs.callbacks)
                     {
                         callback(msg);
@@ -502,7 +498,7 @@ public class ROSConnection : MonoBehaviour
                 {
                     lastMessageSent = $"{rosTopicName} (time: {System.DateTime.Now.TimeOfDay})"; 
                     hudPanel.lastMessageSentMeta = lastMessageSent;
-                    hudPanel.lastMessageSent = message.ToString();
+                    hudPanel.lastMessageSent = message;
                     client.Close();
                 }
                 catch (Exception)
