@@ -72,7 +72,7 @@ namespace RosMessageGeneration
 
             if (rosMsgName.Equals(""))
             {
-                this.rosMsgName = MsgAutoGenUtilities.CapitalizeFirstLetter(inFileName);
+                this.rosMsgName = inFileName;
             }
             else
             {
