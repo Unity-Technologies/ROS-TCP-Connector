@@ -54,10 +54,10 @@ namespace RosMessageGeneration
             public bool hasBuildButton => buildLabel != null;
         }
 
-        [MenuItem("RosMessageGeneration/Browse...", false, 2)]
+        [MenuItem("Robotics/Generate ROS Messages...", false, 2)]
         public static void OpenWindow()
         {
-            MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "Message Auto Generation", true);
+            MessageGenBrowser window = GetWindow<MessageGenBrowser>(false, "ROS Message Browser", true);
             window.minSize = new Vector2(300, 300);
             window.maxSize = new Vector2(800, 1200);
             window.Show();
@@ -69,7 +69,7 @@ namespace RosMessageGeneration
             MessageGenBrowserSettings settings = MessageGenBrowserSettings.Get();
             string inPath = settings.inputPath;
             inPath = EditorGUILayout.TextField("ROS message path", inPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(100)))
             {
                 inPath = EditorUtility.OpenFolderPanel("Select ROS message folder", inPath, "");
             }
@@ -78,9 +78,9 @@ namespace RosMessageGeneration
             EditorGUILayout.BeginHorizontal();
             string relativeOutPath = settings.relativeOutPath;
             relativeOutPath = EditorGUILayout.TextField("Built message path", relativeOutPath);
-            if (GUILayout.Button("Select Folder...", GUILayout.Width(150)))
+            if (GUILayout.Button("Browse", GUILayout.Width(100)))
             {
-                string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder...", settings.outputPath, "");
+                string absOutPath = EditorUtility.OpenFolderPanel("Select Unity message folder", settings.outputPath, "");
                 if (absOutPath != "")
                     relativeOutPath = MessageGenBrowserSettings.ToRelativePath(absOutPath);
             }
