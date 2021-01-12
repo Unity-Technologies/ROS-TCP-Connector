@@ -15,7 +15,7 @@ public class ROSConnection : MonoBehaviour
 {
     // Variables required for ROS communication
     [FormerlySerializedAs("hostName")]
-    public string rosIPAddress = "192.168.1.1";
+    public string rosIPAddress = "127.0.0.1";
     [FormerlySerializedAs("hostPort")]
     public int rosPort = 10000;
 
@@ -157,8 +157,36 @@ public class ROSConnection : MonoBehaviour
         SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
     }
 
+    private static ROSConnection _instance;
+    public static ROSConnection instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
+                if (prefab == null)
+                {
+                    Debug.LogWarning("No settings for ROSConnection.instance! Open \"ROS Settings\" from the Robotics menu to configure it.");
+                    GameObject instance = new GameObject("ROSConnection");
+                    _instance = instance.AddComponent<ROSConnection>();
+                }
+                else
+                {
+                    Instantiate(prefab);
+                }
+            }
+            return _instance;
+        }
+    }
 
-    void Awake()
+    void OnEnable()
+    {
+        if (_instance == null)
+            _instance = this;
+    }
+
+    private void Start()
     {
         Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
@@ -469,7 +497,7 @@ public class ROSConnection : MonoBehaviour
     {
         byte[] topicName = message.SerializeString(rosTopicName);
         List<byte[]> segments = message.SerializationStatements();
-        int messageLength = segments.Select(s=>s.Length).Sum();
+        int messageLength = segments.Select(s => s.Length).Sum();
         byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
 
         networkStream.Write(topicName, 0, topicName.Length);
