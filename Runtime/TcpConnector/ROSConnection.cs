@@ -20,6 +20,7 @@ public class ROSConnection : MonoBehaviour
     public string overrideUnityIP = "";
     public int unityPort = 5005;
     bool alreadyStartedServer = false;
+    bool serverRunning = false;
 
     private int networkTimeout = 2000;
 
@@ -277,7 +278,8 @@ public class ROSConnection : MonoBehaviour
             return;
 
         alreadyStartedServer = true;
-        while (true)
+        serverRunning = true;
+        while (serverRunning)
         {
             try
             {
@@ -286,7 +288,7 @@ public class ROSConnection : MonoBehaviour
 
                 Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
 
-                while (true)   //we wait for a connection
+                while (serverRunning)   //we wait for a connection
                 {
                     var tcpClient = await tcpListener.AcceptTcpClientAsync();
 
@@ -327,6 +329,7 @@ public class ROSConnection : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        serverRunning= false;
         if (tcpListener != null)
             tcpListener.Stop();
         tcpListener = null;
