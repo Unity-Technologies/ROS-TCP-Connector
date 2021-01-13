@@ -38,6 +38,8 @@ public class ROSConnection : MonoBehaviour
 
     static object _lock = new object(); // sync lock 
     static readonly SemaphoreSlim _openPublisherConnectionAsyncLock = new SemaphoreSlim(1, 1);
+    // Cancellation token for publisher connection
+    static CancellationTokenSource publisherTokenStore = new CancellationTokenSource();
     static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
     const string ERROR_TOPIC_NAME = "__error";
@@ -99,26 +101,30 @@ public class ROSConnection : MonoBehaviour
         NetworkStream networkStream = null;
         TcpClient client = null;
 
-        if (keepConnections)
-        {
-            await Connect();
-            client = persistantPublisherClient;
-            networkStream = persistantPublisherNetworkStream;
-        } else
-        {
-            client = new TcpClient();
-            await client.ConnectAsync(hostName, hostPort);
-
-            networkStream = client.GetStream();
-            networkStream.ReadTimeout = networkTimeout;
-        }
-
         RESPONSE serviceResponse = new RESPONSE();
-
+        
         // Send the message
         try
         {
+            if (keepConnections)
+            {
+                await Connect();
+                client = persistantPublisherClient;
+                networkStream = persistantPublisherNetworkStream;
+            } else
+            {
+                client = new TcpClient();
+                await client.ConnectAsync(hostName, hostPort);
+
+                networkStream = client.GetStream();
+                networkStream.ReadTimeout = networkTimeout;
+            }
+      
             networkStream.Write(messageBytes, 0, messageBytes.Length);
+        }
+        catch(OperationCanceledException)
+        {
+            // The operation was cancelled
         }
         catch (Exception e)
         {
@@ -328,7 +334,7 @@ public class ROSConnection : MonoBehaviour
 
                 Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
 
-                while (true)   //we wait for a connection
+                while (tcpListener != null)   //we wait for a connection
                 {
                     var tcpClient = await tcpListener.AcceptTcpClientAsync();
 
@@ -340,7 +346,7 @@ public class ROSConnection : MonoBehaviour
                     // try to get through the message queue before doing another await
                     // but if messages are arriving faster than we can process them, don't freeze up
                     float abortAtRealtime = Time.realtimeSinceStartup + 0.1f;
-                    while (tcpListener.Pending() && Time.realtimeSinceStartup < abortAtRealtime)
+                    while (tcpListener != null && tcpListener.Pending() && Time.realtimeSinceStartup < abortAtRealtime)
                     {
                         tcpClient = tcpListener.AcceptTcpClient();
                         task = StartHandleConnectionAsync(tcpClient);
@@ -369,6 +375,8 @@ public class ROSConnection : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        // Cancel publishing related tasks
+        publisherTokenStore.Cancel();
         if (tcpListener != null)
             tcpListener.Stop();
         tcpListener = null;
@@ -446,10 +454,11 @@ public class ROSConnection : MonoBehaviour
     protected async Task Connect()
     {
         // prevent concurrent persistant connection opening
-        await _openPublisherConnectionAsyncLock.WaitAsync();
+        await _openPublisherConnectionAsyncLock.WaitAsync(publisherTokenStore.Token);
         try
         {
-            if (persistantPublisherClient == null || !persistantPublisherClient.Connected )
+            publisherTokenStore.Token.ThrowIfCancellationRequested();
+            if (persistantPublisherNetworkStream == null || persistantPublisherClient == null || !persistantPublisherClient.Connected )
             {
                 persistantPublisherClient = new TcpClient();            
                 Debug.Log("Connecting persistent publisher client ...");
@@ -459,10 +468,11 @@ public class ROSConnection : MonoBehaviour
                 Debug.Log("Connected persistent publisher client");
             }
         }
+            
         finally
         {
             _openPublisherConnectionAsyncLock.Release();
-        }
+        }   
     }
 
     public async void Send(string rosTopicName, Message message)
@@ -485,6 +495,11 @@ public class ROSConnection : MonoBehaviour
                 networkStream.ReadTimeout = networkTimeout;
             }
             WriteDataStaggered(networkStream, rosTopicName, message);
+        }
+        
+        catch(OperationCanceledException)
+        {
+            // The operation was cancelled
         }
         catch (NullReferenceException e)
         {
