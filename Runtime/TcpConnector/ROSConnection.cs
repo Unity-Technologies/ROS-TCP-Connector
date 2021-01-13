@@ -320,7 +320,13 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
-    void Awake()
+    void OnEnable()
+    {
+        if (_instance == null)
+            _instance = this;
+    }
+	
+    private void Start()
     {
         Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
@@ -332,7 +338,6 @@ public class ROSConnection : MonoBehaviour
         SendSysCommand(SYSCOMMAND_CONNECTIONS_PARAMETERS, new SysCommand_ConnectionsParameters { keep_connections = this.keepConnections, timeout_in_s = networkTimeout / 1000.0f });
 
         SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
-
     }
 
     void RosUnityHandshakeCallback(UnityHandshakeResponse response)
