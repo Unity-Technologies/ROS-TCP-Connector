@@ -85,14 +85,13 @@ public class ROSConnection : MonoBehaviour
 
         RESPONSE serviceResponse = new RESPONSE();
 
+        int serviceID = 0;
+
         // Send the message
         try
         {
-            lastMessageSent = $"{rosServiceName} (time: {System.DateTime.Now.TimeOfDay})"; 
-            hudPanel.lastMessageSentMeta = lastMessageSent;
-            hudPanel.lastMessageSent = serviceRequest;
+            serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
             networkStream.Write(messageBytes, 0, messageBytes.Length);
-            
         }
         catch (Exception e)
         {
@@ -131,8 +130,6 @@ public class ROSConnection : MonoBehaviour
             byte[] serviceNameBytes = new byte[topicLength];
             networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
             string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
-            lastMessageReceived = $"{serviceName} (time: {System.DateTime.Now.TimeOfDay})"; 
-            hudPanel.lastMessageReceivedMeta = lastMessageReceived;
 
             // Get leading bytes to determine length of remaining full message
             byte[] full_message_size_bytes = new byte[4];
@@ -156,7 +153,7 @@ public class ROSConnection : MonoBehaviour
 
         finish:
         callback(serviceResponse);
-        hudPanel.lastMessageReceived = serviceResponse;
+        hudPanel.AddServiceResponse(serviceID, serviceResponse);
         if (client.Connected)
             client.Close();
     }
@@ -262,9 +259,6 @@ public class ROSConnection : MonoBehaviour
                 networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
                 offset += topicNameBytes.Length;
                 string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
-                // TODO: use topic name to confirm proper received location
-                lastMessageReceived = $"{topicName} (time: {System.DateTime.Now.TimeOfDay})"; 
-                hudPanel.lastMessageReceivedMeta = lastMessageReceived;
 
                 byte[] full_message_size_bytes = new byte[4];
                 networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
@@ -286,7 +280,7 @@ public class ROSConnection : MonoBehaviour
                 {
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(readBuffer, 0);
-                    hudPanel.lastMessageReceived = msg;
+                    hudPanel.SetLastMessageReceived(topicName, msg);
                     foreach (Action<Message> callback in subs.callbacks)
                     {
                         callback(msg);
@@ -496,9 +490,7 @@ public class ROSConnection : MonoBehaviour
             {
                 try
                 {
-                    lastMessageSent = $"{rosTopicName} (time: {System.DateTime.Now.TimeOfDay})"; 
-                    hudPanel.lastMessageSentMeta = lastMessageSent;
-                    hudPanel.lastMessageSent = message;
+                    hudPanel.SetLastMessageSent(rosTopicName, message);
                     client.Close();
                 }
                 catch (Exception)

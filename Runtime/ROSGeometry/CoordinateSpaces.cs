@@ -46,6 +46,14 @@ namespace ROSGeometry
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.x, q.z, q.y, -q.w);
     }
 
+    public enum CoordinateSpaceSelection
+    {
+        RUF,
+        FLU,
+        NED,
+        ENU
+    }
+
     public static class CoordinateSpaceExtensions
     {
         public static Vector3<C> To<C>(this Vector3 self)
@@ -103,6 +111,78 @@ namespace ROSGeometry
         public static RosMessageTypes.Geometry.Transform To<C>(this Transform transform) where C : CoordinateSpace, new()
         {
             return new RosMessageTypes.Geometry.Transform(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
+        }
+
+        public static Vector3 From(this RosMessageTypes.Geometry.Point self, CoordinateSpaceSelection selection)
+        {
+            switch (selection)
+            {
+                case CoordinateSpaceSelection.RUF:
+                    return self.From<RUF>();
+                case CoordinateSpaceSelection.FLU:
+                    return self.From<FLU>();
+                case CoordinateSpaceSelection.ENU:
+                    return self.From<ENU>();
+                case CoordinateSpaceSelection.NED:
+                    return self.From<NED>();
+                default:
+                    Debug.LogError("Invalid coordinate space " + selection);
+                    return self.From<RUF>();
+            }
+        }
+
+        public static Vector3 From(this RosMessageTypes.Geometry.Point32 self, CoordinateSpaceSelection selection)
+        {
+            switch (selection)
+            {
+                case CoordinateSpaceSelection.RUF:
+                    return self.From<RUF>();
+                case CoordinateSpaceSelection.FLU:
+                    return self.From<FLU>();
+                case CoordinateSpaceSelection.ENU:
+                    return self.From<ENU>();
+                case CoordinateSpaceSelection.NED:
+                    return self.From<NED>();
+                default:
+                    Debug.LogError("Invalid coordinate space " + selection);
+                    return self.From<RUF>();
+            }
+        }
+
+        public static Vector3 From(this RosMessageTypes.Geometry.Vector3 self, CoordinateSpaceSelection selection)
+        {
+            switch (selection)
+            {
+                case CoordinateSpaceSelection.RUF:
+                    return self.From<RUF>();
+                case CoordinateSpaceSelection.FLU:
+                    return self.From<FLU>();
+                case CoordinateSpaceSelection.ENU:
+                    return self.From<ENU>();
+                case CoordinateSpaceSelection.NED:
+                    return self.From<NED>();
+                default:
+                    Debug.LogError("Invalid coordinate space " + selection);
+                    return self.From<RUF>();
+            }
+        }
+
+        public static Quaternion From(this RosMessageTypes.Geometry.Quaternion self, CoordinateSpaceSelection selection)
+        {
+            switch (selection)
+            {
+                case CoordinateSpaceSelection.RUF:
+                    return self.From<RUF>();
+                case CoordinateSpaceSelection.FLU:
+                    return self.From<FLU>();
+                case CoordinateSpaceSelection.ENU:
+                    return self.From<ENU>();
+                case CoordinateSpaceSelection.NED:
+                    return self.From<NED>();
+                default:
+                    Debug.LogError("Invalid coordinate space " + selection);
+                    return self.From<RUF>();
+            }
         }
     }
 }

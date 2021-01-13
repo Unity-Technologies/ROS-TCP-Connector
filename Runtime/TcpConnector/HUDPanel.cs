@@ -7,10 +7,10 @@ using UnityEngine;
 
 public class HUDPanel : MonoBehaviour
 {
-    [Tooltip("Convert points to/from FLU for visualization?")]
-    public bool convertPoints = true;
+    [Tooltip("Assume ROS points are in this coordinate space")]
+    public CoordinateSpaceSelection coordinateSpace = CoordinateSpaceSelection.FLU;
     public bool showPoints = true;
-    
+
     // GUI variables
     GUIStyle labelStyle;
     GUIStyle contentStyle;
@@ -19,43 +19,70 @@ public class HUDPanel : MonoBehaviour
     GUIStyle recvStyle;
     bool viewSent = false;
     bool viewRecv = false;
-    Vector2 sentViewVector = Vector2.zero;
-    Vector2 recvViewVector = Vector2.zero;
+    bool viewSrvs = false;
     Rect scrollRect;
-    Rect sentRect;
-    Rect recvRect;
     bool redrawGUI = false;
-    bool waitForResponse = false;
-    Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, string>> points;
+    Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, SendRecv>> points;
 
     // ROS Message variables
     internal bool isEnabled;
     internal string host;
-    internal string lastMessageSentMeta = "";
-    internal Message _lastMessageSent;
-    internal string lastMessageReceivedMeta = "";
-    internal Message _lastMessageReceived;
 
-    public Message lastMessageSent
+    MessageViewState lastMessageSent;
+    string lastMessageSentMeta = "None";
+
+    public void SetLastMessageSent(string topic, Message message)
     {
-        get { return _lastMessageSent; }
-        set
-        {
-            _lastMessageSent = value;
-            redrawGUI = true;
-            waitForResponse = value.GetType().ToString().Contains("ServiceRequest");
-        }
+        lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message, sendRecv = SendRecv.Recv };
+        lastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+        redrawGUI = true;
     }
 
-    public Message lastMessageReceived
+    MessageViewState lastMessageReceived;
+    string lastMessageReceivedMeta = "None";
+
+    public void SetLastMessageReceived(string topic, Message message)
     {
-        get { return _lastMessageReceived; }
-        set
+        lastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message, sendRecv = SendRecv.Recv };
+        lastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+        redrawGUI = true;
+    }
+
+    List<MessageViewState> activeServices = new List<MessageViewState>();
+    MessageViewState lastCompletedServiceRequest = null;
+    MessageViewState lastCompletedServiceResponse = null;
+    int nextServiceID = 101;
+
+    public int AddServiceRequest(string topic, Message request)
+    {
+        int serviceID = nextServiceID;
+        nextServiceID++;
+
+        activeServices.Add(new MessageViewState()
         {
-            _lastMessageReceived = value;
-            redrawGUI = true;
-            waitForResponse = (value.GetType().ToString().Contains("ServiceResponse")) ? false : waitForResponse;
-        }
+            serviceID = serviceID,
+            timestamp = Time.time,
+            topic = topic,
+            message = request,
+            label = $"{topic} Service Requested",
+        });
+
+        return serviceID;
+    }
+
+    public void AddServiceResponse(int serviceID, Message response)
+    {
+        lastCompletedServiceRequest = activeServices.Find(s => s.serviceID == serviceID);
+        activeServices.Remove(lastCompletedServiceRequest);
+
+        lastCompletedServiceResponse = new MessageViewState()
+        {
+            serviceID = serviceID,
+            timestamp = Time.time,
+            topic = lastCompletedServiceRequest.topic,
+            message = response,
+            label = $"{lastCompletedServiceRequest.topic} Service Response",
+        };
     }
 
     void Awake()
@@ -64,7 +91,7 @@ public class HUDPanel : MonoBehaviour
         labelStyle = new GUIStyle
         {
             alignment = TextAnchor.MiddleLeft,
-            normal = {textColor = Color.white},
+            normal = { textColor = Color.white },
             fontStyle = FontStyle.Bold,
             fixedWidth = 250
         };
@@ -73,7 +100,7 @@ public class HUDPanel : MonoBehaviour
         {
             alignment = TextAnchor.MiddleLeft,
             padding = new RectOffset(10, 0, 0, 5),
-            normal = {textColor = Color.white},
+            normal = { textColor = Color.white },
             fixedWidth = 300
         };
 
@@ -81,7 +108,7 @@ public class HUDPanel : MonoBehaviour
         {
             alignment = TextAnchor.MiddleLeft,
             padding = new RectOffset(10, 0, 5, 5),
-            normal = {textColor = Color.white},
+            normal = { textColor = Color.white },
             fixedWidth = 300,
             wordWrap = true
         };
@@ -89,103 +116,131 @@ public class HUDPanel : MonoBehaviour
         sentStyle = new GUIStyle
         {
             alignment = TextAnchor.MiddleLeft,
-            normal = {textColor = Color.yellow},
+            normal = { textColor = Color.yellow },
             fixedWidth = 300
         };
 
         recvStyle = new GUIStyle
         {
             alignment = TextAnchor.MiddleLeft,
-            normal = {textColor = Color.red},
+            normal = { textColor = Color.red },
             fixedWidth = 300
         };
 
         scrollRect = new Rect();
-        sentRect = new Rect();
-        recvRect = new Rect();
     }
 
-    void OnGUI() 
+    void OnGUI()
     {
-        if (!isEnabled) return;
+        if (!isEnabled)
+            return;
 
         // Initialize main HUD
         GUILayout.BeginVertical("box");
-        
+
         // ROS IP Setup
-        GUILayout.Label($"ROS IP:", labelStyle);
+        GUILayout.Label("ROS IP:", labelStyle);
         GUILayout.Label(host, contentStyle);
 
         // Last message sent
-        GUILayout.Label($"Last Message Sent:", labelStyle);
+        GUILayout.Label("Last Message Sent:", labelStyle);
         GUILayout.Label(lastMessageSentMeta, contentStyle);
-        viewSent = GUILayout.Toggle(viewSent, "View contents");
+        if(lastMessageSent != null)
+            viewSent = GUILayout.Toggle(viewSent, "View contents");
 
         // Last message received
-        GUILayout.Label($"Last Message Received:", labelStyle);
-        if (waitForResponse)
+        GUILayout.Label("Last Message Received:", labelStyle);
+        GUILayout.Label(lastMessageReceivedMeta, contentStyle);
+        if (lastMessageReceived != null)
+            viewRecv = GUILayout.Toggle(viewRecv, "View contents");
+
+        GUILayout.Label($"{activeServices.Count} Active Service Requests:", labelStyle);
+        if (activeServices.Count > 0)
         {
             var dots = new String('.', (int)Time.time % 4);
             GUILayout.Label($"Waiting for service response{dots}", contentStyle);
         }
-        GUILayout.Label(lastMessageReceivedMeta, contentStyle);
-        viewRecv = GUILayout.Toggle(viewRecv, "View contents");
-            
+        viewSrvs = GUILayout.Toggle(viewSrvs, "View services status");
+
         GUILayout.EndVertical();
 
         // Update length of scroll
         if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
             scrollRect = GUILayoutUtility.GetLastRect();
-        
+
         // Optionally show message contents
+        float y = scrollRect.yMax;
         if (viewSent)
-            sentRect = ShowMessage("sent");
+        {
+            y = ShowMessage(lastMessageSent, y);
+        }
 
         if (viewRecv)
-            recvRect = ShowMessage("recv");
+        {
+            y = ShowMessage(lastMessageReceived, y);
+        }
+
+        if (viewSrvs)
+        {
+            foreach (MessageViewState service in activeServices)
+            {
+                y = ShowMessage(service, y, showElapsedTime:true);
+            }
+
+            if (lastCompletedServiceRequest != null && lastCompletedServiceResponse != null)
+            {
+                y = ShowMessage(lastCompletedServiceRequest, y);
+                y = ShowMessage(lastCompletedServiceResponse, y);
+            }
+        }
     }
 
-    /// <summary>
-    /// Display message contents as string.
-    /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    private Rect ShowMessage(string type)
+    enum SendRecv
     {
+        Sent,
+        Recv
+    }
+
+    class MessageViewState
+    {
+        public string label;
+        public SendRecv sendRecv;
+        public int serviceID;
+        public float timestamp;
+        public string topic;
+        public Message message;
+        public Rect contentRect;
+        public Vector2 scrollPosition;
+    }
+
+    float ShowMessage(MessageViewState msgView, float y, bool showElapsedTime = false)
+    {
+        if (msgView == null)
+            return y;
+
         // Show Points if applicable
-        ParsePoint((type == "sent") ? lastMessageSent : lastMessageReceived, type);
+        ParsePoint(msgView.message, msgView.sendRecv);
 
         // Start scrollviews
-        if (type == "sent")
-            sentViewVector = GUI.BeginScrollView(new Rect(0, scrollRect.yMax + 5, 325, 200), sentViewVector, sentRect);
-        else
-        {
-            var offset = (viewSent) ? ((sentRect.height < 200) ? sentRect.yMax : scrollRect.yMax + 205) : scrollRect.yMax;
-            recvViewVector = GUI.BeginScrollView(new Rect(0, offset + 5, 325, 200), recvViewVector, recvRect);
-        }
-        
+        msgView.scrollPosition = GUI.BeginScrollView(new Rect(0, y + 5, 325, 200), msgView.scrollPosition, msgView.contentRect);
+
         GUILayout.BeginVertical("box");
-        
+
         // Paste contents of message
-        if (type == "sent")
-        {
-            GUILayout.Label($"Last Message Sent:", labelStyle);
-            GUILayout.Label(lastMessageSent.ToString(), messageStyle);
-        }
+        if(showElapsedTime)
+            GUILayout.Label($"{msgView.label} ({Time.time-msgView.timestamp})", labelStyle);
         else
-        {
-            GUILayout.Label($"Last Message Received:", labelStyle);
-            GUILayout.Label(lastMessageReceived.ToString(), messageStyle);
-        }
-            
+            GUILayout.Label(msgView.label, labelStyle);
+        GUILayout.Label(msgView.message.ToString(), messageStyle);
+
         GUILayout.EndVertical();
         GUI.EndScrollView();
 
         // Update size of internal rect view
         if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
-            return GUILayoutUtility.GetLastRect();
-        else 
-            return (type == "sent") ? sentRect : recvRect;
+            msgView.contentRect = GUILayoutUtility.GetLastRect();
+
+        return msgView.contentRect.yMax;
     }
 
     /// <summary>
@@ -193,16 +248,17 @@ public class HUDPanel : MonoBehaviour
     /// </summary>
     /// <param name="msg"></param>
     /// <param name="type"></param>
-    private void ParsePoint(Message msg, string type)
+    private void ParsePoint(Message msg, SendRecv type)
     {
-        if (msg == null || !showPoints) return;
+        if (msg == null || !showPoints)
+            return;
 
         if (redrawGUI) // Only parse new data if a new message is received
         {
             var messageClass = msg.GetType();
 
             var fieldInfo = messageClass.GetFields();
-            points = new Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, string>>();
+            points = new Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, SendRecv>>();
 
             // Iterate through fields to find point data
             foreach (var e in fieldInfo)
@@ -210,7 +266,7 @@ public class HUDPanel : MonoBehaviour
                 object obj = null;
                 RosMessageTypes.Geometry.Point point = null;
 
-                switch(e.FieldType.ToString()) 
+                switch (e.FieldType.ToString())
                 {
                     case "RosMessageTypes.Geometry.Pose":
                         obj = e.GetValue(msg);
@@ -238,9 +294,9 @@ public class HUDPanel : MonoBehaviour
         {
             var pt = p.Value.Item1;
             var sentType = p.Value.Item2;
-            var screenPos = convertPoints ? Camera.main.WorldToScreenPoint(pt.From<FLU>()) : Camera.main.WorldToScreenPoint(new Vector3((float)pt.x, (float)pt.y, (float)pt.z));
+            var screenPos = Camera.main.WorldToScreenPoint(pt.From(coordinateSpace));
             var convertedGUIPos = GUIUtility.ScreenToGUIPoint(screenPos);
-            GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == "sent") ? sentStyle : recvStyle);
+            GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == SendRecv.Sent) ? sentStyle : recvStyle);
         }
     }
 }
