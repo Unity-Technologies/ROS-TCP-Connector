@@ -9,6 +9,7 @@ public class HUDPanel : MonoBehaviour
 {
     [Tooltip("Convert points to/from FLU for visualization?")]
     public bool convertPoints = true;
+    public bool showPoints = true;
     
     // GUI variables
     GUIStyle labelStyle;
@@ -154,6 +155,7 @@ public class HUDPanel : MonoBehaviour
             var offset = (viewSent) ? ((sentRect.height < 200) ? sentRect.yMax : scrollRect.yMax + 205) : scrollRect.yMax;
             recvViewVector = GUI.BeginScrollView(new Rect(0, offset + 5, 325, 200), recvViewVector, recvRect);
         }
+        
         GUILayout.BeginVertical("box");
         
         // Paste contents of message
@@ -185,9 +187,9 @@ public class HUDPanel : MonoBehaviour
     /// <param name="type"></param>
     private void ParsePoint(Message msg, string type)
     {
-        if (msg == null) return;
+        if (msg == null || !showPoints) return;
 
-        if (redrawGUI)
+        if (redrawGUI) // Only parse new data if a new message is received
         {
             var messageClass = msg.GetType();
             var fieldInfo = messageClass.GetFields();
@@ -219,9 +221,10 @@ public class HUDPanel : MonoBehaviour
                     points.Add(e.Name, Tuple.Create(point, type));
                 }
             }
+            redrawGUI = false;
         }
 
-        // Display all points
+        // Convert and display all points
         foreach (var p in points)
         {
             var pt = p.Value.Item1;
@@ -230,6 +233,5 @@ public class HUDPanel : MonoBehaviour
             var convertedGUIPos = GUIUtility.ScreenToGUIPoint(screenPos);
             GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == "sent") ? sentStyle : recvStyle);
         }
-        redrawGUI = false;
     }
 }
