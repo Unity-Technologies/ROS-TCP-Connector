@@ -17,6 +17,7 @@ public class HUDPanel : MonoBehaviour
     GUIStyle messageStyle;
     GUIStyle sentStyle;
     GUIStyle recvStyle;
+    GUIStyle loadingStyle;
     bool viewSent = false;
     bool viewRecv = false;
     Vector2 sentViewVector = Vector2.zero;
@@ -25,6 +26,7 @@ public class HUDPanel : MonoBehaviour
     Rect sentRect;
     Rect recvRect;
     bool redrawGUI = false;
+    bool waitForResponse = false;
     Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, string>> points;
 
     // ROS Message variables
@@ -42,6 +44,7 @@ public class HUDPanel : MonoBehaviour
         {
             _lastMessageSent = value;
             redrawGUI = true;
+            waitForResponse = value.GetType().ToString().Contains("ServiceRequest");
         }
     }
 
@@ -52,6 +55,7 @@ public class HUDPanel : MonoBehaviour
         {
             _lastMessageReceived = value;
             redrawGUI = true;
+            waitForResponse = (value.GetType().ToString().Contains("ServiceResponse")) ? false : waitForResponse;
         }
     }
 
@@ -63,7 +67,7 @@ public class HUDPanel : MonoBehaviour
             alignment = TextAnchor.MiddleLeft,
             normal = {textColor = Color.white},
             fontStyle = FontStyle.Bold,
-            fixedWidth = 300
+            fixedWidth = 250
         };
 
         contentStyle = new GUIStyle
@@ -97,6 +101,13 @@ public class HUDPanel : MonoBehaviour
             fixedWidth = 300
         };
 
+        // loadingStyle = new GUIStyle
+        // {
+        //     alignment = TextAnchor.MiddleRight,
+        //     normal = {textColor = Color.white},
+        //     fixedWidth = 50
+        // };
+
         scrollRect = new Rect();
         sentRect = new Rect();
         recvRect = new Rect();
@@ -119,7 +130,14 @@ public class HUDPanel : MonoBehaviour
         viewSent = GUILayout.Toggle(viewSent, "View contents");
 
         // Last message received
+        // GUILayout.BeginHorizontal();
         GUILayout.Label($"Last Message Received:", labelStyle);
+        if (waitForResponse)
+        {
+            var dots = new String('.', (int)Time.time % 4);
+            GUILayout.Label($"Waiting for service response{dots}", contentStyle);
+        }
+        // GUILayout.EndHorizontal();
         GUILayout.Label(lastMessageReceivedMeta, contentStyle);
         viewRecv = GUILayout.Toggle(viewRecv, "View contents");
             
@@ -192,6 +210,7 @@ public class HUDPanel : MonoBehaviour
         if (redrawGUI) // Only parse new data if a new message is received
         {
             var messageClass = msg.GetType();
+
             var fieldInfo = messageClass.GetFields();
             points = new Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, string>>();
 
