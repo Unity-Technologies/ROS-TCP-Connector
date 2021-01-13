@@ -55,13 +55,13 @@ public class ROSConnection : MonoBehaviour
     const string SYSCOMMAND_PUBLISH = "publish";
     const string SYSCOMMAND_CONNECTIONS_PARAMETERS = "connections_parameters";
 
-    Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
-
     struct SubscriberCallback
     {
         public ConstructorInfo messageConstructor;
         public List<Action<Message>> callbacks;
     }
+
+    Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
 
     public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
     {
