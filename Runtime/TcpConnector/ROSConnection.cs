@@ -77,8 +77,8 @@ public class ROSConnection : MonoBehaviour
         }
 
         subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
-    }	
-	public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
+    }
+    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
     {
         // Serialize the message in service name, message size, and message bytes format
         byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
