@@ -309,33 +309,15 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
-    struct SysCommand_Subscribe
-    {
-        public string topic;
-        public string message_name;
-    }
-
     public void RegisterSubscriber(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = rosMessageName });
-    }
-
-    struct SysCommand_Publish
-    {
-        public string topic;
-        public string message_name;
     }
 
     public void RegisterPublisher(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
     }
-	
-    struct SysCommand_ConnectionsParameters
-    {
-        public bool keep_connections;
-        public float timeout_in_s;
-	}
 
     void Awake()
     {
@@ -587,6 +569,24 @@ public class ROSConnection : MonoBehaviour
 
         return messageBuffer;
     }
+
+    struct SysCommand_Subscribe
+    {
+        public string topic;
+        public string message_name;
+    }
+
+    struct SysCommand_Publish
+    {
+        public string topic;
+        public string message_name;
+    }
+	
+    struct SysCommand_ConnectionsParameters
+    {
+        public bool keep_connections;
+        public float timeout_in_s;
+	}
 
     void SendSysCommand(string command, object param)
     {
