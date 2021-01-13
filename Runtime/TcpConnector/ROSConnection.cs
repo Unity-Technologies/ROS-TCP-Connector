@@ -1,7 +1,6 @@
 using RosMessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -11,12 +10,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class ROSConnection : MonoBehaviour
 {
     // Variables required for ROS communication
-    public string hostName = "192.168.1.1";
-    public int hostPort = 10000;
+    [FormerlySerializedAs("hostName")]
+    public string rosIPAddress = "127.0.0.1";
+    [FormerlySerializedAs("hostPort")]
+    public int rosPort = 10000;
+
     [Tooltip("If blank, determine IP automatically.")]
     public string overrideUnityIP = "";
     public int unityPort = 5005;
@@ -28,7 +31,9 @@ public class ROSConnection : MonoBehaviour
     [Tooltip("Network tiemout (in ms)")]
     public int networkTimeout = 2000;
 
+    [Tooltip("While waiting for a service to respond, check this many times before giving up.")]
     public int awaitDataMaxRetries = 10;
+    [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
     public float awaitDataSleepSeconds = 1.0f;
 
 
@@ -51,30 +56,11 @@ public class ROSConnection : MonoBehaviour
     const string SYSCOMMAND_CONNECTIONS_PARAMETERS = "connections_parameters";
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
-    HashSet<string> publishers = new HashSet<string>();
     
     struct SubscriberCallback
     {
         public ConstructorInfo messageConstructor;
         public List<Action<Message>> callbacks;
-    }
-
-    struct SysCommand_Subscribe
-    {
-        public string topic;
-        public string message_name;
-    }
-
-    struct SysCommand_Publish
-    {
-        public string topic;
-        public string message_name;
-    }
-
-    struct SysCommand_ConnectionsParameters
-    {
-        public bool keep_connections;
-        public float timeout_in_s;
     }
 
     public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
@@ -91,6 +77,139 @@ public class ROSConnection : MonoBehaviour
         }
 
         subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
+    }
+
+    public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
+    {
+        // Serialize the message in service name, message size, and message bytes format
+        byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
+
+        TcpClient client = new TcpClient();
+        await client.ConnectAsync(rosIPAddress, rosPort);
+
+        NetworkStream networkStream = client.GetStream();
+        networkStream.ReadTimeout = networkTimeout;
+
+        RESPONSE serviceResponse = new RESPONSE();
+
+        // Send the message
+        try
+        {
+            networkStream.Write(messageBytes, 0, messageBytes.Length);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("SocketException: " + e);
+            goto finish;
+        }
+
+        if (!networkStream.CanRead)
+        {
+            Debug.LogError("Sorry, you cannot read from this NetworkStream.");
+            goto finish;
+        }
+
+        // Poll every 1 second(s) for available data on the stream
+        int attempts = 0;
+        while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
+        {
+            if (attempts == this.awaitDataMaxRetries)
+            {
+                Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
+                goto finish;
+            }
+            attempts++;
+            await Task.Delay((int)(awaitDataSleepSeconds * 1000));
+        }
+
+        int numberOfBytesRead = 0;
+        try
+        {
+            // Get first bytes to determine length of service name
+            byte[] rawServiceBytes = new byte[4];
+            networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
+            int topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
+
+            // Create container and read service name from network stream
+            byte[] serviceNameBytes = new byte[topicLength];
+            networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
+            string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
+
+            // Get leading bytes to determine length of remaining full message
+            byte[] full_message_size_bytes = new byte[4];
+            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
+            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
+
+            // Create container and read message from network stream
+            byte[] readBuffer = new byte[full_message_size];
+            while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
+            {
+                var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
+                numberOfBytesRead += readBytes;
+            }
+
+            serviceResponse.Deserialize(readBuffer, 0);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Exception raised!! " + e);
+        }
+
+        finish:
+        callback(serviceResponse);
+        if (client.Connected)
+            client.Close();
+    }
+
+    private static ROSConnection _instance;
+    public static ROSConnection instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
+                if (prefab == null)
+                {
+                    Debug.LogWarning("No settings for ROSConnection.instance! Open \"ROS Settings\" from the Robotics menu to configure it.");
+                    GameObject instance = new GameObject("ROSConnection");
+                    _instance = instance.AddComponent<ROSConnection>();
+                }
+                else
+                {
+                    Instantiate(prefab);
+                }
+            }
+            return _instance;
+        }
+    }
+
+    void OnEnable()
+    {
+        if (_instance == null)
+            _instance = this;
+    }
+
+    private void Start()
+    {
+        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+
+        if (overrideUnityIP != "")
+        {
+            StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
+        }
+
+        SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+    }
+
+    void RosUnityHandshakeCallback(UnityHandshakeResponse response)
+    {
+        StartMessageServer(response.ip, unityPort);
+    }
+
+    void RosUnityErrorCallback(RosUnityError error)
+    {
+        Debug.LogError("ROS-Unity error: " + error.message);
     }
 
     public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
@@ -190,16 +309,33 @@ public class ROSConnection : MonoBehaviour
             client.Close();
     }
 
+    struct SysCommand_Subscribe
+    {
+        public string topic;
+        public string message_name;
+    }
+
     public void RegisterSubscriber(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_Subscribe { topic = topic, message_name = rosMessageName });
+    }
+
+    struct SysCommand_Publish
+    {
+        public string topic;
+        public string message_name;
     }
 
     public void RegisterPublisher(string topic, string rosMessageName)
     {
         SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
     }
-
+	
+    struct SysCommand_ConnectionsParameters
+    {
+        public bool keep_connections;
+        public float timeout_in_s;
+	}
 
     void Awake()
     {
@@ -319,6 +455,8 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
+    TcpListener tcpListener;
+
     protected async void StartMessageServer(string ip, int port)
     {
         if (alreadyStartedServer)
@@ -329,6 +467,8 @@ public class ROSConnection : MonoBehaviour
         {
             try
             {
+                if (!Application.isPlaying)
+                    break;
                 tcpListener = new TcpListener(IPAddress.Parse(ip), port);
                 tcpListener.Start();
 
@@ -357,9 +497,9 @@ public class ROSConnection : MonoBehaviour
             }
             catch (ObjectDisposedException e)
             {
-                if (tcpListener == null)
+                if (!Application.isPlaying)
                 {
-                    // we're shutting down, that's fine
+                    // This only happened because we're shutting down. Not a problem.
                 }
                 else
                 {
@@ -370,6 +510,9 @@ public class ROSConnection : MonoBehaviour
             {
                 Debug.LogError("Exception raised!! " + e);
             }
+
+            // to avoid infinite loops, wait a frame before trying to restart the server
+            await Task.Yield();
         }
     }
 
@@ -445,7 +588,6 @@ public class ROSConnection : MonoBehaviour
         return messageBuffer;
     }
 
-  
     void SendSysCommand(string command, object param)
     {
         Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
@@ -496,7 +638,6 @@ public class ROSConnection : MonoBehaviour
             }
             WriteDataStaggered(networkStream, rosTopicName, message);
         }
-        
         catch(OperationCanceledException)
         {
             // The operation was cancelled
@@ -542,7 +683,7 @@ public class ROSConnection : MonoBehaviour
     {
         byte[] topicName = message.SerializeString(rosTopicName);
         List<byte[]> segments = message.SerializationStatements();
-        int messageLength = segments.Select(s=>s.Length).Sum();
+        int messageLength = segments.Select(s => s.Length).Sum();
         byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
 
         networkStream.Write(topicName, 0, topicName.Length);
