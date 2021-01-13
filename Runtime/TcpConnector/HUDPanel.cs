@@ -17,7 +17,6 @@ public class HUDPanel : MonoBehaviour
     GUIStyle messageStyle;
     GUIStyle sentStyle;
     GUIStyle recvStyle;
-    GUIStyle loadingStyle;
     bool viewSent = false;
     bool viewRecv = false;
     Vector2 sentViewVector = Vector2.zero;
@@ -101,13 +100,6 @@ public class HUDPanel : MonoBehaviour
             fixedWidth = 300
         };
 
-        // loadingStyle = new GUIStyle
-        // {
-        //     alignment = TextAnchor.MiddleRight,
-        //     normal = {textColor = Color.white},
-        //     fixedWidth = 50
-        // };
-
         scrollRect = new Rect();
         sentRect = new Rect();
         recvRect = new Rect();
@@ -130,14 +122,12 @@ public class HUDPanel : MonoBehaviour
         viewSent = GUILayout.Toggle(viewSent, "View contents");
 
         // Last message received
-        // GUILayout.BeginHorizontal();
         GUILayout.Label($"Last Message Received:", labelStyle);
         if (waitForResponse)
         {
             var dots = new String('.', (int)Time.time % 4);
             GUILayout.Label($"Waiting for service response{dots}", contentStyle);
         }
-        // GUILayout.EndHorizontal();
         GUILayout.Label(lastMessageReceivedMeta, contentStyle);
         viewRecv = GUILayout.Toggle(viewRecv, "View contents");
             
