@@ -142,7 +142,10 @@ namespace ROSGeometry
             axis = uaxis.To<C>();
         }
 
+#if UNITY_2020_1_OR_NEWER
         public string ToString(string format, IFormatProvider formatProvider) => internalQuat.ToString(format, formatProvider);
+#endif
+
         public string ToString(string format) => internalQuat.ToString(format);
         public override string ToString() => internalQuat.ToString();
     }
