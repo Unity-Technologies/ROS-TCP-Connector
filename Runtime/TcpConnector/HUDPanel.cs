@@ -201,6 +201,9 @@ public class HUDPanel : MonoBehaviour
         Recv
     }
 
+    /// <summary>
+    /// All the information necessary to display a message and remember its scroll position
+    /// </summary>
     class MessageViewState
     {
         public string label;
@@ -213,6 +216,13 @@ public class HUDPanel : MonoBehaviour
         public Vector2 scrollPosition;
     }
 
+    /// <summary>
+    /// Displays a MessageViewState
+    /// </summary>
+    /// <param name="msgView">The message view to draw</param>
+    /// <param name="y">The Y position to draw at</param>
+    /// <param name="showElapsedTime">Whether to add elapsed time to the title</param>
+    /// <returns>The new Y position to draw at</returns>
     float ShowMessage(MessageViewState msgView, float y, bool showElapsedTime = false)
     {
         if (msgView == null)
