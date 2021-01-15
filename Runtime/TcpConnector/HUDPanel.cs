@@ -7,22 +7,15 @@ using UnityEngine;
 
 public class HUDPanel : MonoBehaviour
 {
-    [Tooltip("Assume ROS points are in this coordinate space")]
-    public CoordinateSpaceSelection coordinateSpace = CoordinateSpaceSelection.FLU;
-    public bool showPoints = true;
-
     // GUI variables
     GUIStyle labelStyle;
     GUIStyle contentStyle;
     GUIStyle messageStyle;
-    GUIStyle sentStyle;
-    GUIStyle recvStyle;
     bool viewSent = false;
     bool viewRecv = false;
     bool viewSrvs = false;
     Rect scrollRect;
     bool redrawGUI = false;
-    Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, SendRecv>> points;
 
     // ROS Message variables
     internal bool isEnabled;
@@ -33,7 +26,7 @@ public class HUDPanel : MonoBehaviour
 
     public void SetLastMessageSent(string topic, Message message)
     {
-        lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message, sendRecv = SendRecv.Sent };
+        lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
         lastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
         redrawGUI = true;
     }
@@ -43,7 +36,7 @@ public class HUDPanel : MonoBehaviour
 
     public void SetLastMessageReceived(string topic, Message message)
     {
-        lastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message, sendRecv = SendRecv.Recv };
+        lastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message };
         lastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
         redrawGUI = true;
     }
@@ -111,20 +104,6 @@ public class HUDPanel : MonoBehaviour
             normal = { textColor = Color.white },
             fixedWidth = 300,
             wordWrap = true
-        };
-
-        sentStyle = new GUIStyle
-        {
-            alignment = TextAnchor.MiddleLeft,
-            normal = { textColor = Color.yellow },
-            fixedWidth = 300
-        };
-
-        recvStyle = new GUIStyle
-        {
-            alignment = TextAnchor.MiddleLeft,
-            normal = { textColor = Color.red },
-            fixedWidth = 300
         };
 
         scrollRect = new Rect();
@@ -195,19 +174,12 @@ public class HUDPanel : MonoBehaviour
         }
     }
 
-    enum SendRecv
-    {
-        Sent,
-        Recv
-    }
-
     /// <summary>
     /// All the information necessary to display a message and remember its scroll position
     /// </summary>
     class MessageViewState
     {
         public string label;
-        public SendRecv sendRecv;
         public int serviceID;
         public float timestamp;
         public string topic;
@@ -227,9 +199,6 @@ public class HUDPanel : MonoBehaviour
     {
         if (msgView == null)
             return y;
-
-        // Show Points if applicable
-        ParsePoint(msgView.message, msgView.sendRecv);
 
         // Start scrollviews
         float height = msgView.contentRect.height > 0 ? Mathf.Min(msgView.contentRect.height, 200) : 200;
@@ -253,65 +222,5 @@ public class HUDPanel : MonoBehaviour
             msgView.contentRect = GUILayoutUtility.GetLastRect();
 
         return panelRect.yMax;
-    }
-
-    /// <summary>
-    /// Parse messages for Point or Vector data for display
-    /// </summary>
-    /// <param name="msg"></param>
-    /// <param name="type"></param>
-    private void ParsePoint(Message msg, SendRecv type)
-    {
-        if (msg == null || !showPoints)
-            return;
-
-        if (redrawGUI) // Only parse new data if a new message is received
-        {
-            var messageClass = msg.GetType();
-
-            var fieldInfo = messageClass.GetFields();
-            points = new Dictionary<string, Tuple<RosMessageTypes.Geometry.Point, SendRecv>>();
-
-            // Iterate through fields to find point data
-            foreach (var e in fieldInfo)
-            {
-                object obj = null;
-                RosMessageTypes.Geometry.Point point = null;
-
-                switch (e.FieldType.ToString())
-                {
-                    case "RosMessageTypes.Geometry.Pose":
-                        obj = e.GetValue(msg);
-                        point = ((RosMessageTypes.Geometry.Pose)obj).position;
-                        break;
-                    case "RosMessageTypes.Geometry.Point":
-                        obj = e.GetValue(msg);
-                        point = (RosMessageTypes.Geometry.Point)obj;
-                        break;
-                    default:
-                        break;
-                }
-
-                // Display Point data
-                if (point != null)
-                {
-                    points.Add(e.Name, Tuple.Create(point, type));
-                }
-            }
-            redrawGUI = false;
-        }
-
-        if (points != null)
-        {
-            // Convert and display all points
-            foreach (var p in points)
-            {
-                var pt = p.Value.Item1;
-                var sentType = p.Value.Item2;
-                var screenPos = Camera.main.WorldToScreenPoint(pt.From(coordinateSpace));
-                var convertedGUIPos = GUIUtility.ScreenToGUIPoint(screenPos);
-                GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == SendRecv.Sent) ? sentStyle : recvStyle);
-            }
-        }
     }
 }
