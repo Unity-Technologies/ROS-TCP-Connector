@@ -33,7 +33,7 @@ public class HUDPanel : MonoBehaviour
 
     public void SetLastMessageSent(string topic, Message message)
     {
-        lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message, sendRecv = SendRecv.Recv };
+        lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message, sendRecv = SendRecv.Sent };
         lastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
         redrawGUI = true;
     }
@@ -299,14 +299,17 @@ public class HUDPanel : MonoBehaviour
             redrawGUI = false;
         }
 
-        // Convert and display all points
-        foreach (var p in points)
+        if (points != null)
         {
-            var pt = p.Value.Item1;
-            var sentType = p.Value.Item2;
-            var screenPos = Camera.main.WorldToScreenPoint(pt.From(coordinateSpace));
-            var convertedGUIPos = GUIUtility.ScreenToGUIPoint(screenPos);
-            GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == SendRecv.Sent) ? sentStyle : recvStyle);
+            // Convert and display all points
+            foreach (var p in points)
+            {
+                var pt = p.Value.Item1;
+                var sentType = p.Value.Item2;
+                var screenPos = Camera.main.WorldToScreenPoint(pt.From(coordinateSpace));
+                var convertedGUIPos = GUIUtility.ScreenToGUIPoint(screenPos);
+                GUI.Label(new Rect(convertedGUIPos.x, Screen.height - convertedGUIPos.y, 0, 0), $"• {p.Key}", (sentType == SendRecv.Sent) ? sentStyle : recvStyle);
+            }
         }
     }
 }
