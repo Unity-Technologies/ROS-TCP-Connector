@@ -1,13 +1,16 @@
 using UnityEngine;
 
-public class InspectorReadOnlyAttribute : PropertyAttribute
+namespace RosEditorUtilities
 {
-    public bool hideInPlayMode;
-    public bool hideInEditMode;
-
-    public InspectorReadOnlyAttribute(bool hideInEditMode = false, bool hideInPlayMode = false)
+    public class InspectorReadOnlyAttribute : PropertyAttribute
     {
-        this.hideInEditMode = hideInEditMode;
-        this.hideInPlayMode = hideInPlayMode;
-    }
-} 
+        public bool hideInPlayMode;
+        public bool hideInEditMode;
+
+        public InspectorReadOnlyAttribute(bool hideInEditMode = false, bool hideInPlayMode = false)
+        {
+            this.hideInEditMode = hideInEditMode;
+            this.hideInPlayMode = hideInPlayMode;
+        }
+    } 
+}

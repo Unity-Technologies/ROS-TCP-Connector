@@ -1,23 +1,26 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomPropertyDrawer(typeof(InspectorReadOnlyAttribute))]
-public class InspectorReadOnlyAttributeDrawer : PropertyDrawer
+namespace RosEditorUtilities
 {
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    [CustomPropertyDrawer(typeof(InspectorReadOnlyAttribute))]
+    public class InspectorReadOnlyAttributeDrawer : PropertyDrawer
     {
-        return isHidden? 0: EditorGUI.GetPropertyHeight(property, label, true);
-    }
-
-    public bool isHidden => (EditorApplication.isPlaying ?
-        ((InspectorReadOnlyAttribute)attribute).hideInPlayMode :
-        ((InspectorReadOnlyAttribute)attribute).hideInEditMode);
-
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-    {
-        if (!isHidden)
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            EditorGUI.LabelField(position, property.displayName + ": " + property.stringValue, EditorStyles.boldLabel);
+            return isHidden? 0: EditorGUI.GetPropertyHeight(property, label, true);
         }
-    }
-} 
+
+        public bool isHidden => (EditorApplication.isPlaying ?
+            ((InspectorReadOnlyAttribute)attribute).hideInPlayMode :
+            ((InspectorReadOnlyAttribute)attribute).hideInEditMode);
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (!isHidden)
+            {
+                EditorGUI.LabelField(position, property.displayName + ": " + property.stringValue, EditorStyles.boldLabel);
+            }
+        }
+    } 
+}
