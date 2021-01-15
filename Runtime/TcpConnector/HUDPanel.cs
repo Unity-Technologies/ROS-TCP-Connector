@@ -145,7 +145,7 @@ public class HUDPanel : MonoBehaviour
         // Last message sent
         GUILayout.Label("Last Message Sent:", labelStyle);
         GUILayout.Label(lastMessageSentMeta, contentStyle);
-        if(lastMessageSent != null)
+        if (lastMessageSent != null)
             viewSent = GUILayout.Toggle(viewSent, "View contents");
 
         // Last message received
@@ -184,7 +184,7 @@ public class HUDPanel : MonoBehaviour
         {
             foreach (MessageViewState service in activeServices)
             {
-                y = ShowMessage(service, y, showElapsedTime:true);
+                y = ShowMessage(service, y, showElapsedTime: true);
             }
 
             if (lastCompletedServiceRequest != null && lastCompletedServiceResponse != null)
@@ -232,13 +232,15 @@ public class HUDPanel : MonoBehaviour
         ParsePoint(msgView.message, msgView.sendRecv);
 
         // Start scrollviews
-        msgView.scrollPosition = GUI.BeginScrollView(new Rect(0, y + 5, 325, 200), msgView.scrollPosition, msgView.contentRect);
+        float height = msgView.contentRect.height > 0 ? Mathf.Min(msgView.contentRect.height, 200) : 200;
+        Rect panelRect = new Rect(0, y + 5, 325, height);
+        msgView.scrollPosition = GUI.BeginScrollView(panelRect, msgView.scrollPosition, msgView.contentRect);
 
         GUILayout.BeginVertical("box");
 
         // Paste contents of message
-        if(showElapsedTime)
-            GUILayout.Label($"{msgView.label} ({Time.time-msgView.timestamp})", labelStyle);
+        if (showElapsedTime)
+            GUILayout.Label($"{msgView.label} ({Time.time - msgView.timestamp})", labelStyle);
         else
             GUILayout.Label(msgView.label, labelStyle);
         GUILayout.Label(msgView.message.ToString(), messageStyle);
@@ -250,7 +252,7 @@ public class HUDPanel : MonoBehaviour
         if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
             msgView.contentRect = GUILayoutUtility.GetLastRect();
 
-        return msgView.contentRect.yMax;
+        return panelRect.yMax;
     }
 
     /// <summary>
