@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
-using RosEditorUtilities;
 
 public class ROSConnection : MonoBehaviour
 {
@@ -46,8 +45,6 @@ public class ROSConnection : MonoBehaviour
     internal HUDPanel hudPanel = null;
 
     public bool showHUD = true;
-    [InspectorReadOnly(hideInEditMode:true)] public string lastMessageSent = "";
-    [InspectorReadOnly(hideInEditMode:true)] public string lastMessageReceived = "";
 
     struct SubscriberCallback
     {
