@@ -333,8 +333,6 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
-    TcpListener tcpListener;
-
     protected async void StartMessageServer(string ip, int port)
     {
         if (alreadyStartedServer)
@@ -500,7 +498,7 @@ public class ROSConnection : MonoBehaviour
             {
                 persistantPublisherClient = new TcpClient();
                 Debug.Log("Connecting persistent publisher client ...");
-                await persistantPublisherClient.ConnectAsync(hostName, hostPort);
+                await persistantPublisherClient.ConnectAsync(rosIPAddress, rosPort);
                 persistantPublisherNetworkStream = persistantPublisherClient.GetStream();
                 persistantPublisherNetworkStream.ReadTimeout = networkTimeout;
                 Debug.Log("Connected persistent publisher client");
@@ -528,7 +526,7 @@ public class ROSConnection : MonoBehaviour
             else
             {
                 client = new TcpClient();
-                await client.ConnectAsync(hostName, hostPort);
+                await client.ConnectAsync(rosIPAddress, rosPort);
 
                 networkStream = client.GetStream();
                 networkStream.ReadTimeout = networkTimeout;
