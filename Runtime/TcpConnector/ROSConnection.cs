@@ -51,7 +51,7 @@ public class ROSConnection : MonoBehaviour
     struct SubscriberCallback
     {
         public ConstructorInfo messageConstructor;
-        public List<Action<Message>> callbacks;
+        public List<Func<Message, Message>> callbacks;
     }
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
@@ -64,12 +64,29 @@ public class ROSConnection : MonoBehaviour
             subCallbacks = new SubscriberCallback
             {
                 messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                callbacks = new List<Action<Message>> { }
+                callbacks = new List<Func<Message, Message>> { }
             };
             subscribers.Add(topic, subCallbacks);
         }
 
-        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
+        subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); return null; });
+    }
+
+    public void ImplementService<T>(string topic, Func<T, Message> callback)
+        where T : Message, new()
+    {
+        SubscriberCallback subCallbacks;
+        if (!subscribers.TryGetValue(topic, out subCallbacks))
+        {
+            subCallbacks = new SubscriberCallback
+            {
+                messageConstructor = typeof(T).GetConstructor(new Type[0]),
+                callbacks = new List<Func<Message, Message>> { }
+            };
+            subscribers.Add(topic, subCallbacks);
+        }
+
+        subCallbacks.callbacks.Add((Message msg) => { return callback((T)msg); });
     }
 
     public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
@@ -281,9 +298,14 @@ public class ROSConnection : MonoBehaviour
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(readBuffer, 0);
                     hudPanel.SetLastMessageReceived(topicName, msg);
-                    foreach (Action<Message> callback in subs.callbacks)
+                    foreach (Func<Message, Message> callback in subs.callbacks)
                     {
-                        callback(msg);
+                        Message response = callback(msg);
+                        if(response != null)
+                        {
+                            // if the callback has a response, it's implementing a service
+                            WriteDataStaggered(networkStream, topicName, response);
+                        }
                     }
                 }
             }
