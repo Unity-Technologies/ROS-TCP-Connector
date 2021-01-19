@@ -218,47 +218,32 @@ public class ROSConnection : MonoBehaviour
             return;
 
         SubscriberCallback subs;
-        Message msg;
 
-        try
+        string topicName;
+        byte[] content = ReadMessageContents(networkStream, out topicName);
+
+        if (!subscribers.TryGetValue(topicName, out subs))
+            return; // not interested in this topic
+
+        Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+        msg.Deserialize(content, 0);
+
+        foreach (Func<Message, Message> callback in subs.callbacks)
         {
-            string topicName;
-            byte[] content = ReadMessageContents(networkStream, out topicName);
-
-            if (!subscribers.TryGetValue(topicName, out subs))
-                return; // not interested in this topic
-            
-            msg = (Message)subs.messageConstructor.Invoke(new object[0]);
-            msg.Deserialize(content, 0);
+            try
+            {
+                Message response = callback(msg);
+                if(response != null)
+                {
+                    // if the callback has a response, it's implementing a service
+                    WriteDataStaggered(networkStream, topicName, response);
+                }
+            }
+            catch(Exception e)
+            {
+                Debug.LogError("Subscriber callback problem: "+e);
+            }
         }
-        catch (Exception e)
-        {
-            Debug.LogError("Error reading message!! "+e);
-            return;
-        }
-
-		SubscriberCallback subs;
-		if (subscribers.TryGetValue(topicName, out subs))
-		{
-			Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
-			msg.Deserialize(readBuffer, 0);
-			foreach (Func<Message, Message> callback in subs.callbacks)
-			{
-				try
-				{
-					Message response = callback(msg);
-					if(response != null)
-					{
-						// if the callback has a response, it's implementing a service
-						WriteDataStaggered(networkStream, topicName, response);
-					}
-				}
-				catch(Exception e)
-				{
-					Debug.LogError("Subscriber callback problem: "+e);
-				}
-			}
-		}
     }
 
     byte[] ReadMessageContents(NetworkStream networkStream, out string topicName)
