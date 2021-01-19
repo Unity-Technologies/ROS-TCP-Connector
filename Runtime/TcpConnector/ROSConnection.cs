@@ -232,18 +232,16 @@ public class ROSConnection : MonoBehaviour
 
     private void InitializeHUD()
     {
-        if (!Application.isPlaying)
+        if (!Application.isPlaying || (!showHUD && hudPanel == null))
             return;
-        if (hudPanel != null)
-        {
-            hudPanel.isEnabled = showHUD;
-        }
-        else if (showHUD) 
+
+        if (hudPanel == null)
         {
             hudPanel = gameObject.AddComponent<HUDPanel>();
-            hudPanel.isEnabled = showHUD;
             hudPanel.host = $"{rosIPAddress}:{rosPort}";
         }
+
+        hudPanel.isEnabled = showHUD;
     }
 
     void RosUnityHandshakeCallback(UnityHandshakeResponse response)
