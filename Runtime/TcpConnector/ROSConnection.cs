@@ -28,8 +28,8 @@ public class ROSConnection : MonoBehaviour
     bool alreadyStartedServer = false;
 
     TcpListener tcpListener;
-    [Tooltip("Network tiemout (in ms)")]
-    public int networkTimeout = 2000;
+    [Tooltip("Network timeout (in seconds)")]
+    public float networkTimeoutSeconds = 2;
 
     [Tooltip("While waiting for a service to respond, check this many times before giving up.")]
     public int awaitDataMaxRetries = 10;
@@ -78,6 +78,7 @@ public class ROSConnection : MonoBehaviour
 
         subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
     }
+
     public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
     {
         // Serialize the message in service name, message size, and message bytes format
@@ -91,22 +92,10 @@ public class ROSConnection : MonoBehaviour
         // Send the message
         try
         {
-            if (keepConnections)
-            {
-                await Connect();
-                client = persistantPublisherClient;
-                networkStream = persistantPublisherNetworkStream;
-            }
-            else
-            {
-                client = new TcpClient();
-                await client.ConnectAsync(rosIPAddress, rosPort);
+            client = await Connect();
+            networkStream = client.GetStream();
 
-                networkStream = client.GetStream();
-                networkStream.ReadTimeout = networkTimeout;
-            }
-
-            networkStream.Write(messageBytes, 0, messageBytes.Length);
+            WriteDataStaggered(networkStream, rosServiceName, serviceRequest);
         }
         catch (OperationCanceledException)
         {
@@ -209,6 +198,12 @@ public class ROSConnection : MonoBehaviour
         }
     }
 
+    [UnityEditor.Callbacks.DidReloadScripts]
+    private static void OnScriptsReloaded()
+    {
+        _instance = GameObject.FindObjectOfType<ROSConnection>();
+    }
+
     void OnEnable()
     {
         if (_instance == null)
@@ -225,7 +220,7 @@ public class ROSConnection : MonoBehaviour
         }
 
         // Must be send first as it may change how connections are handled
-        SendSysCommand(SYSCOMMAND_CONNECTIONS_PARAMETERS, new SysCommand_ConnectionsParameters { keep_connections = this.keepConnections, timeout_in_s = networkTimeout / 1000.0f });
+        SendSysCommand(SYSCOMMAND_CONNECTIONS_PARAMETERS, new SysCommand_ConnectionsParameters { keep_connections = this.keepConnections, timeout_in_s = networkTimeoutSeconds });
 
         SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
     }
@@ -487,27 +482,41 @@ public class ROSConnection : MonoBehaviour
         Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
     }
 
-    protected async Task Connect()
+    protected async Task<TcpClient> Connect()
     {
-        // prevent concurrent persistant connection opening
-        await _openPublisherConnectionAsyncLock.WaitAsync(publisherTokenStore.Token);
-        try
+        if (keepConnections)
         {
-            publisherTokenStore.Token.ThrowIfCancellationRequested();
-            if (persistantPublisherNetworkStream == null || persistantPublisherClient == null || !persistantPublisherClient.Connected)
+            // prevent concurrent persistant connection opening
+            await _openPublisherConnectionAsyncLock.WaitAsync(publisherTokenStore.Token);
+            try
             {
-                persistantPublisherClient = new TcpClient();
-                Debug.Log("Connecting persistent publisher client ...");
-                await persistantPublisherClient.ConnectAsync(rosIPAddress, rosPort);
-                persistantPublisherNetworkStream = persistantPublisherClient.GetStream();
-                persistantPublisherNetworkStream.ReadTimeout = networkTimeout;
-                Debug.Log("Connected persistent publisher client");
+                publisherTokenStore.Token.ThrowIfCancellationRequested();
+                if (persistantPublisherClient == null || !persistantPublisherClient.Connected ||
+                    !persistantPublisherClient.Client.Poll(0, SelectMode.SelectWrite))
+                {
+                    // detect whether the other end disconnected
+                    persistantPublisherClient = new TcpClient();
+                    Debug.Log("Connecting persistent publisher client ...");
+                    await persistantPublisherClient.ConnectAsync(rosIPAddress, rosPort);
+                    persistantPublisherNetworkStream = persistantPublisherClient.GetStream();
+                    persistantPublisherNetworkStream.ReadTimeout = (int)networkTimeoutSeconds * 1000;
+                    Debug.Log("Connected persistent publisher client");
+                }
             }
+            finally
+            {
+                _openPublisherConnectionAsyncLock.Release();
+            }
+            return persistantPublisherClient;
         }
-
-        finally
+        else
         {
-            _openPublisherConnectionAsyncLock.Release();
+            TcpClient client = new TcpClient();
+            await client.ConnectAsync(rosIPAddress, rosPort);
+
+            NetworkStream networkStream = client.GetStream();
+            networkStream.ReadTimeout = (int)networkTimeoutSeconds * 1000;
+            return client;
         }
     }
 
@@ -516,21 +525,9 @@ public class ROSConnection : MonoBehaviour
         TcpClient client = null;
         try
         {
-            NetworkStream networkStream = null;
-            if (keepConnections)
-            {
-                await Connect();
-                client = persistantPublisherClient;
-                networkStream = persistantPublisherNetworkStream;
-            }
-            else
-            {
-                client = new TcpClient();
-                await client.ConnectAsync(rosIPAddress, rosPort);
+            client = await Connect();
+            NetworkStream networkStream = client.GetStream();
 
-                networkStream = client.GetStream();
-                networkStream.ReadTimeout = networkTimeout;
-            }
             WriteDataStaggered(networkStream, rosTopicName, message);
         }
         catch (OperationCanceledException)
