@@ -53,7 +53,6 @@ public class ROSConnection : MonoBehaviour
     }
 
     Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
-    HashSet<string> publishers = new HashSet<string>();
 
     public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
     {
@@ -73,17 +72,9 @@ public class ROSConnection : MonoBehaviour
 
     public void ImplementService<T>(string topic, Func<T, Message> callback)
         where T : Message, new()
-
     {
-        SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish { topic = topic, message_name = rosMessageName });
-    }
-
-
-    void Awake()
-    {
-        Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
-
-        if (overrideUnityIP != "")
+        SubscriberCallback subCallbacks;
+        if (!subscribers.TryGetValue(topic, out subCallbacks))
         {
             subCallbacks = new SubscriberCallback
             {
