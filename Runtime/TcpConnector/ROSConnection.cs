@@ -41,6 +41,11 @@ public class ROSConnection : MonoBehaviour
     const string SYSCOMMAND_SUBSCRIBE = "subscribe";
     const string SYSCOMMAND_PUBLISH = "publish";
 
+    // GUI window variables
+    internal HUDPanel hudPanel = null;
+
+    public bool showHUD = true;
+
     struct SubscriberCallback
     {
         public ConstructorInfo messageConstructor;
@@ -95,9 +100,12 @@ public class ROSConnection : MonoBehaviour
 
         RESPONSE serviceResponse = new RESPONSE();
 
+        int serviceID = 0;
+
         // Send the message
         try
         {
+            if (hudPanel != null) serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
             networkStream.Write(messageBytes, 0, messageBytes.Length);
         }
         catch (Exception e)
@@ -138,6 +146,7 @@ public class ROSConnection : MonoBehaviour
 
         finish:
         callback(serviceResponse);
+        if (hudPanel != null) hudPanel.AddServiceResponse(serviceID, serviceResponse);
         if (client.Connected)
             client.Close();
     }
@@ -183,6 +192,7 @@ public class ROSConnection : MonoBehaviour
 
     private void Start()
     {
+        InitializeHUD();
         Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
         if (overrideUnityIP != "")
@@ -191,6 +201,25 @@ public class ROSConnection : MonoBehaviour
         }
 
         SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+    }
+
+    void OnValidate()
+    {
+        InitializeHUD();
+    }
+
+    private void InitializeHUD()
+    {
+        if (!Application.isPlaying || (!showHUD && hudPanel == null))
+            return;
+
+        if (hudPanel == null)
+        {
+            hudPanel = gameObject.AddComponent<HUDPanel>();
+            hudPanel.host = $"{rosIPAddress}:{rosPort}";
+        }
+
+        hudPanel.isEnabled = showHUD;
     }
 
     void RosUnityHandshakeCallback(UnityHandshakeResponse response)
@@ -227,6 +256,9 @@ public class ROSConnection : MonoBehaviour
 
         Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
         msg.Deserialize(content, 0);
+        
+        if (hudPanel != null)
+            hudPanel.SetLastMessageReceived(topicName, msg);
 
         foreach (Func<Message, Message> callback in subs.callbacks)
         {
@@ -472,6 +504,7 @@ public class ROSConnection : MonoBehaviour
             {
                 try
                 {
+                    if (hudPanel != null) hudPanel.SetLastMessageSent(rosTopicName, message);
                     client.Close();
                 }
                 catch (Exception)
