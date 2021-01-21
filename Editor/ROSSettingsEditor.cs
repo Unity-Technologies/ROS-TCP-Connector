@@ -11,7 +11,7 @@ public class ROSSettingsEditor : EditorWindow
     {
         ROSSettingsEditor window = GetWindow<ROSSettingsEditor>(false, "ROS Settings", true);
         window.minSize = new Vector2(300, 65);
-        window.maxSize = new Vector2(600, 200);
+        window.maxSize = new Vector2(600, 250);
         window.Show();
     }
 
@@ -43,6 +43,8 @@ public class ROSSettingsEditor : EditorWindow
         prefab.rosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.rosIPAddress);
         prefab.rosPort = EditorGUILayout.IntField("ROS Port", prefab.rosPort);
         EditorGUILayout.Space();
+        prefab.showHUD = EditorGUILayout.Toggle("Show HUD", prefab.showHUD);
+        EditorGUILayout.Space();
         prefab.overrideUnityIP = EditorGUILayout.TextField(new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."), prefab.overrideUnityIP);
         prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
         EditorGUILayout.Space();
@@ -53,6 +55,7 @@ public class ROSSettingsEditor : EditorWindow
         if (GUI.changed)
         {
             EditorUtility.SetDirty(prefabObj);
+            AssetDatabase.SaveAssets();
         }
     }
 }

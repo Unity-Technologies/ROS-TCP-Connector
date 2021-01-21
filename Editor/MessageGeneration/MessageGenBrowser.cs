@@ -260,15 +260,16 @@ namespace RosMessageGeneration
             List<string> buildStrings = new List<string>();
 
             if (numMsgs > 0)
-                buildStrings.Add("Build " + numMsgs + " msg" + (numMsgs > 1 ? "s" : ""));
+                buildStrings.Add(numMsgs + " msg" + (numMsgs > 1 ? "s" : ""));
 
             if (numSrvs > 0)
-                buildStrings.Add("Build " + numSrvs + " srv" + (numSrvs > 1 ? "s" : ""));
+                buildStrings.Add(numSrvs + " srv" + (numSrvs > 1 ? "s" : ""));
 
             if (numActions > 0)
-                buildStrings.Add("Build " + numActions + " action" + (numActions > 1 ? "s" : ""));
+                buildStrings.Add(numActions + " action" + (numActions > 1 ? "s" : ""));
 
-            buildLabel = string.Join(", ", buildStrings.Select(x => x.ToString()).ToArray());
+            if(buildStrings.Count > 0)
+                buildLabel = "Build " + string.Join(", ", buildStrings.Select(x => x.ToString()));
 
             return new CachedEntry()
             {
