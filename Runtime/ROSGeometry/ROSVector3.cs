@@ -199,7 +199,11 @@ namespace ROSGeometry
         
         public string ToString(string format) => internalVector.ToString(format);
         public override string ToString() => internalVector.ToString();
+#if UNITY_2020_1_OR_NEWER
         public string ToString(string format, System.IFormatProvider formatProvider) => internalVector.ToString(format, formatProvider);
+#else
+        public string ToString(string format, System.IFormatProvider formatProvider) => internalVector.ToString(format);
+#endif
 
         public static Vector3<C> operator +(Vector3<C> a, Vector3<C> b)
         {
