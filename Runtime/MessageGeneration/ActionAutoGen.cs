@@ -22,6 +22,21 @@ namespace RosMessageGeneration
     {
         private static readonly string[] types = { "Goal", "Result", "Feedback" };
 
+        public static string[] GetActionClassPaths(string inFilePath, string outPath)
+        {
+            string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
+            string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
+            string extension = Path.GetExtension(inFilePath);
+            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+
+            string[] result = new string[types.Length];
+            for (int Idx = 0; Idx < types.Length; ++Idx)
+            {
+                result[Idx] = Path.Combine(outFolder, "action", className + types[Idx] + ".cs");
+            }
+            return result;
+        }
+
         public static List<string> GenerateSingleAction(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path
@@ -213,6 +228,77 @@ namespace RosMessageGeneration
             return constructor;
         }
 
+        private string GenerateSerializationStatements(string msgType)
+        {
+            string function = "";
+            function += MsgAutoGenUtilities.TWO_TABS + "public override List<byte[]> SerializationStatements()\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "{\n";
+            function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "var listOfSerializations = new List<byte[]>();\n";
+
+            string[] inheritedParams = new string[0];
+
+            // Inherited params
+            if (msgType.Equals("Goal"))
+            {
+                inheritedParams = new[] {"header", "goal_id"};
+
+            }
+            else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
+            {
+                inheritedParams = new[] {"header", "status"};
+            }
+
+            foreach (string paramName in inheritedParams)
+            {
+                function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + paramName + ".SerializationStatements());\n";
+            }
+
+            foreach (string identifier in symbolTable.Keys)
+            {
+                function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + identifier + ".SerializationStatements());\n";
+            }
+
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return listOfSerializations;\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
+
+            return function;
+        }
+
+        private string GenerateDeserializationStatements(string msgType)
+        {
+            string function = "";
+            function += MsgAutoGenUtilities.TWO_TABS + "public override int Deserialize(byte[] data, int offset)\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "{\n";
+
+            string[] inheritedParams = new string[0];
+
+            // Inherited params
+            if (msgType.Equals("Goal"))
+            {
+                inheritedParams = new[] {"header", "goal_id"};
+
+            }
+            else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
+            {
+                inheritedParams = new[] {"header", "status"};
+            }
+
+            foreach (string paramName in inheritedParams)
+            {
+                function += TWO_TABS + ONE_TAB + "offset = this." + paramName + ".Deserialize(data, offset);\n";
+            }
+
+            foreach (string identifier in symbolTable.Keys)
+            {
+                function += TWO_TABS + ONE_TAB + "offset = this." + identifier + ".Deserialize(data, offset);\n";
+            }
+
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return offset;\n";
+            function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
+
+            return function;
+        }
+
         public void WrapActionSections(string type)
         {
             string wrapperName = inFileName + "Action" + type;
@@ -221,6 +307,8 @@ namespace RosMessageGeneration
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
+                "using System.Collections.Generic;\n"+
+                "using RosMessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
 
@@ -259,6 +347,9 @@ namespace RosMessageGeneration
                 // Write parameterized constructor
                 writer.Write(GenerateParameterizedConstructor(wrapperName, type));
 
+                writer.Write(GenerateSerializationStatements(type));
+                writer.Write(GenerateDeserializationStatements(type));
+
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
                 // Close namespace
@@ -269,10 +360,14 @@ namespace RosMessageGeneration
         public void WrapAction()
         {
             string wrapperName = inFileName + "Action";
+            string type = "wrapper";
 
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
-            string imports = "\n\n";
+            string imports =
+                "using System.Collections.Generic;\n"+
+                "using RosMessageGeneration;\n" +
+                "\n\n";
 
             symbolTable = new Dictionary<string, string>();
 
@@ -316,6 +411,9 @@ namespace RosMessageGeneration
 
                 // Write default value constructor
                 writer.Write("\n" + GenerateDefaultValueConstructor(wrapperName) + "\n");
+
+                writer.Write(GenerateSerializationStatements(type));
+                writer.Write(GenerateDeserializationStatements(type));
 
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
