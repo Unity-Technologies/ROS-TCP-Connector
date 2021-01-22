@@ -9,3 +9,9 @@ This Unity package provides three main features:
 - [Message Generation](MessageGeneration.md)
 
 - [ROSGeometry](ROSGeometry.md)
+
+## [ROS#](https://github.com/siemens/ros-sharp)
+
+Special thanks to the Siemens [ROS# Project Team]( https://github.com/siemens/ros-sharp/wiki/Info_Acknowledgements) for driving the ROS-Unity Integration Open Source since 2017.
+
+This repo is a fork of [ROS#](https://github.com/siemens/ros-sharp) and was a great starting point for our development.
