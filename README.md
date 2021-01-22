@@ -10,7 +10,7 @@ This Unity package provides three main features:
 
 - [ROSGeometry](ROSGeometry.md)
 
-## [ROS#](https://github.com/siemens/ros-sharp)
+## ROS#
 
 Special thanks to the Siemens [ROS# Project Team]( https://github.com/siemens/ros-sharp/wiki/Info_Acknowledgements) for driving the ROS-Unity Integration Open Source since 2017.
 
