@@ -293,7 +293,7 @@ namespace RosMessageGeneration
                 case ".action":
                     string[] builtActionPaths = ActionAutoGen.GetActionClassPaths(path, MessageGenBrowserSettings.Get().outputPath);
                     return builtActionPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltActionFile : CachedEntryStatus.UnbuiltActionFile;
-			}
+			      }
 
             return CachedEntryStatus.Ignored;
         }
