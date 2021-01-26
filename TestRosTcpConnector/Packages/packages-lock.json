@@ -65,7 +65,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.robotics.ros-tcp-connector": {
-      "version": "file:/Users/devin.miller/unity_ws/robotics/ROS-TCP-Connector/com.unity.robotics.ros-tcp-connector",
+      "version": "file:../../com.unity.robotics.ros-tcp-connector",
       "depth": 0,
       "source": "local",
       "dependencies": {}
