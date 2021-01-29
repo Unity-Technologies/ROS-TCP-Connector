@@ -105,7 +105,8 @@ public class ROSConnection : MonoBehaviour
         // Send the message
         try
         {
-            if (hudPanel != null) serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
+            if (hudPanel != null)
+                serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
             networkStream.Write(messageBytes, 0, messageBytes.Length);
         }
         catch (Exception e)
@@ -146,7 +147,8 @@ public class ROSConnection : MonoBehaviour
 
         finish:
         callback(serviceResponse);
-        if (hudPanel != null) hudPanel.AddServiceResponse(serviceID, serviceResponse);
+        if (hudPanel != null)
+            hudPanel.AddServiceResponse(serviceID, serviceResponse);
         if (client.Connected)
             client.Close();
     }
@@ -216,7 +218,7 @@ public class ROSConnection : MonoBehaviour
         if (hudPanel == null)
         {
             hudPanel = gameObject.AddComponent<HUDPanel>();
-            hudPanel.host = $"{rosIPAddress}:{rosPort}";
+            hudPanel.SetRosIP(rosIPAddress, rosPort);
         }
 
         hudPanel.isEnabled = showHUD;
@@ -341,6 +343,9 @@ public class ROSConnection : MonoBehaviour
     {
         if (alreadyStartedServer)
             return;
+
+        if (hudPanel != null)
+            hudPanel.OnStartMessageServer(ip, port);
 
         alreadyStartedServer = true;
         while (true)
