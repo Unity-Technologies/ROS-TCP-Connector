@@ -72,7 +72,9 @@ namespace RosMessageGeneration
 
             if (rosMsgName.Equals(""))
             {
-                this.rosMsgName = MsgAutoGenUtilities.CapitalizeFirstLetter(inFileName);
+                if (Char.IsLower(inFileName[0]))
+                    Debug.LogWarningFormat("File {0} starts with a lowercase character. Message file names should be CamelCased (see : http://wiki.ros.org/ROS/Patterns/Conventions#line-38)", inFileName);
+                this.rosMsgName = inFileName;
             }
             else
             {
