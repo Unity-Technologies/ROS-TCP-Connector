@@ -3,8 +3,22 @@ using UnityEngine;
 
 public class DebugDraw : MonoBehaviour
 {
-    public static DebugDraw instance;
+    static DebugDraw _instance;
     static GUIStyle labelStyle;
+    public static DebugDraw instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                GameObject newDebugDrawObj = new GameObject("DebugDraw");
+                _instance = newDebugDrawObj.AddComponent<DebugDraw>();
+                _instance.material = new Material(Shader.Find("Unlit/VertexColorDebug"));
+            }
+            return _instance;
+        }
+    }
+
     Camera cam;
     List<Drawing> drawings = new List<Drawing>();
     List<Drawing> dirty = new List<Drawing>();
@@ -13,7 +27,7 @@ public class DebugDraw : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        _instance = this;
         labelStyle = new GUIStyle()
         {
             alignment = TextAnchor.LowerLeft,
