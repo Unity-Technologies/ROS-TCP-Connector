@@ -12,8 +12,9 @@ public class DebugDraw : MonoBehaviour
             if (_instance == null)
             {
                 GameObject newDebugDrawObj = new GameObject("DebugDraw");
+                newDebugDrawObj.hideFlags = HideFlags.HideInHierarchy;
                 _instance = newDebugDrawObj.AddComponent<DebugDraw>();
-                _instance.material = new Material(Shader.Find("Unlit/VertexColorDebug"));
+                _instance.material = new Material(Shader.Find("Unlit/VertexColor"));
             }
             return _instance;
         }
@@ -36,10 +37,10 @@ public class DebugDraw : MonoBehaviour
         cam = Camera.main;
     }
 
-    public Drawing CreateDrawing(float duration = -1, Material material = null)
+    public static Drawing CreateDrawing(float duration = -1, Material material = null)
     {
-        Drawing newDrawing = new Drawing(this, material?? this.material, duration >= 0? Time.time + duration: -1);
-        drawings.Add(newDrawing);
+        Drawing newDrawing = new Drawing(instance, material?? instance.material, duration >= 0? Time.time + duration: -1);
+        instance.drawings.Add(newDrawing);
         return newDrawing;
     }
 

@@ -8,7 +8,7 @@ using RosMessageGeneration;
 public interface IMessageVisualizer
 {
     void Begin(RosMessageGeneration.Message message);
-    void DrawGUI(RosMessageGeneration.Message message);
+    void DrawGUI();
     void End();
 }
 
@@ -65,33 +65,28 @@ public class VisualizeMessageAttribute : System.Attribute
         if (TypeVisualizers.TryGetValue(message.GetType(), out result))
             return result;
 
-        return null;
+        return typeof(DefaultVisualizer);
     }
+
+    static Type[] emptyTypeArray = new Type[0];
+    static object[] emptyObjectArray = new object[0];
 
     public static IMessageVisualizer CreateVisualizer(string topic, RosMessageGeneration.Message message)
     {
-        System.Type visualizerType = GetVisualizerType(topic, message);
-        if(visualizerType != null)
-        {
-            IMessageVisualizer visualizer = (IMessageVisualizer)ScriptableObject.CreateInstance(visualizerType);
-            visualizer.Begin(message);
-            return visualizer;
-        }
-        
-        if(defaultVisualizer == null)
-        {
-            defaultVisualizer = (DefaultVisualizer)ScriptableObject.CreateInstance(typeof(DefaultVisualizer));
-        }
-        return defaultVisualizer;
+        IMessageVisualizer visualizer = (IMessageVisualizer)GetVisualizerType(topic, message).GetConstructor(emptyTypeArray).Invoke(emptyObjectArray);
+        visualizer.Begin(message);
+        return visualizer;
     }
 
-    class DefaultVisualizer : ScriptableObject, IMessageVisualizer
+    class DefaultVisualizer : IMessageVisualizer
     {
+        Message message;
         public void Begin(Message message)
         {
+            this.message = message;
         }
 
-        public void DrawGUI(Message message)
+        public void DrawGUI()
         {
             GUILayout.Label(message.ToString());
         }
@@ -100,5 +95,4 @@ public class VisualizeMessageAttribute : System.Attribute
         {
         }
     }
-    static DefaultVisualizer defaultVisualizer;
 }

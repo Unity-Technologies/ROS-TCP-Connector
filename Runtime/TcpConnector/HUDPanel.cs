@@ -257,7 +257,7 @@ public class HUDPanel : MonoBehaviour
             if (msgView.visualizer == null)
                 msgView.visualizer = VisualizeMessageAttribute.CreateVisualizer(msgView.topic, msgView.message);
 
-            msgView.visualizer.DrawGUI(msgView.message);
+            msgView.visualizer.DrawGUI();
         }
         else if(msgView.visualizer != null)
         {

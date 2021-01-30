@@ -12,7 +12,7 @@ public class MessageVisualizerDrawing<T> : ScriptableObject, IMessageVisualizer 
     public void Begin(RosMessageGeneration.Message msg)
     {
         message = (T)msg;
-        drawing = DebugDraw.instance.CreateDrawing();
+        drawing = DebugDraw.CreateDrawing();
         Draw(drawing, message);
     }
 
@@ -27,9 +27,9 @@ public class MessageVisualizerDrawing<T> : ScriptableObject, IMessageVisualizer 
         Draw(drawing, message);
     }
 
-    void IMessageVisualizer.DrawGUI(RosMessageGeneration.Message message)
+    void IMessageVisualizer.DrawGUI()
     {
-        DrawGUI(drawing, this.message);
+        DrawGUI(drawing, message);
     }
 
     public virtual void DrawGUI(DebugDraw.Drawing drawing, T message)

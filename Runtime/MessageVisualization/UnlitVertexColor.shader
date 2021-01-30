@@ -1,4 +1,4 @@
-﻿Shader "Unlit/VertexColorDebug"
+﻿Shader "Unlit/VertexColor"
 {
     Properties
     {

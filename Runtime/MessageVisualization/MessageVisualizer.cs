@@ -9,7 +9,7 @@ public class MessageVisualizer<T>: ScriptableObject, IMessageVisualizer where T:
 {
     public T message;
 
-    public virtual void DrawGUI(RosMessageGeneration.Message msg)
+    public virtual void DrawGUI()
     {
         GUILayout.Label(message.ToString(), HUDPanel.messageStyle);
     }
