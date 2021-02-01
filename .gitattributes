@@ -1,0 +1,6 @@
+*.meta text eol=lf
+*.asset text eol=lf
+*.cs text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
