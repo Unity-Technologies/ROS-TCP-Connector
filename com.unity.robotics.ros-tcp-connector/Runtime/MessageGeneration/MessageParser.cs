@@ -13,11 +13,11 @@ limitations under the License.
 */
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
-namespace RosMessageGeneration
+namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public class MessageParser
     {

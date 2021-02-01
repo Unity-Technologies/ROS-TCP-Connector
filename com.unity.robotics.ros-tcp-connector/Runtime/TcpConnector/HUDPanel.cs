@@ -8,38 +8,37 @@ namespace Unity.Robotics.ROSTCPConnector
     public class HUDPanel : MonoBehaviour
     {
         // GUI variables
-        GUIStyle m_LabelStyle;
-        GUIStyle m_ContentStyle;
-        GUIStyle m_MessageStyle;
-        bool m_ViewSent = false;
-        bool m_ViewRecv = false;
-        bool m_ViewSrvs = false;
-        Rect m_ScrollRect;
+        GUIStyle labelStyle;
+        GUIStyle contentStyle;
+        GUIStyle messageStyle;
+        bool viewSent = false;
+        bool viewRecv = false;
+        bool viewSrvs = false;
+        Rect scrollRect;
+        bool redrawGUI = false;
 
         // ROS Message variables
         internal bool isEnabled;
         internal string host;
 
-        MessageViewState m_LastMessageSent;
-        string m_LastMessageSentMeta = "None";
-        float m_LastMessageSentRealtime;
+        MessageViewState lastMessageSent;
+        string lastMessageSentMeta = "None";
 
         public void SetLastMessageSent(string topic, Message message)
         {
-            m_LastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
-            m_LastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
-            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+            lastMessageSent = new MessageViewState() {label = "Last Message Sent:", message = message};
+            lastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+            redrawGUI = true;
         }
 
-        MessageViewState m_LastMessageReceived;
-        string m_LastMessageReceivedMeta = "None";
-        float m_LastMessageReceivedRealtime;
+        MessageViewState lastMessageReceived;
+        string lastMessageReceivedMeta = "None";
 
         public void SetLastMessageReceived(string topic, Message message)
         {
-            m_LastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message };
-            m_LastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
-            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+            lastMessageReceived = new MessageViewState() {label = "Last Message Received:", message = message};
+            lastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+            redrawGUI = true;
         }
 
         List<MessageViewState> activeServices = new List<MessageViewState>();
@@ -82,50 +81,32 @@ namespace Unity.Robotics.ROSTCPConnector
         void Awake()
         {
             // Define font styles
-            m_LabelStyle = new GUIStyle
+            labelStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.white },
+                normal = {textColor = Color.white},
                 fontStyle = FontStyle.Bold,
                 fixedWidth = 250
             };
 
-            m_ContentStyle = new GUIStyle
+            contentStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 0, 5),
-                normal = { textColor = Color.white },
+                normal = {textColor = Color.white},
                 fixedWidth = 300
             };
 
-            m_MessageStyle = new GUIStyle
+            messageStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 5, 5),
-                normal = { textColor = Color.white },
+                normal = {textColor = Color.white},
                 fixedWidth = 300,
                 wordWrap = true
             };
 
-            m_ScrollRect = new Rect();
-        }
-
-        Color GetConnectionColor(float elapsedTime)
-        {
-            var bright = new Color(1, 1, 0.5f);
-            var mid = new Color(0, 1, 1);
-            var dark = new Color(0, 0.5f, 1);
-            const float brightDuration = 0.03f;
-            const float fadeToDarkDuration = 1.0f;
-
-            if (!ROSConnection.instance.HasConnectionThread)
-                return Color.gray;
-            if (ROSConnection.instance.HasConnectionError)
-                return Color.red;
-            if (elapsedTime <= brightDuration)
-                return bright;
-            else
-                return Color.Lerp(mid, dark, elapsedTime / fadeToDarkDuration);
+            scrollRect = new Rect();
         }
 
         void OnGUI()
@@ -134,72 +115,52 @@ namespace Unity.Robotics.ROSTCPConnector
                 return;
 
             // Initialize main HUD
-            GUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(300));
+            GUILayout.BeginVertical("box");
 
             // ROS IP Setup
-            GUILayout.BeginHorizontal();
-            Color baseColor = GUI.color;
-            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageReceivedRealtime);
-            GUILayout.Label("\u25C0", m_LabelStyle, GUILayout.Width(10));
-            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageSentRealtime);
-            GUILayout.Label("\u25B6", m_LabelStyle, GUILayout.Width(15));
-            GUI.color = baseColor;
-            GUILayout.Label("ROS IP: ", m_LabelStyle, GUILayout.Width(100));
-
-            if (!ROSConnection.instance.HasConnectionThread)
-            {
-                ROSConnection.instance.RosIPAddress = GUILayout.TextField(ROSConnection.instance.RosIPAddress);
-                GUILayout.EndHorizontal();
-                GUILayout.Label("(Not connected)");
-                if (GUILayout.Button("Connect"))
-                    ROSConnection.instance.Connect();
-            }
-            else
-            {
-                GUILayout.Label(host, m_ContentStyle);
-                GUILayout.EndHorizontal();
-            }
+            GUILayout.Label("ROS IP:", labelStyle);
+            GUILayout.Label(host, contentStyle);
 
             // Last message sent
-            GUILayout.Label("Last Message Sent:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageSentMeta, m_ContentStyle);
-            if (m_LastMessageSent != null)
-                m_ViewSent = GUILayout.Toggle(m_ViewSent, "View contents");
+            GUILayout.Label("Last Message Sent:", labelStyle);
+            GUILayout.Label(lastMessageSentMeta, contentStyle);
+            if (lastMessageSent != null)
+                viewSent = GUILayout.Toggle(viewSent, "View contents");
 
             // Last message received
-            GUILayout.Label("Last Message Received:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageReceivedMeta, m_ContentStyle);
-            if (m_LastMessageReceived != null)
-                m_ViewRecv = GUILayout.Toggle(m_ViewRecv, "View contents");
+            GUILayout.Label("Last Message Received:", labelStyle);
+            GUILayout.Label(lastMessageReceivedMeta, contentStyle);
+            if (lastMessageReceived != null)
+                viewRecv = GUILayout.Toggle(viewRecv, "View contents");
 
-            GUILayout.Label($"{activeServices.Count} Active Service Requests:", m_LabelStyle);
+            GUILayout.Label($"{activeServices.Count} Active Service Requests:", labelStyle);
             if (activeServices.Count > 0)
             {
-                var dots = new String('.', (int)Time.time % 4);
-                GUILayout.Label($"Waiting for service response{dots}", m_ContentStyle);
+                var dots = new String('.', (int) Time.time % 4);
+                GUILayout.Label($"Waiting for service response{dots}", contentStyle);
             }
 
-            m_ViewSrvs = GUILayout.Toggle(m_ViewSrvs, "View services status");
+            viewSrvs = GUILayout.Toggle(viewSrvs, "View services status");
 
             GUILayout.EndVertical();
 
             // Update length of scroll
             if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
-                m_ScrollRect = GUILayoutUtility.GetLastRect();
+                scrollRect = GUILayoutUtility.GetLastRect();
 
             // Optionally show message contents
-            float y = m_ScrollRect.yMax;
-            if (m_ViewSent)
+            float y = scrollRect.yMax;
+            if (viewSent)
             {
-                y = ShowMessage(m_LastMessageSent, y);
+                y = ShowMessage(lastMessageSent, y);
             }
 
-            if (m_ViewRecv)
+            if (viewRecv)
             {
-                y = ShowMessage(m_LastMessageReceived, y);
+                y = ShowMessage(lastMessageReceived, y);
             }
 
-            if (m_ViewSrvs)
+            if (viewSrvs)
             {
                 foreach (MessageViewState service in activeServices)
                 {
@@ -249,10 +210,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
             // Paste contents of message
             if (showElapsedTime)
-                GUILayout.Label($"{msgView.label} ({Time.time - msgView.timestamp})", m_LabelStyle);
+                GUILayout.Label($"{msgView.label} ({Time.time - msgView.timestamp})", labelStyle);
             else
-                GUILayout.Label(msgView.label, m_LabelStyle);
-            GUILayout.Label(msgView.message.ToString(), m_MessageStyle);
+                GUILayout.Label(msgView.label, labelStyle);
+            GUILayout.Label(msgView.message.ToString(), messageStyle);
 
             GUILayout.EndVertical();
             GUI.EndScrollView();
