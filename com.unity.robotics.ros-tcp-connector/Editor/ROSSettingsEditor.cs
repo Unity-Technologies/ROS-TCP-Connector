@@ -45,12 +45,24 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             EditorGUILayout.Space();
             prefab.showHUD = EditorGUILayout.Toggle("Show HUD", prefab.showHUD);
             EditorGUILayout.Space();
-            prefab.overrideUnityIP = EditorGUILayout.TextField(new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."), prefab.overrideUnityIP);
+            prefab.overrideUnityIP = EditorGUILayout.TextField(
+                new GUIContent(
+                    "Override Unity IP Address",
+                    "If blank, determine IP automatically."),
+                prefab.overrideUnityIP);
             prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);
-            prefab.awaitDataMaxRetries = EditorGUILayout.IntField(new GUIContent("Max Retries", "While waiting for a service to respond, check this many times before giving up."), prefab.awaitDataMaxRetries);
-            prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField(new GUIContent("Sleep (seconds)", "While waiting for a service to respond, wait this many seconds between checks."), prefab.awaitDataSleepSeconds);
+            prefab.awaitDataMaxRetries = EditorGUILayout.IntField(
+                new GUIContent(
+                    "Max Retries",
+                    "While waiting for a service to respond, check this many times before giving up."),
+                prefab.awaitDataMaxRetries);
+            prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField(
+                new GUIContent(
+                    "Sleep (seconds)",
+                    "While waiting for a service to respond, wait this many seconds between checks."),
+                prefab.awaitDataSleepSeconds);
 
             if (GUI.changed)
             {
