@@ -4,46 +4,32 @@ using UnityEngine;
 using RosMessageTypes.Geometry;
 using ROSGeometry;
 
-public class MessageVisualizerDrawing<T> : ScriptableObject, IMessageVisualizer where T:RosMessageGeneration.Message
+public class MessageVisualizerDrawing<T> : IMessageVisualizer where T:RosMessageGeneration.Message
 {
-    DebugDraw.Drawing drawing;
-    T message;
+    public DebugDraw.Drawing drawing;
+    public string topic;
+    public T message;
 
-    public void Begin(RosMessageGeneration.Message msg)
+    public MessageVisualizerDrawing(string topic, RosMessageGeneration.Message msg)
     {
-        message = (T)msg;
         drawing = DebugDraw.CreateDrawing();
-        Draw(drawing, message);
+        this.topic = topic;
+        message = (T)msg;
+        DrawVisual();
     }
 
-    public virtual void Draw(DebugDraw.Drawing drawing, T message)
+    public virtual void DrawVisual()
     {
 
     }
 
-    public void Redraw()
-    {
-        drawing.Clear();
-        Draw(drawing, message);
-    }
-
-    void IMessageVisualizer.DrawGUI()
-    {
-        DrawGUI(drawing, message);
-    }
-
-    public virtual void DrawGUI(DebugDraw.Drawing drawing, T message)
+    public virtual void GUI()
     {
         GUILayout.Label(message.ToString());
     }
 
-    void IMessageVisualizer.End()
+    public virtual void End()
     {
         drawing.Destroy();
-        Finish();
-    }
-
-    public virtual void Finish()
-    {
     }
 }

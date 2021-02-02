@@ -94,7 +94,7 @@ public class HUDPanel : MonoBehaviour
 
     void Awake()
     {
-        VisualizeMessageAttribute.InitAllVisualizers();
+        MessageVisualizations.InitAllVisualizers();
 
         // Define font styles
         headingStyle = new GUIStyle
@@ -255,9 +255,9 @@ public class HUDPanel : MonoBehaviour
         if (msgView.foldedOut)
         {
             if (msgView.visualizer == null)
-                msgView.visualizer = VisualizeMessageAttribute.CreateVisualizer(msgView.topic, msgView.message);
+                msgView.visualizer = MessageVisualizations.GetVisualizer(msgView.topic, msgView.message);
 
-            msgView.visualizer.DrawGUI();
+            msgView.visualizer.GUI();
         }
         else if(msgView.visualizer != null)
         {

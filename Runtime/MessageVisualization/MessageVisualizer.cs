@@ -5,6 +5,7 @@ using System.Reflection;
 using System;
 using System.Linq;
 
+/*
 public class MessageVisualizer<T>: ScriptableObject, IMessageVisualizer where T: RosMessageGeneration.Message
 {
     public T message;
@@ -23,3 +24,4 @@ public class MessageVisualizer<T>: ScriptableObject, IMessageVisualizer where T:
     {
     }
 }
+*/
