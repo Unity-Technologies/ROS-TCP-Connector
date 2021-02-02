@@ -204,7 +204,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
-            SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME, new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+            SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
+                new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
         }
 
         void OnValidate()
