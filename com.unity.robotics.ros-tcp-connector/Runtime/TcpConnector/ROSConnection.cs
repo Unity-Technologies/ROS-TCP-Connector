@@ -1,4 +1,4 @@
-using RosMessageGeneration;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections.Generic;
@@ -362,7 +362,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
 
-                    while (true)   //we wait for a connection
+                    while (true) //we wait for a connection
                     {
                         var tcpClient = await tcpListener.AcceptTcpClientAsync();
 

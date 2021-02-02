@@ -1,5 +1,5 @@
-using RosMessageGeneration;
-using ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

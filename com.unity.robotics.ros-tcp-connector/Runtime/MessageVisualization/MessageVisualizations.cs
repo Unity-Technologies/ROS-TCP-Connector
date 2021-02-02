@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using RosMessageTypes.Geometry;
-using ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 using System.Reflection;
-using CreateMessageVisualizer = System.Func<string, RosMessageGeneration.Message, IMessageVisualizer>;
+using CreateMessageVisualizer = System.Func<string, Unity.Robotics.ROSTCPConnector.MessageGeneration.Message, IMessageVisualizer>;
 
 public interface IMessageVisualizer
 {
@@ -15,29 +15,29 @@ public interface IMessageVisualizer
 
 public static class MessageVisualizations
 {
-    public static void Draw<C>(DebugDraw.Drawing drawing, Point message, Color color, string label, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
         drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
     }
 
-    public static void GUI(string name, Point message)
+    public static void GUI(string name, RosMessageTypes.Geometry.Point message)
     {
         GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
     }
 
-    public static void Draw<C>(DebugDraw.Drawing drawing, Point32 message, Color color, string label, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point32 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
         drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
     }
 
-    public static void GUI(string name, Point32 message)
+    public static void GUI(string name, RosMessageTypes.Geometry.Point32 message)
     {
         GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
     }
 
-    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
         drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
@@ -48,7 +48,7 @@ public static class MessageVisualizations
         GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
     }
 
-    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Pose message, Color color, string label, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Pose message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         Draw<C>(drawing, message.position, color, label, size);
         UnityEngine.Vector3 point = message.position.From<C>();
@@ -62,7 +62,7 @@ public static class MessageVisualizations
         GUI("Orientation", message.orientation);
     }
 
-    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Quaternion message, UnityEngine.Vector3 position, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Quaternion message, UnityEngine.Vector3 position, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         UnityEngine.Quaternion quaternion = message.From<C>();
         UnityEngine.Vector3 right = quaternion * UnityEngine.Vector3.right * size;
@@ -78,7 +78,7 @@ public static class MessageVisualizations
         GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
     }
 
-    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Transform transform, float size = 0.1f) where C : CoordinateSpace, new()
+    public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Transform transform, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         Draw<C>(drawing, transform.rotation, transform.translation.From<C>(), size);
     }
@@ -92,7 +92,7 @@ public static class MessageVisualizations
     static bool initialized;
     private static Dictionary<string, CreateMessageVisualizer> TopicVisualizers = new Dictionary<string, CreateMessageVisualizer>();
     private static Dictionary<Type, CreateMessageVisualizer> TypeVisualizers = new Dictionary<Type, CreateMessageVisualizer>();
-    private static Type[] visualizerConstructorSignature = new Type[] { typeof(RosMessageGeneration.Message), typeof(string) };
+    private static Type[] visualizerConstructorSignature = new Type[] { typeof(Message), typeof(string) };
 
     public static void InitAllVisualizers()
     {
@@ -111,7 +111,7 @@ public static class MessageVisualizations
                 foreach (VisualizeMessageAttribute attr in classType.GetCustomAttributes(typeof(VisualizeMessageAttribute), false))
                 {
                     ConstructorInfo constructor = classType.GetConstructor(visualizerConstructorSignature);
-                    CreateMessageVisualizer visualize = (string topic, RosMessageGeneration.Message msg) => (IMessageVisualizer)constructor.Invoke(new object[] { topic, msg });
+                    CreateMessageVisualizer visualize = (string topic, Message msg) => (IMessageVisualizer)constructor.Invoke(new object[] { topic, msg });
                     if (attr.topic != null)
                         TopicVisualizers.Add(attr.topic, visualize);
                     else
@@ -131,7 +131,7 @@ public static class MessageVisualizations
         TypeVisualizers.Add(messageType, visualizer);
     }
 
-    public static IMessageVisualizer GetVisualizer(string topic, RosMessageGeneration.Message message)
+    public static IMessageVisualizer GetVisualizer(string topic, Message message)
     {
         CreateMessageVisualizer result;
         if (TopicVisualizers.TryGetValue(topic, out result))

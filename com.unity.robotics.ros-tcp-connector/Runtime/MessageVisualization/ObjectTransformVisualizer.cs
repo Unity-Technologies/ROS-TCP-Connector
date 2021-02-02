@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ROSTransform = RosMessageTypes.Geometry.Transform;
-using ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 public class ObjectTransformVisualizer : MonoBehaviour
 {
     public string[] visualizeTopics;
     public bool handleAllTransformMessages;
-    public ROSGeometry.CoordinateSpaceSelection coordinateSpace = ROSGeometry.CoordinateSpaceSelection.FLU;
+    public CoordinateSpaceSelection coordinateSpace = CoordinateSpaceSelection.FLU;
 
     public virtual void Awake()
     {

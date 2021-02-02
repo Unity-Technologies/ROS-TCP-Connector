@@ -2,15 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RosMessageTypes.Geometry;
-using ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
-public class MessageVisualizerDrawing<T> : IMessageVisualizer where T:RosMessageGeneration.Message
+public class MessageVisualizerDrawing<T> : IMessageVisualizer where T:Message
 {
     public DebugDraw.Drawing drawing;
     public string topic;
     public T message;
 
-    public MessageVisualizerDrawing(string topic, RosMessageGeneration.Message msg)
+    public MessageVisualizerDrawing(string topic, Message msg)
     {
         drawing = DebugDraw.CreateDrawing();
         this.topic = topic;
