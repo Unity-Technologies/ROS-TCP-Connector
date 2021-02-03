@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using RosMessageGeneration;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace RosMessageTypes.Std
