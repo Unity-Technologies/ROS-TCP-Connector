@@ -308,7 +308,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             string imports =
                 "using System.Collections.Generic;\n"+
-                "using RosMessageGeneration;\n" +
+                "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
 
@@ -366,7 +366,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             string imports =
                 "using System.Collections.Generic;\n"+
-                "using RosMessageGeneration;\n" +
+                "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "\n\n";
 
             symbolTable = new Dictionary<string, string>();
