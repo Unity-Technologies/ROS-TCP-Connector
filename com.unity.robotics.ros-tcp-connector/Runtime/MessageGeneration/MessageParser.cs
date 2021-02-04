@@ -558,7 +558,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             importsStr += "using System.Linq;\n";
             importsStr += "using System.Collections.Generic;\n";
             importsStr += "using System.Text;\n";
-            importsStr += "using RosMessageGeneration;\n";
+            importsStr += "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n";
 
             if (imports.Count > 0)
             {

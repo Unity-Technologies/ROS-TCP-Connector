@@ -3,9 +3,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using RosMessageGeneration;
-using RosMessageTypes.Std;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Diagnostic
 {
