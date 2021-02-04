@@ -1,4 +1,4 @@
-/*
+﻿/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -27,7 +27,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
             string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
             string extension = Path.GetExtension(inFilePath);
-            string className = MsgAutoGenUtilities.MessageClassPrefix + MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
 
             string[] result = new string[types.Length];
             for (int Idx = 0; Idx < types.Length; ++Idx)
@@ -73,7 +73,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 List<MessageToken> tokens = listsOfTokens[i];
 
                 // Action is made up of goal, result, feedback
-                string className = MsgAutoGenUtilities.MessageClassPrefix + inFileName + types[i];
+                string className = inFileName + types[i];
 
                 // Parse and generate goal, result, feedback messages
                 MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "action", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, MsgAutoGenUtilities.numericTypeDeserializationFunctions, MsgAutoGenUtilities.numericTypeByteSize, className);
@@ -199,12 +199,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             if (msgType.Equals("Goal"))
             {
-                paramsIn += "MHeader header, MGoalID goal_id, ";
+                paramsIn += "Header header, GoalID goal_id, ";
                 paramsOut += "header, goal_id";
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                paramsIn += "MHeader header, MGoalStatus status, ";
+                paramsIn += "Header header, GoalStatus status, ";
                 paramsOut += "header, status";
             }
 
@@ -240,12 +240,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Inherited params
             if (msgType.Equals("Goal"))
             {
-                inheritedParams = new[] { "header", "goal_id" };
+                inheritedParams = new[] {"header", "goal_id"};
 
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                inheritedParams = new[] { "header", "status" };
+                inheritedParams = new[] {"header", "status"};
             }
 
             foreach (string paramName in inheritedParams)
@@ -258,7 +258,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + identifier + ".SerializationStatements());\n";
             }
 
-            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "return listOfSerializations;\n";
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return listOfSerializations;\n";
             function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
 
             return function;
@@ -275,12 +275,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Inherited params
             if (msgType.Equals("Goal"))
             {
-                inheritedParams = new[] { "header", "goal_id" };
+                inheritedParams = new[] {"header", "goal_id"};
 
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                inheritedParams = new[] { "header", "status" };
+                inheritedParams = new[] {"header", "status"};
             }
 
             foreach (string paramName in inheritedParams)
@@ -293,7 +293,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 function += TWO_TABS + ONE_TAB + "offset = this." + identifier + ".Deserialize(data, offset);\n";
             }
 
-            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "return offset;\n";
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return offset;\n";
             function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
 
             return function;
@@ -301,13 +301,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void WrapActionSections(string type)
         {
-            string wrapperName = MsgAutoGenUtilities.MessageClassPrefix + inFileName + "Action" + type;
-            string msgName = MsgAutoGenUtilities.MessageClassPrefix + inFileName + type;
+            string wrapperName = inFileName + "Action" + type;
+            string msgName = inFileName + type;
 
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n" +
+                "using System.Collections.Generic;\n"+
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
@@ -327,13 +327,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 // Write class declaration
                 writer.Write(
-                    ONE_TAB + "public class " + wrapperName + " : Action" + type + "<" + msgName + ">\n" +
+                    ONE_TAB + "public class " + wrapperName + " : Action" + type + "<" + inFileName + type + ">\n" +
                     ONE_TAB + "{\n"
                     );
 
                 // Write ROS package name
                 writer.Write(
-                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + type + "\";\n"
+                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + wrapperName + "\";\n"
                     );
 
                 // Record goal/result/feedback declaration
@@ -359,14 +359,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void WrapAction()
         {
-            string msgNamePrefix = MsgAutoGenUtilities.MessageClassPrefix + inFileName;
-            string className = msgNamePrefix + "Action";
+            string wrapperName = inFileName + "Action";
             string type = "wrapper";
 
-            string outPath = Path.Combine(this.outPath, className + ".cs");
+            string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n" +
+                "using System.Collections.Generic;\n"+
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "\n\n";
 
@@ -385,33 +384,33 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 // Write class declaration
                 string[] genericParams = new string[] {
-                    msgNamePrefix + "ActionGoal",
-                    msgNamePrefix + "ActionResult",
-                    msgNamePrefix + "ActionFeedback",
-                    msgNamePrefix + "Goal",
-                    msgNamePrefix + "Result",
-                    msgNamePrefix + "Feedback"
+                    inFileName + "ActionGoal",
+                    inFileName + "ActionResult",
+                    inFileName + "ActionFeedback",
+                    inFileName + "Goal",
+                    inFileName + "Result",
+                    inFileName + "Feedback"
                 };
                 writer.Write(
-                    ONE_TAB + "public class " + className + " : Action<" + string.Join(", ", genericParams) + ">\n" +
+                    ONE_TAB + "public class " + wrapperName + " : Action<" + string.Join(", ", genericParams) + ">\n" +
                     ONE_TAB + "{\n"
                     );
 
                 // Write ROS package name
                 writer.Write(
-                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + "\";\n"
+                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + wrapperName + "\";\n"
                     );
 
                 // Record variables
                 // Action Goal
-                symbolTable.Add("action_goal", className + "Goal");
+                symbolTable.Add("action_goal", wrapperName + "Goal");
                 // Action Result
-                symbolTable.Add("action_result", className + "Result");
+                symbolTable.Add("action_result", wrapperName + "Result");
                 //Action Feedback
-                symbolTable.Add("action_feedback", className + "Feedback");
+                symbolTable.Add("action_feedback", wrapperName + "Feedback");
 
                 // Write default value constructor
-                writer.Write("\n" + GenerateDefaultValueConstructor(className) + "\n");
+                writer.Write("\n" + GenerateDefaultValueConstructor(wrapperName) + "\n");
 
                 writer.Write(GenerateSerializationStatements(type));
                 writer.Write(GenerateDeserializationStatements(type));
