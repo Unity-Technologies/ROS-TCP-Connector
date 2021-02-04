@@ -5,13 +5,17 @@ using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
-public class MessageVisualizerDrawing<T> : IMessageVisualizer where T:Message
+public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T:Message
 {
     public DebugDraw.Drawing drawing;
     public string topic;
     public T message;
 
-    public MessageVisualizerDrawing(string topic, Message msg)
+    public MessageVisualizerDrawing()
+    {
+    }
+
+    public void Begin(string topic, T msg)
     {
         drawing = DebugDraw.CreateDrawing();
         this.topic = topic;

@@ -32,27 +32,41 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageSent(string topic, Message message)
         {
+            bool foldedOut = false;
             if (lastMessageSent != null)
+            {
+                foldedOut = lastMessageSent.foldedOut;
                 lastMessageSent.RemoveVisual();
+            }
             lastMessageSent = new MessageViewState()
             {
                 label = "Last Message Sent:",
+                topic = topic,
                 timestamp = DateTime.Now,
-                message = message
+                message = message,
+                foldedOut = foldedOut
             };
+            lastMessageSent.InitVisualizer();
         }
 
         public void SetLastMessageReceived(string topic, Message message)
         {
+            bool foldedOut = false;
             if (lastMessageReceived != null)
+            {
+                foldedOut = lastMessageSent.foldedOut;
                 lastMessageReceived.RemoveVisual();
+            }
 
             lastMessageReceived = new MessageViewState()
             {
                 label = "Last Message Received:",
+                topic = topic,
                 timestamp = DateTime.Now,
-                message = message
+                message = message,
+                foldedOut = foldedOut
             };
+            lastMessageReceived.InitVisualizer();
         }
 
         public int AddServiceRequest(string topic, Message request)
@@ -60,29 +74,42 @@ namespace Unity.Robotics.ROSTCPConnector
             int serviceID = nextServiceID;
             nextServiceID++;
 
-            activeServices.Add(new MessageViewState()
+            MessageViewState newMsgView = new MessageViewState()
             {
                 serviceID = serviceID,
                 timestamp = DateTime.Now,
                 topic = topic,
                 message = request,
                 label = "Active Request: ",
-            });
+            };
+            activeServices.Add(newMsgView);
+            newMsgView.InitVisualizer();
 
             return serviceID;
         }
 
         public void AddServiceResponse(int serviceID, Message response)
         {
+            bool requestFoldedOut = false;
+            bool responseFoldedOut = false;
             if (lastCompletedServiceRequest != null)
+            {
+                requestFoldedOut = lastCompletedServiceRequest.foldedOut;
                 lastCompletedServiceRequest.RemoveVisual();
+            }
 
             if (lastCompletedServiceResponse != null)
+            {
+                responseFoldedOut = lastCompletedServiceResponse.foldedOut;
                 lastCompletedServiceResponse.RemoveVisual();
+            }
 
             lastCompletedServiceRequest = activeServices.Find(s => s.serviceID == serviceID);
             lastCompletedServiceRequest.label = "Last Completed Request: ";
             activeServices.Remove(lastCompletedServiceRequest);
+
+            if (requestFoldedOut)
+                lastCompletedServiceRequest.foldedOut = true;
 
             lastCompletedServiceResponse = new MessageViewState()
             {
@@ -91,7 +118,9 @@ namespace Unity.Robotics.ROSTCPConnector
                 topic = lastCompletedServiceRequest.topic,
                 message = response,
                 label = "Last Completed Response: ",
+                foldedOut = responseFoldedOut,
             };
+            lastCompletedServiceResponse.InitVisualizer();
         }
 
         void Awake()
@@ -214,7 +243,13 @@ namespace Unity.Robotics.ROSTCPConnector
             public Message message;
             public Rect contentRect;
             public Vector2 scrollPosition;
-            public IMessageVisualizer visualizer;
+            public IMessageVisualizerBase visualizer;
+
+            public void InitVisualizer()
+            {
+                if(visualizer == null)
+                    visualizer = MessageVisualizations.GetVisualizer(topic, message);
+            }
 
             public void RemoveVisual()
             {
@@ -261,10 +296,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 msgView.visualizer.GUI();
             }
-            else if (msgView.visualizer != null)
+            /*else if (msgView.visualizer != null)
             {
                 msgView.RemoveVisual();
-            }
+            }*/
             GUILayout.EndVertical();
             GUI.EndScrollView();
 

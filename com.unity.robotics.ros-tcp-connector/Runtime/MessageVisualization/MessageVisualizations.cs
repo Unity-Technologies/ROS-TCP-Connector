@@ -5,12 +5,22 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 using System.Reflection;
-using CreateMessageVisualizer = System.Func<string, Unity.Robotics.ROSTCPConnector.MessageGeneration.Message, IMessageVisualizer>;
+using MessageVisualizerCreator = System.Func<string, Unity.Robotics.ROSTCPConnector.MessageGeneration.Message, IMessageVisualizerBase>;
 
-public interface IMessageVisualizer
+public interface IMessageVisualizerBase
 {
     void GUI();
     void End();
+}
+
+public interface IMessageVisualizer<Msg>: IMessageVisualizerBase where Msg:Message
+{
+    void Begin(string topic, Msg msg);
+}
+
+public interface IMessageVisualizer<Msg, UserData> : IMessageVisualizerBase where Msg:Message
+{
+    void Begin(string topic, Msg msg, UserData userData);
 }
 
 public static class MessageVisualizations
@@ -90,9 +100,10 @@ public static class MessageVisualizations
     }
 
     static bool initialized;
-    private static Dictionary<string, CreateMessageVisualizer> TopicVisualizers = new Dictionary<string, CreateMessageVisualizer>();
-    private static Dictionary<Type, CreateMessageVisualizer> TypeVisualizers = new Dictionary<Type, CreateMessageVisualizer>();
-    private static Type[] visualizerConstructorSignature = new Type[] { typeof(Message), typeof(string) };
+    private static Dictionary<string, MessageVisualizerCreator> TopicVisualizers = new Dictionary<string, MessageVisualizerCreator>();
+    private static Dictionary<Type, MessageVisualizerCreator> TypeVisualizers = new Dictionary<Type, MessageVisualizerCreator>();
+    private static Type[] emptyConstructorSignature = new Type[] { typeof(Message), typeof(string) };
+    private static object[] emptyConstructorArgs = new object[] { };
 
     public static void InitAllVisualizers()
     {
@@ -100,55 +111,88 @@ public static class MessageVisualizations
             return;
 
         initialized = true;
+        MethodInfo genericCreator = typeof(MessageVisualizations).GetMethod("GetCreatorTM");
 
         foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
         {
             foreach (Type classType in a.GetTypes())
             {
-                if (!typeof(IMessageVisualizer).IsAssignableFrom(classType))
+                if (!typeof(IMessageVisualizerBase).IsAssignableFrom(classType))
                     continue;
 
                 foreach (VisualizeMessageAttribute attr in classType.GetCustomAttributes(typeof(VisualizeMessageAttribute), false))
                 {
-                    ConstructorInfo constructor = classType.GetConstructor(visualizerConstructorSignature);
-                    CreateMessageVisualizer visualize = (string topic, Message msg) => (IMessageVisualizer)constructor.Invoke(new object[] { topic, msg });
+                    Type messageVisualizerGeneric = classType.GetInterface("IMessageVisualizer`1");
+                    MethodInfo getCreator = genericCreator.MakeGenericMethod(new Type[] { classType, messageVisualizerGeneric.GenericTypeArguments[0] });
                     if (attr.topic != null)
-                        TopicVisualizers.Add(attr.topic, visualize);
+                        TopicVisualizers.Add(attr.topic, (MessageVisualizerCreator)getCreator.Invoke(null, null));
                     else
-                        TypeVisualizers.Add(attr.messageType, visualize);
+                        TypeVisualizers.Add(attr.messageType, (MessageVisualizerCreator)getCreator.Invoke(null, null));
                 }
             }
         }
     }
 
-    public static void RegisterVisualizer(this CreateMessageVisualizer visualizer, string topic)
+    public static void RegisterVisualizer<T,Msg>(string topic) where T:IMessageVisualizer<Msg>, new() where Msg:Message
     {
-        TopicVisualizers.Add(topic, visualizer);
+        TopicVisualizers.Add(topic, GetCreatorTM<T, Msg>());
     }
 
-    public static void RegisterVisualizer(this CreateMessageVisualizer visualizer, System.Type messageType)
+    public static void RegisterVisualizer<T,Msg>(System.Type messageType) where T : IMessageVisualizer<Msg>, new() where Msg : Message
     {
-        TypeVisualizers.Add(messageType, visualizer);
+        TypeVisualizers.Add(messageType, GetCreatorTM<T, Msg>());
     }
 
-    public static IMessageVisualizer GetVisualizer(string topic, Message message)
+    public static MessageVisualizerCreator GetCreatorTM<T, Msg>() where T : IMessageVisualizer<Msg>, new() where Msg:Message
     {
-        CreateMessageVisualizer result;
+        return (string tpc, Message msg) =>
+        {
+            IMessageVisualizer<Msg> result = new T();
+            result.Begin(tpc, (Msg)msg);
+            return result;
+        };
+    }
+
+    public static void RegisterVisualizer<T,Msg,U>(string topic, U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg : Message
+    {
+        TopicVisualizers.Add(topic, GetCreatorTMU<T, Msg,U>(userData));
+    }
+
+    public static void RegisterVisualizer<T,Msg,U>(U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg:Message
+    {
+        TypeVisualizers.Add(typeof(Msg), GetCreatorTMU<T, Msg,U>(userData));
+    }
+
+    private static MessageVisualizerCreator GetCreatorTMU<T, Msg,U>(U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg:Message
+    {
+        return (string tpc, Message msg) =>
+        {
+            IMessageVisualizer<Msg, U> result = new T();
+            result.Begin(tpc, (Msg)msg, userData);
+            return result;
+        };
+    }
+
+    public static IMessageVisualizerBase GetVisualizer(string topic, Message message)
+    {
+        MessageVisualizerCreator result;
         if (TopicVisualizers.TryGetValue(topic, out result))
             return result(topic, message);
 
         if (TypeVisualizers.TryGetValue(message.GetType(), out result))
             return result(topic, message);
 
-        return new DefaultVisualizer(message.ToString());
+        DefaultVisualizer defaultVisualizer = new DefaultVisualizer();
+        defaultVisualizer.Begin(topic, message);
+        return defaultVisualizer;
     }
 
-    class DefaultVisualizer : IMessageVisualizer
+    class DefaultVisualizer : IMessageVisualizer<Message>
     {
         string messageString;
-        public DefaultVisualizer(string messageString)
+        public void Begin(string topic, Message message)
         {
-            this.messageString = messageString;
+            this.messageString = message.ToString();
         }
 
         public void GUI()
