@@ -33,6 +33,9 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
         public float awaitDataSleepSeconds = 1.0f;
 
+        [Tooltip("While reading received messages, read this many bytes at a time.")]
+        public int byteChunkToRead = 2048;
+
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
@@ -313,7 +316,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
             while (bytesRemaining > 0)
             {
-                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(2048, bytesRemaining));
+                // Read the minimum of the bytes remaining, or the designated byteChunkToRead in segments until none remain
+                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(byteChunkToRead, bytesRemaining));
                 totalBytesRead += bytesRead;
                 bytesRemaining -= bytesRead;
             }

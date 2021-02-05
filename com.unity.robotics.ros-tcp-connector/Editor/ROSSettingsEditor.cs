@@ -58,6 +58,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 new GUIContent("Sleep (seconds)",
                     "While waiting for a service to respond, wait this many seconds between checks."),
                 prefab.awaitDataSleepSeconds);
+            prefab.byteChunkToRead = EditorGUILayout.IntField(
+                new GUIContent("Read chunk size",
+                    "While reading received messages, read this many bytes at a time."),
+                prefab.byteChunkToRead);
 
             if (GUI.changed)
             {
