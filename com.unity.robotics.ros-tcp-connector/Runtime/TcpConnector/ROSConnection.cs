@@ -311,7 +311,7 @@ namespace Unity.Robotics.ROSTCPConnector
             int bytesRemaining = full_message_size;
             int totalBytesRead = 0;
 
-            while (networkStream.DataAvailable && bytesRemaining > 0)
+            while (bytesRemaining > 0)
             {
                 int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(2048, bytesRemaining));
                 totalBytesRead += bytesRead;
