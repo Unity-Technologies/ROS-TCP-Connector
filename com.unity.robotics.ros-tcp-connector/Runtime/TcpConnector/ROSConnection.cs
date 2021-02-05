@@ -150,9 +150,7 @@ namespace Unity.Robotics.ROSTCPConnector
             try
             {
                 string serviceName;
-                var messageContents = await ReadMessageContents(networkStream);
-                var topicName = messageContents.Item1;
-                var content = messageContents.Item2;
+                (string topicName, byte[] content) = await ReadMessageContents(networkStream);
                 serviceResponse.Deserialize(content, 0);
             }
             catch (Exception e)
@@ -269,9 +267,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             SubscriberCallback subs;
 
-            var messageContents = await ReadMessageContents(networkStream);
-            var topicName = messageContents.Item1;
-            var content = messageContents.Item2;
+            (string topicName, byte[] content) = await ReadMessageContents(networkStream);
 
             if (!subscribers.TryGetValue(topicName, out subs))
                 return; // not interested in this topic
