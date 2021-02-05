@@ -36,6 +36,9 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("While reading received messages, read this many bytes at a time.")]
         public int readChunkSize = 2048;
 
+        [Tooltip("While waiting to read a full message, check this many times before giving up.")]
+        public int awaitDataReadRetry = 10;
+
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
@@ -147,7 +150,9 @@ namespace Unity.Robotics.ROSTCPConnector
             try
             {
                 string serviceName;
-                byte[] content = ReadMessageContents(networkStream, out serviceName);
+                var messageContents = await ReadMessageContents(networkStream);
+                var topicName = messageContents.Item1;
+                var content = messageContents.Item2;
                 serviceResponse.Deserialize(content, 0);
             }
             catch (Exception e)
@@ -254,18 +259,19 @@ namespace Unity.Robotics.ROSTCPConnector
             await Task.Yield();
 
             // continue asynchronously on another thread
-            ReadMessage(tcpClient.GetStream());
+            await ReadMessage(tcpClient.GetStream());
         }
 
-        void ReadMessage(NetworkStream networkStream)
+        async Task ReadMessage(NetworkStream networkStream)
         {
             if (!networkStream.CanRead)
                 return;
 
             SubscriberCallback subs;
 
-            string topicName;
-            byte[] content = ReadMessageContents(networkStream, out topicName);
+            var messageContents = await ReadMessageContents(networkStream);
+            var topicName = messageContents.Item1;
+            var content = messageContents.Item2;
 
             if (!subscribers.TryGetValue(topicName, out subs))
                 return; // not interested in this topic
@@ -294,7 +300,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        byte[] ReadMessageContents(NetworkStream networkStream, out string topicName)
+        async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
         {
             // Get first bytes to determine length of topic name
             byte[] rawTopicBytes = new byte[4];
@@ -304,7 +310,7 @@ namespace Unity.Robotics.ROSTCPConnector
             // Read and convert topic name
             byte[] topicNameBytes = new byte[topicLength];
             networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
-            topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
+            string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
 
             byte[] full_message_size_bytes = new byte[4];
             networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
@@ -316,12 +322,12 @@ namespace Unity.Robotics.ROSTCPConnector
 
             int attempts = 0;
             // Read in message contents until completion, or until attempts are maxed out
-            while (bytesRemaining > 0 && attempts <= this.awaitDataMaxRetries)
+            while (bytesRemaining > 0 && attempts <= this.awaitDataReadRetry)
             {
-                if (attempts == this.awaitDataMaxRetries)
+                if (attempts == this.awaitDataReadRetry)
                 {
-                    Debug.LogError("No more data available on network stream after " + awaitDataMaxRetries + " attempts.");
-                    return readBuffer;
+                    Debug.LogError("No more data to read network stream after " + awaitDataReadRetry + " attempts.");
+                    return Tuple.Create(topicName, readBuffer);
                 }
 
                 // Read the minimum of the bytes remaining, or the designated readChunkSize in segments until none remain
@@ -332,9 +338,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (!networkStream.DataAvailable) 
                 {
                     attempts++;
+                    await Task.Yield();
                 }
             }
-            return readBuffer;
+            return Tuple.Create(topicName, readBuffer);
         }
 
         /// <summary>
