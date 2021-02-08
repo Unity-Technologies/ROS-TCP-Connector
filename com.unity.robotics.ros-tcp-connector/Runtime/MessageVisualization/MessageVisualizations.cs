@@ -14,12 +14,12 @@ public interface IMessageVisualizerBase
     void End();
 }
 
-public interface IMessageVisualizer<MessageType>: IMessageVisualizerBase where MessageType:Message
+public interface IMessageVisualizer<MessageType> : IMessageVisualizerBase where MessageType : Message
 {
     void Begin(string topic, MessageType msg);
 }
 
-public interface IMessageVisualizer<MessageType, UserData> : IMessageVisualizerBase where MessageType:Message
+public interface IMessageVisualizer<MessageType, UserData> : IMessageVisualizerBase where MessageType : Message
 {
     void Begin(string topic, MessageType msg, UserData userData);
 }
@@ -29,7 +29,7 @@ public static class MessageVisualizations
     public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
-        drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
+        drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
     }
 
     public static void GUI(string name, RosMessageTypes.Geometry.Point message)
@@ -40,7 +40,7 @@ public static class MessageVisualizations
     public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point32 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
-        drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
+        drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
     }
 
     public static void GUI(string name, RosMessageTypes.Geometry.Point32 message)
@@ -51,7 +51,7 @@ public static class MessageVisualizations
     public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
     {
         drawing.DrawPoint(message.From<C>(), color, size);
-        drawing.DrawLabel(label, message.From<C>(), color, size*1.5f);
+        drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
     }
 
     public static void GUI(string name, RosMessageTypes.Geometry.Vector3 message)
@@ -64,12 +64,12 @@ public static class MessageVisualizations
         Draw<C>(drawing, message.position, color, label, size);
         UnityEngine.Vector3 point = message.position.From<C>();
         UnityEngine.Vector3 facing = message.orientation.From<C>() * UnityEngine.Vector3.forward;
-        drawing.DrawLine(point, point + facing, color, size*0.5f);
+        drawing.DrawLine(point, point + facing, color, size * 0.5f);
     }
 
     public static void GUI(string name, RosMessageTypes.Geometry.Pose message)
     {
-        GUI(name+" - Position", message.position);
+        GUI(name + " - Position", message.position);
         GUI("Orientation", message.orientation);
     }
 
@@ -136,32 +136,32 @@ public static class MessageVisualizations
         }
     }
 
-    public static void RegisterVisualizer<VisualizerType,MsgType>(string topic)
-        where VisualizerType:IMessageVisualizer<MsgType>, new()
-        where MsgType:Message
+    public static void RegisterVisualizer<VisualizerType, MsgType>(string topic)
+        where VisualizerType : IMessageVisualizer<MsgType>, new()
+        where MsgType : Message
     {
         TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
     }
 
-    public static void RegisterVisualizer<VisualizerType,MsgType>(System.Type messageType)
+    public static void RegisterVisualizer<VisualizerType, MsgType>(System.Type messageType)
         where VisualizerType : IMessageVisualizer<MsgType>, new()
         where MsgType : Message
     {
         TypeVisualizers.Add(messageType, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
     }
 
-    public static void RegisterVisualizer<VisualizerType,MsgType,UserData>(string topic, UserData userData)
+    public static void RegisterVisualizer<VisualizerType, MsgType, UserData>(string topic, UserData userData)
         where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
         where MsgType : Message
     {
-        TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType,UserData>(userData));
+        TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
     }
 
-    public static void RegisterVisualizer<VisualizerType,MsgType,UserData>(UserData userData)
+    public static void RegisterVisualizer<VisualizerType, MsgType, UserData>(UserData userData)
         where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
-        where MsgType:Message
+        where MsgType : Message
     {
-        TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType,UserData>(userData));
+        TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
     }
 
     public static void RegisterVisualizer<VisualizerType, MsgType>(object userData)
