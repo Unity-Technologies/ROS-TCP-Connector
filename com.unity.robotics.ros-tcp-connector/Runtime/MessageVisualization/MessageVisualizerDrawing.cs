@@ -4,38 +4,40 @@ using UnityEngine;
 using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using Unity.Robotics.MessageVisualizers;
 
-public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T:Message
+namespace Unity.Robotics.MessageVisualizers
 {
-    public DebugDraw.Drawing drawing;
-    public string topic;
-    public T message;
-
-    public MessageVisualizerDrawing()
+    public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T : Message
     {
-    }
+        public DebugDraw.Drawing drawing;
+        public string topic;
+        public T message;
 
-    public void Begin(string topic, T msg)
-    {
-        drawing = DebugDraw.CreateDrawing();
-        this.topic = topic;
-        message = (T)msg;
-        DrawVisual();
-    }
+        public MessageVisualizerDrawing()
+        {
+        }
 
-    public virtual void DrawVisual()
-    {
+        public void Begin(string topic, T msg)
+        {
+            drawing = DebugDraw.CreateDrawing();
+            this.topic = topic;
+            message = (T)msg;
+            DrawVisual();
+        }
 
-    }
+        public virtual void DrawVisual()
+        {
 
-    public virtual void OnGUI()
-    {
-        GUILayout.Label(message.ToString());
-    }
+        }
 
-    public virtual void End()
-    {
-        drawing.Destroy();
+        public virtual void OnGUI()
+        {
+            GUILayout.Label(message.ToString());
+        }
+
+        public virtual void End()
+        {
+            drawing.Destroy();
+        }
     }
 }
