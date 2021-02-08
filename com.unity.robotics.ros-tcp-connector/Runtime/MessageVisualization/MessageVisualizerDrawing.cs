@@ -4,6 +4,7 @@ using UnityEngine;
 using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.MessageVisualizers;
 
 public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T:Message
 {

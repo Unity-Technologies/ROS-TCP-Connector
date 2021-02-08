@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RegisterVisualizerAttribute : System.Attribute
+namespace Unity.Robotics.MessageVisualizers
 {
-    public readonly string topic;
-
-    public RegisterVisualizerAttribute(string topic = null)
+    public class RegisterVisualizerAttribute : System.Attribute
     {
-        this.topic = topic;
+        public readonly string topic;
+
+        public RegisterVisualizerAttribute(string topic = null)
+        {
+            this.topic = topic;
+        }
     }
 }
