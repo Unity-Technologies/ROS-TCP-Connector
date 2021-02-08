@@ -294,7 +294,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (msgView.visualizer == null)
                     msgView.visualizer = MessageVisualizations.GetVisualizer(msgView.topic, msgView.message);
 
-                msgView.visualizer.GUI();
+                msgView.visualizer.OnGUI();
             }
             /*else if (msgView.visualizer != null)
             {

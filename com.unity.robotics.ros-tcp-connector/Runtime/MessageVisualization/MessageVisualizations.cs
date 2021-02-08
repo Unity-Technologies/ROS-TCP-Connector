@@ -6,21 +6,22 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 using System.Reflection;
 using MessageVisualizerCreator = System.Func<string, Unity.Robotics.ROSTCPConnector.MessageGeneration.Message, IMessageVisualizerBase>;
+using RosMessageTypes.Geometry;
 
 public interface IMessageVisualizerBase
 {
-    void GUI();
+    void OnGUI();
     void End();
 }
 
-public interface IMessageVisualizer<Msg>: IMessageVisualizerBase where Msg:Message
+public interface IMessageVisualizer<MessageType>: IMessageVisualizerBase where MessageType:Message
 {
-    void Begin(string topic, Msg msg);
+    void Begin(string topic, MessageType msg);
 }
 
-public interface IMessageVisualizer<Msg, UserData> : IMessageVisualizerBase where Msg:Message
+public interface IMessageVisualizer<MessageType, UserData> : IMessageVisualizerBase where MessageType:Message
 {
-    void Begin(string topic, Msg msg, UserData userData);
+    void Begin(string topic, MessageType msg, UserData userData);
 }
 
 public static class MessageVisualizations
@@ -102,8 +103,6 @@ public static class MessageVisualizations
     static bool initialized;
     private static Dictionary<string, MessageVisualizerCreator> TopicVisualizers = new Dictionary<string, MessageVisualizerCreator>();
     private static Dictionary<Type, MessageVisualizerCreator> TypeVisualizers = new Dictionary<Type, MessageVisualizerCreator>();
-    private static Type[] emptyConstructorSignature = new Type[] { typeof(Message), typeof(string) };
-    private static object[] emptyConstructorArgs = new object[] { };
 
     public static void InitAllVisualizers()
     {
@@ -111,8 +110,9 @@ public static class MessageVisualizations
             return;
 
         initialized = true;
-        MethodInfo genericCreator = typeof(MessageVisualizations).GetMethod("GetCreatorTM");
+        MethodInfo genericCreator = typeof(VisualizerCreators).GetMethod("GetCreatorTM");
 
+        // find and register all classes with the VisualizeMessage attribute
         foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
         {
             foreach (Type classType in a.GetTypes())
@@ -120,57 +120,58 @@ public static class MessageVisualizations
                 if (!typeof(IMessageVisualizerBase).IsAssignableFrom(classType))
                     continue;
 
-                foreach (VisualizeMessageAttribute attr in classType.GetCustomAttributes(typeof(VisualizeMessageAttribute), false))
+                foreach (RegisterVisualizerAttribute attr in classType.GetCustomAttributes(typeof(RegisterVisualizerAttribute), false))
                 {
                     Type messageVisualizerGeneric = classType.GetInterface("IMessageVisualizer`1");
-                    MethodInfo getCreator = genericCreator.MakeGenericMethod(new Type[] { classType, messageVisualizerGeneric.GenericTypeArguments[0] });
+                    Type messageType = messageVisualizerGeneric.GenericTypeArguments[0];
+                    MethodInfo getCreator = genericCreator.MakeGenericMethod(
+                        new Type[] { classType, messageType });
+
                     if (attr.topic != null)
                         TopicVisualizers.Add(attr.topic, (MessageVisualizerCreator)getCreator.Invoke(null, null));
                     else
-                        TypeVisualizers.Add(attr.messageType, (MessageVisualizerCreator)getCreator.Invoke(null, null));
+                        TypeVisualizers.Add(messageType, (MessageVisualizerCreator)getCreator.Invoke(null, null));
                 }
             }
         }
     }
 
-    public static void RegisterVisualizer<T,Msg>(string topic) where T:IMessageVisualizer<Msg>, new() where Msg:Message
+    public static void RegisterVisualizer<VisualizerType,MsgType>(string topic)
+        where VisualizerType:IMessageVisualizer<MsgType>, new()
+        where MsgType:Message
     {
-        TopicVisualizers.Add(topic, GetCreatorTM<T, Msg>());
+        TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
     }
 
-    public static void RegisterVisualizer<T,Msg>(System.Type messageType) where T : IMessageVisualizer<Msg>, new() where Msg : Message
+    public static void RegisterVisualizer<VisualizerType,MsgType>(System.Type messageType)
+        where VisualizerType : IMessageVisualizer<MsgType>, new()
+        where MsgType : Message
     {
-        TypeVisualizers.Add(messageType, GetCreatorTM<T, Msg>());
+        TypeVisualizers.Add(messageType, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
     }
 
-    public static MessageVisualizerCreator GetCreatorTM<T, Msg>() where T : IMessageVisualizer<Msg>, new() where Msg:Message
+    public static void RegisterVisualizer<VisualizerType,MsgType,UserData>(string topic, UserData userData)
+        where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
+        where MsgType : Message
     {
-        return (string tpc, Message msg) =>
-        {
-            IMessageVisualizer<Msg> result = new T();
-            result.Begin(tpc, (Msg)msg);
-            return result;
-        };
+        TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType,UserData>(userData));
     }
 
-    public static void RegisterVisualizer<T,Msg,U>(string topic, U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg : Message
+    public static void RegisterVisualizer<VisualizerType,MsgType,UserData>(UserData userData)
+        where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
+        where MsgType:Message
     {
-        TopicVisualizers.Add(topic, GetCreatorTMU<T, Msg,U>(userData));
+        TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType,UserData>(userData));
     }
 
-    public static void RegisterVisualizer<T,Msg,U>(U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg:Message
+    public static void RegisterVisualizer<VisualizerType, MsgType>(object userData)
+    where VisualizerType : IMessageVisualizerBase
     {
-        TypeVisualizers.Add(typeof(Msg), GetCreatorTMU<T, Msg,U>(userData));
-    }
+        Type messageVisualizerGeneric = typeof(VisualizerType).GetInterface("IMessageVisualizer`2");
+        MethodInfo creator = typeof(VisualizerCreators).GetMethod("GetCreatorTMU`3");
+        MethodInfo getCreator = creator.MakeGenericMethod(
+            new Type[] { typeof(VisualizerType), messageVisualizerGeneric.GenericTypeArguments[0] });
 
-    private static MessageVisualizerCreator GetCreatorTMU<T, Msg,U>(U userData) where T : IMessageVisualizer<Msg, U>, new() where Msg:Message
-    {
-        return (string tpc, Message msg) =>
-        {
-            IMessageVisualizer<Msg, U> result = new T();
-            result.Begin(tpc, (Msg)msg, userData);
-            return result;
-        };
     }
 
     public static IMessageVisualizerBase GetVisualizer(string topic, Message message)
@@ -195,13 +196,40 @@ public static class MessageVisualizations
             this.messageString = message.ToString();
         }
 
-        public void GUI()
+        public void OnGUI()
         {
             GUILayout.Label(messageString);
         }
 
         public void End()
         {
+        }
+    }
+
+    private static class VisualizerCreators
+    {
+        public static MessageVisualizerCreator GetCreatorTM<VisualizerType, MsgType>()
+        where VisualizerType : IMessageVisualizer<MsgType>, new()
+        where MsgType : Message
+        {
+            return (string tpc, Message msg) =>
+            {
+                IMessageVisualizer<MsgType> result = new VisualizerType();
+                result.Begin(tpc, (MsgType)msg);
+                return result;
+            };
+        }
+
+        public static MessageVisualizerCreator GetCreatorTMU<VisualizerType, MsgType, UserData>(UserData userData)
+            where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
+            where MsgType : Message
+        {
+            return (string tpc, Message msg) =>
+            {
+                IMessageVisualizer<MsgType, UserData> result = new VisualizerType();
+                result.Begin(tpc, (MsgType)msg, userData);
+                return result;
+            };
         }
     }
 }

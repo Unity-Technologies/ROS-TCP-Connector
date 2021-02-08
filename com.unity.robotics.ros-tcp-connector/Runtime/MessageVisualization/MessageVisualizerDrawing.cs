@@ -28,7 +28,7 @@ public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T:Message
 
     }
 
-    public virtual void GUI()
+    public virtual void OnGUI()
     {
         GUILayout.Label(message.ToString());
     }
