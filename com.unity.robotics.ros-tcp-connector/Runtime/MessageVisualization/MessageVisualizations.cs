@@ -182,14 +182,17 @@ namespace Unity.Robotics.MessageVisualizers
 
         class DefaultVisualizer : IMessageVisualizer<Message>
         {
+            Message message;
             string messageString;
             public void Begin(string topic, Message message)
             {
-                this.messageString = message.ToString();
+                this.message = message;
             }
 
             public void OnGUI()
             {
+                if(messageString == null)
+                    messageString = message.ToString();
                 GUILayout.Label(messageString);
             }
 

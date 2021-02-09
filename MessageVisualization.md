@@ -16,7 +16,7 @@ To create your own visualizer, start by making a class that implements the IMess
 	}
 	
 - When the HUD needs to display a message, it will construct your class using the default constructor, then call the Begin function to tell it the name of the topic, and the message that's being displayed. Your Begin function should store this message - or whatever information it needs in order to display it - and create your visualization.
-- Note, a message visualizer may not be a MonoBehaviour. To use a visualizer of type Foo, the HUD system will try to call `new Foo()`: MonoBehaviours cannot be constructed that way.
+- Note, a message visualizer may not be a MonoBehaviour or ScriptableObject. To use a visualizer of type Foo, the HUD system will try to call `new Foo()`: MonoBehaviours and ScriptableObjects cannot be constructed that way.
 - OnGUI is a normal Unity OnGUI callback: it will be called once per UI event as long as your visualizer is active. You can use it to draw GUI elements that should appear in the HUD, and also to update your visualization if needed (for example, your gui could provide buttons to turn visualization elements on and off). Note this is a runtime GUI, not an editor GUI, so the GUI functions you call should come from GUILayout, not EditorGUILayout.
 - Finally, the End function is called when the message has been deselected and your visualizer is about to be destroyed; you should use it to delete and clean up your visualization.
 
