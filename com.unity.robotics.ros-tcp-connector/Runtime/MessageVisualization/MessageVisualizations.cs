@@ -26,7 +26,7 @@ namespace Unity.Robotics.MessageVisualizers
         void Begin(MessageType msg, MessageMetadata meta, UserData userData);
     }
 
-    public class MessageMetadata
+    public struct MessageMetadata
     {
         public readonly string topic;
         public readonly DateTime timestamp;
