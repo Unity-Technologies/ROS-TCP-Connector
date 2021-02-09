@@ -166,16 +166,6 @@ namespace Unity.Robotics.MessageVisualizers
             TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
         }
 
-        public static void RegisterVisualizer<VisualizerType, MsgType>(object userData)
-        where VisualizerType : IMessageVisualizerBase
-        {
-            Type messageVisualizerGeneric = typeof(VisualizerType).GetInterface("IMessageVisualizer`2");
-            MethodInfo creator = typeof(VisualizerCreators).GetMethod("GetCreatorTMU`3");
-            MethodInfo getCreator = creator.MakeGenericMethod(
-                new Type[] { typeof(VisualizerType), messageVisualizerGeneric.GenericTypeArguments[0] });
-
-        }
-
         public static IMessageVisualizerBase GetVisualizer(string topic, Message message)
         {
             MessageVisualizerCreator result;
