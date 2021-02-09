@@ -10,18 +10,19 @@ namespace Unity.Robotics.MessageVisualizers
     public class MessageVisualizerDrawing<T> : IMessageVisualizer<T> where T : Message
     {
         public DebugDraw.Drawing drawing;
-        public string topic;
         public T message;
+        public MessageMetadata meta;
+        public string topic => meta.topic;
 
         public MessageVisualizerDrawing()
         {
         }
 
-        public void Begin(string topic, T msg)
+        public void Begin(T message, MessageMetadata meta)
         {
             drawing = DebugDraw.CreateDrawing();
-            this.topic = topic;
-            message = (T)msg;
+            this.message = (T)message;
+            this.meta = meta;
             DrawVisual();
         }
 

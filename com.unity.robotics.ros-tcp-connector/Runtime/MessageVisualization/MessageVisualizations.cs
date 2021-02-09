@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    using MessageVisualizerCreator = Func<string, Message, IMessageVisualizerBase>;
+    using MessageVisualizerCreator = Func<Message, MessageMetadata, IMessageVisualizerBase>;
 
     public interface IMessageVisualizerBase
     {
@@ -18,17 +18,29 @@ namespace Unity.Robotics.MessageVisualizers
 
     public interface IMessageVisualizer<MessageType> : IMessageVisualizerBase where MessageType : Message
     {
-        void Begin(string topic, MessageType msg);
+        void Begin(MessageType msg, MessageMetadata meta);
     }
 
     public interface IMessageVisualizer<MessageType, UserData> : IMessageVisualizerBase where MessageType : Message
     {
-        void Begin(string topic, MessageType msg, UserData userData);
+        void Begin(MessageType msg, MessageMetadata meta, UserData userData);
+    }
+
+    public class MessageMetadata
+    {
+        public readonly string topic;
+        public readonly DateTime timestamp;
+
+        public MessageMetadata(string topic, DateTime timestamp)
+        {
+            this.topic = topic;
+            this.timestamp = timestamp;
+        }
     }
 
     public static class MessageVisualizations
     {
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
@@ -39,7 +51,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point32 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point32 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
@@ -50,7 +62,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
@@ -61,7 +73,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Pose message, Color color, string label, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Pose message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Draw<C>(drawing, message.position, color, label, size);
             UnityEngine.Vector3 point = message.position.From<C>();
@@ -75,7 +87,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUI("Orientation", message.orientation);
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Quaternion message, UnityEngine.Vector3 position, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Quaternion message, UnityEngine.Vector3 position, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             UnityEngine.Quaternion quaternion = message.From<C>();
             UnityEngine.Vector3 right = quaternion * UnityEngine.Vector3.right * size;
@@ -91,7 +103,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Transform transform, float size = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Transform transform, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Draw<C>(drawing, transform.rotation, transform.translation.From<C>(), size);
         }
@@ -166,17 +178,17 @@ namespace Unity.Robotics.MessageVisualizers
             TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
         }
 
-        public static IMessageVisualizerBase GetVisualizer(string topic, Message message)
+        public static IMessageVisualizerBase GetVisualizer(Message message, MessageMetadata meta)
         {
             MessageVisualizerCreator result;
-            if (TopicVisualizers.TryGetValue(topic, out result))
-                return result(topic, message);
+            if (TopicVisualizers.TryGetValue(meta.topic, out result))
+                return result(message, meta);
 
             if (TypeVisualizers.TryGetValue(message.GetType(), out result))
-                return result(topic, message);
+                return result(message, meta);
 
             DefaultVisualizer defaultVisualizer = new DefaultVisualizer();
-            defaultVisualizer.Begin(topic, message);
+            defaultVisualizer.Begin(message, meta);
             return defaultVisualizer;
         }
 
@@ -184,7 +196,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             Message message;
             string messageString;
-            public void Begin(string topic, Message message)
+            public void Begin(Message message, MessageMetadata meta)
             {
                 this.message = message;
             }
@@ -207,10 +219,10 @@ namespace Unity.Robotics.MessageVisualizers
             where VisualizerType : IMessageVisualizer<MsgType>, new()
             where MsgType : Message
             {
-                return (string tpc, Message msg) =>
+                return (Message msg, MessageMetadata meta) =>
                 {
                     IMessageVisualizer<MsgType> result = new VisualizerType();
-                    result.Begin(tpc, (MsgType)msg);
+                    result.Begin((MsgType)msg, meta);
                     return result;
                 };
             }
@@ -219,10 +231,10 @@ namespace Unity.Robotics.MessageVisualizers
                 where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
                 where MsgType : Message
             {
-                return (string tpc, Message msg) =>
+                return (Message msg, MessageMetadata meta) =>
                 {
                     IMessageVisualizer<MsgType, UserData> result = new VisualizerType();
-                    result.Begin(tpc, (MsgType)msg, userData);
+                    result.Begin((MsgType)msg, meta, userData);
                     return result;
                 };
             }

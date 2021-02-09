@@ -42,8 +42,7 @@ namespace Unity.Robotics.ROSTCPConnector
             lastMessageSent = new MessageViewState()
             {
                 label = "Last Message Sent:",
-                topic = topic,
-                timestamp = DateTime.Now,
+                meta = new MessageMetadata(topic, DateTime.Now),
                 message = message,
                 foldedOut = foldedOut
             };
@@ -62,8 +61,7 @@ namespace Unity.Robotics.ROSTCPConnector
             lastMessageReceived = new MessageViewState()
             {
                 label = "Last Message Received:",
-                topic = topic,
-                timestamp = DateTime.Now,
+                meta = new MessageMetadata(topic, DateTime.Now),
                 message = message,
                 foldedOut = foldedOut
             };
@@ -78,8 +76,7 @@ namespace Unity.Robotics.ROSTCPConnector
             MessageViewState newMsgView = new MessageViewState()
             {
                 serviceID = serviceID,
-                timestamp = DateTime.Now,
-                topic = topic,
+                meta = new MessageMetadata(topic, DateTime.Now),
                 message = request,
                 label = "Active Request: ",
             };
@@ -115,8 +112,7 @@ namespace Unity.Robotics.ROSTCPConnector
             lastCompletedServiceResponse = new MessageViewState()
             {
                 serviceID = serviceID,
-                timestamp = DateTime.Now,
-                topic = lastCompletedServiceRequest.topic,
+                meta = new MessageMetadata(lastCompletedServiceRequest.meta.topic, DateTime.Now),
                 message = response,
                 label = "Last Completed Response: ",
                 foldedOut = responseFoldedOut,
@@ -238,10 +234,9 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             public string label;
             public int serviceID;
-            public DateTime timestamp;
-            public string topic;
             public bool foldedOut;
             public Message message;
+            public MessageMetadata meta;
             public Rect contentRect;
             public Vector2 scrollPosition;
             public IMessageVisualizerBase visualizer;
@@ -249,7 +244,7 @@ namespace Unity.Robotics.ROSTCPConnector
             public void InitVisualizer()
             {
                 if(visualizer == null)
-                    visualizer = MessageVisualizations.GetVisualizer(topic, message);
+                    visualizer = MessageVisualizations.GetVisualizer(message, meta);
             }
 
             public void RemoveVisual()
@@ -282,18 +277,18 @@ namespace Unity.Robotics.ROSTCPConnector
 
             GUILayout.BeginVertical(boxStyle);
             //GUILayout.Label(heading, labelStyle);
-            string label = (showElapsedTime) ? $"{msgView.label} ({(DateTime.Now - msgView.timestamp).TotalSeconds})" : msgView.label;
+            string label = (showElapsedTime) ? $"{msgView.label} ({(DateTime.Now - msgView.meta.timestamp).TotalSeconds})" : msgView.label;
             GUILayout.Label(label, headingStyle);
 
             GUILayout.BeginHorizontal();
-            bool newFoldedOut = GUILayout.Toggle(msgView.foldedOut, $"{msgView.topic} {msgView.timestamp.TimeOfDay}");
+            bool newFoldedOut = GUILayout.Toggle(msgView.foldedOut, $"{msgView.meta.topic} {msgView.meta.timestamp.TimeOfDay}");
             msgView.foldedOut = newFoldedOut;
             GUILayout.EndHorizontal();
 
             if (msgView.foldedOut)
             {
                 if (msgView.visualizer == null)
-                    msgView.visualizer = MessageVisualizations.GetVisualizer(msgView.topic, msgView.message);
+                    msgView.visualizer = MessageVisualizations.GetVisualizer(msgView.message, msgView.meta);
 
                 msgView.visualizer.OnGUI();
             }
