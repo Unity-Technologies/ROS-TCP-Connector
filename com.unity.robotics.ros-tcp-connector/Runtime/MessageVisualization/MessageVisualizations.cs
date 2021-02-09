@@ -48,7 +48,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Point message)
         {
-            GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+            GUILayout.Label($"{name}: [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Point32 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -59,7 +59,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Point32 message)
         {
-            GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+            GUILayout.Label($"{name}: [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Vector3 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -70,7 +70,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Vector3 message)
         {
-            GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+            GUILayout.Label($"{name}: [{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Pose message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -83,7 +83,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Pose message)
         {
-            GUI(name + " - Position", message.position);
+            GUI(name + " Position", message.position);
             GUI("Orientation", message.orientation);
         }
 
@@ -100,7 +100,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Quaternion message)
         {
-            GUILayout.Label($"{name} - [{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+            GUILayout.Label($"{name}: [{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, RosMessageTypes.Geometry.Transform transform, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -110,7 +110,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(string name, RosMessageTypes.Geometry.Transform message)
         {
-            GUI(name + " - Translation", message.translation);
+            GUI(name + " Translation", message.translation);
             GUI("Rotation", message.rotation);
         }
 
@@ -125,6 +125,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             initialized = true;
             MethodInfo genericCreator = typeof(VisualizerCreators).GetMethod("GetCreatorTM");
+            Dictionary<System.Type, int> messageTypePriorities = new Dictionary<Type, int>();
 
             // find and register all classes with the VisualizeMessage attribute
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -142,9 +143,18 @@ namespace Unity.Robotics.MessageVisualizers
                             new Type[] { classType, messageType });
 
                         if (attr.topic != null)
+                        {
                             TopicVisualizers.Add(attr.topic, (MessageVisualizerCreator)getCreator.Invoke(null, null));
+                        }
                         else
-                            TypeVisualizers.Add(messageType, (MessageVisualizerCreator)getCreator.Invoke(null, null));
+                        {
+                            int priority;
+                            if(!messageTypePriorities.TryGetValue(messageType, out priority) || attr.priority > priority)
+                            {
+                                TypeVisualizers.Add(messageType, (MessageVisualizerCreator)getCreator.Invoke(null, null));
+                                messageTypePriorities[messageType] = attr.priority;
+                            }
+                        }
                     }
                 }
             }
