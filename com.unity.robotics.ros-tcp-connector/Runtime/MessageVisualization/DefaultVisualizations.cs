@@ -10,7 +10,7 @@ using MTransform = RosMessageTypes.Geometry.Transform;
 using MQuaternion = RosMessageTypes.Geometry.Quaternion;
 using RosMessageTypes;
 
-[RegisterVisualizer(-1)]
+[AutoRegisteredVisualizer(-1)]
 public class DefaultVisualizer_Point : MessageVisualizerDrawing<MPoint>
 {
     public override void DrawVisual()
@@ -25,7 +25,7 @@ public class DefaultVisualizer_Point : MessageVisualizerDrawing<MPoint>
 }
 
 
-[RegisterVisualizer(-1)]
+[AutoRegisteredVisualizer(-1)]
 public class DefaultVisualizer_Point32 : MessageVisualizerDrawing<MPoint32>
 {
     public override void DrawVisual()
@@ -39,7 +39,7 @@ public class DefaultVisualizer_Point32 : MessageVisualizerDrawing<MPoint32>
     }
 }
 
-[RegisterVisualizer(-1)]
+[AutoRegisteredVisualizer(-1)]
 public class DefaultVisualizer_Vector3 : MessageVisualizerDrawing<MVector3>
 {
     public override void DrawVisual()
@@ -53,7 +53,7 @@ public class DefaultVisualizer_Vector3 : MessageVisualizerDrawing<MVector3>
     }
 }
 
-[RegisterVisualizer(-1)]
+[AutoRegisteredVisualizer(-1)]
 public class DefaultVisualizer_Transform : MessageVisualizerDrawing<MTransform>
 {
     public override void DrawVisual()
@@ -67,7 +67,7 @@ public class DefaultVisualizer_Transform : MessageVisualizerDrawing<MTransform>
     }
 }
 
-[RegisterVisualizer(-1)]
+[AutoRegisteredVisualizer(-1)]
 public class DefaultVisualizer_Quaternion : IMessageVisualizer<MQuaternion>
 {
     MQuaternion msg;

@@ -4,17 +4,18 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class RegisterVisualizerAttribute : System.Attribute
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true)]
+    public class AutoRegisteredVisualizerAttribute : System.Attribute
     {
         public readonly string topic;
         public readonly int priority;
 
-        public RegisterVisualizerAttribute(string topic = null)
+        public AutoRegisteredVisualizerAttribute(string topic = null)
         {
             this.topic = topic;
         }
 
-        public RegisterVisualizerAttribute(int priority)
+        public AutoRegisteredVisualizerAttribute(int priority)
         {
             this.priority = priority;
         }

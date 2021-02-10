@@ -124,23 +124,31 @@ namespace Unity.Robotics.MessageVisualizers
                 return;
 
             initialized = true;
-            MethodInfo genericCreator = typeof(VisualizerCreators).GetMethod("GetCreatorTM");
+            MethodInfo genericCreator = typeof(PrivateFunctions).GetMethod("GetCreator");
             Dictionary<System.Type, int> messageTypePriorities = new Dictionary<Type, int>();
 
-            // find and register all classes with the VisualizeMessage attribute
+            // find and register all classes with the AutoRegisteredVisualizer attribute
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
             {
                 foreach (Type classType in a.GetTypes())
                 {
-                    if (!typeof(IMessageVisualizerBase).IsAssignableFrom(classType))
-                        continue;
-
-                    foreach (RegisterVisualizerAttribute attr in classType.GetCustomAttributes(typeof(RegisterVisualizerAttribute), false))
+                    foreach (AutoRegisteredVisualizerAttribute attr in classType.GetCustomAttributes(typeof(AutoRegisteredVisualizerAttribute), false))
                     {
                         Type messageVisualizerGeneric = classType.GetInterface("IMessageVisualizer`1");
+                        if(messageVisualizerGeneric == null)
+                        {
+                            Type messageVisualizerUserdata = classType.GetInterface("IMessageVisualizer`2");
+                            if (messageVisualizerUserdata == null)
+                                Debug.LogError($"Class {classType} cannot be an AutoRegisteredVisualizer - it doesn't implement IMessageVisualizer!");
+                            else
+                                Debug.LogError($"Class {classType} cannot be an AutoRegisteredVisualizer - it requires a UserData value");
+                            break;
+                        }
+
                         Type messageType = messageVisualizerGeneric.GenericTypeArguments[0];
                         MethodInfo getCreator = genericCreator.MakeGenericMethod(
-                            new Type[] { classType, messageType });
+                            new Type[] { classType, messageType }
+                        );
 
                         if (attr.topic != null)
                         {
@@ -164,28 +172,32 @@ namespace Unity.Robotics.MessageVisualizers
             where VisualizerType : IMessageVisualizer<MsgType>, new()
             where MsgType : Message
         {
-            TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
+            InitAllVisualizers();
+            TopicVisualizers.Add(topic, PrivateFunctions.GetCreator<VisualizerType, MsgType>());
         }
 
         public static void RegisterVisualizer<VisualizerType, MsgType>(System.Type messageType)
             where VisualizerType : IMessageVisualizer<MsgType>, new()
             where MsgType : Message
         {
-            TypeVisualizers.Add(messageType, VisualizerCreators.GetCreatorTM<VisualizerType, MsgType>());
+            InitAllVisualizers();
+            TypeVisualizers.Add(messageType, PrivateFunctions.GetCreator<VisualizerType, MsgType>());
         }
 
         public static void RegisterVisualizer<VisualizerType, MsgType, UserData>(string topic, UserData userData)
             where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
             where MsgType : Message
         {
-            TopicVisualizers.Add(topic, VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
+            InitAllVisualizers();
+            TopicVisualizers.Add(topic, PrivateFunctions.GetCreatorWithUserdata<VisualizerType, MsgType, UserData>(userData));
         }
 
         public static void RegisterVisualizer<VisualizerType, MsgType, UserData>(UserData userData)
             where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
             where MsgType : Message
         {
-            TypeVisualizers.Add(typeof(MsgType), VisualizerCreators.GetCreatorTMU<VisualizerType, MsgType, UserData>(userData));
+            InitAllVisualizers();
+            TypeVisualizers.Add(typeof(MsgType), PrivateFunctions.GetCreatorWithUserdata<VisualizerType, MsgType, UserData>(userData));
         }
 
         public static IMessageVisualizerBase GetVisualizer(Message message, MessageMetadata meta)
@@ -223,9 +235,9 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        private static class VisualizerCreators
+        private static class PrivateFunctions
         {
-            public static MessageVisualizerCreator GetCreatorTM<VisualizerType, MsgType>()
+            public static MessageVisualizerCreator GetCreator<VisualizerType, MsgType>()
             where VisualizerType : IMessageVisualizer<MsgType>, new()
             where MsgType : Message
             {
@@ -237,7 +249,7 @@ namespace Unity.Robotics.MessageVisualizers
                 };
             }
 
-            public static MessageVisualizerCreator GetCreatorTMU<VisualizerType, MsgType, UserData>(UserData userData)
+            public static MessageVisualizerCreator GetCreatorWithUserdata<VisualizerType, MsgType, UserData>(UserData userData)
                 where VisualizerType : IMessageVisualizer<MsgType, UserData>, new()
                 where MsgType : Message
             {
