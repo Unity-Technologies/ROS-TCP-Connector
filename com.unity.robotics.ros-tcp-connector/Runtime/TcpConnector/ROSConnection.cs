@@ -33,6 +33,12 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
         public float awaitDataSleepSeconds = 1.0f;
 
+        [Tooltip("While reading received messages, read this many bytes at a time.")]
+        public int readChunkSize = 2048;
+
+        [Tooltip("While waiting to read a full message, check this many times before giving up.")]
+        public int awaitDataReadRetry = 10;
+
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
@@ -139,7 +145,7 @@ namespace Unity.Robotics.ROSTCPConnector
             try
             {
                 string serviceName;
-                byte[] content = ReadMessageContents(networkStream, out serviceName);
+                (string topicName, byte[] content) = await ReadMessageContents(networkStream);
                 serviceResponse.Deserialize(content, 0);
             }
             catch (Exception e)
@@ -243,18 +249,17 @@ namespace Unity.Robotics.ROSTCPConnector
             await Task.Yield();
 
             // continue asynchronously on another thread
-            ReadMessage(tcpClient.GetStream());
+            await ReadMessage(tcpClient.GetStream());
         }
 
-        void ReadMessage(NetworkStream networkStream)
+        async Task ReadMessage(NetworkStream networkStream)
         {
             if (!networkStream.CanRead)
                 return;
 
             SubscriberCallback subs;
 
-            string topicName;
-            byte[] content = ReadMessageContents(networkStream, out topicName);
+            (string topicName, byte[] content) = await ReadMessageContents(networkStream);
 
             if (!subscribers.TryGetValue(topicName, out subs))
                 return; // not interested in this topic
@@ -283,7 +288,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        byte[] ReadMessageContents(NetworkStream networkStream, out string topicName)
+        async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
         {
             // Get first bytes to determine length of topic name
             byte[] rawTopicBytes = new byte[4];
@@ -293,7 +298,7 @@ namespace Unity.Robotics.ROSTCPConnector
             // Read and convert topic name
             byte[] topicNameBytes = new byte[topicLength];
             networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
-            topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
+            string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
 
             byte[] full_message_size_bytes = new byte[4];
             networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
@@ -303,14 +308,28 @@ namespace Unity.Robotics.ROSTCPConnector
             int bytesRemaining = full_message_size;
             int totalBytesRead = 0;
 
-            while (networkStream.DataAvailable && bytesRemaining > 0)
+            int attempts = 0;
+            // Read in message contents until completion, or until attempts are maxed out
+            while (bytesRemaining > 0 && attempts <= this.awaitDataReadRetry)
             {
-                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, bytesRemaining);
+                if (attempts == this.awaitDataReadRetry)
+                {
+                    Debug.LogError("No more data to read network stream after " + awaitDataReadRetry + " attempts.");
+                    return Tuple.Create(topicName, readBuffer);
+                }
+
+                // Read the minimum of the bytes remaining, or the designated readChunkSize in segments until none remain
+                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(readChunkSize, bytesRemaining));
                 totalBytesRead += bytesRead;
                 bytesRemaining -= bytesRead;
-            }
 
-            return readBuffer;
+                if (!networkStream.DataAvailable) 
+                {
+                    attempts++;
+                    await Task.Yield();
+                }
+            }
+            return Tuple.Create(topicName, readBuffer);
         }
 
         /// <summary>
