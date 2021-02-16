@@ -1,0 +1,24 @@
+{
+    "name": "Unity.Robotics.ROSTCPConnector.Editor.Tests",
+    "rootNamespace": "Unity.Robotics.EditorTests.ROSTCPConnector",
+    "references": [
+        "Unity.Robotics.ROSTCPConnector.Editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
