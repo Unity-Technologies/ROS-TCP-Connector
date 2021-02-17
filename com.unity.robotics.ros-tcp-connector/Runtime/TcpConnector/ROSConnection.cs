@@ -165,6 +165,20 @@ namespace Unity.Robotics.ROSTCPConnector
                 client.Close();
         }
 
+        public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
+        {
+            var t = new TaskCompletionSource<RESPONSE>();
+
+            SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest, s => t.TrySetResult(s));
+
+            return await t.Task;
+        }
+
+        public void GetTopicList(Action<string[]> callback)
+        {
+            SendServiceMessage<RosUnityTopicListResponse>("__topic_list", new RosUnityTopicListRequest(), response => callback(response.topics));
+        }
+
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(SYSCOMMAND_SUBSCRIBE,
