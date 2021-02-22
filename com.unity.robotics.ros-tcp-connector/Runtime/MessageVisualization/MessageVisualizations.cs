@@ -29,41 +29,53 @@ namespace Unity.Robotics.MessageVisualizers
 
     public static class MessageVisualizations
     {
-        private static Dictionary<string, IVisualizerConfig> TopicVisualizers = new Dictionary<string, IVisualizerConfig>();
-        private static Dictionary<Type, IVisualizerConfig> TypeVisualizers = new Dictionary<Type, IVisualizerConfig>();
+        private static Dictionary<string, Tuple<IVisualizerConfig, int>> TopicVisualizers = new Dictionary<string, Tuple<IVisualizerConfig, int>>();
+        private static Dictionary<Type, Tuple<IVisualizerConfig, int>> TypeVisualizers = new Dictionary<Type, Tuple<IVisualizerConfig, int>>();
 
-        public static void RegisterVisualizer<MsgType>(IVisualizerConfig config)
+        public static void RegisterVisualizer<MsgType>(IVisualizerConfig config, int priority = 0)
         {
-            TypeVisualizers.Add(typeof(MsgType), config);
+            Tuple<IVisualizerConfig, int> currentEntry;
+            if(!TypeVisualizers.TryGetValue(typeof(MsgType), out currentEntry) || currentEntry.Item2 <= priority)
+            {
+                TypeVisualizers[typeof(MsgType)] = new Tuple<IVisualizerConfig, int>(config, priority);
+            }
         }
 
-        public static void RegisterVisualizer(string topic, IVisualizerConfig config)
+        public static void RegisterVisualizer(string topic, IVisualizerConfig config, int priority = 0)
         {
-            TopicVisualizers.Add(topic, config);
+            Tuple<IVisualizerConfig, int> currentEntry;
+            if (!TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
+            {
+                TopicVisualizers[topic] = new Tuple<IVisualizerConfig, int>(config, priority);
+            }
         }
 
         public static IVisualizerConfig GetVisualizer(Message message, MessageMetadata meta)
         {
-            IVisualizerConfig result;
+            Tuple<IVisualizerConfig, int> result;
             TopicVisualizers.TryGetValue(meta.topic, out result);
             if (result != null)
-                return result;
+                return result.Item1;
 
             TypeVisualizers.TryGetValue(message.GetType(), out result);
             if (result != null)
-                return result;
+                return result.Item1;
 
             return defaultVisualizer;
         }
 
         class DefaultVisualizer : IVisualizerConfig
         {
+            // If you're trying to register the default visualizer, something has gone extremely wrong...
+            public void Register(int priority) { throw new NotImplementedException(); }
+
             public object CreateDrawing(Message msg, MessageMetadata meta) => null;
 
             public void DeleteDrawing(object drawing) { }
 
             public Action CreateGUI(Message msg, MessageMetadata meta, object drawing) => CreateDefaultGUI(msg, meta);
         }
+
         static DefaultVisualizer defaultVisualizer = new DefaultVisualizer();
 
         public static Action CreateDefaultGUI(Message msg, MessageMetadata meta)

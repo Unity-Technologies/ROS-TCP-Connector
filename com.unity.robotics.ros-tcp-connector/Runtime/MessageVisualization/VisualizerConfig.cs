@@ -7,6 +7,7 @@ using UnityEngine;
 
 public interface IVisualizerConfig
 {
+    void Register(int priority);
     object CreateDrawing(Message msg, MessageMetadata meta);
     void DeleteDrawing(object drawing);
     Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
@@ -16,12 +17,12 @@ public class VisualizerConfig<Msg> : MonoBehaviour, IVisualizerConfig where Msg 
 {
     public string topic;
 
-    public virtual void Awake()
+    public void Register(int priority)
     {
         if(topic == "")
-            MessageVisualizations.RegisterVisualizer<Msg>(this);
+            MessageVisualizations.RegisterVisualizer<Msg>(this, priority);
         else
-            MessageVisualizations.RegisterVisualizer(topic, this);
+            MessageVisualizations.RegisterVisualizer(topic, this, priority);
     }
 
     public virtual object CreateDrawing(Msg msg, MessageMetadata meta)
