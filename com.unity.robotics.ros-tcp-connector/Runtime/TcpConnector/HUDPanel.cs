@@ -122,8 +122,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void Awake()
         {
-            MessageVisualizations.InitAllVisualizers();
-
             // Define font styles
             headingStyle = new GUIStyle
             {
@@ -239,22 +237,51 @@ namespace Unity.Robotics.ROSTCPConnector
             public MessageMetadata meta;
             public Rect contentRect;
             public Vector2 scrollPosition;
-            public IMessageVisualizerBase visualizer;
+            public IVisualizerConfig visualizerConfig;
+            public object visualizerDrawing;
+            public Action visualizerGUI;
+
+            public void OnGUI()
+            {
+                if (!foldedOut)
+                    return;
+
+                if (visualizerConfig == null)
+                    visualizerConfig = MessageVisualizations.GetVisualizer(message, meta);
+
+                if (visualizerGUI == null)
+                    visualizerGUI = visualizerConfig.CreateGUI(message, meta, visualizerDrawing);
+
+                visualizerGUI();
+            }
 
             public void InitVisualizer()
             {
-                if(visualizer == null)
-                    visualizer = MessageVisualizations.GetVisualizer(message, meta);
+                //TODO: check whether the config wants gui and/or drawings
+                CreateVisual();
+            }
+
+            public void CreateVisual()
+            {
+                if (visualizerDrawing != null)
+                    return;
+
+                if (visualizerConfig == null)
+                    visualizerConfig = MessageVisualizations.GetVisualizer(message, meta);
+
+                visualizerDrawing = visualizerConfig.CreateDrawing(message, meta);
+
+                if (visualizerGUI != null)
+                    visualizerGUI = null; // force GUI to be recreated with the new drawing
             }
 
             public void RemoveVisual()
             {
-                foldedOut = false;
-                if (visualizer != null)
-                {
-                    visualizer.End();
-                    visualizer = null;
-                }
+                if (visualizerDrawing == null)
+                    return;
+
+                visualizerConfig.DeleteDrawing(visualizerDrawing);
+                visualizerDrawing = null;
             }
         }
 
@@ -285,17 +312,9 @@ namespace Unity.Robotics.ROSTCPConnector
             msgView.foldedOut = newFoldedOut;
             GUILayout.EndHorizontal();
 
-            if (msgView.foldedOut)
-            {
-                if (msgView.visualizer == null)
-                    msgView.visualizer = MessageVisualizations.GetVisualizer(msgView.message, msgView.meta);
+            // draw custom message visualization GUI
+            msgView.OnGUI();
 
-                msgView.visualizer.OnGUI();
-            }
-            /*else if (msgView.visualizer != null)
-            {
-                msgView.RemoveVisual();
-            }*/
             GUILayout.EndVertical();
             GUI.EndScrollView();
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
@@ -14,7 +15,6 @@ namespace Unity.Robotics.MessageVisualizers
                 if (_instance == null)
                 {
                     GameObject newDebugDrawObj = new GameObject("DebugDraw");
-                    newDebugDrawObj.hideFlags = HideFlags.HideInHierarchy;
                     _instance = newDebugDrawObj.AddComponent<DebugDraw>();
                     _instance.material = new Material(Shader.Find("Unlit/VertexColor"));
                 }
@@ -26,7 +26,6 @@ namespace Unity.Robotics.MessageVisualizers
         List<Drawing> drawings = new List<Drawing>();
         List<Drawing> dirty = new List<Drawing>();
         public Material material;
-        const int DrawLayer = 4;
 
         private void Awake()
         {
@@ -41,7 +40,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static Drawing CreateDrawing(float duration = -1, Material material = null)
         {
-            Drawing newDrawing = new Drawing(instance, material ?? instance.material, duration >= 0 ? Time.time + duration : -1);
+            GameObject newDrawingObj = new GameObject("Drawing");
+            Drawing newDrawing = newDrawingObj.AddComponent<Drawing>();
+            newDrawing.Init(instance, material ?? instance.material, duration);
             instance.drawings.Add(newDrawing);
             return newDrawing;
         }
@@ -51,38 +52,52 @@ namespace Unity.Robotics.MessageVisualizers
             foreach (Drawing drawing in dirty)
                 drawing.Refresh();
             dirty.Clear();
-
-            foreach (Drawing drawing in drawings)
-                drawing.Render();
         }
-
 
         public void OnGUI()
         {
             Color oldColor = GUI.color;
 
             foreach (Drawing drawing in drawings)
-                drawing.OnGUI(cam);
+                drawing.OnDrawingGUI(cam);
 
             GUI.color = oldColor;
         }
 
-        public class Drawing
+        public class Drawing: MonoBehaviour
         {
-            Mesh mesh = new Mesh();
+            Mesh mesh;
             List<Vector3> vertices = new List<Vector3>();
             List<Color32> colors32 = new List<Color32>();
             List<int> triangles = new List<int>();
-            float destroyAfterTimestamp;
             DebugDraw parent;
             Material material;
             bool isDirty = false;
+            MeshFilter mfilter;
 
-            public Drawing(DebugDraw parent, Material material, float destroyAfterTimestamp)
+            public void Init(DebugDraw parent, Material material, float duration = -1)
             {
+                mesh = new Mesh();
+
                 this.parent = parent;
+                this.transform.parent = parent.transform;
                 this.material = material;
-                this.destroyAfterTimestamp = destroyAfterTimestamp;
+
+                mfilter = gameObject.AddComponent<MeshFilter>();
+                mfilter.mesh = mesh;
+                MeshRenderer mrenderer = gameObject.AddComponent<MeshRenderer>();
+                mrenderer.sharedMaterial = material;
+
+                if(duration >= 0)
+                {
+                    StartCoroutine(DestroyAfterDelay(duration));
+                }
+            }
+
+            public IEnumerator DestroyAfterDelay(float duration)
+            {
+                yield return new WaitForSeconds(duration);
+                Destroy();
             }
 
             public void DrawLine(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f)
@@ -238,9 +253,10 @@ namespace Unity.Robotics.MessageVisualizers
             public void Destroy()
             {
                 DebugDraw.instance.drawings.Remove(this);
+                GameObject.Destroy(gameObject);
             }
 
-            internal void OnGUI(Camera cam)
+            internal void OnDrawingGUI(Camera cam)
             {
                 foreach (LabelInfo3D label in labels)
                 {
@@ -258,18 +274,11 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void Refresh()
             {
-                if (destroyAfterTimestamp > 0 && Time.time > destroyAfterTimestamp)
-                {
-                    Destroy();
-                }
-                else
-                {
-                    mesh.Clear();
-                    mesh.vertices = vertices.ToArray();
-                    mesh.colors32 = colors32.ToArray();
-                    mesh.triangles = triangles.ToArray();
-                    isDirty = false;
-                }
+                mesh.Clear();
+                mesh.vertices = vertices.ToArray();
+                mesh.colors32 = colors32.ToArray();
+                mesh.triangles = triangles.ToArray();
+                isDirty = false;
             }
 
             void SetDirty()
@@ -278,19 +287,6 @@ namespace Unity.Robotics.MessageVisualizers
                 {
                     isDirty = true;
                     parent.dirty.Add(this);
-                }
-            }
-
-            internal void Render()
-            {
-                if (destroyAfterTimestamp > 0 && Time.time > destroyAfterTimestamp)
-                {
-                    // can't delete it here, but we can set it dirty. Refresh will destroy it.
-                    SetDirty();
-                }
-                else
-                {
-                    Graphics.DrawMesh(mesh, Matrix4x4.identity, material, DebugDraw.DrawLayer);
                 }
             }
         }

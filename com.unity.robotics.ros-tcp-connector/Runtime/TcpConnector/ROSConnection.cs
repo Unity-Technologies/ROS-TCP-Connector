@@ -144,7 +144,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             try
             {
-                string serviceName;
                 (string topicName, byte[] content) = await ReadMessageContents(networkStream);
                 serviceResponse.Deserialize(content, 0);
             }

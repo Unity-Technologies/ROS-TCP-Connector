@@ -43,24 +43,24 @@ Here's a very simple example of a visualizer - this is the default visualizer cl
 
 # Registering Visualizers
 
-There are two ways to register an IMessageVisualizer to display messages. First, you can put the RegisterVisualizer attribute on it.
+There are two ways to register an IMessageVisualizer to display messages. First, you can put the AutoRegisteredVisualizer attribute on it.
 
-	[RegisterVisualizer]
+	[AutoRegisteredVisualizer]
 	class MyPointVisualizer: IMessageVisualizer<RosMessageTypes.Geometry.Point32>
 	{
 		//...
 	}
 
 This attribute marks this class as the default visualizer to use for displaying a message of the appropriate type (RosMessageTypes.Geometry.Point32 in this case). You don't need to to anything else, this attribute is enough to allow the HUD to find the class.
-Optionally, the RegisterVisualizer attribute can also take a topic name argument:
+Optionally, the attribute can also take a topic name argument:
 
-	[RegisterVisualizer("special_points")]
+	[AutoRegisteredVisualizer("special_points")]
 	class MyPointVisualizer: IMessageVisualizer<RosMessageTypes.Geometry.Point32>
 	{
 		//...
 	}
 
-This marks the class as the visualizer to use when displaying messages sent or received on this topic. This takes precedence over the plain [RegisterVisualizer] attribute. Note that you can give a single class multiple RegisterVisualizer attributes, if you want to use it for several topics.
+This marks the class as the visualizer to use when displaying messages sent or received on this topic. This takes precedence over the plain [AutoRegisteredVisualizer] attribute. Note that you can give a single class several AutoRegisteredVisualizer attributes, if you want to register it for several topics.
 
 Finally, if you're trying to do something more complex, you can call this function from anywhere to dynamically declare a visualizer for a message type:
 
@@ -71,6 +71,8 @@ Like the attribute, the function can take an optional topic name:
 	MessageVisualizations.RegisterVisualizer<MyPointVisualizer, RosMessageTypes.Geometry.Point32>(
 		"special_points"
 	);
+
+Registering a visualizer this way will replace any other visualizer of the same type, including any previous call to the same function.
 
 # Supplying UserData to a visualizer
 
@@ -83,7 +85,7 @@ Often, it's useful to supply extra configuration parameters to a visualizer - es
 		void End();
 	}
 
-The expected workflow is that you would create a class containing all the data your visualizer needs, to provide as its UserData parameter. Here's an example:
+The expected workflow is that you would create an object containing all the data your visualizer needs, and supply that object as its UserData parameter. Here's an example of a visualizer with its own custom userdata class:
 
 	public class UserDataVisualizerExample:
 		IMessageVisualizer<RosMessageTypes.Geometry.Point32, UserDataVisualizerExample.MyUserData>
@@ -116,7 +118,7 @@ The expected workflow is that you would create a class containing all the data y
 		}
 	}
 
-Then, to register a visualizer of this type, you'd supply an extra parameter to the RegisterVisualizer function:
+And then, to register a visualizer of this type, you'd supply an extra parameter to the RegisterVisualizer function:
 
 	MessageVisualizations.RegisterVisualizer<UserDataVisualizerExample, RosMessageTypes.Geometry.Point32,
 		UserDataVisualizerExample.MyUserData>
@@ -134,7 +136,7 @@ Then, to register a visualizer of this type, you'd supply an extra parameter to 
 
 For convenience, the MessageVisualizer folder also includes a simple DebugDraw class.
 
-- To start using DebugDraw, call DebugDraw.CreateDrawing() to create a Drawing object. (Optionally, CreateDrawing can be given a maximum duration for the drawing to last, in seconds. If no duration is provided, it lasts until Destroyed).
+- To start using DebugDraw, call DebugDraw.CreateDrawing() to create a Drawing object. (Optionally, CreateDrawing can be given a maximum duration for the drawing to last, in seconds. If no duration is provided, it lasts until you call its Destroy() function).
 - Once you have a Drawing object, you can draw graphics using its various functions such as DrawLine or DrawLabel. When you don't need the drawing any more, erase it by calling Destroy().
 - The Drawing also has a Clear function. This is intended for users to change the drawing by calling Clear and then redrawing it. Don't simply Clear drawings when you mean to Destroy them; the system will continue to draw the Cleared drawing, at a small cost.
 - Some of the functions on a Drawing allow you to input raw mesh data in the form of vertices and triangles; remember that in Unity, meshes have a clockwise winding order. (https://en.wikipedia.org/wiki/Back-face_culling)
