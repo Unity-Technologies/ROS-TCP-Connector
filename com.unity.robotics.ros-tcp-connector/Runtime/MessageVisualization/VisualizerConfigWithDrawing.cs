@@ -25,6 +25,9 @@ namespace Unity.Robotics.MessageVisualizers
                     label = topic;
             }
 
+            if (color.a == 0)
+                color.a = 1;
+
             topicCopy = topic;
         }
 
