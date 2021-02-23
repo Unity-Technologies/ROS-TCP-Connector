@@ -44,7 +44,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if(!(msg is Msg))
             {
-                Debug.LogError("Visualizer on "+meta.topic+": Invalid message type " + msg.GetType() + ", expected " + typeof(Msg));
+                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {msg.GetType()}! (expected {typeof(Msg)}).");
                 return null;
             }
 
@@ -75,7 +75,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (!(msg is Msg))
             {
-                Debug.LogError("Visualizer on " + meta.topic + ": Invalid message type " + msg.GetType() + ", expected " + typeof(Msg));
+                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {msg.GetType()}! (expected {typeof(Msg)}).");
                 return MessageVisualizations.CreateDefaultGUI(msg, meta);
             }
 
