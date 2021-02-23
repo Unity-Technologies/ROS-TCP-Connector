@@ -18,7 +18,7 @@ For example, let's assume you want to call out Point messages on the "important_
 
 # Writing a message visualizer using DebugDraw
 
-Although the message visualization system includes default visualizers for many common message types, inevitably you'll probably have your own messages you want to visualize, or you'll want to change how a message is displayed for your project's specific needs. The simplest way to create a new visualizer is to write a MonoBehaviour script that inherits from VisualizerWithDrawing. Here's a simple example:
+Although the message visualization system includes default visualizers for many common message types, inevitably you'll probably have your own messages you want to visualize, or you'll want to change how a message is displayed for your project's specific needs. The simplest way to create a new visualizer is to write a MonoBehaviour script that inherits from BasicVisualizer. Here's a simple example:
 
 	using System.Collections;
 	using System.Collections.Generic;
@@ -28,7 +28,7 @@ Although the message visualization system includes default visualizers for many 
 	using UnityEngine;
 	using MPoint = RosMessageTypes.Geometry.Point;
 	
-	public class PointVisualizerExample : VisualizerWithDrawing<MPoint>
+	public class PointVisualizerExample : BasicVisualizer<MPoint>
 	{
 		public float size = 0.1f; // this will appear as a configurable parameter in the Unity editor.
 		
@@ -126,4 +126,4 @@ Here's a simple example of a visualizer that instantiates a prefab to mark the p
 - CreateDrawing will be called to display graphics for your message. You can do whatever you need to do in this function to display your visualization. The return value should be any value (a GameObject in this case, but it really can be anything - an index in a list, for example) that you can later use to identify the graphic you just made.
 - DeleteDrawing will be called when it's time to clean up the visualization, passing the value you returned from CreateDrawing.
 - CreateGUI is as described in the section above, except that its first argument is the base Message class, and the last argument is whatever object was returned by CreateDrawing.
-- Note, unlike the VisualizerWithDrawing class, creating a visualizer this way does not automatically select a color for your visualization. To use the same automatic color selection logic as before, you can call `MessageVisualizations.PickColorForTopic(topic);`
+- Note, unlike the BasicVisualizer class, creating a visualizer this way does not automatically select a color for your visualization. To use the same automatic color selection logic as before, you can call `MessageVisualizations.PickColorForTopic(topic);`
