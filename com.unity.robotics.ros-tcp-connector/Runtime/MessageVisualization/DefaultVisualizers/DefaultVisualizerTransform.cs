@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MTransform = RosMessageTypes.Geometry.Transform;
 
-public class DefaultVisualizerTransform : VisualizerWithDrawing<MTransform>
+public class DefaultVisualizerTransform : BasicVisualizerWithPriority<MTransform>
 {
     public float size = 0.1f;
 

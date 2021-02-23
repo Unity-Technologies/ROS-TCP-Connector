@@ -15,6 +15,13 @@ using MPose = RosMessageTypes.Geometry.Pose;
 
 namespace Unity.Robotics.MessageVisualizers
 {
+    public interface IVisualizer
+    {
+        object CreateDrawing(Message msg, MessageMetadata meta);
+        void DeleteDrawing(object drawing);
+        Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
+    }
+
     public struct MessageMetadata
     {
         public readonly string topic;

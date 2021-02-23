@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MQuaternion = RosMessageTypes.Geometry.Quaternion;
 
-public class DefaultVisualizerQuaternion : VisualizerWithDrawing<MQuaternion>
+public class DefaultVisualizerQuaternion : BasicVisualizerWithPriority<MQuaternion>
 {
     public float size = 0.1f;
     public GameObject drawAtPosition;

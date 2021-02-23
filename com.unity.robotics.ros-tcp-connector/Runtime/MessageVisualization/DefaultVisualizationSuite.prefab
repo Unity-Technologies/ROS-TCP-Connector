@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3885009520023495739}
-  - component: {fileID: 4463532597064084774}
   - component: {fileID: 2702807170508875665}
   - component: {fileID: 3885009520023495736}
   - component: {fileID: 6194470617917588222}
@@ -37,19 +36,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4463532597064084774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3885009520023495737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b7d4fc748c9e6a4f8deb781b411be6f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  priority: -1
 --- !u!114 &2702807170508875665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,10 +49,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   size: 0.01
 --- !u!114 &3885009520023495736
 MonoBehaviour:
@@ -81,10 +67,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
   color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   size: 0.01
 --- !u!114 &6194470617917588222
 MonoBehaviour:
@@ -99,10 +85,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   size: 0.01
 --- !u!114 &3885009520023495738
 MonoBehaviour:
@@ -117,10 +103,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   size: 0.1
 --- !u!114 &2828612433107949715
 MonoBehaviour:
@@ -135,10 +121,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   size: 0.1
   drawAtPosition: {fileID: 0}
 --- !u!114 &2183426084405305905
@@ -154,8 +140,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   topic: 
-  priority: 0
   label: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   topicCopy: 
+  priority: -1
   thickness: 0.1

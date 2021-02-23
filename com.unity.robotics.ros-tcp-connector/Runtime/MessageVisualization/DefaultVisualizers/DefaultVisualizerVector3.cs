@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MVector3 = RosMessageTypes.Geometry.Vector3;
 
-public class DefaultVisualizerVector3 : VisualizerWithDrawing<MVector3>
+public class DefaultVisualizerVector3 : BasicVisualizerWithPriority<MVector3>
 {
     public float size = 0.01f;
 

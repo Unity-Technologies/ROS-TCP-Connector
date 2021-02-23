@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MPoint = RosMessageTypes.Geometry.Point;
 
-public class DefaultVisualizerPoint : VisualizerWithDrawing<MPoint>
+public class DefaultVisualizerPoint : BasicVisualizerWithPriority<MPoint>
 {
     public float size = 0.01f;
 

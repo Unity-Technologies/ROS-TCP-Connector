@@ -7,13 +7,22 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class VisualizerWithDrawing<Msg> : Visualizer<Msg> where Msg : Message
+    public abstract class BasicVisualizer<Msg> : MonoBehaviour, IVisualizer where Msg : Message
     {
+        public string topic;
         public string label;
         public Color color;
 
         [HideInInspector][SerializeField]
         string topicCopy;
+
+        public virtual void Start()
+        {
+            if (topic == "")
+                MessageVisualizations.RegisterVisualizer<Msg>(this);
+            else
+                MessageVisualizations.RegisterVisualizer(topic, this);
+        }
 
         public void OnValidate()
         {
@@ -31,8 +40,14 @@ namespace Unity.Robotics.MessageVisualizers
             topicCopy = topic;
         }
 
-        public override object CreateDrawing(Msg msg, MessageMetadata meta)
+        public object CreateDrawing(Message msg, MessageMetadata meta)
         {
+            if(!(msg is Msg))
+            {
+                Debug.LogError("Visualizer on "+meta.topic+": Invalid message type " + msg.GetType() + ", expected " + typeof(Msg));
+                return null;
+            }
+
             Color colorToUse = this.color;
             string labelToUse = this.label;
             
@@ -43,7 +58,7 @@ namespace Unity.Robotics.MessageVisualizers
                 labelToUse = meta.topic;
 
             DebugDraw.Drawing drawing = DebugDraw.CreateDrawing();
-            Draw(msg, meta, colorToUse, labelToUse, drawing);
+            Draw((Msg)msg, meta, colorToUse, labelToUse, drawing);
             return drawing;
         }
 
@@ -51,14 +66,20 @@ namespace Unity.Robotics.MessageVisualizers
         {
         }
 
-        public override void DeleteDrawing(object drawing)
+        public void DeleteDrawing(object drawing)
         {
             ((DebugDraw.Drawing)drawing).Destroy();
         }
 
-        public override System.Action CreateGUI(Msg msg, MessageMetadata meta, object drawing)
+        public System.Action CreateGUI(Message msg, MessageMetadata meta, object drawing)
         {
-            return CreateGUI(msg, meta, (DebugDraw.Drawing)drawing);
+            if (!(msg is Msg))
+            {
+                Debug.LogError("Visualizer on " + meta.topic + ": Invalid message type " + msg.GetType() + ", expected " + typeof(Msg));
+                return MessageVisualizations.CreateDefaultGUI(msg, meta);
+            }
+
+            return CreateGUI((Msg)msg, meta, (DebugDraw.Drawing)drawing);
         }
 
         public virtual System.Action CreateGUI(Msg msg, MessageMetadata meta, DebugDraw.Drawing drawing)

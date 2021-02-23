@@ -7,7 +7,7 @@ using UnityEngine;
 using MPolygon = RosMessageTypes.Geometry.Polygon;
 using MPoint32 = RosMessageTypes.Geometry.Point32;
 
-public class DefaultVisualizerPolygon : VisualizerWithDrawing<MPolygon>
+public class DefaultVisualizerPolygon : BasicVisualizerWithPriority<MPolygon>
 {
     public float thickness = 0.1f;
 
