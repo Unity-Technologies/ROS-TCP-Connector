@@ -1,183 +1,91 @@
 # Message Visualization component
 
-The ROSConnector HUD displays the last sent and received message, and also the request and response of the last completed service. The HUD should appear whenever your ROSConnector starts up. If it doesn't, ensure "Show HUD" is ticked in your ROS Settings window.
+In the ROSConnector HUD you can see the last sent (publisher) and received (subscriber) message, and also the request and response of the last completed service. The HUD should appear whenever your ROSConnector starts up. If it doesn't, ensure "Show HUD" is ticked in your ROS Settings window.
 
-You can configure exactly how the HUD displays a message by using *custom visualizations*. You can use the preexisting visualizations, and also define your own.
+You can configure exactly how the HUD displays a message by setting up your own Visualization Suite, and/or creating your own *custom visualizations*.
 
-# Static message visualizers
+# Configuring your visualization suite
 
-To create your own visualizer, start by making a class that implements the IMessageVisualizer interface.
+The simplest way to tune how visualizations appear is to set up your own Visualization Suite. This is a collection of message visualizers, placed in your scene, that control how messages are displayed in that scene. (To share one suite of visualizers between multiple scenes, consider creating a prefab.)
 
-	public interface IMessageVisualizer<MessageType> where MessageType:Message
-	{
-		void Begin(string topic, MessageType msg);
-		void OnGUI();
-		void End();
-	}
+To create a visualization suite, create a new GameObject in your scene, call it "VisualizationSuite" (or whatever you want) and add any number of visualizer components to it. Each visualizer can be set up to apply only to messages on a specific topic - just edit the "topic" field - and can have its own custom color and label.
+
+For example, let's assume you want to call out Point messages on the "important_points" topic, and you'd like them to appear extra large and in red. So maybe you'd add a DefaultVisualizerPoint to your suite, and set it to draw large red points.
+
+![](images~/VisualizationSuiteExample.png)
+
+(Note that in Unity, "size" is in Unity coordinates, so a size of 1 means the points have a radius of 1 meter.)
+
+# Writing a message visualizer using DebugDraw
+
+The simplest way to create a visualizer for your own custom messages is to write a MonoBehaviour script that inherits from VisualizerWithDrawing. Here's a simple example:
+
+	using System.Collections;
+	using System.Collections.Generic;
+	using Unity.Robotics.MessageVisualizers;
+	using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+	using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+	using UnityEngine;
+	using MPoint = RosMessageTypes.Geometry.Point;
 	
-- When the HUD needs to display a message, it will construct your class using the default constructor, then call the Begin function to tell it the name of the topic, and the message that's being displayed. Your Begin function should store this message - or whatever information it needs in order to display it - and create your visualization.
-- Note, a message visualizer may not be a MonoBehaviour or ScriptableObject. To use a visualizer of type Foo, the HUD system will try to call `new Foo()`: MonoBehaviours and ScriptableObjects cannot be constructed that way.
-- OnGUI is a normal Unity OnGUI callback: it will be called once per UI event as long as your visualizer is active. You can use it to draw GUI elements that should appear in the HUD, and also to update your visualization if needed (for example, your gui could provide buttons to turn visualization elements on and off). Note this is a runtime GUI, not an editor GUI, so the GUI functions you call should come from GUILayout, not EditorGUILayout.
-- Finally, the End function is called when the message has been deselected and your visualizer is about to be destroyed; you should use it to delete and clean up your visualization.
-
-Here's a very simple example of a visualizer - this is the default visualizer class, used to display messages that have no other visualization defined:
-
-    class DefaultVisualizer : IMessageVisualizer<Message>
-    {
-        string messageString;
-        public void Begin(string topic, Message message)
-        {
-            this.messageString = message.ToString();
-        }
-
-        public void GUI()
-        {
-            GUILayout.Label(messageString);
-        }
-
-        public void End()
-        {
-        }
-    }
-
-
-# Registering Visualizers
-
-There are two ways to register an IMessageVisualizer to display messages. First, you can put the AutoRegisteredVisualizer attribute on it.
-
-	[AutoRegisteredVisualizer]
-	class MyPointVisualizer: IMessageVisualizer<RosMessageTypes.Geometry.Point32>
+	public class PointVisualizerExample : VisualizerWithDrawing<MPoint>
 	{
-		//...
-	}
-
-This attribute marks this class as the default visualizer to use for displaying a message of the appropriate type (RosMessageTypes.Geometry.Point32 in this case). You don't need to to anything else, this attribute is enough to allow the HUD to find the class.
-Optionally, the attribute can also take a topic name argument:
-
-	[AutoRegisteredVisualizer("special_points")]
-	class MyPointVisualizer: IMessageVisualizer<RosMessageTypes.Geometry.Point32>
-	{
-		//...
-	}
-
-This marks the class as the visualizer to use when displaying messages sent or received on this topic. This takes precedence over the plain [AutoRegisteredVisualizer] attribute. Note that you can give a single class several AutoRegisteredVisualizer attributes, if you want to register it for several topics.
-
-Finally, if you're trying to do something more complex, you can call this function from anywhere to dynamically declare a visualizer for a message type:
-
-	MessageVisualizations.RegisterVisualizer<MyPointVisualizer, RosMessageTypes.Geometry.Point32>();
-
-Like the attribute, the function can take an optional topic name:
-
-	MessageVisualizations.RegisterVisualizer<MyPointVisualizer, RosMessageTypes.Geometry.Point32>(
-		"special_points"
-	);
-
-Registering a visualizer this way will replace any other visualizer of the same type, including any previous call to the same function.
-
-# Supplying UserData to a visualizer
-
-Often, it's useful to supply extra configuration parameters to a visualizer - especially if you want it to interact with specific objects in your scene. For this purpose, there's a variant of the IMessageVisualizer interface with an additional parameter, "userData".
-
-	public interface IMessageVisualizer<MessageType, UserData> where MessageType:Message
-	{
-		void Begin(string topic, MessageType msg, UserData userData);
-		void OnGUI();
-		void End();
-	}
-
-The expected workflow is that you would create an object containing all the data your visualizer needs, and supply that object as its UserData parameter. Here's an example of a visualizer with its own custom userdata class:
-
-	public class UserDataVisualizerExample:
-		IMessageVisualizer<RosMessageTypes.Geometry.Point32, UserDataVisualizerExample.MyUserData>
-	{
-		public class MyUserData
-		{
-			public string label;
-			public Color color;
-		}
-		MyUserData userData;
-		RosMessageTypes.Geometry.Point32 msg;
+		public float size = 0.1f; // this will appear as a configurable parameter in the Unity editor.
 		
-		void Begin(string topic, RosMessageTypes.Geometry.Point32 msg, MyUserData userData)
+		public override void Draw(MPoint msg, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
 		{
-			this.msg = msg;
-			this.userData = userData;
+            drawing.DrawPoint(msg.From<C>(), color, size);
+            drawing.DrawLabel(label, message.From<C>(), color, size);
 		}
-		
-		void OnGUI()
+
+		public override System.Action CreateGUI(MPoint msg, MessageMetadata meta, DebugDraw.Drawing drawing)
 		{
-			Color oldColor = GUILayout.color;
-			GUILayout.color = userData.color;
-			GUILayout.Label(userData.label);
-			GUILayout.Label(msg.ToString());
-			GUILayout.color = oldColor;
-		}
-		
-		void End()
-		{
+			// if you want to do any preprocessing or declare any state variables for the GUI to use,
+			// you can do that here.
+			string text = $"[{message.x}, {message.y}, {message.z}]";
+			
+			return () =>
+			{
+				// within the body of this function, it acts like a normal Unity OnGUI function.
+                GUILayout.Label(text);
+			};
 		}
 	}
 
-And then, to register a visualizer of this type, you'd supply an extra parameter to the RegisterVisualizer function:
 
-	MessageVisualizations.RegisterVisualizer<UserDataVisualizerExample, RosMessageTypes.Geometry.Point32,
-		UserDataVisualizerExample.MyUserData>
-	(
-		"special_points",
-		new UserDataVisualizerExample.MyUserData
-		{
-			color = Color.red,
-			label = "Hello"
-		}
-	);
+- When the HUD needs to display the graphics for your message, it will call your Draw() function, providing all the information you need about what drawing to create. The last parameter, `drawing`, is a convenient drawing class you can use to draw text, 3d lines, points, and other geometric shapes. Your Draw function should call whatever functions you want to use on this drawing. The VisualizerWithDrawing class automatically provides a suitable color and label for your drawing, but you don't have to use them if you don't want to.
+- When the HUD needs to display the GUI for your message, it will call CreateGUI on your class. CreateGUI should return a function that behaves like a normal Unity OnGUI callback: in other words, it will be invoked once per UI event, for as long as your visualizer is active, and any GUI elements you draw in this function will appear in the HUD. Note this is a runtime GUI, not an editor GUI, so the GUI functions you call should come from GUI or GUILayout, not EditorGUILayout.
+- Note, your drawing also gets passed into the CreateGUI function. You can use it to clear and redraw the drawing if you want (for example, maybe your gui provides buttons to turn parts of the drawing on and off, or resize an element).
 
+# Writing a custom message visualizer
 
-# DebugDraw
-
-For convenience, the MessageVisualizer folder also includes a simple DebugDraw class.
-
-- To start using DebugDraw, call DebugDraw.CreateDrawing() to create a Drawing object. (Optionally, CreateDrawing can be given a maximum duration for the drawing to last, in seconds. If no duration is provided, it lasts until you call its Destroy() function).
-- Once you have a Drawing object, you can draw graphics using its various functions such as DrawLine or DrawLabel. When you don't need the drawing any more, erase it by calling Destroy().
-- The Drawing also has a Clear function. This is intended for users to change the drawing by calling Clear and then redrawing it. Don't simply Clear drawings when you mean to Destroy them; the system will continue to draw the Cleared drawing, at a small cost.
-- Some of the functions on a Drawing allow you to input raw mesh data in the form of vertices and triangles; remember that in Unity, meshes have a clockwise winding order. (https://en.wikipedia.org/wiki/Back-face_culling)
-
-Here's a simple example of a MessageVisualizer that uses the DebugDraw class to draw a dot and a label next to it:
+If you want to create a visualization more complex than the simple DebugDraw class can support, you can write a MonoBehaviour script that inherits from Visualizer - the base class of VisualizerWithDrawing. Here's an example:
 
 	using System.Collections;
 	using System.Collections.Generic;
 	using UnityEngine;
-	using Point = RosMessageTypes.Geometry.Point;
-	using ROSGeometry;
-	using RosMessageGeneration;
+	using RosMessageTypes.Geometry;
+	using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+	using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+	
+    public class ComplexVisualizerExample : Visualizer<Msg>
+    {
+        public override object CreateDrawing(Msg msg, MessageMetadata meta)
+        {
+        }
 
-	[RegisterVisualizer] // use this class to visualize Point messages
-	class MyPointVisualizer : IMessageVisualizer<Point>
-	{
-		Point message;
-		DebugDraw.Drawing drawing;
-
-		public void Begin(Message message)
-		{
-			this.message = (Point)message;
-			drawing = DebugDraw.CreateDrawing();
-
-			// convert from ROS coordinate space to Unity coordinate space using ROSGeometry.
-			Vector3 position = this.message.From<FLU>();
-
-			// Draw a point in red, with a 1 centimeter radius.
-			drawing.DrawPoint(position, Color.red, 0.01f);
+        public override void DeleteDrawing(object drawing)
+        {
 			
-			// Draw the word "point" in red, 1.5 centimeters away from the point (in world space)
-			drawing.DrawLabel("point", position, Color.red, 0.015f);
-		}
+        }
 
-		public void DrawGUI()
-		{
-			GUILayout.Label(message.ToString());
-		}
+        public override System.Action CreateGUI(Msg msg, MessageMetadata meta, object drawing)
+        {
+			
+        }
+    }
 
-		public void End()
-		{
-			drawing.Destroy();
-		}
-	}
+- CreateDrawing will be called when your message appears in the HUD. You can do whatever you need to do in this function to display your visualization. The return value should be any value (for example a GameObject) that you can use to identify the graphic you just made.
+- DeleteDrawing will be called when it's time to clean up the visualization, passing back the return value from CreateDrawing.
+- CreateGUI is the same as described in the section above, except that it takes the object returned by CreateDrawing rather than a DebugDraw.Drawing.
+- Note, this version of the class does not automatically select any colors or labels for you. If you want to use the automatic color selection logic, you can call `MessageVisualizations.PickColorForTopic(topic);`

@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MVector3 = RosMessageTypes.Geometry.Vector3;
 
-public class DefaultVisualizerVector3 : VisualizerConfigWithDrawing<MVector3>
+public class DefaultVisualizerVector3 : VisualizerWithDrawing<MVector3>
 {
     public float size = 0.01f;
 
@@ -15,7 +15,7 @@ public class DefaultVisualizerVector3 : VisualizerConfigWithDrawing<MVector3>
         MessageVisualizations.Draw<FLU>(drawing, msg, color, label, size);
     }
 
-    public override System.Action CreateGUI(MVector3 msg, MessageMetadata meta, object drawing) => () =>
+    public override System.Action CreateGUI(MVector3 msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
         MessageVisualizations.GUI(label, msg);
     };

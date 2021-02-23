@@ -237,7 +237,7 @@ namespace Unity.Robotics.ROSTCPConnector
             public MessageMetadata meta;
             public Rect contentRect;
             public Vector2 scrollPosition;
-            public IVisualizerConfig visualizerConfig;
+            public IVisualizer visualizerConfig;
             public object visualizerDrawing;
             public Action visualizerGUI;
 

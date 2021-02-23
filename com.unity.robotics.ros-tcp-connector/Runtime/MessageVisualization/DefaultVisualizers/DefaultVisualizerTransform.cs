@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MTransform = RosMessageTypes.Geometry.Transform;
 
-public class DefaultVisualizerTransform : VisualizerConfigWithDrawing<MTransform>
+public class DefaultVisualizerTransform : VisualizerWithDrawing<MTransform>
 {
     public float size = 0.1f;
 
@@ -16,7 +16,7 @@ public class DefaultVisualizerTransform : VisualizerConfigWithDrawing<MTransform
         drawing.DrawLabel(label, msg.translation.From<FLU>(), color, size);
     }
 
-    public override System.Action CreateGUI(MTransform msg, MessageMetadata meta, object drawing) => () =>
+    public override System.Action CreateGUI(MTransform msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
         MessageVisualizations.GUI(label, msg);
     };

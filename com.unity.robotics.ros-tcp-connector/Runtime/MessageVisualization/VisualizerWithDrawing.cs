@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class VisualizerConfigWithDrawing<Msg> : VisualizerConfig<Msg> where Msg : Message
+    public abstract class VisualizerWithDrawing<Msg> : Visualizer<Msg> where Msg : Message
     {
         public string label;
         public Color color;
@@ -54,6 +54,16 @@ namespace Unity.Robotics.MessageVisualizers
         public override void DeleteDrawing(object drawing)
         {
             ((DebugDraw.Drawing)drawing).Destroy();
+        }
+
+        public override System.Action CreateGUI(Msg msg, MessageMetadata meta, object drawing)
+        {
+            return CreateGUI(msg, meta, (DebugDraw.Drawing)drawing);
+        }
+
+        public virtual System.Action CreateGUI(Msg msg, MessageMetadata meta, DebugDraw.Drawing drawing)
+        {
+            return MessageVisualizations.CreateDefaultGUI(msg, meta);
         }
     }
 }

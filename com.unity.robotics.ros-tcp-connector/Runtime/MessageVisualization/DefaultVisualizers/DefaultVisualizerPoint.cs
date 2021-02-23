@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using MPoint = RosMessageTypes.Geometry.Point;
 
-public class DefaultVisualizerPoint : VisualizerConfigWithDrawing<MPoint>
+public class DefaultVisualizerPoint : VisualizerWithDrawing<MPoint>
 {
     public float size = 0.01f;
 
@@ -15,7 +15,7 @@ public class DefaultVisualizerPoint : VisualizerConfigWithDrawing<MPoint>
         MessageVisualizations.Draw<FLU>(drawing, msg, color, label, size);
     }
 
-    public override System.Action CreateGUI(MPoint msg, MessageMetadata meta, object drawing) => () =>
+    public override System.Action CreateGUI(MPoint msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
         MessageVisualizations.GUI(label, msg);
     };

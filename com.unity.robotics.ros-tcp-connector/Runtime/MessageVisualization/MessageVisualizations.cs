@@ -29,30 +29,30 @@ namespace Unity.Robotics.MessageVisualizers
 
     public static class MessageVisualizations
     {
-        private static Dictionary<string, Tuple<IVisualizerConfig, int>> TopicVisualizers = new Dictionary<string, Tuple<IVisualizerConfig, int>>();
-        private static Dictionary<Type, Tuple<IVisualizerConfig, int>> TypeVisualizers = new Dictionary<Type, Tuple<IVisualizerConfig, int>>();
+        private static Dictionary<string, Tuple<IVisualizer, int>> TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
+        private static Dictionary<Type, Tuple<IVisualizer, int>> TypeVisualizers = new Dictionary<Type, Tuple<IVisualizer, int>>();
 
-        public static void RegisterVisualizer<MsgType>(IVisualizerConfig config, int priority = 0)
+        public static void RegisterVisualizer<MsgType>(IVisualizer config, int priority = 0)
         {
-            Tuple<IVisualizerConfig, int> currentEntry;
+            Tuple<IVisualizer, int> currentEntry;
             if(!TypeVisualizers.TryGetValue(typeof(MsgType), out currentEntry) || currentEntry.Item2 <= priority)
             {
-                TypeVisualizers[typeof(MsgType)] = new Tuple<IVisualizerConfig, int>(config, priority);
+                TypeVisualizers[typeof(MsgType)] = new Tuple<IVisualizer, int>(config, priority);
             }
         }
 
-        public static void RegisterVisualizer(string topic, IVisualizerConfig config, int priority = 0)
+        public static void RegisterVisualizer(string topic, IVisualizer config, int priority = 0)
         {
-            Tuple<IVisualizerConfig, int> currentEntry;
+            Tuple<IVisualizer, int> currentEntry;
             if (!TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                TopicVisualizers[topic] = new Tuple<IVisualizerConfig, int>(config, priority);
+                TopicVisualizers[topic] = new Tuple<IVisualizer, int>(config, priority);
             }
         }
 
-        public static IVisualizerConfig GetVisualizer(Message message, MessageMetadata meta)
+        public static IVisualizer GetVisualizer(Message message, MessageMetadata meta)
         {
-            Tuple<IVisualizerConfig, int> result;
+            Tuple<IVisualizer, int> result;
             TopicVisualizers.TryGetValue(meta.topic, out result);
             if (result != null)
                 return result.Item1;
@@ -64,7 +64,7 @@ namespace Unity.Robotics.MessageVisualizers
             return defaultVisualizer;
         }
 
-        class DefaultVisualizer : IVisualizerConfig
+        class DefaultVisualizer : IVisualizer
         {
             // If you're trying to register the default visualizer, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }

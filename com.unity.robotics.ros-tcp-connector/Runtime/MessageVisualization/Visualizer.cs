@@ -5,7 +5,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public interface IVisualizerConfig
+public interface IVisualizer
 {
     void Register(int priority);
     object CreateDrawing(Message msg, MessageMetadata meta);
@@ -13,9 +13,10 @@ public interface IVisualizerConfig
     Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
 }
 
-public class VisualizerConfig<Msg> : MonoBehaviour, IVisualizerConfig where Msg : Message
+public class Visualizer<Msg> : MonoBehaviour, IVisualizer where Msg : Message
 {
     public string topic;
+    bool didRegister;
 
     public void Register(int priority)
     {
@@ -23,6 +24,13 @@ public class VisualizerConfig<Msg> : MonoBehaviour, IVisualizerConfig where Msg 
             MessageVisualizations.RegisterVisualizer<Msg>(this, priority);
         else
             MessageVisualizations.RegisterVisualizer(topic, this, priority);
+        didRegister = true;
+    }
+
+    public void Start()
+    {
+        if(!didRegister)
+            Register(0);
     }
 
     public virtual object CreateDrawing(Msg msg, MessageMetadata meta)
@@ -37,19 +45,15 @@ public class VisualizerConfig<Msg> : MonoBehaviour, IVisualizerConfig where Msg 
 
     public virtual Action CreateGUI(Msg msg, MessageMetadata meta, object drawing)
     {
-        string text = msg.ToString();
-        return () =>
-        {
-            GUILayout.Label(text);
-        };
+        return MessageVisualizations.CreateDefaultGUI(msg, meta);
     }
 
-    object IVisualizerConfig.CreateDrawing(Message msg, MessageMetadata meta)
+    object IVisualizer.CreateDrawing(Message msg, MessageMetadata meta)
     {
         return CreateDrawing((Msg)msg, meta);
     }
 
-    Action IVisualizerConfig.CreateGUI(Message msg, MessageMetadata meta, object drawing)
+    Action IVisualizer.CreateGUI(Message msg, MessageMetadata meta, object drawing)
     {
         return CreateGUI((Msg)msg, meta, drawing);
     }
