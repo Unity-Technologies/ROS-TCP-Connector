@@ -129,6 +129,11 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"{name}: {body}");
         }
 
+        public static void GUI(MPoint message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
         public static void Draw<C>(DebugDraw.Drawing drawing, MPoint32 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
@@ -142,6 +147,11 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label(body);
             else
                 GUILayout.Label($"{name}: {body}");
+        }
+
+        public static void GUI(MPoint32 message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, MVector3 message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -159,6 +169,11 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"{name}: {body}");
         }
 
+        public static void GUI(MVector3 message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
         public static void Draw<C>(DebugDraw.Drawing drawing, MPose message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Draw<C>(drawing, message.position, color, label, size);
@@ -167,10 +182,16 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(point, point + facing, color, size * 0.5f);
         }
 
-        public static void GUI(string name, MPose message)
+        public static void GUI(MPose message)
         {
-            GUI(name + " Position", message.position);
+            GUI("Position", message.position);
             GUI("Orientation", message.orientation);
+        }
+
+        public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, GameObject drawAtPosition = null, float size = 0.01f) where C : ICoordinateSpace, new()
+        {
+            Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
+            Draw<C>(drawing, message, position, size);
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, UnityEngine.Vector3 position, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -184,9 +205,16 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(position, position + forward, Color.blue, size * 0.1f);
         }
 
-        public static void GUI(string name, MQuaternion message)
+        public static void GUI(string label, MQuaternion message)
         {
-            GUILayout.Label($"{name}: [{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+            if (label != "" && label != null)
+                label += ": ";
+            GUILayout.Label($"{label}[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+        }
+
+        public static void GUI(MQuaternion message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
         public static void Draw<C>(DebugDraw.Drawing drawing, MTransform transform, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -194,9 +222,9 @@ namespace Unity.Robotics.MessageVisualizers
             Draw<C>(drawing, transform.rotation, transform.translation.From<C>(), size);
         }
 
-        public static void GUI(string name, MTransform message)
+        public static void GUI(MTransform message)
         {
-            GUI(name + " Translation", message.translation);
+            GUI("Translation", message.translation);
             GUI("Rotation", message.rotation);
         }
 
@@ -209,6 +237,13 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawLine(prevPos, curPos, color, thickness);
                 prevPos = curPos;
             }
+        }
+
+        public static void GUI(MPolygon message)
+        {
+            GUILayout.Label($"({message.points.Length} points):");
+            foreach(MPoint32 p in message.points)
+                GUI(p);
         }
 
         public static Color32 PickColorForTopic(string topic)
