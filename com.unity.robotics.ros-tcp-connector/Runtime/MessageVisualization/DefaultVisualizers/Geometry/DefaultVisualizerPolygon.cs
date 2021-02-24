@@ -13,14 +13,14 @@ namespace Unity.Robotics.MessageVisualizers
     {
         public float thickness = 0.1f;
 
-        public override void Draw(MPolygon msg, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public override void Draw(MPolygon message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, msg, color, thickness);
+            MessageVisualizations.Draw<FLU>(drawing, message, color, thickness);
         }
 
-        public override System.Action CreateGUI(MPolygon msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+        public override System.Action CreateGUI(MPolygon message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            foreach (MPoint32 p in msg.points)
+            foreach (MPoint32 p in message.points)
                 MessageVisualizations.GUI(label, p);
         };
     }
