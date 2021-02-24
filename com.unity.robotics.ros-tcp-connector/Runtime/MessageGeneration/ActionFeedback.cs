@@ -20,17 +20,17 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public abstract class ActionFeedback<TFeedback> : Message where TFeedback : Message
     {
-        public Header header { get; set; }
-        public GoalStatus status { get; set; }
+        public MHeader header { get; set; }
+        public MGoalStatus status { get; set; }
         public TFeedback feedback { get; set; }
 
         public ActionFeedback()
         {
-            header = new Header();
-            status = new GoalStatus();
+            header = new MHeader();
+            status = new MGoalStatus();
         }
 
-        public ActionFeedback(Header header, GoalStatus status) {
+        public ActionFeedback(MHeader header, MGoalStatus status) {
             this.header = header;
             this.status = status;
         }

@@ -27,7 +27,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string rosPackageName = MessageAutoGen.GetRosPackageName(inFilePath);
             string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
             string extension = Path.GetExtension(inFilePath);
-            string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
+            string className = MsgAutoGenUtilities.MessageClassPrefix + MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath));
             string[] result = new string[types.Length];
             for (int Idx = 0; Idx < types.Length; ++Idx)
             {
@@ -70,7 +70,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 List<MessageToken> tokens = listsOfTokens[i];
 
                 // Service is made up of request and response
-                string className = inFileName + types[i];
+                string className = MsgAutoGenUtilities.MessageClassPrefix + inFileName + types[i];
 
                 MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "srv", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, MsgAutoGenUtilities.numericTypeDeserializationFunctions, MsgAutoGenUtilities.numericTypeByteSize, className);
                 parser.Parse();

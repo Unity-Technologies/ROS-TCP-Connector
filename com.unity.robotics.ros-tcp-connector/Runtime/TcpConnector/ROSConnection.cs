@@ -202,15 +202,15 @@ namespace Unity.Robotics.ROSTCPConnector
         private void Start()
         {
             InitializeHUD();
-            Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+            Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
             if (overrideUnityIP != "")
             {
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
-            SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
-                new UnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
+            SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
+                new MUnityHandshakeRequest(overrideUnityIP, (ushort)unityPort), RosUnityHandshakeCallback);
         }
 
         void OnValidate()
@@ -232,12 +232,12 @@ namespace Unity.Robotics.ROSTCPConnector
             hudPanel.isEnabled = showHUD;
         }
 
-        void RosUnityHandshakeCallback(UnityHandshakeResponse response)
+        void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
         {
             StartMessageServer(response.ip, unityPort);
         }
 
-        void RosUnityErrorCallback(RosUnityError error)
+        void RosUnityErrorCallback(MRosUnityError error)
         {
             Debug.LogError("ROS-Unity error: " + error.message);
         }
@@ -500,7 +500,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param)
         {
-            Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
+            Send(SYSCOMMAND_TOPIC_NAME, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
         }
 
         public async void Send(string rosTopicName, Message message)
