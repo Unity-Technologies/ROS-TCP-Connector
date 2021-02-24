@@ -7,65 +7,71 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class BasicVisualizer<MessageType> : MonoBehaviour, IVisualizer, IPriority
-        where MessageType : Message
+    public abstract class BasicVisualizer<TargetMessageType> : MonoBehaviour, IVisualizer, IPriority
+        where TargetMessageType : Message
     {
-        public string Topic;
-        public string Label;
-        public Color Color;
+        public string topic;
+        public string label;
+        public Color color;
 
         [HideInInspector][SerializeField]
-        string TopicCopy;
+        string topicCopy;
 
-        public int Priority { get; set; }
-        public virtual System.Type RegisteredMessageType => typeof(MessageType);
+        public int priority { get; set; }
 
         public virtual void Start()
         {
-            if (Topic == "")
-                MessageVisualizations.RegisterVisualizer(RegisteredMessageType, this, Priority);
+            if (topic == "")
+                MessageVisualizations.RegisterVisualizer<TargetMessageType>(this, priority);
             else
-                MessageVisualizations.RegisterVisualizer(Topic, this, Priority);
+                MessageVisualizations.RegisterVisualizer(topic, this, priority);
         }
 
         public void OnValidate()
         {
-            if (Topic != TopicCopy)
+            if (topic != topicCopy)
             {
-                if (Color == Color.clear || Color == Color.black || Color == MessageVisualizations.PickColorForTopic(TopicCopy))
-                    Color = MessageVisualizations.PickColorForTopic(Topic);
-                if (Label == TopicCopy || Label == "")
-                    Label = Topic;
+                if (color == Color.clear || color == Color.black || color == MessageVisualizations.PickColorForTopic(topicCopy))
+                    color = MessageVisualizations.PickColorForTopic(topic);
+                if (label == topicCopy || label == "")
+                    label = topic;
             }
 
-            if (Color.a == 0)
-                Color.a = 1;
+            if (color.a == 0)
+                color.a = 1;
 
-            TopicCopy = Topic;
+            topicCopy = topic;
         }
 
-        public virtual object CreateDrawing(Message msg, MessageMetadata meta)
+        public virtual object CreateDrawing(Message message, MessageMetadata meta)
         {
-            if (!AssertMessageType(msg, meta))
+            if (!AssertMessageType(message, meta))
             {
                 return null;
             }
 
-            Color colorToUse = this.Color;
-            string labelToUse = this.Label;
-
-            if (colorToUse == Color.clear || colorToUse == Color.black)
-                colorToUse = MessageVisualizations.PickColorForTopic(meta.topic);
-
-            if (labelToUse == "" || labelToUse == null)
-                labelToUse = meta.topic;
-
             DebugDraw.Drawing drawing = DebugDraw.CreateDrawing();
-            Draw((MessageType)msg, meta, colorToUse, labelToUse, drawing);
+            Draw((TargetMessageType)message, meta, SelectColor(meta), SelectLabel(meta), drawing);
             return drawing;
         }
 
-        public virtual void Draw(MessageType msg, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public Color SelectColor(MessageMetadata meta)
+        {
+            if (color != Color.clear && color != Color.black)
+                return color;
+            else
+                return MessageVisualizations.PickColorForTopic(meta.topic);
+        }
+
+        public string SelectLabel(MessageMetadata meta)
+        {
+            if (label != "" && label != null)
+                return label;
+            else
+                return meta.topic;
+        }
+
+        public virtual void Draw(TargetMessageType message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
         }
 
@@ -74,29 +80,29 @@ namespace Unity.Robotics.MessageVisualizers
             ((DebugDraw.Drawing)drawing).Destroy();
         }
 
-        public virtual System.Action CreateGUI(Message msg, MessageMetadata meta, object drawing)
+        public virtual System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
-            if (!AssertMessageType(msg, meta))
+            if (!AssertMessageType(message, meta))
             {
-                return MessageVisualizations.CreateDefaultGUI(msg, meta);
+                return MessageVisualizations.CreateDefaultGUI(message, meta);
             }
 
-            return CreateGUI((MessageType)msg, meta, (DebugDraw.Drawing)drawing);
+            return CreateGUI((TargetMessageType)message, meta, (DebugDraw.Drawing)drawing);
         }
 
-        public bool AssertMessageType(Message msg, MessageMetadata meta)
+        public bool AssertMessageType(Message message, MessageMetadata meta)
         {
-            if (!(RegisteredMessageType.IsInstanceOfType(msg)))
+            if (!(message is TargetMessageType))
             {
-                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {msg.GetType()}! (expected {RegisteredMessageType}).");
+                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
                 return false;
             }
             return true;
         }
 
-        public virtual System.Action CreateGUI(MessageType msg, MessageMetadata meta, DebugDraw.Drawing drawing)
+        public virtual System.Action CreateGUI(TargetMessageType message, MessageMetadata meta, DebugDraw.Drawing drawing)
         {
-            return MessageVisualizations.CreateDefaultGUI(msg, meta);
+            return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
     }
 }

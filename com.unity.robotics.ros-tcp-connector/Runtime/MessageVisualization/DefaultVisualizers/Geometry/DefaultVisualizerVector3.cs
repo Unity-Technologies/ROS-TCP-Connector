@@ -11,14 +11,14 @@ namespace Unity.Robotics.MessageVisualizers
     {
         public float size = 0.01f;
 
-        public override void Draw(MVector3 msg, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public override void Draw(MVector3 message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, msg, color, label, size);
+            MessageVisualizations.Draw<FLU>(drawing, message, color, label, size);
         }
 
-        public override System.Action CreateGUI(MVector3 msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+        public override System.Action CreateGUI(MVector3 message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(Label, msg);
+            MessageVisualizations.GUI(label, message);
         };
     }
 }

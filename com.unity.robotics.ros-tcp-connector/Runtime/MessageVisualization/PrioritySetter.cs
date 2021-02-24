@@ -6,7 +6,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public interface IPriority
     {
-        int Priority { get; set; }
+        int priority { get; set; }
     }
 
     public class PrioritySetter : MonoBehaviour
@@ -16,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
         private void Awake()
         {
             foreach (IPriority p in GetComponents<IPriority>())
-                p.Priority = Priority;
+                p.priority = Priority;
         }
     }
 }

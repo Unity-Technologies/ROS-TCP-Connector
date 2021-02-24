@@ -19,9 +19,9 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public interface IVisualizer
     {
-        object CreateDrawing(Message msg, MessageMetadata meta);
+        object CreateDrawing(Message message, MessageMetadata meta);
         void DeleteDrawing(object drawing);
-        Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
+        Action CreateGUI(Message message, MessageMetadata meta, object drawing);
     }
 
     public struct MessageMetadata
@@ -83,18 +83,18 @@ namespace Unity.Robotics.MessageVisualizers
             // If you're trying to register the default visualizer, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }
 
-            public object CreateDrawing(Message msg, MessageMetadata meta) => null;
+            public object CreateDrawing(Message message, MessageMetadata meta) => null;
 
             public void DeleteDrawing(object drawing) { }
 
-            public Action CreateGUI(Message msg, MessageMetadata meta, object drawing) => CreateDefaultGUI(msg, meta);
+            public Action CreateGUI(Message message, MessageMetadata meta, object drawing) => CreateDefaultGUI(message, meta);
         }
 
         static DefaultVisualizer defaultVisualizer = new DefaultVisualizer();
 
-        public static Action CreateDefaultGUI(Message msg, MessageMetadata meta)
+        public static Action CreateDefaultGUI(Message message, MessageMetadata meta)
         {
-            string text = msg.ToString();
+            string text = message.ToString();
             return () => { GUILayout.Label(text); };
         }
 
