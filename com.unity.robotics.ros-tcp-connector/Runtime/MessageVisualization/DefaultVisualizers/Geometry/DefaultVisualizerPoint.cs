@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using MPoint = RosMessageTypes.Geometry.Point;
+using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {

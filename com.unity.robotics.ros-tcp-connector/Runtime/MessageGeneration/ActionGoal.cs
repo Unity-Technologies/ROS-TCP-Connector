@@ -20,16 +20,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public abstract class ActionGoal<TGoal> : Message where TGoal : Message
     {
-        public Header header { get; set; }
-        public GoalID goal_id { get; set; }
+        public MHeader header { get; set; }
+        public MGoalID goal_id { get; set; }
         public TGoal goal { get; set; }
 
         public ActionGoal() {
-            header = new Header();
-            goal_id = new GoalID();
+            header = new MHeader();
+            goal_id = new MGoalID();
         }
 
-        public ActionGoal(Header header, GoalID goal_id) {
+        public ActionGoal(MHeader header, MGoalID goal_id) {
             this.header = header;
             this.goal_id = goal_id;
         }

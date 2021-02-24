@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using MVector3 = RosMessageTypes.Geometry.Vector3;
+using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {

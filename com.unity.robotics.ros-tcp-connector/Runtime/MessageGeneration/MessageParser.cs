@@ -63,7 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             if (className.Equals(""))
             {
-                this.className = MsgAutoGenUtilities.CapitalizeFirstLetter(inFileName);
+                this.className = MsgAutoGenUtilities.MessageClassPrefix + MsgAutoGenUtilities.CapitalizeFirstLetter(inFileName);
             }
             else
             {
@@ -73,7 +73,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             if (rosMsgName.Equals(""))
             {
                 if (Char.IsLower(inFileName[0]))
-                    Debug.LogWarningFormat("File {0} starts with a lowercase character. Message file names should be CamelCased (see : http://wiki.ros.org/ROS/Patterns/Conventions#line-38)", inFileName);
+                    Debug.LogWarningFormat("File {0} starts with a lowercase character. Message file names should be PascalCased (see : http://wiki.ros.org/ROS/Patterns/Conventions#line-38)", inFileName);
                 this.rosMsgName = inFileName;
             }
             else
@@ -211,7 +211,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             if (PeekType(MessageTokenType.BuiltInType))
             {
                 type = builtInTypeMapping[MatchByType(MessageTokenType.BuiltInType)];
-                if (!type.Equals("Time") && !type.Equals("Duration"))
+                if (!type.Equals("MTime") && !type.Equals("MDuration"))
                 {
                     // Time and Duration can't have constant declaration
                     // See <wiki.ros.org/msg>
@@ -233,6 +233,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 switch (hierarchy.Length)
                 {
                     case 1:
+                        type = MsgAutoGenUtilities.MessageClassPrefix + type;
                         break;
                     case 2:
                         if (hierarchy[0].Equals("") || hierarchy[1].Equals(""))
@@ -243,7 +244,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                         }
                         string package = MsgAutoGenUtilities.ResolvePackageName(hierarchy[0]);
                         // Do not add package name if exists in current namespace
-                        type = package.Equals(rosPackageNamespace) ? hierarchy[1] : package + "." + hierarchy[1];
+                        type = package.Equals(rosPackageNamespace) ? MsgAutoGenUtilities.MessageClassPrefix + hierarchy[1] :
+                            package + "." + MsgAutoGenUtilities.MessageClassPrefix + hierarchy[1];
                         break;
                     default:
                         throw new MessageParserException(
@@ -253,7 +255,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
             else
             {
-                type = MatchByType(MessageTokenType.Header);
+                type = MsgAutoGenUtilities.MessageClassPrefix + MatchByType(MessageTokenType.Header);
                 if (PeekType(MessageTokenType.FixedSizeArray) || PeekType(MessageTokenType.VariableSizeArray))
                 {
                     Warn(
@@ -729,7 +731,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                     }
                     // Message is a custom type and call it's serialization function. Time and duration are special cases
-                    else if (!MsgAutoGenUtilities.builtInTypesMapping.ContainsValue(type) || type.Equals("Time") || type.Equals("Duration"))
+                    else if (!MsgAutoGenUtilities.builtInTypesMapping.ContainsValue(type) || type.Equals("MTime") || type.Equals("MDuration"))
                     {
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "offset = this." + identifier + ".Deserialize(data, offset);\n";
                     }
@@ -832,7 +834,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                                     "listOfSerializations.Add(new[]{(byte)this." + identifier + "});\n";
                     }
                     // Message is a custom type and call it's serialization function
-                    else if (!MsgAutoGenUtilities.builtInTypesMapping.ContainsValue(type) || type.Equals("Time") || type.Equals("Duration"))
+                    else if (!MsgAutoGenUtilities.builtInTypesMapping.ContainsValue(type) || type.Equals("MTime") || type.Equals("MDuration"))
                     {
                         function += MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "listOfSerializations.AddRange(" + identifier + ".SerializationStatements());\n";
                     }

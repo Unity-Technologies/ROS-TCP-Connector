@@ -4,16 +4,8 @@ using UnityEngine;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
-using System.Reflection;
-using MHeader = RosMessageTypes.Std.Header;
-using MTime = RosMessageTypes.Std.Time;
-using MPoint = RosMessageTypes.Geometry.Point;
-using MPoint32 = RosMessageTypes.Geometry.Point32;
-using MVector3 = RosMessageTypes.Geometry.Vector3;
-using MTransform = RosMessageTypes.Geometry.Transform;
-using MQuaternion = RosMessageTypes.Geometry.Quaternion;
-using MPolygon = RosMessageTypes.Geometry.Polygon;
-using MPose = RosMessageTypes.Geometry.Pose;
+using RosMessageTypes.Geometry;
+using RosMessageTypes.Std;
 
 namespace Unity.Robotics.MessageVisualizers
 {
