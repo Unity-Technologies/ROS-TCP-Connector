@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using MQuaternionStamped = RosMessageTypes.Geometry.QuaternionStamped;
+using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
