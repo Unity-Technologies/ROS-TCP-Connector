@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override System.Action CreateGUI(MQuaternion msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(Label, msg);
+            MessageVisualizations.GUI(label, msg);
         };
     }
 }

@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
         public override System.Action CreateGUI(MPolygon msg, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
             foreach (MPoint32 p in msg.points)
-                MessageVisualizations.GUI(Label, p);
+                MessageVisualizations.GUI(label, p);
         };
     }
 }

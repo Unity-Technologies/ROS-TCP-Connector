@@ -10,49 +10,49 @@ namespace Unity.Robotics.MessageVisualizers
     public abstract class BasicVisualizer<MessageType> : MonoBehaviour, IVisualizer, IPriority
         where MessageType : Message
     {
-        public string Topic;
-        public string Label;
-        public Color Color;
+        public string topic;
+        public string label;
+        public Color color;
 
         [HideInInspector][SerializeField]
-        string TopicCopy;
+        string topicCopy;
 
-        public int Priority { get; set; }
-        public virtual System.Type RegisteredMessageType => typeof(MessageType);
+        public int priority { get; set; }
+        public virtual System.Type registeredMessageType => typeof(MessageType);
 
         public virtual void Start()
         {
-            if (Topic == "")
-                MessageVisualizations.RegisterVisualizer(RegisteredMessageType, this, Priority);
+            if (topic == "")
+                MessageVisualizations.RegisterVisualizer(registeredMessageType, this, priority);
             else
-                MessageVisualizations.RegisterVisualizer(Topic, this, Priority);
+                MessageVisualizations.RegisterVisualizer(topic, this, priority);
         }
 
         public void OnValidate()
         {
-            if (Topic != TopicCopy)
+            if (topic != topicCopy)
             {
-                if (Color == Color.clear || Color == Color.black || Color == MessageVisualizations.PickColorForTopic(TopicCopy))
-                    Color = MessageVisualizations.PickColorForTopic(Topic);
-                if (Label == TopicCopy || Label == "")
-                    Label = Topic;
+                if (color == Color.clear || color == Color.black || color == MessageVisualizations.PickColorForTopic(topicCopy))
+                    color = MessageVisualizations.PickColorForTopic(topic);
+                if (label == topicCopy || label == "")
+                    label = topic;
             }
 
-            if (Color.a == 0)
-                Color.a = 1;
+            if (color.a == 0)
+                color.a = 1;
 
-            TopicCopy = Topic;
+            topicCopy = topic;
         }
 
-        public virtual object CreateDrawing(Message msg, MessageMetadata meta)
+        public virtual object CreateDrawing(Message message, MessageMetadata meta)
         {
-            if (!AssertMessageType(msg, meta))
+            if (!AssertMessageType(message, meta))
             {
                 return null;
             }
 
-            Color colorToUse = this.Color;
-            string labelToUse = this.Label;
+            Color colorToUse = this.color;
+            string labelToUse = this.label;
 
             if (colorToUse == Color.clear || colorToUse == Color.black)
                 colorToUse = MessageVisualizations.PickColorForTopic(meta.topic);
@@ -61,7 +61,7 @@ namespace Unity.Robotics.MessageVisualizers
                 labelToUse = meta.topic;
 
             DebugDraw.Drawing drawing = DebugDraw.CreateDrawing();
-            Draw((MessageType)msg, meta, colorToUse, labelToUse, drawing);
+            Draw((MessageType)message, meta, colorToUse, labelToUse, drawing);
             return drawing;
         }
 
@@ -86,9 +86,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         public bool AssertMessageType(Message msg, MessageMetadata meta)
         {
-            if (!(RegisteredMessageType.IsInstanceOfType(msg)))
+            if (!(registeredMessageType.IsInstanceOfType(msg)))
             {
-                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {msg.GetType()}! (expected {RegisteredMessageType}).");
+                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {msg.GetType()}! (expected {registeredMessageType}).");
                 return false;
             }
             return true;
