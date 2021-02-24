@@ -1,3 +1,4 @@
+using RosMessageTypes.Geometry;
 using System;
 using UnityEngine;
 
@@ -53,9 +54,9 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return result;
         }
 
-        public static implicit operator RosMessageTypes.Geometry.Point(Vector3<C> rvec) => new RosMessageTypes.Geometry.Point(rvec.x, rvec.y, rvec.z);
-        public static implicit operator RosMessageTypes.Geometry.Point32(Vector3<C> rvec) => new RosMessageTypes.Geometry.Point32(rvec.x, rvec.y, rvec.z);
-        public static implicit operator RosMessageTypes.Geometry.Vector3(Vector3<C> rvec) => new RosMessageTypes.Geometry.Vector3(rvec.x, rvec.y, rvec.z);
+        public static implicit operator MPoint(Vector3<C> rvec) => new MPoint(rvec.x, rvec.y, rvec.z);
+        public static implicit operator MPoint32(Vector3<C> rvec) => new MPoint32(rvec.x, rvec.y, rvec.z);
+        public static implicit operator MVector3(Vector3<C> rvec) => new MVector3(rvec.x, rvec.y, rvec.z);
 
         public static Vector3<C> right => new Vector3<C>(Vector3.right);
         public static Vector3<C> left => new Vector3<C>(Vector3.left);

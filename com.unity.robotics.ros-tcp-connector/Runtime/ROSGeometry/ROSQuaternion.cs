@@ -1,3 +1,4 @@
+using RosMessageTypes.Geometry;
 using System;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public Quaternion toUnity => coordinateSpace.ConvertToRUF(internalQuat);
 
-        public static implicit operator RosMessageTypes.Geometry.Quaternion(Quaternion<C> quat) => new RosMessageTypes.Geometry.Quaternion(quat.x, quat.y, quat.z, quat.w);
+        public static implicit operator MQuaternion(Quaternion<C> quat) => new MQuaternion(quat.x, quat.y, quat.z, quat.w);
         public static explicit operator Quaternion<C>(Quaternion quat) => new Quaternion<C>(quat);
         public static explicit operator Quaternion(Quaternion<C> rquat) => rquat.toUnity;
 

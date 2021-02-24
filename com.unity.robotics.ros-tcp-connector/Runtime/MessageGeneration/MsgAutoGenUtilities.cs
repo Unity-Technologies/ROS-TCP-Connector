@@ -23,6 +23,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public const string TWO_TABS = "        ";
         public const string PROPERTY_EXTENSION = " { get; set; }";
 
+        public const string MessageClassPrefix = "M";
+
         public static readonly Dictionary<string, string> builtInTypesMapping = new Dictionary<string, string>
         {
             {"bool", "bool"},
@@ -37,8 +39,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {"float32", "float"},
             {"float64", "double"},
             {"string", "string"},
-            {"time", "Time"},
-            {"duration", "Duration"},
+            {"time", "MTime"},
+            {"duration", "MDuration"},
             {"char", "byte"}, // Deprecated alias for uint8 -> byte  in C#
             {"byte", "sbyte"} // Deprecated alias for int8  -> sbyte in C#
         };
