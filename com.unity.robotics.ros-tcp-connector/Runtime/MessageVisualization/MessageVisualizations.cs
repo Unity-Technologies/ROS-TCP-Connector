@@ -5,6 +5,8 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 using System.Reflection;
+using MHeader = RosMessageTypes.Std.Header;
+using MTime = RosMessageTypes.Std.Time;
 using MPoint = RosMessageTypes.Geometry.Point;
 using MPoint32 = RosMessageTypes.Geometry.Point32;
 using MVector3 = RosMessageTypes.Geometry.Vector3;
@@ -41,10 +43,15 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void RegisterVisualizer<MsgType>(IVisualizer config, int priority = 0)
         {
+            RegisterVisualizer(typeof(MsgType), config, priority);
+        }
+
+        public static void RegisterVisualizer(Type MsgType, IVisualizer config, int priority = 0)
+        {
             Tuple<IVisualizer, int> currentEntry;
-            if(!TypeVisualizers.TryGetValue(typeof(MsgType), out currentEntry) || currentEntry.Item2 <= priority)
+            if (!TypeVisualizers.TryGetValue(MsgType, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                TypeVisualizers[typeof(MsgType)] = new Tuple<IVisualizer, int>(config, priority);
+                TypeVisualizers[MsgType] = new Tuple<IVisualizer, int>(config, priority);
             }
         }
 
@@ -95,6 +102,22 @@ namespace Unity.Robotics.MessageVisualizers
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
+        }
+
+        public static void GUI(MHeader message)
+        {
+            GUILayout.Label($"<{message.seq} {message.frame_id} {TimeToString(message.stamp)}>");
+        }
+
+        public static void GUI(MTime message)
+        {
+            GUILayout.Label(TimeToString(message));
+        }
+
+        public static string TimeToString(MTime message)
+        {
+            // TODO: display a friendly date/time?
+            return $"{message.secs}/{message.nsecs}";
         }
 
         public static void GUI(string name, MPoint message)
