@@ -18,6 +18,7 @@ namespace Unity.Robotics.MessageVisualizers
                     _instance = newDebugDrawObj.AddComponent<DebugDraw>();
                     _instance.material = new Material(Shader.Find("Unlit/VertexColor"));
                     _instance.unlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
+                    _instance.unlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
                 }
                 return _instance;
             }
@@ -28,6 +29,7 @@ namespace Unity.Robotics.MessageVisualizers
         List<Drawing> dirty = new List<Drawing>();
         public Material material;
         Material unlitColorMaterial;
+        Material unlitColorAlphaMaterial;
 
         private void Awake()
         {
@@ -260,7 +262,7 @@ namespace Unity.Robotics.MessageVisualizers
                 MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
                 mfilter.sharedMesh = source;
                 MeshRenderer mrenderer = meshObject.AddComponent<MeshRenderer>();
-                mrenderer.material = DebugDraw.instance.unlitColorMaterial;
+                mrenderer.material = (color.a < 255) ? DebugDraw.instance.unlitColorAlphaMaterial : DebugDraw.instance.unlitColorMaterial;
                 mrenderer.material.color = color;
             }
 
