@@ -11,12 +11,16 @@ GameObject:
   - component: {fileID: 3885009520023495739}
   - component: {fileID: 8753251641557683428}
   - component: {fileID: 2702807170508875665}
-  - component: {fileID: 6526816761780838467}
   - component: {fileID: 3885009520023495736}
   - component: {fileID: 6194470617917588222}
   - component: {fileID: 3885009520023495738}
   - component: {fileID: 2828612433107949715}
   - component: {fileID: 2183426084405305905}
+  - component: {fileID: 757893728904686257}
+  - component: {fileID: 4596766582256067858}
+  - component: {fileID: 1135833588843088428}
+  - component: {fileID: 7768666212049214176}
+  - component: {fileID: 6523337940938082388}
   m_Layer: 0
   m_Name: DefaultVisualizationSuite
   m_TagString: Untagged
@@ -63,27 +67,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 411f6a469899d8c4691994218731ae87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
-  size: 0.01
---- !u!114 &6526816761780838467
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3885009520023495737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82f37a40c8959d44db42a1b28341cf75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   size: 0.01
 --- !u!114 &3885009520023495736
 MonoBehaviour:
@@ -97,10 +84,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca06d2332e51924479738a34919115b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   size: 0.01
 --- !u!114 &6194470617917588222
 MonoBehaviour:
@@ -114,10 +101,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5f79b92768699c4c83e62bc7df9a7c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   size: 0.01
 --- !u!114 &3885009520023495738
 MonoBehaviour:
@@ -131,10 +118,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d4f4c2adcaad6b4799f59c76f040eee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   size: 0.1
 --- !u!114 &2828612433107949715
 MonoBehaviour:
@@ -148,10 +135,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f651df5ec61c734f8083a79205badd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   size: 0.1
   drawAtPosition: {fileID: 0}
 --- !u!114 &2183426084405305905
@@ -166,8 +153,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98e9789d1b217d0479bddfe4e5ac15af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Topic: 
-  Label: 
-  Color: {r: 0, g: 0, b: 0, a: 1}
-  TopicCopy: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
   thickness: 0.1
+--- !u!114 &757893728904686257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59143f68e58e4d6449372a89c6b2ebd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
+  radius: 0.01
+--- !u!114 &4596766582256067858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ff0d98070786c64981a74ca2ef65439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
+  thickness: 0.01
+--- !u!114 &1135833588843088428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0881ebe31dc31444f913ca60e3b34783, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
+  size: 0.01
+  drawAtPosition: {fileID: 0}
+--- !u!114 &7768666212049214176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34006ea0674a568409a63b1695197f8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
+  size: 0.1
+--- !u!114 &6523337940938082388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeaeab39bc34bec4fb88e7a71fd68b18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topic: 
+  label: 
+  color: {r: 0, g: 0, b: 0, a: 1}
+  topicCopy: 
+  size: 0.01
