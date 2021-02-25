@@ -17,6 +17,7 @@ namespace Unity.Robotics.MessageVisualizers
                     GameObject newDebugDrawObj = new GameObject("DebugDraw");
                     _instance = newDebugDrawObj.AddComponent<DebugDraw>();
                     _instance.material = new Material(Shader.Find("Unlit/VertexColor"));
+                    _instance.unlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
                 }
                 return _instance;
             }
@@ -26,6 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
         List<Drawing> drawings = new List<Drawing>();
         List<Drawing> dirty = new List<Drawing>();
         public Material material;
+        Material unlitColorMaterial;
 
         private void Awake()
         {
@@ -69,6 +71,7 @@ namespace Unity.Robotics.MessageVisualizers
             Mesh mesh;
             List<Vector3> vertices = new List<Vector3>();
             List<Color32> colors32 = new List<Color32>();
+            List<GameObject> supplemental = new List<GameObject>();
             List<int> triangles = new List<int>();
             DebugDraw parent;
             Material material;
@@ -241,12 +244,34 @@ namespace Unity.Robotics.MessageVisualizers
                 labels.Add(new LabelInfo3D { text = text, position = position, color = color, worldSpacing = worldSpacing });
             }
 
+            public void DrawMesh(Mesh source, Transform transform, Color32 color)
+            {
+                DrawMesh(source, transform.position, transform.rotation, transform.localScale, color);
+            }
+
+            public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Color32 color)
+            {
+                GameObject meshObject = new GameObject(source.name);
+                supplemental.Add(meshObject);
+                meshObject.transform.parent = transform;
+                meshObject.transform.position = position;
+                meshObject.transform.rotation = rotation;
+                meshObject.transform.localScale = scale;
+                MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
+                mfilter.sharedMesh = source;
+                MeshRenderer mrenderer = meshObject.AddComponent<MeshRenderer>();
+                mrenderer.material = DebugDraw.instance.unlitColorMaterial;
+                mrenderer.material.color = color;
+            }
+
             public void Clear()
             {
                 vertices.Clear();
                 colors32.Clear();
                 triangles.Clear();
                 labels.Clear();
+                foreach (GameObject obj in supplemental)
+                    GameObject.Destroy(obj);
                 SetDirty();
             }
 
