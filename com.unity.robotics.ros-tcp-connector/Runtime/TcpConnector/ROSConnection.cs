@@ -243,7 +243,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
         {
-            StartMessageServer(response.ip, unityPort);
+            StartMessageServer(rosIPAddress, unityPort);
         }
 
         void RosUnityErrorCallback(MRosUnityError error)
