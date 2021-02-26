@@ -6,6 +6,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
+using RosMessageTypes.Trajectory;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -163,6 +164,11 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"({message.points.Length} points):");
             foreach(MPoint32 p in message.points)
                 GUI(p);
+        }
+
+        public static void Draw(DebugDraw.Drawing drawing, string[] joint_names, MJointTrajectoryPoint[] points, Color color)
+        {
+
         }
 
         public static Color32 PickColorForTopic(string topic)

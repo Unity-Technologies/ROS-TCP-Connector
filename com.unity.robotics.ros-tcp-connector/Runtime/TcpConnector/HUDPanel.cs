@@ -247,7 +247,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     return;
 
                 if (visualizerConfig == null)
-                    visualizerConfig = MessageVisualizations.GetVisualizer(message, meta);
+                    visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
 
                 if (visualizerGUI == null)
                     visualizerGUI = visualizerConfig.CreateGUI(message, meta, visualizerDrawing);
@@ -267,7 +267,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     return;
 
                 if (visualizerConfig == null)
-                    visualizerConfig = MessageVisualizations.GetVisualizer(message, meta);
+                    visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
 
                 visualizerDrawing = visualizerConfig.CreateDrawing(message, meta);
 

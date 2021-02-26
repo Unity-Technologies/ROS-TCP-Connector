@@ -22,9 +22,9 @@ namespace Unity.Robotics.MessageVisualizers
         public virtual void Start()
         {
             if (topic == "")
-                MessageVisualizations.RegisterVisualizer<TargetMessageType>(this, priority);
+                VisualizationRegister.RegisterVisualizer<TargetMessageType>(this, priority);
             else
-                MessageVisualizations.RegisterVisualizer(topic, this, priority);
+                VisualizationRegister.RegisterVisualizer(topic, this, priority);
         }
 
         public void OnValidate()
