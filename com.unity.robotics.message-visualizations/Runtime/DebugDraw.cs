@@ -207,11 +207,11 @@ namespace Unity.Robotics.MessageVisualizers
                 SetDirty();
             }
 
-            public void DrawLines(Color32 color, float thickness, params Vector3[] stripPoints)
+            public void DrawLines(Color32 color, float thickness, params Vector3[] pointPairs)
             {
-                for (int Idx = 1; Idx < stripPoints.Length; Idx += 2)
+                for (int Idx = 1; Idx < pointPairs.Length; Idx += 2)
                 {
-                    DrawLine(stripPoints[Idx - 1], stripPoints[Idx], color, thickness);
+                    DrawLine(pointPairs[Idx - 1], pointPairs[Idx], color, thickness);
                 }
             }
 

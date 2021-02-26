@@ -48,7 +48,7 @@ namespace Unity.Robotics.MessageVisualizers
             Vector3[] result = new Vector3[point.Length];
             for (int Idx = 0; Idx < point.Length; ++Idx)
             {
-                JointPlacement[] placements = GetJointPlacements(jointNames, point[Idx]);
+                JointPlacement[] placements = GetJointPlacements(point[Idx], jointNames);
                 result[Idx] = placements[jointIndex].position;
             }
             return result;
@@ -60,12 +60,12 @@ namespace Unity.Robotics.MessageVisualizers
             JointPlacement[][] result = new JointPlacement[trajectory.points.Length][];
             for (int Idx = 0; Idx < trajectory.points.Length; ++Idx)
             {
-                result[Idx] = GetJointPlacements(trajectory.joint_names, trajectory.points[Idx]);
+                result[Idx] = GetJointPlacements(trajectory.points[Idx], trajectory.joint_names);
             }
             return result;
         }
 
-        public JointPlacement[] GetJointPlacements(string[] jointNames, MJointTrajectoryPoint point)
+        public JointPlacement[] GetJointPlacements(MJointTrajectoryPoint point, string[] jointNames)
         {
             Quaternion lastRotation = robot.transform.rotation;
             Vector3 lastWorldPosition = robot.transform.position;
@@ -137,14 +137,47 @@ namespace Unity.Robotics.MessageVisualizers
             JointPlacement[][] jointPlacements = GetJointPlacements(message);
             for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
             {
-                drawing.DrawLines(color, pathThickness, jointPlacements.Select(p => p[Idx].position).ToArray());
+                DrawJointPath(drawing, jointPlacements, Idx, color, pathThickness);
             }
         }
 
-        public void DrawJointPath(DebugDraw.Drawing drawing, MJointTrajectory message, int jointIdx, Color color, float pathThickness)
+        public void DrawJointPath(DebugDraw.Drawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
         {
-            JointPlacement[][] jointPlacements = GetJointPlacements(message);
-            drawing.DrawLines(color, pathThickness, jointPlacements.Select(p => p[jointIdx].position).ToArray());
+            DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
+        }
+
+        public void DrawGhost(DebugDraw.Drawing drawing, MJointTrajectory message, int pointIndex, Color color)
+        {
+            DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color);
+        }
+
+        public void DrawGhost(DebugDraw.Drawing drawing, MJointTrajectoryPoint message, string[] jointNames, Color color)
+        {
+            DrawGhost(drawing, GetJointPlacements(message, jointNames), color);
+        }
+
+
+        public void DrawJointPath(DebugDraw.Drawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
+        {
+            drawing.DrawLineStrip(color, pathThickness, jointPlacements.Select(p => p[jointIndex].position).ToArray());
+        }
+
+        public void DrawGhost(DebugDraw.Drawing drawing, JointPlacement[] placements, Color color)
+        {
+            foreach(JointPlacement jointPlacement in placements)
+            {
+                int numChildren = jointPlacement.joint.transform.childCount;
+                for (int Idx = 0; Idx < numChildren; ++Idx)
+                {
+                    Transform child = jointPlacement.joint.transform.GetChild(Idx);
+                    if (child.GetComponent<UrdfJoint>()) // don't want to draw the other joints with this jointPlacement
+                        continue;
+                    foreach (MeshFilter mfilter in child.GetComponentsInChildren<MeshFilter>())
+                    {
+                        drawing.DrawMesh(mfilter.sharedMesh, jointPlacement.position, jointPlacement.rotation, Vector3.one, color);
+                    }
+                }
+            }
         }
     }
 }
