@@ -274,6 +274,7 @@ namespace Unity.Robotics.MessageVisualizers
                 labels.Clear();
                 foreach (GameObject obj in supplemental)
                     GameObject.Destroy(obj);
+                supplemental.Clear();
                 SetDirty();
             }
 
