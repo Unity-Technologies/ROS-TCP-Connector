@@ -141,6 +141,19 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+        public void DrawJointPaths(DebugDraw.Drawing drawing, JointPlacement[][] jointPlacements, Color color, float pathThickness)
+        {
+            for (int pathIdx = 1; pathIdx < jointPlacements.Length; ++pathIdx)
+            {
+                JointPlacement[] pose1 = jointPlacements[pathIdx-1];
+                JointPlacement[] pose2 = jointPlacements[pathIdx];
+                for (int jointIdx = 0; jointIdx < pose1.Length; ++jointIdx)
+                {
+                    drawing.DrawLine(pose1[jointIdx].position, pose2[jointIdx].position, color, pathThickness);
+                }
+            }
+        }
+
         public void DrawJointPath(DebugDraw.Drawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
         {
             DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
