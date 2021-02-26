@@ -166,15 +166,24 @@ namespace Unity.Robotics.MessageVisualizers
         {
             foreach(JointPlacement jointPlacement in placements)
             {
-                int numChildren = jointPlacement.joint.transform.childCount;
+                UrdfJoint joint = jointPlacement.joint;
+                int numChildren = joint.transform.childCount;
                 for (int Idx = 0; Idx < numChildren; ++Idx)
                 {
-                    Transform child = jointPlacement.joint.transform.GetChild(Idx);
+                    Transform child = joint.transform.GetChild(Idx);
                     if (child.GetComponent<UrdfJoint>()) // don't want to draw the other joints with this jointPlacement
                         continue;
                     foreach (MeshFilter mfilter in child.GetComponentsInChildren<MeshFilter>())
                     {
-                        drawing.DrawMesh(mfilter.sharedMesh, jointPlacement.position, jointPlacement.rotation, Vector3.one, color);
+                        Vector3 localMeshOffset = jointPlacement.rotation * joint.transform.InverseTransformPoint(mfilter.transform.position);
+                        Quaternion localMeshRotation = Quaternion.Inverse(joint.transform.rotation) * mfilter.transform.rotation;
+                        drawing.DrawMesh(
+                            mfilter.sharedMesh,
+                            jointPlacement.position + localMeshOffset,
+                            jointPlacement.rotation * localMeshRotation,
+                            Vector3.one,
+                            color
+                        );
                     }
                 }
             }
