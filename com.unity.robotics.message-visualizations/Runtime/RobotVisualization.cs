@@ -3,129 +3,148 @@ using RosSharp.Urdf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class RobotVisualization
+namespace Unity.Robotics.MessageVisualizers
 {
-    Dictionary<string, JointData> jointsByName = new Dictionary<string, JointData>();
-
-    class JointData
+    public class RobotVisualization
     {
-        public UrdfJoint joint;
-        public Quaternion startRotation;
-    }
+        Dictionary<string, JointData> jointsByName = new Dictionary<string, JointData>();
 
-    public struct JointPlacement
-    {
-        public UrdfJoint joint;
-        public Vector3 position;
-        public Quaternion rotation;
-    }
-
-    UrdfRobot robot;
-
-    public RobotVisualization(UrdfRobot robot)
-    {
-        this.robot = robot;
-        foreach (UrdfJoint joint in robot.gameObject.GetComponentsInChildren<UrdfJoint>())
+        class JointData
         {
-            if (!jointsByName.ContainsKey(joint.jointName))
+            public UrdfJoint joint;
+            public Quaternion startRotation;
+        }
+
+        public struct JointPlacement
+        {
+            public UrdfJoint joint;
+            public Vector3 position;
+            public Quaternion rotation;
+        }
+
+        UrdfRobot robot;
+
+        public RobotVisualization(UrdfRobot robot)
+        {
+            this.robot = robot;
+            foreach (UrdfJoint joint in robot.gameObject.GetComponentsInChildren<UrdfJoint>())
             {
-                jointsByName.Add(
-                    joint.jointName,
-                    new JointData { joint = joint, startRotation = joint.transform.localRotation }
-                );
+                if (!jointsByName.ContainsKey(joint.jointName))
+                {
+                    jointsByName.Add(
+                        joint.jointName,
+                        new JointData { joint = joint, startRotation = joint.transform.localRotation }
+                    );
+                }
             }
         }
-    }
 
-    /// <returns> the positions of the selected joint across the whole trajectory </returns>
-    public Vector3[] GetJointPath(int jointIndex, string[] jointNames, MJointTrajectoryPoint[] point)
-    {
-        Vector3[] result = new Vector3[point.Length];
-        for(int Idx = 0; Idx < point.Length; ++Idx)
+        /// <returns> the positions of the selected joint across the whole trajectory </returns>
+        public Vector3[] GetJointPath(int jointIndex, string[] jointNames, MJointTrajectoryPoint[] point)
         {
-            JointPlacement[] placements = GetJointPlacements(jointNames, point[Idx]);
-            result[Idx] = placements[jointIndex].position;
-        }
-        return result;
-    }
-
-    /// <returns> JointPlacement[which MJointTrajectoryPoint in the trajectory][which joint]</returns>
-    public JointPlacement[][] GetJointPlacements(MJointTrajectory trajectory)
-    {
-        JointPlacement[][] result = new JointPlacement[trajectory.points.Length][];
-        for (int Idx = 0; Idx < trajectory.points.Length; ++Idx)
-        {
-            result[Idx] = GetJointPlacements(trajectory.joint_names, trajectory.points[Idx]);
-        }
-        return result;
-    }
-
-    public JointPlacement[] GetJointPlacements(string[] jointNames, MJointTrajectoryPoint point)
-    {
-        Quaternion lastRotation = robot.transform.rotation;
-        Vector3 lastWorldPosition = robot.transform.position;
-        GameObject lastJoint = robot.gameObject;
-        JointPlacement[] result = new JointPlacement[jointNames.Length];
-
-        for (int Idx = 0; Idx < point.positions.Length; ++Idx)
-        {
-            JointData jointData = jointsByName[jointNames[Idx]];
-            float rotationDegrees = (float)(point.positions[Idx] * Mathf.Rad2Deg);
-
-            ArticulationBody body = jointData.joint.GetComponent<ArticulationBody>();
-            Quaternion jointRotation = body.anchorRotation * Quaternion.Euler(rotationDegrees, 0, 0) * Quaternion.Inverse(body.anchorRotation);
-            Quaternion localRotation = jointData.startRotation * jointRotation;
-            Vector3 localPosition = lastJoint.transform.InverseTransformPoint(body.transform.position);
-            Vector3 worldPosition = lastWorldPosition + lastRotation * localPosition;
-            Quaternion worldRotation = lastRotation * localRotation;
-            //drawing.DrawLine(lastWorldPosition, worldPosition, blendedColor, thickness);
-
-            result[Idx] = new JointPlacement { joint = jointData.joint, position = worldPosition, rotation = worldRotation };
-
-            lastWorldPosition = worldPosition;
-            lastRotation = worldRotation;
-            lastJoint = body.gameObject;
-
-            /*if (isEndPoint)
+            Vector3[] result = new Vector3[point.Length];
+            for (int Idx = 0; Idx < point.Length; ++Idx)
             {
-                Transform visual = body.transform.Find("Visuals/unnamed");
-                foreach (MeshFilter mfilter in visual.GetComponentsInChildren<MeshFilter>())
+                JointPlacement[] placements = GetJointPlacements(jointNames, point[Idx]);
+                result[Idx] = placements[jointIndex].position;
+            }
+            return result;
+        }
+
+        /// <returns> JointPlacement[which MJointTrajectoryPoint in the trajectory][which joint]</returns>
+        public JointPlacement[][] GetJointPlacements(MJointTrajectory trajectory)
+        {
+            JointPlacement[][] result = new JointPlacement[trajectory.points.Length][];
+            for (int Idx = 0; Idx < trajectory.points.Length; ++Idx)
+            {
+                result[Idx] = GetJointPlacements(trajectory.joint_names, trajectory.points[Idx]);
+            }
+            return result;
+        }
+
+        public JointPlacement[] GetJointPlacements(string[] jointNames, MJointTrajectoryPoint point)
+        {
+            Quaternion lastRotation = robot.transform.rotation;
+            Vector3 lastWorldPosition = robot.transform.position;
+            GameObject lastJoint = robot.gameObject;
+            JointPlacement[] result = new JointPlacement[jointNames.Length];
+
+            for (int Idx = 0; Idx < point.positions.Length; ++Idx)
+            {
+                JointData jointData = jointsByName[jointNames[Idx]];
+                float rotationDegrees = (float)(point.positions[Idx] * Mathf.Rad2Deg);
+
+                ArticulationBody body = jointData.joint.GetComponent<ArticulationBody>();
+                Quaternion jointRotation = body.anchorRotation * Quaternion.Euler(rotationDegrees, 0, 0) * Quaternion.Inverse(body.anchorRotation);
+                Quaternion localRotation = jointData.startRotation * jointRotation;
+                Vector3 localPosition = lastJoint.transform.InverseTransformPoint(body.transform.position);
+                Vector3 worldPosition = lastWorldPosition + lastRotation * localPosition;
+                Quaternion worldRotation = lastRotation * localRotation;
+                //drawing.DrawLine(lastWorldPosition, worldPosition, blendedColor, thickness);
+
+                result[Idx] = new JointPlacement { joint = jointData.joint, position = worldPosition, rotation = worldRotation };
+
+                lastWorldPosition = worldPosition;
+                lastRotation = worldRotation;
+                lastJoint = body.gameObject;
+
+                /*if (isEndPoint)
                 {
-                    Vector3 localMeshOffset = lastRotation * body.transform.InverseTransformPoint(mfilter.transform.position);
-                    Quaternion localMeshRotation = Quaternion.Inverse(body.transform.rotation) * mfilter.transform.rotation;
-                    drawing.DrawMesh(mfilter.mesh, lastWorldPosition + localMeshOffset, lastRotation * localMeshRotation, Vector3.one, blendedColor);
-                }
-            }*/
-            //joint.transform.localRotation = localRotation;
-            //body.enabled = false;
+                    Transform visual = body.transform.Find("Visuals/unnamed");
+                    foreach (MeshFilter mfilter in visual.GetComponentsInChildren<MeshFilter>())
+                    {
+                        Vector3 localMeshOffset = lastRotation * body.transform.InverseTransformPoint(mfilter.transform.position);
+                        Quaternion localMeshRotation = Quaternion.Inverse(body.transform.rotation) * mfilter.transform.rotation;
+                        drawing.DrawMesh(mfilter.mesh, lastWorldPosition + localMeshOffset, lastRotation * localMeshRotation, Vector3.one, blendedColor);
+                    }
+                }*/
+                //joint.transform.localRotation = localRotation;
+                //body.enabled = false;
+            }
+
+            return result;
         }
 
-        return result;
-    }
-
-    public UrdfJoint GetJointByName(string joint)
-    {
-        JointData result;
-        if (!jointsByName.TryGetValue(joint, out result))
+        public UrdfJoint GetJointByName(string joint)
         {
-            return null;
+            JointData result;
+            if (!jointsByName.TryGetValue(joint, out result))
+            {
+                return null;
+            }
+
+            return result.joint;
         }
 
-        return result.joint;
-    }
-
-    public UrdfJoint GetJointByName(string joint, out Quaternion startRotation)
-    {
-        JointData result;
-        if(!jointsByName.TryGetValue(joint, out result))
+        public UrdfJoint GetJointByName(string joint, out Quaternion startRotation)
         {
-            startRotation = Quaternion.identity;
-            return null;
+            JointData result;
+            if (!jointsByName.TryGetValue(joint, out result))
+            {
+                startRotation = Quaternion.identity;
+                return null;
+            }
+
+            startRotation = result.startRotation;
+            return result.joint;
         }
 
-        startRotation = result.startRotation;
-        return result.joint;
+        public void DrawJointPaths(DebugDraw.Drawing drawing, MJointTrajectory message, Color color, float pathThickness)
+        {
+            JointPlacement[][] jointPlacements = GetJointPlacements(message);
+            for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
+            {
+                drawing.DrawLines(color, pathThickness, jointPlacements.Select(p => p[Idx].position).ToArray());
+            }
+        }
+
+        public void DrawJointPath(DebugDraw.Drawing drawing, MJointTrajectory message, int jointIdx, Color color, float pathThickness)
+        {
+            JointPlacement[][] jointPlacements = GetJointPlacements(message);
+            drawing.DrawLines(color, pathThickness, jointPlacements.Select(p => p[jointIdx].position).ToArray());
+        }
     }
 }

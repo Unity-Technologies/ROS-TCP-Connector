@@ -21,11 +21,7 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
 
     public override void Draw(MJointTrajectory message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
     {
-        RobotVisualization.JointPlacement[][] jointPlacements = robotData.GetJointPlacements(message);
-        for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
-        {
-            drawing.DrawLines(color, pathThickness, jointPlacements.Select(p=>p[Idx].position).ToArray());
-        }
+        robotData.DrawPaths(message, color, pathThickness);
     }
 
     public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, DebugDraw.Drawing drawing)
