@@ -1,0 +1,10 @@
+{
+  "name": "com.unity.robotics.message-visualization",
+  "version": "0.2.0-preview",
+  "displayName": "Message Visualization",
+  "description": "Components to allow Unity to display ROS messages",
+  "unity": "2020.2",
+  "unityRelease": "0b9",
+  "dependencies": {
+ }
+}
