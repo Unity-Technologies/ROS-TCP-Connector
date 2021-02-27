@@ -94,32 +94,53 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, MPose message, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Draw<C>(drawing, message.position, color, label, size);
-            UnityEngine.Vector3 point = message.position.From<C>();
-            UnityEngine.Vector3 facing = message.orientation.From<C>() * UnityEngine.Vector3.forward;
-            drawing.DrawLine(point, point + facing, color, size * 0.5f);
-        }
-
         public static void GUI(MPose message)
         {
             GUI("Position", message.position);
             GUI("Orientation", message.orientation);
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, GameObject drawAtPosition = null, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void GUI(MPoseArray message)
         {
-            Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
-            Draw<C>(drawing, message, position, size);
+            for(int Idx = 0; Idx < message.poses.Length; ++Idx)
+            {
+                MPose pose = message.poses[Idx];
+                GUI($"[{Idx}] Position", pose.position);
+                GUI("Orientation", pose.orientation);
+            }
         }
 
-        public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, UnityEngine.Vector3 position, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(DebugDraw.Drawing drawing, MPose message, float size = 0.1f) where C : ICoordinateSpace, new()
         {
-            UnityEngine.Quaternion quaternion = message.From<C>();
-            UnityEngine.Vector3 right = quaternion * UnityEngine.Vector3.right * size;
-            UnityEngine.Vector3 up = quaternion * UnityEngine.Vector3.up * size;
-            UnityEngine.Vector3 forward = quaternion * UnityEngine.Vector3.forward * size;
+            DrawAxisVectors(drawing, message.position.From<C>(), message.orientation.From<C>(), size);
+        }
+
+        public static void Draw<C>(DebugDraw.Drawing drawing, MPoseArray message, float size = 0.1f) where C : ICoordinateSpace, new()
+        {
+            foreach(MPose pose in message.poses)
+            {
+                Draw<C>(drawing, pose, size);
+            }
+        }
+
+        public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, GameObject drawAtPosition = null, float size = 0.1f)
+            where C : ICoordinateSpace, new()
+        {
+            Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
+            DrawAxisVectors(drawing, position, message.From<C>(), size);
+        }
+
+        public static void Draw<C>(DebugDraw.Drawing drawing, MQuaternion message, Vector3 position, float size = 0.1f)
+            where C : ICoordinateSpace, new()
+        {
+            DrawAxisVectors(drawing, position, message.From<C>(), size);
+        }
+
+        public static void DrawAxisVectors(DebugDraw.Drawing drawing, Vector3 position, Quaternion rotation, float size = 0.1f)
+        {
+            UnityEngine.Vector3 right = rotation * Vector3.right * size;
+            UnityEngine.Vector3 up = rotation * Vector3.up * size;
+            UnityEngine.Vector3 forward = rotation * Vector3.forward * size;
             drawing.DrawLine(position, position + right, Color.red, size * 0.1f);
             drawing.DrawLine(position, position + up, Color.green, size * 0.1f);
             drawing.DrawLine(position, position + forward, Color.blue, size * 0.1f);
