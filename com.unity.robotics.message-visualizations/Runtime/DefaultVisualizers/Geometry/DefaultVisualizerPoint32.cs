@@ -9,16 +9,17 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class DefaultVisualizerPoint32 : BasicVisualizer<MPoint32>
     {
-        public float size = 0.01f;
+        [SerializeField]
+        float m_Radius = 0.01f;
 
         public override void Draw(MPoint32 message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message, color, label, size);
+            MessageVisualizations.Draw<FLU>(drawing, message, color, label, m_Radius);
         }
 
         public override System.Action CreateGUI(MPoint32 message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(label, message);
+            MessageVisualizations.GUI(message);
         };
     }
 }

@@ -9,19 +9,21 @@ using UnityEngine;
 
 public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory>
 {
-    public UrdfRobot urdfRobot;
-    public float pathThickness;
-    RobotVisualization robotData;
+    [SerializeField]
+    UrdfRobot m_UrdfRobot;
+    [SerializeField]
+    float m_PathThickness;
+    RobotVisualization m_RobotData;
 
     public override void Start()
     {
         base.Start();
-        robotData = new RobotVisualization(urdfRobot);
+        m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
     public override void Draw(MJointTrajectory message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
     {
-        robotData.DrawJointPaths(drawing, message, color, pathThickness);
+        m_RobotData.DrawJointPaths(drawing, message, color, m_PathThickness);
     }
 
     public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, DebugDraw.Drawing drawing)

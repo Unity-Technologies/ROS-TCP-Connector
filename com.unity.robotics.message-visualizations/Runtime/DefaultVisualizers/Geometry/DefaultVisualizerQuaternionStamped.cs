@@ -10,13 +10,15 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class DefaultVisualizerQuaternionStamped : BasicVisualizer<MQuaternionStamped>
     {
-        public float size = 0.01f;
-        public GameObject drawAtPosition;
+        [SerializeField]
+        float m_Size = 0.01f;
+        [SerializeField]
+        GameObject m_DrawAtPosition;
 
         public override void Draw(MQuaternionStamped message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message.quaternion, drawAtPosition, size);
-            drawing.DrawLabel(label, transform.position, color, size);
+            MessageVisualizations.Draw<FLU>(drawing, message.quaternion, m_DrawAtPosition, m_Size);
+            drawing.DrawLabel(label, transform.position, color, m_Size);
         }
 
         public override Action CreateGUI(MQuaternionStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>

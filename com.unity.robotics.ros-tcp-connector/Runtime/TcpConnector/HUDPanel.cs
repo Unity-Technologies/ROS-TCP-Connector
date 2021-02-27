@@ -1,10 +1,10 @@
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.MessageVisualizers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using Unity.Robotics.MessageVisualizers;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -112,7 +112,7 @@ namespace Unity.Robotics.ROSTCPConnector
             lastCompletedServiceResponse = new MessageViewState()
             {
                 serviceID = serviceID,
-                meta = new MessageMetadata(lastCompletedServiceRequest.meta.topic, DateTime.Now),
+                meta = new MessageMetadata(lastCompletedServiceRequest.meta.Topic, DateTime.Now),
                 message = response,
                 label = "Last Completed Response: ",
                 foldedOut = responseFoldedOut,
@@ -304,11 +304,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
             GUILayout.BeginVertical(boxStyle);
             //GUILayout.Label(heading, labelStyle);
-            string label = (showElapsedTime) ? $"{msgView.label} ({(DateTime.Now - msgView.meta.timestamp).TotalSeconds})" : msgView.label;
+            string label = (showElapsedTime) ? $"{msgView.label} ({(DateTime.Now - msgView.meta.Timestamp).TotalSeconds})" : msgView.label;
             GUILayout.Label(label, headingStyle);
 
             GUILayout.BeginHorizontal();
-            bool newFoldedOut = GUILayout.Toggle(msgView.foldedOut, $"{msgView.meta.topic} {msgView.meta.timestamp.TimeOfDay}");
+            bool newFoldedOut = GUILayout.Toggle(msgView.foldedOut, $"{msgView.meta.Topic} {msgView.meta.Timestamp.TimeOfDay}");
             msgView.foldedOut = newFoldedOut;
             GUILayout.EndHorizontal();
 

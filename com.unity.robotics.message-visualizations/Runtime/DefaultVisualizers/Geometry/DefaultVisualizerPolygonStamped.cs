@@ -10,11 +10,12 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class DefaultVisualizerPolygonStamped : BasicVisualizer<MPolygonStamped>
     {
-        public float thickness = 0.01f;
+        [SerializeField]
+        float m_Thickness = 0.01f;
 
         public override void Draw(MPolygonStamped message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message.polygon, color, thickness);
+            MessageVisualizations.Draw<FLU>(drawing, message.polygon, color, m_Thickness);
         }
 
         public override Action CreateGUI(MPolygonStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>

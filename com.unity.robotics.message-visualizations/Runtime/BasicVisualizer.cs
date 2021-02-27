@@ -10,37 +10,27 @@ namespace Unity.Robotics.MessageVisualizers
     public abstract class BasicVisualizer<TargetMessageType> : MonoBehaviour, IVisualizer, IPriority
         where TargetMessageType : Message
     {
-        public string topic;
-        public string label;
-        public Color color;
+        [SerializeField]
+        string m_Topic;
+        [SerializeField]
+        string m_Label;
+        [SerializeField]
+        Color m_Color;
 
-        [HideInInspector][SerializeField]
-        string topicCopy;
-
-        public int priority { get; set; }
+        public int Priority { get; set; }
 
         public virtual void Start()
         {
-            if (topic == "")
-                VisualizationRegister.RegisterVisualizer<TargetMessageType>(this, priority);
+            if (m_Topic == "")
+                VisualizationRegister.RegisterVisualizer<TargetMessageType>(this, Priority);
             else
-                VisualizationRegister.RegisterVisualizer(topic, this, priority);
+                VisualizationRegister.RegisterVisualizer(m_Topic, this, Priority);
         }
 
         public void OnValidate()
         {
-            if (topic != topicCopy)
-            {
-                if (color == Color.clear || color == Color.black || color == MessageVisualizations.PickColorForTopic(topicCopy))
-                    color = MessageVisualizations.PickColorForTopic(topic);
-                if (label == topicCopy || label == "")
-                    label = topic;
-            }
-
-            if (color.a == 0)
-                color.a = 1;
-
-            topicCopy = topic;
+            if (m_Color.a == 0)
+                m_Color.a = 1;
         }
 
         public virtual object CreateDrawing(Message message, MessageMetadata meta)
@@ -57,18 +47,18 @@ namespace Unity.Robotics.MessageVisualizers
 
         public Color SelectColor(MessageMetadata meta)
         {
-            if (color != Color.clear && color != Color.black)
-                return color;
+            if (m_Color != Color.clear && m_Color != Color.black)
+                return m_Color;
             else
-                return MessageVisualizations.PickColorForTopic(meta.topic);
+                return MessageVisualizations.PickColorForTopic(meta.Topic);
         }
 
         public string SelectLabel(MessageMetadata meta)
         {
-            if (label != "" && label != null)
-                return label;
+            if (m_Label != "" && m_Label != null)
+                return m_Label;
             else
-                return meta.topic;
+                return meta.Topic;
         }
 
         public virtual void Draw(TargetMessageType message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
@@ -94,7 +84,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (!(message is TargetMessageType))
             {
-                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
+                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
                 return false;
             }
             return true;

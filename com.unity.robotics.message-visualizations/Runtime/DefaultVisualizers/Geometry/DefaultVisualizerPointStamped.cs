@@ -10,17 +10,18 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class DefaultVisualizerPointStamped : BasicVisualizer<MPointStamped>
     {
-        public float radius = 0.01f;
+        [SerializeField]
+        float m_Radius = 0.01f;
 
         public override void Draw(MPointStamped message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message.point, color, label, radius);
+            MessageVisualizations.Draw<FLU>(drawing, message.point, color, label, m_Radius);
         }
 
         public override Action CreateGUI(MPointStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
             MessageVisualizations.GUI(message.header);
-            MessageVisualizations.GUI(meta.topic, message.point);
+            MessageVisualizations.GUI(message.point);
         };
     }
 }
