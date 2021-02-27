@@ -20,7 +20,7 @@ namespace Unity.Robotics.MessageVisualizers
         public override System.Action CreateGUI(MVector3Stamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
             MessageVisualizations.GUI(message.header);
-            MessageVisualizations.GUI(SelectLabel(meta), message.vector);
+            MessageVisualizations.GUI(message.vector);
         };
     }
 }
