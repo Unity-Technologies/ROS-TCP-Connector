@@ -15,7 +15,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         GameObject m_DrawAtPosition;
 
-        public override void Draw(MQuaternionStamped message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public override void Draw(DebugDraw.Drawing drawing, MQuaternionStamped message, MessageMetadata meta, Color color, string label)
         {
             MessageVisualizations.Draw<FLU>(drawing, message.quaternion, m_DrawAtPosition, m_Size);
             drawing.DrawLabel(label, transform.position, color, m_Size);

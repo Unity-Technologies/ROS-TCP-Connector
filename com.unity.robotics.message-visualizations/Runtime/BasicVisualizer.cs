@@ -41,7 +41,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
 
             DebugDraw.Drawing drawing = DebugDraw.CreateDrawing();
-            Draw((TargetMessageType)message, meta, SelectColor(meta), SelectLabel(meta), drawing);
+            Draw(drawing, (TargetMessageType)message, meta, SelectColor(meta), SelectLabel(meta));
             return drawing;
         }
 
@@ -61,7 +61,7 @@ namespace Unity.Robotics.MessageVisualizers
                 return meta.Topic;
         }
 
-        public virtual void Draw(TargetMessageType message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public virtual void Draw(DebugDraw.Drawing drawing, TargetMessageType message, MessageMetadata meta, Color color, string label)
         {
         }
 

@@ -12,7 +12,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         float m_Size = 0.1f;
 
-        public override void Draw(MTransform message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public override void Draw(DebugDraw.Drawing drawing, MTransform message, MessageMetadata meta, Color color, string label)
         {
             MessageVisualizations.Draw<FLU>(drawing, message, m_Size);
             drawing.DrawLabel(label, message.translation.From<FLU>(), color, m_Size);

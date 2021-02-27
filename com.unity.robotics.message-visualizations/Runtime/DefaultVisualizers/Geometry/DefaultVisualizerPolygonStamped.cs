@@ -13,7 +13,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         float m_Thickness = 0.01f;
 
-        public override void Draw(MPolygonStamped message, MessageMetadata meta, Color color, string label, DebugDraw.Drawing drawing)
+        public override void Draw(DebugDraw.Drawing drawing, MPolygonStamped message, MessageMetadata meta, Color color, string label)
         {
             MessageVisualizations.Draw<FLU>(drawing, message.polygon, color, m_Thickness);
         }
