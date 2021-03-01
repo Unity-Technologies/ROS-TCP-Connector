@@ -102,11 +102,27 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(MPoseArray message)
         {
+            GUI(message.header);
             for(int Idx = 0; Idx < message.poses.Length; ++Idx)
             {
                 MPose pose = message.poses[Idx];
                 GUI($"[{Idx}] Position", pose.position);
                 GUI("Orientation", pose.orientation);
+            }
+        }
+
+        public static void GUIGrid<T>(T[] data, int width)
+        {
+            int dataIndex = 0;
+            while (dataIndex < data.Length)
+            {
+                GUILayout.BeginHorizontal();
+                for (int Idx = 0; Idx < width && dataIndex < data.Length; ++Idx)
+                {
+                    GUILayout.Label(data[dataIndex].ToString());
+                    dataIndex++;
+                }
+                GUILayout.EndHorizontal();
             }
         }
 
