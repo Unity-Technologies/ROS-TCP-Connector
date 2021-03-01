@@ -6,90 +6,94 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class DebugDraw : MonoBehaviour
     {
-        static DebugDraw _instance;
-        static GUIStyle labelStyle;
+        static DebugDraw s_Instance;
+        static GUIStyle s_LabelStyle;
         public static DebugDraw instance
         {
             get
             {
-                if (_instance == null)
+                if (s_Instance == null)
                 {
                     GameObject newDebugDrawObj = new GameObject("DebugDraw");
-                    _instance = newDebugDrawObj.AddComponent<DebugDraw>();
-                    _instance.material = new Material(Shader.Find("Unlit/VertexColor"));
-                    _instance.unlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
-                    _instance.unlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
+                    s_Instance = newDebugDrawObj.AddComponent<DebugDraw>();
+                    s_Instance.Material = new Material(Shader.Find("Unlit/VertexColor"));
+                    s_Instance.UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
+                    s_Instance.UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
                 }
-                return _instance;
+                return s_Instance;
             }
         }
 
-        Camera cam;
-        List<Drawing> drawings = new List<Drawing>();
-        List<Drawing> dirty = new List<Drawing>();
-        public Material material;
-        Material unlitColorMaterial;
-        Material unlitColorAlphaMaterial;
+        Camera m_Camera;
+        List<Drawing> m_Drawings = new List<Drawing>();
+        List<Drawing> m_Dirty = new List<Drawing>();
+        public Material Material { get; private set; }
+        public Material UnlitColorMaterial { get; private set; }
+        public Material UnlitColorAlphaMaterial { get; private set; }
 
-        private void Awake()
+        void Awake()
         {
-            _instance = this;
-            labelStyle = new GUIStyle()
+            s_Instance = this;
+            s_LabelStyle = new GUIStyle()
             {
                 alignment = TextAnchor.LowerLeft,
                 wordWrap = false,
             };
-            cam = Camera.main;
+            m_Camera = Camera.main;
         }
 
         public static Drawing CreateDrawing(float duration = -1, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("Drawing");
             Drawing newDrawing = newDrawingObj.AddComponent<Drawing>();
-            newDrawing.Init(instance, material ?? instance.material, duration);
-            instance.drawings.Add(newDrawing);
+            newDrawing.Init(instance, material ?? instance.Material, duration);
+            instance.m_Drawings.Add(newDrawing);
             return newDrawing;
         }
 
-        private void LateUpdate()
+        void LateUpdate()
         {
-            foreach (Drawing drawing in dirty)
+            foreach (Drawing drawing in m_Dirty)
                 drawing.Refresh();
-            dirty.Clear();
+            m_Dirty.Clear();
         }
 
         public void OnGUI()
         {
             Color oldColor = GUI.color;
 
-            foreach (Drawing drawing in drawings)
-                drawing.OnDrawingGUI(cam);
+            foreach (Drawing drawing in m_Drawings)
+                drawing.OnDrawingGUI(m_Camera);
 
             GUI.color = oldColor;
         }
 
         public class Drawing: MonoBehaviour
         {
-            Mesh mesh;
-            List<Vector3> vertices = new List<Vector3>();
-            List<Color32> colors32 = new List<Color32>();
-            List<GameObject> supplemental = new List<GameObject>();
-            List<int> triangles = new List<int>();
-            DebugDraw parent;
-            Material material;
+            struct LabelInfo3D
+            {
+                public Vector3 position;
+                public string text;
+                public Color color;
+                public float worldSpacing;
+            }
+
+            Mesh m_Mesh;
+            List<Vector3> m_Vertices = new List<Vector3>();
+            List<Color32> m_Colors32 = new List<Color32>();
+            List<GameObject> m_Supplemental = new List<GameObject>();
+            List<int> m_Triangles = new List<int>();
+            List<LabelInfo3D> m_Labels = new List<LabelInfo3D>();
             bool isDirty = false;
-            MeshFilter mfilter;
 
             public void Init(DebugDraw parent, Material material, float duration = -1)
             {
-                mesh = new Mesh();
+                m_Mesh = new Mesh();
 
-                this.parent = parent;
                 this.transform.parent = parent.transform;
-                this.material = material;
 
-                mfilter = gameObject.AddComponent<MeshFilter>();
-                mfilter.mesh = mesh;
+                MeshFilter mfilter = gameObject.AddComponent<MeshFilter>();
+                mfilter.sharedMesh = m_Mesh;
                 MeshRenderer mrenderer = gameObject.AddComponent<MeshRenderer>();
                 mrenderer.sharedMaterial = material;
 
@@ -114,18 +118,18 @@ namespace Unity.Robotics.MessageVisualizers
                 else
                     sideVector = Vector3.Cross(forwardVector, Vector3.up).normalized * thickness;
                 Vector3 upVector = Vector3.Cross(forwardVector, sideVector).normalized * thickness;
-                int start = vertices.Count;
-                vertices.Add(from + sideVector); //0
-                vertices.Add(from - sideVector);
-                vertices.Add(from + upVector); //2
-                vertices.Add(from - upVector);
-                vertices.Add(to + sideVector);//4
-                vertices.Add(to - sideVector);
-                vertices.Add(to + upVector);// 6
-                vertices.Add(to - upVector);
+                int start = m_Vertices.Count;
+                m_Vertices.Add(from + sideVector); //0
+                m_Vertices.Add(from - sideVector);
+                m_Vertices.Add(from + upVector); //2
+                m_Vertices.Add(from - upVector);
+                m_Vertices.Add(to + sideVector);//4
+                m_Vertices.Add(to - sideVector);
+                m_Vertices.Add(to + upVector);// 6
+                m_Vertices.Add(to - upVector);
 
                 for (int Idx = 0; Idx < 8; ++Idx)
-                    colors32.Add(color);
+                    m_Colors32.Add(color);
 
                 AddTriangles(start, 0, 2, 4, 4, 2, 6, 1, 5, 2, 2, 5, 6);
                 AddTriangles(start, 0, 4, 3, 3, 4, 7, 1, 3, 5, 5, 3, 7);
@@ -136,16 +140,16 @@ namespace Unity.Robotics.MessageVisualizers
             public void DrawPoint(Vector3 point, Color32 color, float radius = 0.1f)
             {
                 // draw a point as an octahedron
-                int start = vertices.Count;
-                vertices.Add(point + new Vector3(radius, 0, 0));
-                vertices.Add(point + new Vector3(-radius, 0, 0));
-                vertices.Add(point + new Vector3(0, radius, 0));
-                vertices.Add(point + new Vector3(0, -radius, 0));
-                vertices.Add(point + new Vector3(0, 0, radius));
-                vertices.Add(point + new Vector3(0, 0, -radius));
+                int start = m_Vertices.Count;
+                m_Vertices.Add(point + new Vector3(radius, 0, 0));
+                m_Vertices.Add(point + new Vector3(-radius, 0, 0));
+                m_Vertices.Add(point + new Vector3(0, radius, 0));
+                m_Vertices.Add(point + new Vector3(0, -radius, 0));
+                m_Vertices.Add(point + new Vector3(0, 0, radius));
+                m_Vertices.Add(point + new Vector3(0, 0, -radius));
 
                 for (int Idx = 0; Idx < 6; ++Idx)
-                    colors32.Add(color);
+                    m_Colors32.Add(color);
 
                 AddTriangles(start, 0, 2, 4, 0, 5, 2, 0, 4, 3, 0, 3, 5);
                 AddTriangles(start, 1, 4, 2, 1, 2, 5, 1, 3, 4, 1, 5, 3);
@@ -160,31 +164,31 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void DrawTriangle(Color32 color, Vector3 a, Vector3 b, Vector3 c)
             {
-                int start = vertices.Count;
-                vertices.Add(a);
-                vertices.Add(b);
-                vertices.Add(c);
+                int start = m_Vertices.Count;
+                m_Vertices.Add(a);
+                m_Vertices.Add(b);
+                m_Vertices.Add(c);
                 for (int Idx = 0; Idx < 3; ++Idx)
-                    colors32.Add(color);
+                    m_Colors32.Add(color);
                 AddTriangles(start, 0, 1, 2);
                 SetDirty();
             }
 
             public void DrawTriangleFan(Color32 color, Vector3 center, Vector3 first, params Vector3[] fanPoints)
             {
-                int centerIdx = vertices.Count;
-                vertices.Add(center);
-                colors32.Add(color);
-                int currentIdx = vertices.Count;
-                vertices.Add(first);
-                colors32.Add(color);
+                int centerIdx = m_Vertices.Count;
+                m_Vertices.Add(center);
+                m_Colors32.Add(color);
+                int currentIdx = m_Vertices.Count;
+                m_Vertices.Add(first);
+                m_Colors32.Add(color);
                 foreach (Vector3 point in fanPoints)
                 {
-                    vertices.Add(point);
-                    colors32.Add(color);
-                    triangles.Add(centerIdx);
-                    triangles.Add(currentIdx);
-                    triangles.Add(currentIdx + 1);
+                    m_Vertices.Add(point);
+                    m_Colors32.Add(color);
+                    m_Triangles.Add(centerIdx);
+                    m_Triangles.Add(currentIdx);
+                    m_Triangles.Add(currentIdx + 1);
                     currentIdx++;
                 }
                 SetDirty();
@@ -192,15 +196,15 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void DrawTriangleStrip(Color32 color, Vector3 first, Vector3 second, params Vector3[] otherPoints)
             {
-                int currentIdx = vertices.Count;
-                vertices.Add(first);
-                colors32.Add(color);
-                vertices.Add(second);
-                colors32.Add(color);
+                int currentIdx = m_Vertices.Count;
+                m_Vertices.Add(first);
+                m_Colors32.Add(color);
+                m_Vertices.Add(second);
+                m_Colors32.Add(color);
                 foreach (Vector3 point in otherPoints)
                 {
-                    vertices.Add(point);
-                    colors32.Add(color);
+                    m_Vertices.Add(point);
+                    m_Colors32.Add(color);
                     AddTriangles(currentIdx, 0, 1, 2);
                     currentIdx++;
                 }
@@ -227,23 +231,13 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 foreach (int offset in offsets)
                 {
-                    triangles.Add(firstIdx + offset);
+                    m_Triangles.Add(firstIdx + offset);
                 }
             }
 
-            struct LabelInfo3D
-            {
-                public Vector3 position;
-                public string text;
-                public Color color;
-                public float worldSpacing;
-            }
-
-            List<LabelInfo3D> labels = new List<LabelInfo3D>();
-
             public void DrawLabel(string text, Vector3 position, Color color, float worldSpacing = 0)
             {
-                labels.Add(new LabelInfo3D { text = text, position = position, color = color, worldSpacing = worldSpacing });
+                m_Labels.Add(new LabelInfo3D { text = text, position = position, color = color, worldSpacing = worldSpacing });
             }
 
             public void DrawMesh(Mesh source, Transform transform, Color32 color)
@@ -254,7 +248,7 @@ namespace Unity.Robotics.MessageVisualizers
             public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Color32 color)
             {
                 GameObject meshObject = new GameObject(source.name);
-                supplemental.Add(meshObject);
+                m_Supplemental.Add(meshObject);
                 meshObject.transform.parent = transform;
                 meshObject.transform.position = position;
                 meshObject.transform.rotation = rotation;
@@ -262,37 +256,37 @@ namespace Unity.Robotics.MessageVisualizers
                 MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
                 mfilter.sharedMesh = source;
                 MeshRenderer mrenderer = meshObject.AddComponent<MeshRenderer>();
-                mrenderer.material = (color.a < 255) ? DebugDraw.instance.unlitColorAlphaMaterial : DebugDraw.instance.unlitColorMaterial;
+                mrenderer.material = (color.a < 255) ? DebugDraw.instance.UnlitColorAlphaMaterial : DebugDraw.instance.UnlitColorMaterial;
                 mrenderer.material.color = color;
             }
 
             public void Clear()
             {
-                vertices.Clear();
-                colors32.Clear();
-                triangles.Clear();
-                labels.Clear();
-                foreach (GameObject obj in supplemental)
+                m_Vertices.Clear();
+                m_Colors32.Clear();
+                m_Triangles.Clear();
+                m_Labels.Clear();
+                foreach (GameObject obj in m_Supplemental)
                     GameObject.Destroy(obj);
-                supplemental.Clear();
+                m_Supplemental.Clear();
                 SetDirty();
             }
 
             public void Destroy()
             {
-                DebugDraw.instance.drawings.Remove(this);
+                DebugDraw.instance.m_Drawings.Remove(this);
                 GameObject.Destroy(gameObject);
             }
 
             internal void OnDrawingGUI(Camera cam)
             {
-                foreach (LabelInfo3D label in labels)
+                foreach (LabelInfo3D label in m_Labels)
                 {
                     Vector3 screenPos = cam.WorldToScreenPoint(label.position + cam.transform.right * label.worldSpacing);
                     Vector3 guiPos = GUIUtility.ScreenToGUIPoint(screenPos);
                     GUI.color = label.color;
                     GUIContent labelContent = new GUIContent(label.text);
-                    Vector2 labelSize = DebugDraw.labelStyle.CalcSize(labelContent);
+                    Vector2 labelSize = DebugDraw.s_LabelStyle.CalcSize(labelContent);
                     labelSize.y *= 2;// no idea why we get bad answers for height
 
                     guiPos.y += labelSize.y * 0.35f;
@@ -302,10 +296,10 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void Refresh()
             {
-                mesh.Clear();
-                mesh.vertices = vertices.ToArray();
-                mesh.colors32 = colors32.ToArray();
-                mesh.triangles = triangles.ToArray();
+                m_Mesh.Clear();
+                m_Mesh.vertices = m_Vertices.ToArray();
+                m_Mesh.colors32 = m_Colors32.ToArray();
+                m_Mesh.triangles = m_Triangles.ToArray();
                 isDirty = false;
             }
 
@@ -314,7 +308,7 @@ namespace Unity.Robotics.MessageVisualizers
                 if (!isDirty)
                 {
                     isDirty = true;
-                    parent.dirty.Add(this);
+                    instance.m_Dirty.Add(this);
                 }
             }
         }

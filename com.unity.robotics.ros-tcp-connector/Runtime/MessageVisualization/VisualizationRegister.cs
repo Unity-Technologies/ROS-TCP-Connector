@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -15,20 +14,20 @@ namespace Unity.Robotics.MessageVisualizers
 
     public struct MessageMetadata
     {
-        public readonly string topic;
-        public readonly DateTime timestamp;
+        public readonly string Topic;
+        public readonly DateTime Timestamp;
 
         public MessageMetadata(string topic, DateTime timestamp)
         {
-            this.topic = topic;
-            this.timestamp = timestamp;
+            Topic = topic;
+            Timestamp = timestamp;
         }
     }
 
     public static class VisualizationRegister
     {
-        private static Dictionary<string, Tuple<IVisualizer, int>> TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
-        private static Dictionary<Type, Tuple<IVisualizer, int>> TypeVisualizers = new Dictionary<Type, Tuple<IVisualizer, int>>();
+        private static Dictionary<string, Tuple<IVisualizer, int>> s_TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
+        private static Dictionary<Type, Tuple<IVisualizer, int>> s_TypeVisualizers = new Dictionary<Type, Tuple<IVisualizer, int>>();
 
         public static void RegisterVisualizer<MsgType>(IVisualizer config, int priority = 0)
         {
@@ -38,33 +37,33 @@ namespace Unity.Robotics.MessageVisualizers
         public static void RegisterVisualizer(Type MsgType, IVisualizer config, int priority = 0)
         {
             Tuple<IVisualizer, int> currentEntry;
-            if (!TypeVisualizers.TryGetValue(MsgType, out currentEntry) || currentEntry.Item2 <= priority)
+            if (!s_TypeVisualizers.TryGetValue(MsgType, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                TypeVisualizers[MsgType] = new Tuple<IVisualizer, int>(config, priority);
+                s_TypeVisualizers[MsgType] = new Tuple<IVisualizer, int>(config, priority);
             }
         }
 
         public static void RegisterVisualizer(string topic, IVisualizer config, int priority = 0)
         {
             Tuple<IVisualizer, int> currentEntry;
-            if (!TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
+            if (!s_TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                TopicVisualizers[topic] = new Tuple<IVisualizer, int>(config, priority);
+                s_TopicVisualizers[topic] = new Tuple<IVisualizer, int>(config, priority);
             }
         }
 
         public static IVisualizer GetVisualizer(Message message, MessageMetadata meta)
         {
             Tuple<IVisualizer, int> result;
-            TopicVisualizers.TryGetValue(meta.topic, out result);
+            s_TopicVisualizers.TryGetValue(meta.Topic, out result);
             if (result != null)
                 return result.Item1;
 
-            TypeVisualizers.TryGetValue(message.GetType(), out result);
+            s_TypeVisualizers.TryGetValue(message.GetType(), out result);
             if (result != null)
                 return result.Item1;
 
-            return defaultVisualizer;
+            return s_DefaultVisualizer;
         }
 
         class DefaultVisualizer : IVisualizer
@@ -83,6 +82,6 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        static DefaultVisualizer defaultVisualizer = new DefaultVisualizer();
+        static DefaultVisualizer s_DefaultVisualizer = new DefaultVisualizer();
     }
 }
