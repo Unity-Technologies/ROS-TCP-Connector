@@ -122,7 +122,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MPoseArray message)
         {
             GUI(message.header);
-            for(int Idx = 0; Idx < message.poses.Length; ++Idx)
+            for (int Idx = 0; Idx < message.poses.Length; ++Idx)
             {
                 MPose pose = message.poses[Idx];
                 pose.position.GUI($"[{Idx}] Position");
@@ -152,7 +152,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MPoseArray message, DebugDraw.Drawing drawing, float size = 0.1f) where C : ICoordinateSpace, new()
         {
-            foreach(MPose pose in message.poses)
+            foreach (MPose pose in message.poses)
             {
                 pose.Draw<C>(drawing, size);
             }
@@ -208,7 +208,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MPolygon message)
         {
             GUILayout.Label($"({message.points.Length} points):");
-            foreach(MPoint32 p in message.points)
+            foreach (MPoint32 p in message.points)
                 GUI(p);
         }
     }
