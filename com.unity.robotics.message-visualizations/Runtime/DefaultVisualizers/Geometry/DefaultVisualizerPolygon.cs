@@ -15,12 +15,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(DebugDraw.Drawing drawing, MPolygon message, MessageMetadata meta, Color color, string label)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message, color, m_Thickness);
+            message.Draw<FLU>(drawing, color, m_Thickness);
         }
 
         public override System.Action CreateGUI(MPolygon message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(message);
+            message.GUI();
         };
     }
 }

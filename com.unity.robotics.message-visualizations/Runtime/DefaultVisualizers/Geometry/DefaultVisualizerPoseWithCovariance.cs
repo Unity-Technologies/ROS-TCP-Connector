@@ -13,12 +13,12 @@ public class DefaultVisualizerPoseWithCovariance : BasicVisualizer<MPoseWithCova
 
     public override void Draw(DebugDraw.Drawing drawing, MPoseWithCovariance message, MessageMetadata meta, Color color, string label)
     {
-        MessageVisualizations.Draw<FLU>(drawing, message.pose, m_Size);
+        message.pose.Draw<FLU>(drawing, m_Size);
     }
 
     public override Action CreateGUI(MPoseWithCovariance message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
-        MessageVisualizations.GUI(message.pose);
+        message.pose.GUI();
         MessageVisualizations.GUIGrid(message.covariance, 6);
     };
 }

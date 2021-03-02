@@ -13,11 +13,11 @@ public class DefaultVisualizerPoseArray : BasicVisualizer<MPoseArray>
 
     public override void Draw(DebugDraw.Drawing drawing, MPoseArray message, MessageMetadata meta, Color color, string label)
     {
-        MessageVisualizations.Draw<FLU>(drawing, message, m_Size);
+        message.Draw<FLU>(drawing, m_Size);
     }
 
     public override Action CreateGUI(MPoseArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
-        MessageVisualizations.GUI(message);
+        message.GUI();
     };
 }

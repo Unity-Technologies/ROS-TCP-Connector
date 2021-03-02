@@ -16,13 +16,13 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(DebugDraw.Drawing drawing, MQuaternion message, MessageMetadata meta, Color color, string label)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message, m_DrawAtPosition, m_Size);
+            message.Draw<FLU>(drawing, m_DrawAtPosition, m_Size);
             drawing.DrawLabel(label, transform.position, color, m_Size);
         }
 
         public override System.Action CreateGUI(MQuaternion message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(message);
+            message.GUI();
         };
     }
 }

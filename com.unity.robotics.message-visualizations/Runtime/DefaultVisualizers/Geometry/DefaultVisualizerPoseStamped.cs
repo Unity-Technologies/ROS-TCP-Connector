@@ -13,12 +13,12 @@ public class DefaultVisualizerPoseStamped : BasicVisualizer<MPoseStamped>
 
     public override void Draw(DebugDraw.Drawing drawing, MPoseStamped message, MessageMetadata meta, Color color, string label)
     {
-        MessageVisualizations.Draw<FLU>(drawing, message.pose, m_Size);
+        message.pose.Draw<FLU>(drawing, m_Size);
     }
 
     public override Action CreateGUI(MPoseStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
     {
-        MessageVisualizations.GUI(message.header);
-        MessageVisualizations.GUI(message.pose);
+        message.header.GUI();
+        message.pose.GUI();
     };
 }

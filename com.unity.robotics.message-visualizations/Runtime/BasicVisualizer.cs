@@ -33,7 +33,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Color.a = 1;
         }
 
-        public virtual object CreateDrawing(Message message, MessageMetadata meta)
+        public object CreateDrawing(Message message, MessageMetadata meta)
         {
             if (!AssertMessageType(message, meta))
             {
@@ -70,7 +70,7 @@ namespace Unity.Robotics.MessageVisualizers
             ((DebugDraw.Drawing)drawing).Destroy();
         }
 
-        public virtual System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
+        public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
             if (!AssertMessageType(message, meta))
             {

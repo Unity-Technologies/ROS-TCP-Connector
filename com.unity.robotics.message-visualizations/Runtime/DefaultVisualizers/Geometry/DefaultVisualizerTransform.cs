@@ -14,13 +14,13 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(DebugDraw.Drawing drawing, MTransform message, MessageMetadata meta, Color color, string label)
         {
-            MessageVisualizations.Draw<FLU>(drawing, message, m_Size);
+            message.Draw<FLU>(drawing, m_Size);
             drawing.DrawLabel(label, message.translation.From<FLU>(), color, m_Size);
         }
 
         public override System.Action CreateGUI(MTransform message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
         {
-            MessageVisualizations.GUI(message);
+            message.GUI();
         };
     }
 }
