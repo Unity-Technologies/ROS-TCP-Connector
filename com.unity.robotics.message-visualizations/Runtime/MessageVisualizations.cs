@@ -245,6 +245,12 @@ namespace Unity.Robotics.MessageVisualizers
 
             float degreesPerStep = 10.0f; // approximately
             int numSteps = Mathf.Max((int)(rotationDegrees / degreesPerStep), 2);
+            float pushOutPerStep = 0;
+            if (rotationDegrees > 360)
+            {
+                float pushOutFinal = arrowThickness * 6 * rotationDegrees / 360;
+                pushOutPerStep = pushOutFinal / numSteps;
+            }
 
             Quaternion deltaRotation = Quaternion.AngleAxis(rotationDegrees / (float)numSteps, rotationAxis);
             List<Vector3> points = new List<Vector3>();
@@ -254,6 +260,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 points.Add( sphereCenter + currentRotation * Vector3.forward * sphereRadius );
                 currentRotation = deltaRotation * currentRotation;
+                sphereRadius += pushOutPerStep;
             }
 
             drawing.DrawLineStrip(color, arrowThickness, points.ToArray());
