@@ -42,7 +42,6 @@ namespace Unity.Robotics.MessageVisualizers
             return $"{message.secs}/{message.nsecs}";
         }
 
-
         public static void Draw<C>(this MPoint message, DebugDraw.Drawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
@@ -210,6 +209,55 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"({message.points.Length} points):");
             foreach (MPoint32 p in message.points)
                 GUI(p);
+        }
+
+        public static void Draw<C>(this MAccel message, DebugDraw.Drawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            Vector3 originPos = (origin == null) ? Vector3.zero: origin.transform.position;
+            drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
+        }
+
+        public static void GUI(this MAccel message)
+        {
+            message.linear.GUI("Linear");
+            message.angular.GUI("Angular");
+        }
+
+        public static void DrawAngularVelocityArrow(DebugDraw.Drawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
+        }
+
+        public static void DrawRotationArrow(DebugDraw.Drawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            Vector3 axis;
+            float angleDegrees;
+            rotation.ToAngleAxis(out angleDegrees, out axis);
+            DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
+        }
+
+        public static void DrawRotationArrow(DebugDraw.Drawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
+            if (startVector.sqrMagnitude < 0.01f)
+                startVector = Vector3.forward;
+
+            float degreesPerStep = 10.0f; // approximately
+            int numSteps = Mathf.Max((int)(rotationDegrees / degreesPerStep), 2);
+
+            Quaternion deltaRotation = Quaternion.AngleAxis(rotationDegrees / (float)numSteps, rotationAxis);
+            List<Vector3> points = new List<Vector3>();
+
+            Quaternion currentRotation = Quaternion.LookRotation(startVector);
+            for (int step = 0; step < numSteps; ++step)
+            {
+                points.Add( sphereCenter + currentRotation * Vector3.forward * sphereRadius );
+                currentRotation = deltaRotation * currentRotation;
+            }
+
+            drawing.DrawLineStrip(color, arrowThickness, points.ToArray());
+            drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
         }
     }
 }

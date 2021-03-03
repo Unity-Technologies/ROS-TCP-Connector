@@ -46,7 +46,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             GameObject newDrawingObj = new GameObject("Drawing");
             Drawing newDrawing = newDrawingObj.AddComponent<Drawing>();
-            newDrawing.Init(instance, material ?? instance.Material, duration);
+            newDrawing.Init(instance, material != null? material: instance.Material, duration);
             instance.m_Drawings.Add(newDrawing);
             return newDrawing;
         }
@@ -160,6 +160,56 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 DrawPoint(point, color, radius);
                 DrawLabel(label, point, color, radius * 1.5f);
+            }
+
+            public void DrawArrow(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f, float arrowheadScale = 3)
+            {
+                float arrowheadRadius = thickness * arrowheadScale;
+                float arrowheadLength = arrowheadRadius * 4;
+                Vector3 direction = (to - from).normalized;
+                Vector3 arrowheadJoint = to - direction * arrowheadLength;
+                DrawLine(from, arrowheadJoint, color, thickness);
+                DrawCone(arrowheadJoint, to, color, arrowheadRadius);
+            }
+
+            public void DrawCone(Vector3 basePosition, Vector3 tipPosition, Color32 color, float radius, int numRingVertices = 8)
+            {
+                int start = m_Vertices.Count;
+                m_Vertices.Add(basePosition);
+                m_Colors32.Add(new Color32((byte)(color.r/2), (byte)(color.g/2), (byte)(color.b/2),255));
+                m_Vertices.Add(tipPosition);
+                m_Colors32.Add(color);
+                Vector3 heightVector = tipPosition - basePosition;
+                Vector3 forwardVector = ((Mathf.Abs(heightVector.z) < Mathf.Abs(heightVector.x)) ? new Vector3(heightVector.y, -heightVector.x, 0) : new Vector3(0, -heightVector.z, heightVector.y)).normalized * radius;
+                Vector3 sideVector = Vector3.Cross(forwardVector, heightVector).normalized * radius;
+                float angleScale = Mathf.PI * 2.0f / numRingVertices;
+
+                m_Vertices.Add(basePosition + forwardVector);
+                m_Colors32.Add(color);
+
+                for (int step = 1; step < numRingVertices; ++step)
+                {
+                    float angle = step*angleScale;
+                    m_Vertices.Add(basePosition + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
+                    m_Colors32.Add(color);
+
+                    m_Triangles.Add(start+1); // tip
+                    m_Triangles.Add(start+ step+2); // new ring vertex
+                    m_Triangles.Add(start + step+1); // previous ring vertex
+
+                    m_Triangles.Add(start); // base
+                    m_Triangles.Add(start + step + 1); // previous ring vertex
+                    m_Triangles.Add(start + step + 2); // new ring vertex
+                }
+
+                m_Triangles.Add(start + 1); // tip
+                m_Triangles.Add(start + 2); // first ring vertex
+                m_Triangles.Add(start + numRingVertices + 1); // last ring vertex
+
+                m_Triangles.Add(start); // base
+                m_Triangles.Add(start + numRingVertices + 1); // last ring vertex
+                m_Triangles.Add(start + 2); // first ring vertex
+                SetDirty();
             }
 
             public void DrawTriangle(Color32 color, Vector3 a, Vector3 b, Vector3 c)
