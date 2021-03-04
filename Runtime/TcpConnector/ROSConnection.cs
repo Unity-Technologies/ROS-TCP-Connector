@@ -492,7 +492,10 @@ public class ROSConnection : MonoBehaviour
             {
                 publisherTokenStore.Token.ThrowIfCancellationRequested();
                 if (persistantPublisherClient == null || !persistantPublisherClient.Connected ||
-                    !persistantPublisherClient.Client.Poll(0, SelectMode.SelectWrite))
+                    !persistantPublisherClient.Client.Poll(0, SelectMode.SelectWrite) ||
+                    //if poll read returns true and available return 0, then we have a connection issue
+                    (persistantPublisherClient.Client.Poll(0, SelectMode.SelectRead) && 
+                    persistantPublisherClient.Client.Available == 0))
                 {
                     // detect whether the other end disconnected
                     persistantPublisherClient = new TcpClient();
@@ -500,6 +503,7 @@ public class ROSConnection : MonoBehaviour
                     await persistantPublisherClient.ConnectAsync(rosIPAddress, rosPort);
                     persistantPublisherNetworkStream = persistantPublisherClient.GetStream();
                     persistantPublisherNetworkStream.ReadTimeout = (int)networkTimeoutSeconds * 1000;
+                    persistantPublisherNetworkStream.WriteTimeout = (int)networkTimeoutSeconds * 1000;
                     Debug.Log("Connected persistent publisher client");
                 }
             }
