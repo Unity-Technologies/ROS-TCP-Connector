@@ -12,7 +12,7 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
     [SerializeField]
     UrdfRobot m_UrdfRobot;
     [SerializeField]
-    float m_PathThickness;
+    float m_PathThickness = 0.01f;
     RobotVisualization m_RobotData;
 
     public override void Start()

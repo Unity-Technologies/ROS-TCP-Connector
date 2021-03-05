@@ -6,9 +6,11 @@ You can configure exactly how the HUD displays a message by setting up your own 
 
 # Configuring your visualization suite
 
-The simplest way to tune how visualizations appear is to set up your own Visualization Suite. This is a collection of message visualizers, placed in your scene, that control how messages are displayed in that scene. (If you need to share your visualizers between multiple scenes, consider creating a prefab.)
+To have visualizations appear in your scene, you'll want to create a Visualization Suite. This is a collection of message visualizers, placed in your scene, that control how messages are displayed in that scene. (If you need to share your visualizers between multiple scenes, consider creating a prefab.)
 
-To create a visualization suite, create a new GameObject in your scene, call it "VisualizationSuite" (or whatever you want) and add any number of visualizer components to it. Each visualizer can be set up to apply only to messages on a specific topic - just edit the "topic" field - and can have its own custom color and label.
+To get started, you can use the default visualization suite: place the prefab `MessageVisualizations/Runtime/DefaultVisualizationSuite` in your scene. This provides an assortment of visualizations for many of the common ROS message types.
+
+To customize your own visualization suite, create a new GameObject in your scene, call it "VisualizationSuite" (or whatever you want) and add any number of visualizer components to it. Each visualizer can be set up to apply only to messages on a specific topic - just edit the "topic" field - and can have its own custom color and label.
 
 For example, let's assume you want to call out Point messages on the "important_points" topic, and you'd like them to appear extra large and in red. So maybe you'd add a DefaultVisualizerPoint to your suite, and set it to draw large red points.
 
