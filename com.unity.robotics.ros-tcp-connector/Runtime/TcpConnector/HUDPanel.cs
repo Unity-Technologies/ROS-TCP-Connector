@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using System.Linq;
+using System.IO;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -17,55 +19,86 @@ namespace Unity.Robotics.ROSTCPConnector
         public static GUIStyle messageStyle;
         public static GUIStyle boldStyle;
         public static GUIStyle boxStyle;
-        Rect scrollRect;
+        public static GUIStyle topicMenuStyle;
 
         // ROS Message variables
         internal bool isEnabled;
         string rosConnectAddress = "";
         string unityListenAddress = "Not listening";
 
-        MessageViewState lastMessageSent;
-        MessageViewState lastMessageReceived;
-        List<MessageViewState> activeServices = new List<MessageViewState>();
-        MessageViewState lastCompletedServiceRequest;
-        MessageViewState lastCompletedServiceResponse;
+        List<TopicVisualizationRule> activeWindows = new List<TopicVisualizationRule>();
+        TopicVisualizationRule draggingWindow;
+        SortedList<string, TopicVisualizationRule> allTopics = new SortedList<string, TopicVisualizationRule>();
+        Dictionary<int, TopicVisualizationRule> pendingServiceRequests = new Dictionary<int, TopicVisualizationRule>();
+        GUIStyle topicEntryStyle;
         int nextServiceID = 101;
+        int nextWindowID = 101;
+        bool showingTopics;
+        Rect topicsRect = new Rect(20,70,200,200);
+
+        string LayoutFilePath => Path.Combine(Application.persistentDataPath, "layout.json");
+
+        void SaveLayout()
+        {
+            HUDLayoutSave saveState = new HUDLayoutSave { };
+            saveState.AddRules(allTopics.Values);
+            File.WriteAllText(LayoutFilePath, JsonUtility.ToJson(saveState));
+        }
+
+        void LoadLayout()
+        {
+            if(File.Exists(LayoutFilePath))
+                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(LayoutFilePath)));
+        }
+
+        void LoadLayout(HUDLayoutSave saveState)
+        {
+            activeWindows.Clear();
+            foreach(HUDLayoutSave.TopicRuleSave rule in saveState.rules)
+            {
+                TopicVisualizationRule newRule = new TopicVisualizationRule(rule, this);
+                nextWindowID++;
+                allTopics[rule.topic] = newRule;
+            }
+        }
+
+        void AddWindow(TopicVisualizationRule window)
+        {
+            activeWindows.Add(window);
+        }
+
+        void RemoveWindow(TopicVisualizationRule window)
+        {
+            activeWindows.Remove(window);
+        }
+
+        public int GetNextWindowID()
+        {
+            int result = nextWindowID;
+            nextWindowID++;
+            return result;
+        }
 
         public void SetLastMessageSent(string topic, Message message)
         {
-            bool foldedOut = false;
-            if (lastMessageSent != null)
+            TopicVisualizationRule rule;
+            if(!allTopics.TryGetValue(topic, out rule))
             {
-                foldedOut = lastMessageSent.foldedOut;
-                lastMessageSent.RemoveVisual();
+                allTopics.Add(topic, null);
             }
-            lastMessageSent = new MessageViewState()
-            {
-                label = "Last Message Sent:",
-                meta = new MessageMetadata(topic, DateTime.Now),
-                message = message,
-                foldedOut = foldedOut
-            };
-            lastMessageSent.InitVisualizer();
+            if (rule != null)
+                rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
         }
 
         public void SetLastMessageReceived(string topic, Message message)
         {
-            bool foldedOut = false;
-            if (lastMessageReceived != null)
+            TopicVisualizationRule rule;
+            if (!allTopics.TryGetValue(topic, out rule))
             {
-                foldedOut = lastMessageSent.foldedOut;
-                lastMessageReceived.RemoveVisual();
+                allTopics.Add(topic, null);
             }
-
-            lastMessageReceived = new MessageViewState()
-            {
-                label = "Last Message Received:",
-                meta = new MessageMetadata(topic, DateTime.Now),
-                message = message,
-                foldedOut = foldedOut
-            };
-            lastMessageReceived.InitVisualizer();
+            if (rule != null)
+                rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
         }
 
         public int AddServiceRequest(string topic, Message request)
@@ -73,51 +106,33 @@ namespace Unity.Robotics.ROSTCPConnector
             int serviceID = nextServiceID;
             nextServiceID++;
 
-            MessageViewState newMsgView = new MessageViewState()
-            {
-                serviceID = serviceID,
-                meta = new MessageMetadata(topic, DateTime.Now),
-                message = request,
-                label = "Active Request: ",
-            };
-            activeServices.Add(newMsgView);
-            newMsgView.InitVisualizer();
+            MessageMetadata meta = new MessageMetadata(topic, DateTime.Now);
 
+            TopicVisualizationRule rule;
+            if (!allTopics.TryGetValue(topic, out rule))
+            {
+                allTopics.Add(topic, null);
+            }
+            if (rule != null)
+            {
+                pendingServiceRequests.Add(serviceID, rule);
+                rule.SetServiceRequest(request, new MessageMetadata(topic, DateTime.Now), serviceID);
+            }
             return serviceID;
         }
 
         public void AddServiceResponse(int serviceID, Message response)
         {
-            bool requestFoldedOut = false;
-            bool responseFoldedOut = false;
-            if (lastCompletedServiceRequest != null)
+            TopicVisualizationRule rule;
+            if (!pendingServiceRequests.TryGetValue(serviceID, out rule))
+                return; // don't know what happened there, but that's not a request I recognize
+
+            pendingServiceRequests.Remove(serviceID);
+
+            if(rule != null)
             {
-                requestFoldedOut = lastCompletedServiceRequest.foldedOut;
-                lastCompletedServiceRequest.RemoveVisual();
+                rule.SetServiceResponse(response, new MessageMetadata(rule.topic, DateTime.Now), serviceID);
             }
-
-            if (lastCompletedServiceResponse != null)
-            {
-                responseFoldedOut = lastCompletedServiceResponse.foldedOut;
-                lastCompletedServiceResponse.RemoveVisual();
-            }
-
-            lastCompletedServiceRequest = activeServices.Find(s => s.serviceID == serviceID);
-            lastCompletedServiceRequest.label = "Last Completed Request: ";
-            activeServices.Remove(lastCompletedServiceRequest);
-
-            if (requestFoldedOut)
-                lastCompletedServiceRequest.foldedOut = true;
-
-            lastCompletedServiceResponse = new MessageViewState()
-            {
-                serviceID = serviceID,
-                meta = new MessageMetadata(lastCompletedServiceRequest.meta.Topic, DateTime.Now),
-                message = response,
-                label = "Last Completed Response: ",
-                foldedOut = responseFoldedOut,
-            };
-            lastCompletedServiceResponse.InitVisualizer();
         }
 
         void Awake()
@@ -140,7 +155,7 @@ namespace Unity.Robotics.ROSTCPConnector
             boldStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 0, 0, 5),
+                //padding = new RectOffset(10, 0, 0, 5),
                 normal = { textColor = Color.white },
                 fontStyle = FontStyle.Bold,
                 fixedWidth = 300
@@ -149,7 +164,7 @@ namespace Unity.Robotics.ROSTCPConnector
             contentStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 0, 0, 5),
+                //padding = new RectOffset(10, 0, 0, 5),
                 normal = { textColor = Color.white },
                 fixedWidth = 300
             };
@@ -157,13 +172,24 @@ namespace Unity.Robotics.ROSTCPConnector
             messageStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 0, 5, 5),
+                //padding = new RectOffset(10, 0, 5, 5),
                 normal = { textColor = Color.white },
                 fixedWidth = 300,
                 wordWrap = true
             };
 
-            scrollRect = new Rect();
+            topicMenuStyle = new GUIStyle
+            {
+                alignment = TextAnchor.LowerLeft,
+                normal = { textColor = Color.white },
+            };
+
+            LoadLayout();
+        }
+
+        private void OnApplicationQuit()
+        {
+            SaveLayout();
         }
 
         public void SetRosIP(string ip, int port)
@@ -201,128 +227,474 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label(unityListenAddress, ipStyle);
             GUILayout.EndHorizontal();
 
-            GUILayout.EndVertical();
-
-            // Update length of scroll
-            if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
-                scrollRect = GUILayoutUtility.GetLastRect();
-
-            // Optionally show message contents
-            float y = scrollRect.yMax;
-
-            y = ShowMessage(lastMessageSent, y);
-            y = ShowMessage(lastMessageReceived, y);
-
-            foreach (MessageViewState service in activeServices)
+            if(GUILayout.Button("Topics"))
             {
-                y = ShowMessage(service, y, showElapsedTime: true);
+                showingTopics = true;
+                topicsRect.height = (allTopics.Count+1) * 25;
             }
 
-            if (lastCompletedServiceRequest != null && lastCompletedServiceResponse != null)
+            GUILayout.EndVertical();
+
+            Event current = Event.current;
+            if (current.type == EventType.MouseDown)
             {
-                y = ShowMessage(lastCompletedServiceRequest, y);
-                y = ShowMessage(lastCompletedServiceResponse, y);
+                for (int Idx = activeWindows.Count - 1; Idx >= 0; --Idx)
+                {
+                    TopicVisualizationRule window = activeWindows[Idx];
+                    if (activeWindows[Idx].TryDragWindow(current))
+                    {
+                        draggingWindow = activeWindows[Idx];
+                        break;
+                    }
+                }
+            }
+            else if (current.type == EventType.MouseDrag && draggingWindow != null)
+            {
+                draggingWindow.UpdateDragWindow(current);
+            }
+            else if (current.type == EventType.MouseUp && draggingWindow != null)
+            {
+                draggingWindow.EndDragWindow();
+                draggingWindow = null;
+            }
+
+            foreach (TopicVisualizationRule window in activeWindows)
+            {
+                window.DrawWindow();
+            }
+
+            if (showingTopics)
+            {
+                GUI.Window(0, topicsRect, DrawTopicWindowContents, "", GUI.skin.box);
+
+                if (Event.current.type == EventType.MouseDown)
+                    TryCloseTopics();
             }
         }
 
-        /// <summary>
-        /// All the information necessary to display a message and remember its scroll position
-        /// </summary>
-        class MessageViewState
+        void DrawTopicWindowContents(int id)
         {
-            public string label;
-            public int serviceID;
-            public bool foldedOut;
-            public Message message;
-            public MessageMetadata meta;
-            public Rect contentRect;
-            public Vector2 scrollPosition;
+            if(topicEntryStyle == null)
+            {
+                topicEntryStyle = new GUIStyle(GUI.skin.toggle);
+            }
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("UI", boldStyle, GUILayout.Width(20));
+            GUILayout.Label("Scene", boldStyle);
+            GUILayout.EndHorizontal();
+
+            foreach (KeyValuePair<string, TopicVisualizationRule> kv in allTopics)
+            {
+                bool showWindow = false;
+                bool showDrawing = false;
+                string title = kv.Key;
+                TopicVisualizationRule rule = kv.Value;
+
+                if (rule != null)
+                {
+                    showWindow = rule.showWindow;
+                    showDrawing = rule.showDrawing;
+                    title = rule.topic;
+                }
+                bool hasWindow = showWindow;
+                bool hasDrawing = showDrawing;
+
+                GUILayout.BeginHorizontal();
+                showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
+                showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
+                if (GUILayout.Button(title, GUI.skin.label, GUILayout.Width(100)))
+                {
+                    bool toggleOn = (!showWindow || !showDrawing);
+                    showWindow = toggleOn;
+                    showDrawing = toggleOn;
+                }
+                GUILayout.EndHorizontal();
+
+                if (showWindow != hasWindow || showDrawing != hasDrawing)
+                {
+                    if (rule == null)
+                    {
+                        rule = new TopicVisualizationRule(kv.Key, this);
+                        allTopics[kv.Key] = rule;
+                    }
+                    rule.SetShowWindow(showWindow);
+                    rule.SetShowDrawing(showDrawing);
+                    TryCloseTopics();
+                    break;
+                }
+            }
+        }
+
+        public void TryCloseTopics()
+        {
+            if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
+                showingTopics = false;
+        }
+
+        class TopicVisualizationRule
+        {
+            public string topic { get; private set; }
+            public bool showWindow { get; private set; }
+            public bool showDrawing { get; private set; }
+            float drawingDuration;
+            HUDPanel hud;
+            IWindowContents contents;
+
+            public Rect windowRect;
+            int windowID;
+            int serviceID;
+            public Vector2 windowScrollPosition { get; set; }
+
+            const float draggableSize = 8;
+            Vector2 dragMouseOffset;
+            bool draggingTitle;
+            bool draggingLeft;
+            bool draggingRight;
+            bool draggingBottom;
+
+            public TopicVisualizationRule(HUDLayoutSave.TopicRuleSave saveState, HUDPanel hud)
+            {
+                this.hud = hud;
+                windowRect = saveState.rect;
+                topic = saveState.topic;
+                windowID = hud.GetNextWindowID();
+                SetShowWindow(saveState.showWindow);
+                SetShowDrawing(saveState.showDrawing);
+            }
+
+            public TopicVisualizationRule(string topic, HUDPanel hud)
+            {
+                this.hud = hud;
+                windowRect = new Rect(50, 70, 200, 100);
+                this.topic = topic;
+                showWindow = false;
+                showDrawing = false;
+                windowID = hud.GetNextWindowID();
+            }
+
+            public HUDLayoutSave.TopicRuleSave CreateSaveState()
+            {
+                if (!showWindow && !showDrawing)
+                    return null;
+
+                return new HUDLayoutSave.TopicRuleSave {
+                    rect = windowRect,
+                    topic = topic,
+                    showWindow = showWindow,
+                    showDrawing = showDrawing,
+                    drawingDuration = drawingDuration
+                };
+            }
+
+            public void SetMessage(Message message, MessageMetadata meta)
+            {
+                if (contents != null)
+                    contents.ShowDrawing(false);
+
+                contents = new MessageWindowContents(this, message, meta);
+                if(showDrawing)
+                    contents.ShowDrawing(true);
+            }
+
+            public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
+            {
+                if (contents != null)
+                    contents.ShowDrawing(false);
+
+                this.serviceID = serviceID;
+                contents = new ServiceWindowContents(this, request, requestMeta);
+                if (showDrawing)
+                    contents.ShowDrawing(true);
+            }
+
+            public void SetServiceResponse(Message response, MessageMetadata responseMeta, int serviceID)
+            {
+                // If this is not a response to the request we have, ignore it.
+                // TODO: need more granular control over this
+                if (this.serviceID != serviceID)
+                    return;
+
+                if (contents != null)
+                    contents.ShowDrawing(false);
+
+                ((ServiceWindowContents)contents).SetResponse(response, responseMeta);
+                if (showDrawing)
+                    contents.ShowDrawing(true);
+            }
+
+            public void DrawWindow()
+            {
+                if(contents != null)
+                    contents.DrawWindow(windowID, windowRect);
+            }
+
+            public void SetShowDrawing(bool showDrawing)
+            {
+                bool hasDrawing = contents != null && contents.hasDrawing;
+                this.showDrawing = showDrawing;
+                if (showDrawing != hasDrawing && contents != null)
+                {
+                    contents.ShowDrawing(showDrawing);
+                }
+            }
+
+            public void SetShowWindow(bool showWindow)
+            {
+                bool hasWindow = this.showWindow;
+                this.showWindow = showWindow;
+                if (showWindow != hasWindow)
+                {
+                    if (showWindow)
+                    {
+                        if(contents == null)
+                            contents = new MessageWindowContents(this, null, new MessageMetadata(topic, DateTime.Now));
+                        hud.AddWindow(this);
+                    }
+                    else
+                    {
+                        hud.RemoveWindow(this);
+                    }
+                }
+            }
+
+            public bool TryDragWindow(Event current)
+            {
+                Rect expandedWindowMenu = new Rect(windowRect.x - draggableSize, windowRect.y, windowRect.width + draggableSize * 2, windowRect.height + draggableSize);
+                if (expandedWindowMenu.Contains(current.mousePosition))
+                {
+                    draggingTitle = current.mousePosition.y < windowRect.yMin + draggableSize * 2;
+                    draggingLeft = current.mousePosition.x < windowRect.xMin + draggableSize;
+                    draggingRight = current.mousePosition.x > windowRect.xMax - draggableSize;
+                    draggingBottom = current.mousePosition.y > windowRect.yMax - draggableSize;
+                }
+
+                dragMouseOffset = current.mousePosition - new Vector2(windowRect.xMin, windowRect.yMin);
+                return draggingTitle || draggingLeft || draggingRight || draggingBottom;
+            }
+
+            public void UpdateDragWindow(Event current)
+            {
+                if (draggingTitle)
+                {
+                    windowRect.x = current.mousePosition.x - dragMouseOffset.x;
+                    windowRect.y = current.mousePosition.y - dragMouseOffset.y;
+                }
+                else
+                {
+                    if (draggingLeft)
+                        windowRect.xMin = current.mousePosition.x;
+                    if (draggingBottom)
+                        windowRect.yMax = current.mousePosition.y;
+                    if (draggingRight)
+                        windowRect.xMax = current.mousePosition.x;
+                }
+            }
+
+            public void EndDragWindow()
+            {
+                draggingTitle = draggingLeft = draggingRight = draggingBottom = false;
+            }
+        }
+
+        interface IWindowContents
+        {
+            bool hasDrawing { get; }
+            void ShowDrawing(bool show);
+            void DrawWindow(int windowID, Rect windowRect);
+        }
+
+        class MessageWindowContents : IWindowContents
+        {
+            TopicVisualizationRule rule;
+            Message message;
+            MessageMetadata meta;
             public IVisualizer visualizerConfig;
             public object visualizerDrawing;
             public Action visualizerGUI;
 
-            public void OnGUI()
+            public bool hasDrawing => visualizerDrawing != null;
+
+            public MessageWindowContents(TopicVisualizationRule rule, Message message, MessageMetadata meta)
             {
-                if (!foldedOut)
-                    return;
-
-                if (visualizerConfig == null)
-                    visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
-
-                if (visualizerGUI == null)
-                    visualizerGUI = visualizerConfig.CreateGUI(message, meta, visualizerDrawing);
-
-                visualizerGUI();
+                this.rule = rule;
+                this.message = message;
+                this.meta = meta;
             }
 
-            public void InitVisualizer()
+            public void ShowDrawing(bool show)
             {
-                //TODO: check whether the config wants gui and/or drawings
-                CreateVisual();
+                if (show)
+                {
+                    if (visualizerConfig == null && message != null)
+                        visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
+
+                    if (visualizerConfig != null)
+                        visualizerDrawing = visualizerConfig.CreateDrawing(message, meta);
+                }
+                else
+                {
+                    if(visualizerConfig != null && visualizerDrawing != null)
+                        visualizerConfig.DeleteDrawing(visualizerDrawing);
+                    visualizerDrawing = null;
+                }
             }
 
-            public void CreateVisual()
+            public void DrawWindow(int windowID, Rect windowRect)
             {
-                if (visualizerDrawing != null)
-                    return;
-
-                if (visualizerConfig == null)
-                    visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
-
-                visualizerDrawing = visualizerConfig.CreateDrawing(message, meta);
-
-                if (visualizerGUI != null)
-                    visualizerGUI = null; // force GUI to be recreated with the new drawing
+                GUI.Window(windowID, windowRect, DrawWindowContents, meta.Topic);
             }
 
-            public void RemoveVisual()
+            void DrawWindowContents(int id)
             {
-                if (visualizerDrawing == null)
-                    return;
+                if (message == null)
+                {
+                    GUILayout.Label("Waiting for message...");
+                }
+                else
+                {
+                    if (visualizerConfig == null)
+                        visualizerConfig = VisualizationRegister.GetVisualizer(message, meta);
 
-                visualizerConfig.DeleteDrawing(visualizerDrawing);
-                visualizerDrawing = null;
+                    if (visualizerGUI == null)
+                        visualizerGUI = visualizerConfig.CreateGUI(message, meta, visualizerDrawing);
+
+                    rule.windowScrollPosition = GUILayout.BeginScrollView(rule.windowScrollPosition);
+                    visualizerGUI();
+                    GUILayout.EndScrollView();
+                }
             }
         }
 
-        /// <summary>
-        /// Displays a MessageViewState
-        /// </summary>
-        /// <param name="msgView">The message view to draw</param>
-        /// <param name="y">The Y position to draw at</param>
-        /// <param name="showElapsedTime">Whether to add elapsed time to the title</param>
-        /// <returns>The new Y position to draw at</returns>
-        float ShowMessage(MessageViewState msgView, float y, bool showElapsedTime = false)
+        class ServiceWindowContents : IWindowContents
         {
-            if (msgView == null)
-                return y;
+            TopicVisualizationRule rule;
+            Message request;
+            MessageMetadata requestMeta;
+            IVisualizer requestVisualizer;
+            object requestDrawing;
+            public Action requestGUI;
 
-            // Start scrollviews
-            float height = msgView.contentRect.height > 0 ? Mathf.Min(msgView.contentRect.height, 200) : 200;
-            Rect panelRect = new Rect(0, y + 5, 325, height);
-            msgView.scrollPosition = GUI.BeginScrollView(panelRect, msgView.scrollPosition, msgView.contentRect);
+            Message response;
+            MessageMetadata responseMeta;
+            IVisualizer responseVisualizer;
+            object responseDrawing;
+            public Action responseGUI;
 
-            GUILayout.BeginVertical(boxStyle);
-            //GUILayout.Label(heading, labelStyle);
-            string label = (showElapsedTime) ? $"{msgView.label} ({(DateTime.Now - msgView.meta.Timestamp).TotalSeconds})" : msgView.label;
-            GUILayout.Label(label, headingStyle);
+            public bool hasDrawing => requestDrawing != null || responseDrawing != null;
 
-            GUILayout.BeginHorizontal();
-            bool newFoldedOut = GUILayout.Toggle(msgView.foldedOut, $"{msgView.meta.Topic} {msgView.meta.Timestamp.TimeOfDay}");
-            msgView.foldedOut = newFoldedOut;
-            GUILayout.EndHorizontal();
+            public ServiceWindowContents(TopicVisualizationRule rule, Message request, MessageMetadata requestMeta)
+            {
+                this.rule = rule;
+                this.request = request;
+                this.requestMeta = requestMeta;
+            }
 
-            // draw custom message visualization GUI
-            msgView.OnGUI();
+            public void SetResponse(Message response, MessageMetadata responseMeta)
+            {
+                this.response = response;
+                this.responseMeta = responseMeta;
+            }
 
-            GUILayout.EndVertical();
-            GUI.EndScrollView();
+            public void ShowDrawing(bool show)
+            {
+                if (show)
+                {
+                    if (requestVisualizer == null && request != null)
+                        requestVisualizer = VisualizationRegister.GetVisualizer(request, requestMeta);
 
-            // Update size of internal rect view
-            if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
-                msgView.contentRect = GUILayoutUtility.GetLastRect();
+                    if (responseVisualizer == null && response != null)
+                        responseVisualizer = VisualizationRegister.GetVisualizer(response, responseMeta);
 
-            return panelRect.yMax;
+                    if (requestVisualizer != null && requestDrawing == null)
+                        requestDrawing = requestVisualizer.CreateDrawing(request, requestMeta);
+
+                    if (responseVisualizer != null && responseDrawing == null)
+                        responseDrawing = responseVisualizer.CreateDrawing(response, responseMeta);
+                }
+                else
+                {
+                    if(requestVisualizer != null && requestDrawing != null)
+                        requestVisualizer.DeleteDrawing(requestDrawing);
+                    requestDrawing = null;
+
+                    if (responseVisualizer != null && responseDrawing != null)
+                        responseVisualizer.DeleteDrawing(responseDrawing);
+                    responseDrawing = null;
+                }
+            }
+
+            public void DrawWindow(int windowID, Rect windowRect)
+            {
+                GUI.Window(windowID, windowRect, DrawWindowContents, requestMeta.Topic);
+            }
+
+            void DrawWindowContents(int id)
+            {
+                rule.windowScrollPosition = GUILayout.BeginScrollView(rule.windowScrollPosition);
+
+                if (request == null)
+                {
+                    GUILayout.Label("Waiting for request...");
+                }
+                else
+                {
+                    if (requestVisualizer == null)
+                        requestVisualizer = VisualizationRegister.GetVisualizer(request, requestMeta);
+
+                    if (requestGUI == null)
+                        requestGUI = requestVisualizer.CreateGUI(request, requestMeta, requestDrawing);
+
+                    requestGUI();
+                }
+
+                // horizontal line
+                GUILayout.Label("", GUI.skin.horizontalSlider);
+
+                if (response == null)
+                {
+                    GUILayout.Label("Waiting for response...");
+                }
+                else
+                {
+                    if (responseVisualizer == null)
+                        responseVisualizer = VisualizationRegister.GetVisualizer(response, responseMeta);
+
+                    if (responseGUI == null)
+                        responseGUI = responseVisualizer.CreateGUI(response, responseMeta, responseDrawing);
+
+                    responseGUI();
+                }
+                GUILayout.EndScrollView();
+            }
+        }
+
+        class HUDLayoutSave
+        {
+            [Serializable]
+            public class TopicRuleSave
+            {
+                public Rect rect;
+                public string topic;
+                public bool showWindow;
+                public bool showDrawing;
+                public float drawingDuration;
+            }
+
+            public TopicRuleSave[] rules;
+
+            public void AddRules(IEnumerable<TopicVisualizationRule> rules)
+            {
+                List<TopicRuleSave> topicRuleSaves = new List<TopicRuleSave>();
+                foreach (TopicVisualizationRule rule in rules)
+                {
+                    if (rule == null)
+                        continue;
+                    TopicRuleSave save = rule.CreateSaveState();
+                    if (save != null)
+                        topicRuleSaves.Add(save);
+                }
+                this.rules = topicRuleSaves.ToArray();
+            }
         }
     }
 }
