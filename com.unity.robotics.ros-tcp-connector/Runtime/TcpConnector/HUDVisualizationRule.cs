@@ -31,30 +31,28 @@ namespace Unity.Robotics.ROSTCPConnector
         [Serializable]
         public class SaveState
         {
-            public Rect rect;
-            public string topic;
-            public bool showWindow;
-            public bool showDrawing;
+            public Rect Rect;
+            public string Topic;
+            public bool ShowWindow;
+            public bool ShowDrawing;
         }
 
         public HUDVisualizationRule(SaveState saveState, HUDPanel hud)
         {
-            this.m_Hud = hud;
-            m_WindowRect = saveState.rect;
-            Topic = saveState.topic;
+            m_Hud = hud;
+            m_WindowRect = saveState.Rect;
             m_WindowID = hud.GetNextWindowID();
-            SetShowWindow(saveState.showWindow);
-            SetShowDrawing(saveState.showDrawing);
+            Topic = saveState.Topic;
+            SetShowWindow(saveState.ShowWindow);
+            SetShowDrawing(saveState.ShowDrawing);
         }
 
         public HUDVisualizationRule(string topic, HUDPanel hud)
         {
-            this.m_Hud = hud;
+            m_Hud = hud;
             m_WindowRect = new Rect(50, 70, 200, 100);
-            this.Topic = topic;
-            ShowWindow = false;
-            ShowDrawing = false;
             m_WindowID = hud.GetNextWindowID();
+            Topic = topic;
         }
 
         public SaveState CreateSaveState()
@@ -64,10 +62,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
             return new SaveState
             {
-                rect = m_WindowRect,
-                topic = Topic,
-                showWindow = ShowWindow,
-                showDrawing = ShowDrawing,
+                Rect = m_WindowRect,
+                Topic = Topic,
+                ShowWindow = ShowWindow,
+                ShowDrawing = ShowDrawing,
             };
         }
 

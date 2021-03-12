@@ -55,9 +55,9 @@ namespace Unity.Robotics.ROSTCPConnector
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
-            foreach (HUDVisualizationRule.SaveState savedRule in saveState.rules)
+            foreach (HUDVisualizationRule.SaveState savedRule in saveState.Rules)
             {
-                m_AllTopics[savedRule.topic] = new HUDVisualizationRule(savedRule, this);
+                m_AllTopics[savedRule.Topic] = new HUDVisualizationRule(savedRule, this);
             }
         }
 
@@ -352,7 +352,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         class HUDLayoutSave
         {
-            public HUDVisualizationRule.SaveState[] rules;
+            public HUDVisualizationRule.SaveState[] Rules;
 
             public void AddRules(IEnumerable<HUDVisualizationRule> rules)
             {
@@ -365,7 +365,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     if (save != null)
                         topicRuleSaves.Add(save);
                 }
-                this.rules = topicRuleSaves.ToArray();
+                this.Rules = topicRuleSaves.ToArray();
             }
         }
     }

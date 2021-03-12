@@ -336,7 +336,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 totalBytesRead += bytesRead;
                 bytesRemaining -= bytesRead;
 
-                if (!networkStream.DataAvailable) 
+                if (!networkStream.DataAvailable)
                 {
                     attempts++;
                     await Task.Yield();
