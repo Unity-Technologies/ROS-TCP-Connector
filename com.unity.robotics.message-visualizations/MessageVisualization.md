@@ -2,13 +2,13 @@
 
 To get started with visualizations, click the Visualizations button on the ROSConnection HUD.
 
-![](images~/VisualizationsHUD.png)
+![](images~/VisualizationsHUD.PNG)
 
 (The HUD should appear in the top left corner of the Game window as long as you're in Play mode and a ROSConnection is active. If you don't see it, ensure "Show HUD" is ticked in your Robotics/ROS Settings window.)
 
 When you click the Visualizations button, it opens a list of all ROS topics on which Unity has sent or received a message in the current session. Click any topic to open a window showing the last message sent or received on that topic.
 
-![](images~/TopicsMenu.png)
+![](images~/TopicsMenu.PNG)
 
 You can move these windows around by dragging their title bar, or resize them by dragging the corners. The window layout is saved between sessions. (If you need it, the layout is saved to the file RosHudLayout.json, in the Unity [Persistent Data Path](https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html).)
 
@@ -24,21 +24,21 @@ To make your own visualization suite, you can create a new GameObject in your sc
 
 So, for example, let's assume you want to call out Point messages on the "important_points" topic, and you'd like them to appear extra large and in red. So maybe you'd add a DefaultVisualizerPoint script to your suite, and set it to draw large red points.
 
-![](images~/VisualizationSuiteExample.png)
+![](images~/VisualizationSuiteExample.PNG)
 
 (Note that in Unity, "radius" is in Unity coordinates, so a radius of 1 means the points have a radius of 1 meter.)
 
 # Example: adding visualizers to the Pick & Place tutorial
 
-If you have completed the [Pick & Place tutorial](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/main/tutorials/pick_and_place/README.md), why not get started by adding visualizations to it?
+To get you started with visualizers - assuming you have completed at least part 3 of the [Pick & Place tutorial](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/main/tutorials/pick_and_place/README.md), let's add visualizations to it.
 
 1. Open your Pick and Place project.
 
-1. To import the message-visualizations package: open Window/Package Manager, click the plus button and select "Add package from Git URL". Paste in the following text: https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.message-visualizations#laurie/CustomGUILayout
+1. To import the message-visualizations package: open Window/Package Manager, click on the plus button and select "Add package from Git URL". Paste in the following text: https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.message-visualizations#laurie/CustomGUILayout
 
 1. (For now, you also need to do the same with https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector#laurie/CustomGUILayout)
 
-1. Here's an example visualizer for the MoverServiceResponse message used in part 3 of the Pick and Place tutorial. Create a script called MoverServiceResponseVisualizerExample.cs, and paste the following code into it:
+1. Here's an example visualizer for the MoverServiceResponse message used in part 3 of the Pick and Place tutorial. Create a script called PickAndPlaceVisualizerExample.cs, and paste the following code into it. (Alternatively, you can copy the file from the folder Examples~ next to the document you're reading.).
 
 ```
 using RosMessageTypes.Moveit;
@@ -47,7 +47,7 @@ using RosSharp.Urdf;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class MoverServiceResponseVisualizerExample : BasicVisualizer<MMoverServiceResponse>
+public class PickAndPlaceVisualizerExample : BasicVisualizer<MMoverServiceResponse>
 {
     public Color ghostColor;
     public float thickness = 0.01f;
@@ -79,9 +79,13 @@ public class MoverServiceResponseVisualizerExample : BasicVisualizer<MMoverServi
 }
 ```
 
-1. Create a new GameObject in your scene called "VisualizationSuite", and attach the MoverServiceResponseVisualizer script to it. Drag the niryo_one gameobject into its forRobot field.
+1. Create a new GameObject in your scene called "VisualizationSuite", and attach the PickAndPlaceVisualizerExample script to it. Drag the niryo_one gameobject into its forRobot field, and select some nice colors for its color fields. (For the Ghost Color, try using an Alpha of 40 to make it nicely transparent.)
 
-1. Enter Play mode and press the button to test your robot. Now, if you open the Visualizations menu, you should find a topic named "niryo_moveit". Click on it to open a window for that topic.
+1. Enter Play mode and open the Visualizations menu: you should find a topic named "niryo_moveit". Click on it to open a window for that topic.
+
+1. Now, when you press the button to make your robot move, you should see ghost copies of the robot showing where it will end up after each trajectory, plus lines showing the path each joint will take.
+
+![](images~/NiryoWithGhosts.PNG)
 
 # Writing a basic visualizer
 

@@ -29,6 +29,7 @@ namespace Unity.Robotics.ROSTCPConnector
         List<TopicVisualizationRule> activeWindows = new List<TopicVisualizationRule>();
         TopicVisualizationRule draggingWindow;
         SortedList<string, TopicVisualizationRule> allTopics = new SortedList<string, TopicVisualizationRule>();
+        bool didRequestTopics;
         Dictionary<int, TopicVisualizationRule> pendingServiceRequests = new Dictionary<int, TopicVisualizationRule>();
         GUIStyle topicEntryStyle;
         int nextServiceID = 101;
@@ -36,7 +37,7 @@ namespace Unity.Robotics.ROSTCPConnector
         bool showingTopics;
         Vector2 topicsScrollPosition;
         string topicFilter = "";
-        Rect topicsRect = new Rect(20,70,200,200);
+        Rect topicsRect = new Rect(20,70,250,200);
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
@@ -237,10 +238,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if(GUILayout.Button("Visualizations"))
             {
-                showingTopics = true;
-                topicsRect.height = (allTopics.Count+1) * 25;
-                if (topicsRect.yMax > Screen.height)
-                    topicsRect.yMax = Screen.height;
+                showingTopics = !showingTopics;
+                if (showingTopics)
+                {
+                    ResizeTopicsWindow();
+                    if (!didRequestTopics)
+                    {
+                        RequestTopics();
+                    }
+                }
             }
 
             GUILayout.EndVertical();
@@ -280,6 +286,29 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (Event.current.type == EventType.MouseDown)
                     TryCloseTopics();
             }
+        }
+
+        void RequestTopics()
+        {
+            didRequestTopics = true;
+            ROSConnection.instance.GetTopicList(RegisterTopics);
+        }
+
+        void RegisterTopics(string[] topics)
+        {
+            foreach (string topic in topics)
+            {
+                if (!allTopics.ContainsKey(topic))
+                    allTopics.Add(topic, null);
+            }
+            ResizeTopicsWindow();
+        }
+
+        void ResizeTopicsWindow()
+        {
+            topicsRect.height = (allTopics.Count + 2) * 25 + 5;
+            if (topicsRect.yMax > Screen.height)
+                topicsRect.yMax = Screen.height;
         }
 
         void DrawTopicWindowContents(int id)
@@ -322,7 +351,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.BeginHorizontal();
                 showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
                 showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
-                if (GUILayout.Button(title, GUI.skin.label, GUILayout.Width(100)))
+                if (GUILayout.Button(title, GUI.skin.label, GUILayout.Width(170)))
                 {
                     bool toggleOn = (!showWindow || !showDrawing);
                     showWindow = toggleOn;
