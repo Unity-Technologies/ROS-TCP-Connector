@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Geometry/DefaultVisualizerPoint.cs.meta
 guid: 411f6a469899d8c4691994218731ae87
+=======
+guid: e28b94edf983f7741a40171d444b1c1e
+>>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/Actionlib/msg/MGoalStatusArray.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2

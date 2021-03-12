@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Geometry.meta
 guid: bf1d313b525b55145991883abb467ca3
+=======
+guid: 8e1ca57a59f12c4418e49a7bf32db3a7
+>>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/Geometry.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
