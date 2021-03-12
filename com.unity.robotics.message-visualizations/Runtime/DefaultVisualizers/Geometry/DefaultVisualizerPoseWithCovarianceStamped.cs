@@ -10,10 +10,13 @@ public class DefaultVisualizerPoseWithCovarianceStamped : BasicVisualizer<MPoseW
 {
     [SerializeField]
     float m_Size = 0.1f;
+    [SerializeField]
+    [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
+    bool m_DrawUnityAxes;
 
     public override void Draw(DebugDraw.Drawing drawing, MPoseWithCovarianceStamped message, MessageMetadata meta, Color color, string label)
     {
-        message.pose.pose.Draw<FLU>(drawing, m_Size);
+        message.pose.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
     public override Action CreateGUI(MPoseWithCovarianceStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>

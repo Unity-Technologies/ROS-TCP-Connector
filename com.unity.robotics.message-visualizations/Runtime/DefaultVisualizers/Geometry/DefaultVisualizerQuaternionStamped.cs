@@ -14,10 +14,13 @@ namespace Unity.Robotics.MessageVisualizers
         float m_Size = 0.01f;
         [SerializeField]
         GameObject m_DrawAtPosition;
+        [SerializeField]
+        [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
+        bool m_DrawUnityAxes;
 
         public override void Draw(DebugDraw.Drawing drawing, MQuaternionStamped message, MessageMetadata meta, Color color, string label)
         {
-            message.quaternion.Draw<FLU>(drawing, m_DrawAtPosition, m_Size);
+            message.quaternion.Draw<FLU>(drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(label, transform.position, color, m_Size);
         }
 

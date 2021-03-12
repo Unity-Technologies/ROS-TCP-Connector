@@ -34,9 +34,11 @@ namespace Unity.Robotics.ROSTCPConnector
         int nextServiceID = 101;
         int nextWindowID = 101;
         bool showingTopics;
+        Vector2 topicsScrollPosition;
+        string topicFilter = "";
         Rect topicsRect = new Rect(20,70,200,200);
 
-        string LayoutFilePath => Path.Combine(Application.persistentDataPath, "layout.json");
+        string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
         void SaveLayout()
         {
@@ -178,12 +180,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 wordWrap = true
             };
 
-            topicMenuStyle = new GUIStyle
-            {
-                alignment = TextAnchor.LowerLeft,
-                normal = { textColor = Color.white },
-            };
-
             LoadLayout();
         }
 
@@ -207,6 +203,18 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!isEnabled)
                 return;
 
+            if(topicMenuStyle == null)
+            {
+                topicMenuStyle = new GUIStyle
+                {
+                    stretchHeight = GUI.skin.box.stretchHeight,
+                    stretchWidth = GUI.skin.box.stretchWidth,
+                    padding = GUI.skin.box.padding,
+                    border = GUI.skin.box.border,
+                    normal = { background = GUI.skin.box.normal.background },
+                };
+            }
+
             if (boxStyle == null)
             {
                 boxStyle = GUI.skin.GetStyle("box");
@@ -227,10 +235,12 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label(unityListenAddress, ipStyle);
             GUILayout.EndHorizontal();
 
-            if(GUILayout.Button("Topics"))
+            if(GUILayout.Button("Visualizations"))
             {
                 showingTopics = true;
                 topicsRect.height = (allTopics.Count+1) * 25;
+                if (topicsRect.yMax > Screen.height)
+                    topicsRect.yMax = Screen.height;
             }
 
             GUILayout.EndVertical();
@@ -265,7 +275,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (showingTopics)
             {
-                GUI.Window(0, topicsRect, DrawTopicWindowContents, "", GUI.skin.box);
+                GUI.Window(0, topicsRect, DrawTopicWindowContents, "", topicMenuStyle);
 
                 if (Event.current.type == EventType.MouseDown)
                     TryCloseTopics();
@@ -278,16 +288,26 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 topicEntryStyle = new GUIStyle(GUI.skin.toggle);
             }
+            topicFilter = GUILayout.TextField(topicFilter);
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("UI", boldStyle, GUILayout.Width(20));
             GUILayout.Label("Scene", boldStyle);
             GUILayout.EndHorizontal();
 
+            topicsScrollPosition = GUILayout.BeginScrollView(topicsScrollPosition);
+            int numTopicsShown = 0;
             foreach (KeyValuePair<string, TopicVisualizationRule> kv in allTopics)
             {
                 bool showWindow = false;
                 bool showDrawing = false;
                 string title = kv.Key;
+                if(!title.Contains(topicFilter))
+                {
+                    continue;
+                }
+
+                numTopicsShown++;
                 TopicVisualizationRule rule = kv.Value;
 
                 if (rule != null)
@@ -322,6 +342,15 @@ namespace Unity.Robotics.ROSTCPConnector
                     TryCloseTopics();
                     break;
                 }
+            }
+            GUILayout.EndScrollView();
+
+            if(numTopicsShown == 0)
+            {
+                if(allTopics.Count == 0)
+                    GUILayout.Label("No known topics yet");
+                else
+                    GUILayout.Label("No such topic!");
             }
         }
 
