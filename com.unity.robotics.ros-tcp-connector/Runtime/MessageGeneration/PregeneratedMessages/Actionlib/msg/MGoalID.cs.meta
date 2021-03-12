@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/BasicVisualizer.cs.meta
+guid: 8a07718b109b7d74aba8ce0da365ab5b
+=======
 guid: ba7d02a5c3c5d924692f4b02f8cb654c
+>>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/Actionlib/msg/MGoalID.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
