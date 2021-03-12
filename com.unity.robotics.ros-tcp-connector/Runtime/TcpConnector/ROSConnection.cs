@@ -243,7 +243,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 hudPanel.SetRosIP(rosIPAddress, rosPort);
             }
 
-            hudPanel.isEnabled = showHUD;
+            hudPanel.IsEnabled = showHUD;
         }
 
         void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
