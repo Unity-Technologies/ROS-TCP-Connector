@@ -28,6 +28,61 @@ So, for example, let's assume you want to call out Point messages on the "import
 
 (Note that in Unity, "radius" is in Unity coordinates, so a radius of 1 means the points have a radius of 1 meter.)
 
+# Example: adding visualizers to the Pick & Place tutorial
+
+If you have completed the [Pick & Place tutorial](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/main/tutorials/pick_and_place/README.md), why not get started by adding visualizations to it?
+
+1. Open your Pick and Place project.
+
+1. To import the message-visualizations package: open Window/Package Manager, click the plus button and select "Add package from Git URL". Paste in the following text: https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.message-visualizations#laurie/CustomGUILayout
+
+1. (For now, you also need to do the same with https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector#laurie/CustomGUILayout)
+
+1. Here's an example visualizer for the MoverServiceResponse message used in part 3 of the Pick and Place tutorial. Create a script called MoverServiceResponseVisualizerExample.cs, and paste the following code into it:
+
+```
+using RosMessageTypes.Moveit;
+using RosMessageTypes.NiryoMoveit;
+using RosSharp.Urdf;
+using Unity.Robotics.MessageVisualizers;
+using UnityEngine;
+
+public class MoverServiceResponseVisualizerExample : BasicVisualizer<MMoverServiceResponse>
+{
+    public Color ghostColor;
+    public float thickness = 0.01f;
+    public float labelSpacing = 0.1f;
+    public UrdfRobot forRobot;
+    RobotVisualization robotVisualization;
+
+    public override void Start()
+    {
+        base.Start();
+        robotVisualization = new RobotVisualization(forRobot);
+    }
+
+    public override void Draw(DebugDraw.Drawing drawing, MMoverServiceResponse message, MessageMetadata meta, Color color, string label)
+    {
+        int Idx = 1;
+        foreach(MRobotTrajectory trajectory in message.trajectories)
+        {
+            RobotVisualization.JointPlacement[][] jointPlacements = robotVisualization.GetJointPlacements(trajectory.joint_trajectory);
+            RobotVisualization.JointPlacement[] finalPose = jointPlacements[jointPlacements.Length - 1];
+
+            robotVisualization.DrawJointPaths(drawing, jointPlacements, color, thickness);
+            robotVisualization.DrawGhost(drawing, finalPose, ghostColor);
+
+            drawing.DrawLabel(Idx.ToString(), finalPose[finalPose.Length - 1].Position, color, labelSpacing);
+            ++Idx;
+        }
+    }
+}
+```
+
+1. Create a new GameObject in your scene called "VisualizationSuite", and attach the MoverServiceResponseVisualizer script to it. Drag the niryo_one gameobject into its forRobot field.
+
+1. Enter Play mode and press the button to test your robot. Now, if you open the Visualizations menu, you should find a topic named "niryo_moveit". Click on it to open a window for that topic.
+
 # Writing a basic visualizer
 
 Although the message visualization system includes default visualizers for many common message types, no doubt you have your own unique messages you want to visualize, or you'll want to change how a message is displayed for your project's specific needs. The simplest way to create a new visualizer is to write a MonoBehaviour script that inherits from BasicVisualizer. Here's a simple example:
