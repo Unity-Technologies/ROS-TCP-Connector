@@ -4,7 +4,7 @@ using RosSharp.Urdf;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class MoverServiceResponseVisualizerExample : BasicVisualizer<MMoverServiceResponse>
+public class PickAndPlaceVisualizerExample : BasicVisualizer<MMoverServiceResponse>
 {
     public Color ghostColor;
     public float thickness = 0.01f;
