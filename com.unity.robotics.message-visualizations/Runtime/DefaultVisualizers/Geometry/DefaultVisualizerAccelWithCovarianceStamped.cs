@@ -13,12 +13,12 @@ public class DefaultVisualizerAccelWithCovarianceStamped : BasicVisualizer<MAcce
     public float m_SphereRadius = 1.0f;
     public GameObject m_Origin;
 
-    public override void Draw(DebugDraw.Drawing drawing, MAccelWithCovarianceStamped message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MAccelWithCovarianceStamped message, MessageMetadata meta, Color color, string label)
     {
         message.accel.accel.Draw<FLU>(drawing, color, m_Origin, m_LengthScale, m_SphereRadius, m_Thickness );
     }
 
-    public override Action CreateGUI(MAccelWithCovarianceStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MAccelWithCovarianceStamped message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
         message.accel.accel.GUI();

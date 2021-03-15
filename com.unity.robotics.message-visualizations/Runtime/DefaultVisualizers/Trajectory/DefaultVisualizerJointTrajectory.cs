@@ -21,12 +21,12 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
         m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
-    public override void Draw(DebugDraw.Drawing drawing, MJointTrajectory message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta, Color color, string label)
     {
         m_RobotData.DrawJointPaths(drawing, message, color, m_PathThickness);
     }
 
-    public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, DebugDraw.Drawing drawing)
+    public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, BasicDrawing drawing)
     {
         return base.CreateGUI(message, meta, drawing);
     }

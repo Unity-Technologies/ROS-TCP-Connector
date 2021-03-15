@@ -10,7 +10,7 @@ public class DefaultVisualizerInt8MultiArray : BasicVisualizer<MInt8MultiArray>
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MInt8MultiArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MInt8MultiArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.layout.GUIMultiArray(message.data, ref m_Tabulate);
     };

@@ -10,7 +10,7 @@ public class DefaultVisualizerUInt16MultiArray : BasicVisualizer<MUInt16MultiArr
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MUInt16MultiArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MUInt16MultiArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.layout.GUIMultiArray(message.data, ref m_Tabulate);
     };

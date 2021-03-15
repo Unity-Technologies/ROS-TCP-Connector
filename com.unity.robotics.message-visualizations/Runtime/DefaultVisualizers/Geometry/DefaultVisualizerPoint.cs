@@ -13,12 +13,12 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         float m_Radius = 0.01f;
 
-        public override void Draw(DebugDraw.Drawing drawing, MPoint message, MessageMetadata meta, Color color, string label)
+        public override void Draw(BasicDrawing drawing, MPoint message, MessageMetadata meta, Color color, string label)
         {
             message.Draw<FLU>(drawing, color, label, m_Radius);
         }
 
-        public override System.Action CreateGUI(MPoint message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+        public override System.Action CreateGUI(MPoint message, MessageMetadata meta, BasicDrawing drawing) => () =>
         {
             message.GUI();
         };

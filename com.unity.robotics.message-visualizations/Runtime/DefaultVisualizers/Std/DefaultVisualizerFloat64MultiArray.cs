@@ -10,7 +10,7 @@ public class DefaultVisualizerFloat64MultiArray : BasicVisualizer<MFloat64MultiA
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MFloat64MultiArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MFloat64MultiArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.layout.GUIMultiArray(message.data, ref m_Tabulate);
     };

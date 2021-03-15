@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class DefaultVisualizerColorRGBA : BasicVisualizer<MColorRGBA>
 {
-    public override Action CreateGUI(MColorRGBA message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MColorRGBA message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.GUI();
     };

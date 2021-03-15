@@ -10,7 +10,7 @@ public class DefaultVisualizerByteMultiArray : BasicVisualizer<MByteMultiArray>
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MByteMultiArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MByteMultiArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.layout.GUIMultiArray(message.data, ref m_Tabulate);
     };

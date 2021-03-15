@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class DefaultVisualizerTime : BasicVisualizer<MTime>
 {
-    public override Action CreateGUI(MTime message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MTime message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.GUI();
     };

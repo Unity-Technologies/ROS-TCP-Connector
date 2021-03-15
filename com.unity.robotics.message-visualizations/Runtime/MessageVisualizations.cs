@@ -27,7 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
-        public static void DrawAxisVectors<C>(DebugDraw.Drawing drawing, MVector3 position, MQuaternion rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
+        public static void DrawAxisVectors<C>(BasicDrawing drawing, MVector3 position, MQuaternion rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();
             Quaternion unityRotation = rotation.From<C>();
@@ -62,13 +62,13 @@ namespace Unity.Robotics.MessageVisualizers
             return time;
         }
 
-        public static void Draw<C>(this MPoint message, DebugDraw.Drawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MPoint message, DebugDraw.Drawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
@@ -97,13 +97,13 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(this MPoint32 message, DebugDraw.Drawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPoint32 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MPoint32 message, DebugDraw.Drawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPoint32 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
@@ -122,19 +122,19 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void Draw<C>(this MVector3 message, DebugDraw.Drawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 point = message.From<C>();
             drawing.DrawPoint(point, color, size);
             drawing.DrawLabel(label, point, color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MVector3 message, DebugDraw.Drawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
 
-        public static void Draw<C>(this MVector3 message, DebugDraw.Drawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 point = message.From<C>();
             if (origin != null)
@@ -189,7 +189,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this MPose message, DebugDraw.Drawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPose message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             DrawAxisVectors<C>(
                 drawing,
@@ -200,7 +200,7 @@ namespace Unity.Robotics.MessageVisualizers
             );
         }
 
-        public static void Draw<C>(this MPoseArray message, DebugDraw.Drawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPoseArray message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             foreach (MPose pose in message.poses)
             {
@@ -208,14 +208,14 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this MQuaternion message, DebugDraw.Drawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
+        public static void Draw<C>(this MQuaternion message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
             Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
-        public static void Draw<C>(this MQuaternion message, DebugDraw.Drawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
+        public static void Draw<C>(this MQuaternion message, BasicDrawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
@@ -233,7 +233,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void Draw<C>(this MTransform transform, DebugDraw.Drawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MTransform transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
@@ -244,7 +244,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.rotation.GUI("Rotation");
         }
 
-        public static void Draw<C>(this MPolygon message, DebugDraw.Drawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPolygon message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 prevPos = message.points[message.points.Length - 1].From<FLU>();
             foreach (MPoint32 p in message.points)
@@ -262,7 +262,7 @@ namespace Unity.Robotics.MessageVisualizers
                 GUI(p);
         }
 
-        public static void Draw<C>(this MAccel message, DebugDraw.Drawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MAccel message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 originPos = (origin == null) ? Vector3.zero: origin.transform.position;
             drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
@@ -424,12 +424,12 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void DrawAngularVelocityArrow(DebugDraw.Drawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(DebugDraw.Drawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(BasicDrawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 axis;
             float angleDegrees;
@@ -437,7 +437,7 @@ namespace Unity.Robotics.MessageVisualizers
             DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(DebugDraw.Drawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(BasicDrawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
             if (startVector.sqrMagnitude < 0.01f)

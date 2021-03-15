@@ -14,12 +14,12 @@ public class DefaultVisualizerPoseStamped : BasicVisualizer<MPoseStamped>
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
 
-    public override void Draw(DebugDraw.Drawing drawing, MPoseStamped message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPoseStamped message, MessageMetadata meta, Color color, string label)
     {
         message.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPoseStamped message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MPoseStamped message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
         message.pose.GUI();

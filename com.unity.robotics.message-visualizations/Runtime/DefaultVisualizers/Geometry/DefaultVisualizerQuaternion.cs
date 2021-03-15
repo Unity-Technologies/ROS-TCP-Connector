@@ -17,13 +17,13 @@ namespace Unity.Robotics.MessageVisualizers
         [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
         bool m_DrawUnityAxes;
 
-        public override void Draw(DebugDraw.Drawing drawing, MQuaternion message, MessageMetadata meta, Color color, string label)
+        public override void Draw(BasicDrawing drawing, MQuaternion message, MessageMetadata meta, Color color, string label)
         {
             message.Draw<FLU>(drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(label, transform.position, color, m_Size);
         }
 
-        public override System.Action CreateGUI(MQuaternion message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+        public override System.Action CreateGUI(MQuaternion message, MessageMetadata meta, BasicDrawing drawing) => () =>
         {
             message.GUI();
         };

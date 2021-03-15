@@ -13,12 +13,12 @@ public class DefaultVisualizerAccel : BasicVisualizer<MAccel>
     public float m_SphereRadius = 1.0f;
     public GameObject m_Origin;
 
-    public override void Draw(DebugDraw.Drawing drawing, MAccel message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MAccel message, MessageMetadata meta, Color color, string label)
     {
         message.Draw<FLU>(drawing, color, m_Origin, m_LengthScale, m_SphereRadius, m_Thickness );
     }
 
-    public override Action CreateGUI(MAccel message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MAccel message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.GUI();
     };

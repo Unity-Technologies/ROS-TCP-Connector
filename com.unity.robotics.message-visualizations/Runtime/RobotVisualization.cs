@@ -98,7 +98,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result.Joint;
         }
 
-        public void DrawJointPaths(DebugDraw.Drawing drawing, MJointTrajectory message, Color color, float pathThickness)
+        public void DrawJointPaths(BasicDrawing drawing, MJointTrajectory message, Color color, float pathThickness)
         {
             JointPlacement[][] jointPlacements = GetJointPlacements(message);
             for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
@@ -107,7 +107,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawJointPaths(DebugDraw.Drawing drawing, JointPlacement[][] jointPlacements, Color color, float pathThickness)
+        public void DrawJointPaths(BasicDrawing drawing, JointPlacement[][] jointPlacements, Color color, float pathThickness)
         {
             for (int pathIdx = 1; pathIdx < jointPlacements.Length; ++pathIdx)
             {
@@ -120,27 +120,27 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawJointPath(DebugDraw.Drawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
+        public void DrawJointPath(BasicDrawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
         {
             DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
         }
 
-        public void DrawGhost(DebugDraw.Drawing drawing, MJointTrajectory message, int pointIndex, Color color)
+        public void DrawGhost(BasicDrawing drawing, MJointTrajectory message, int pointIndex, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color);
         }
 
-        public void DrawGhost(DebugDraw.Drawing drawing, MJointTrajectoryPoint message, string[] jointNames, Color color)
+        public void DrawGhost(BasicDrawing drawing, MJointTrajectoryPoint message, string[] jointNames, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message, jointNames), color);
         }
 
-        public void DrawJointPath(DebugDraw.Drawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
+        public void DrawJointPath(BasicDrawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
         {
             drawing.DrawLineStrip(color, pathThickness, jointPlacements.Select(p => p[jointIndex].Position).ToArray());
         }
 
-        public void DrawGhost(DebugDraw.Drawing drawing, JointPlacement[] placements, Color color)
+        public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color)
         {
             foreach(JointPlacement jointPlacement in placements)
             {

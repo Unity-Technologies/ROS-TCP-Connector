@@ -40,7 +40,7 @@ namespace Unity.Robotics.MessageVisualizers
                 return null;
             }
 
-            DebugDraw.Drawing drawing = DebugDraw.CreateDrawing();
+            BasicDrawing drawing = BasicDrawingManager.CreateDrawing();
             Draw(drawing, (TargetMessageType)message, meta, SelectColor(meta), SelectLabel(meta));
             return drawing;
         }
@@ -61,13 +61,13 @@ namespace Unity.Robotics.MessageVisualizers
                 return meta.Topic;
         }
 
-        public virtual void Draw(DebugDraw.Drawing drawing, TargetMessageType message, MessageMetadata meta, Color color, string label)
+        public virtual void Draw(BasicDrawing drawing, TargetMessageType message, MessageMetadata meta, Color color, string label)
         {
         }
 
         public void DeleteDrawing(object drawing)
         {
-            ((DebugDraw.Drawing)drawing).Destroy();
+            ((BasicDrawing)drawing).Destroy();
         }
 
         public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
@@ -77,7 +77,7 @@ namespace Unity.Robotics.MessageVisualizers
                 return MessageVisualizations.CreateDefaultGUI(message, meta);
             }
 
-            return CreateGUI((TargetMessageType)message, meta, (DebugDraw.Drawing)drawing);
+            return CreateGUI((TargetMessageType)message, meta, (BasicDrawing)drawing);
         }
 
         public bool AssertMessageType(Message message, MessageMetadata meta)
@@ -90,7 +90,7 @@ namespace Unity.Robotics.MessageVisualizers
             return true;
         }
 
-        public virtual System.Action CreateGUI(TargetMessageType message, MessageMetadata meta, DebugDraw.Drawing drawing)
+        public virtual System.Action CreateGUI(TargetMessageType message, MessageMetadata meta, BasicDrawing drawing)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }

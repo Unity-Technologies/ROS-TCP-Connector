@@ -14,12 +14,12 @@ public class DefaultVisualizerPoseArray : BasicVisualizer<MPoseArray>
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
 
-    public override void Draw(DebugDraw.Drawing drawing, MPoseArray message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPoseArray message, MessageMetadata meta, Color color, string label)
     {
         message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPoseArray message, MessageMetadata meta, DebugDraw.Drawing drawing) => () =>
+    public override Action CreateGUI(MPoseArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.GUI();
     };
