@@ -100,6 +100,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
         }
 
+        public void SetLastMessageRaw(string topic, byte[] data)
+        {
+            HUDVisualizationRule rule;
+            if (!m_AllTopics.TryGetValue(topic, out rule))
+            {
+                m_AllTopics.Add(topic, null);
+            }
+            if (rule != null)
+                rule.SetMessageRaw(data, new MessageMetadata(topic, DateTime.Now));
+        }
+
         public int AddServiceRequest(string topic, Message request)
         {
             int serviceID = m_NextServiceID;
@@ -277,7 +288,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void DrawTopicMenuContents(int id)
         {
+            GUILayout.BeginHorizontal();
             m_TopicFilter = GUILayout.TextField(m_TopicFilter);
+
+            if (m_TopicFilter != "" && !m_AllTopics.ContainsKey(m_TopicFilter))
+            {
+                if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
+                {
+                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, this);
+                    rule.SetShowWindow(true);
+                    rule.SetShowDrawing(true);
+                    m_AllTopics.Add(m_TopicFilter, rule);
+                }
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("UI", s_BoldStyle, GUILayout.Width(20));
@@ -337,9 +361,9 @@ namespace Unity.Robotics.ROSTCPConnector
             if (numTopicsShown == 0)
             {
                 if (m_AllTopics.Count == 0)
-                    GUILayout.Label("No known topics yet");
+                    GUILayout.Label("No topics registered");
                 else
-                    GUILayout.Label("No such topic!");
+                    GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");
             }
         }
 

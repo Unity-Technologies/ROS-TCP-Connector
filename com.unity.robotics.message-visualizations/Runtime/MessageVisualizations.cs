@@ -1,9 +1,11 @@
 using RosMessageTypes.Actionlib;
 using RosMessageTypes.Diagnostic;
 using RosMessageTypes.Geometry;
+using RosMessageTypes.Shape;
 using RosMessageTypes.Std;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
@@ -62,6 +64,24 @@ namespace Unity.Robotics.MessageVisualizers
             return time;
         }
 
+        public static void Draw<C>(this MAccel message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
+            drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
+        }
+
+        public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
+        {
+            Mesh mesh = new Mesh();
+            mesh.vertices = message.vertices.Select(v => v.From<C>()).ToArray();
+            mesh.triangles = message.triangles.SelectMany(tri => tri.vertex_indices.Select(i=>(int)i)).ToArray();
+            if (origin != null)
+                drawing.DrawMesh(mesh, origin.transform, color);
+            else
+                drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
+        }
+
         public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
@@ -71,30 +91,6 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
-        }
-
-        public static void GUI(this MHeader message)
-        {
-            GUILayout.Label($"<{message.seq} {message.frame_id} {TimeToString(message.stamp)}>");
-        }
-
-        public static void GUI(this MTime message)
-        {
-            GUILayout.Label(TimeToString(message));
-        }
-
-        public static void GUI(this MPoint message, string name)
-        {
-            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
-            if (name == null || name == "")
-                GUILayout.Label(body);
-            else
-                GUILayout.Label($"{name}: {body}");
-        }
-
-        public static void GUI(this MPoint message)
-        {
-            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
         public static void Draw<C>(this MPoint32 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -108,84 +104,14 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawPoint(message.From<C>(), color, size);
         }
 
-        public static void GUI(this MPoint32 message, string name)
+        public static void Draw<C>(this MPolygon message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
-            if (name == null || name == "")
-                GUILayout.Label(body);
-            else
-                GUILayout.Label($"{name}: {body}");
-        }
-
-        public static void GUI(this MPoint32 message)
-        {
-            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
-        }
-
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 point = message.From<C>();
-            drawing.DrawPoint(point, color, size);
-            drawing.DrawLabel(label, point, color, size * 1.5f);
-        }
-
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-        }
-
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 point = message.From<C>();
-            if (origin != null)
-                point = origin.transform.TransformPoint(point);
-            drawing.DrawPoint(point, color, size);
-            drawing.DrawLabel(label, point, color, size * 1.5f);
-        }
-
-        public static void GUI(this MVector3 message, string name)
-        {
-            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
-            if (name == null || name == "")
-                GUILayout.Label(body);
-            else
-                GUILayout.Label($"{name}: {body}");
-        }
-
-        public static void GUI(this MVector3 message)
-        {
-            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
-        }
-
-        public static void GUI(this MPose message)
-        {
-            message.position.GUI("Position");
-            message.orientation.GUI("Orientation");
-        }
-
-        public static void GUI(this MPoseArray message)
-        {
-            GUI(message.header);
-            for (int Idx = 0; Idx < message.poses.Length; ++Idx)
+            Vector3 prevPos = message.points[message.points.Length - 1].From<FLU>();
+            foreach (MPoint32 p in message.points)
             {
-                MPose pose = message.poses[Idx];
-                pose.position.GUI($"[{Idx}] Position");
-                pose.orientation.GUI("Orientation");
-            }
-        }
-
-        public static void GUIGrid<T>(T[] data, int width)
-        {
-            int dataIndex = 0;
-            while (dataIndex < data.Length)
-            {
-                GUILayout.BeginHorizontal();
-                for (int Idx = 0; Idx < width && dataIndex < data.Length; ++Idx)
-                {
-                    GUILayout.Label(data[dataIndex].ToString());
-                    dataIndex++;
-                }
-                GUILayout.EndHorizontal();
+                Vector3 curPos = p.From<C>();
+                drawing.DrawLine(prevPos, curPos, color, thickness);
+                prevPos = curPos;
             }
         }
 
@@ -209,7 +135,7 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         public static void Draw<C>(this MQuaternion message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
-            where C : ICoordinateSpace, new()
+    where C : ICoordinateSpace, new()
         {
             Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
@@ -221,16 +147,31 @@ namespace Unity.Robotics.MessageVisualizers
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
-        public static void GUI(this MQuaternion message, string label)
+        public static void Draw<C>(this MSolidPrimitive message, BasicDrawing drawing, Color color, GameObject origin = null)
+            where C : ICoordinateSpace, new()
         {
-            if (label != "" && label != null)
-                label += ": ";
-            GUILayout.Label($"{label}[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
-        }
-
-        public static void GUI(this MQuaternion message)
-        {
-            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+            switch (message.type)
+            {
+                case MSolidPrimitive.BOX:
+                    drawing.DrawCuboid(
+                        new Vector3<C>(
+                            (float)message.dimensions[MSolidPrimitive.BOX_X],
+                            (float)message.dimensions[MSolidPrimitive.BOX_Y],
+                            (float)message.dimensions[MSolidPrimitive.BOX_Z]).toUnity,
+                        origin.transform.position,
+                        origin.transform.rotation,
+                        color
+                    );
+                    break;
+                case MSolidPrimitive.SPHERE:
+                    //drawing.DrawSphere(origin.transform.position, message.dimensions[MSolidPrimitive.SPHERE_RADIUS]);
+                    break;
+                case MSolidPrimitive.CYLINDER:
+                    break;
+                case MSolidPrimitive.CONE:
+                    //drawing.DrawCone();
+                break;
+            }
         }
 
         public static void Draw<C>(this MTransform transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
@@ -238,35 +179,130 @@ namespace Unity.Robotics.MessageVisualizers
             transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
 
-        public static void GUI(this MTransform message)
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
-            message.translation.GUI("Translation");
-            message.rotation.GUI("Rotation");
+            Vector3 point = message.From<C>();
+            drawing.DrawPoint(point, color, size);
+            drawing.DrawLabel(label, point, color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MPolygon message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
-            Vector3 prevPos = message.points[message.points.Length - 1].From<FLU>();
-            foreach (MPoint32 p in message.points)
+            drawing.DrawPoint(message.From<C>(), color, size);
+        }
+
+        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        {
+            Vector3 point = message.From<C>();
+            if (origin != null)
+                point = origin.transform.TransformPoint(point);
+            drawing.DrawPoint(point, color, size);
+            drawing.DrawLabel(label, point, color, size * 1.5f);
+        }
+
+
+
+        public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
+        }
+
+        public static void DrawRotationArrow(BasicDrawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            Vector3 axis;
+            float angleDegrees;
+            rotation.ToAngleAxis(out angleDegrees, out axis);
+            DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
+        }
+
+        public static void DrawRotationArrow(BasicDrawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        {
+            Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
+            if (startVector.sqrMagnitude < 0.01f)
+                startVector = Vector3.forward;
+
+            float degreesPerStep = 10.0f; // approximately
+            int numSteps = Mathf.Max((int)(rotationDegrees / degreesPerStep), 2);
+            float pushOutPerStep = 0;
+            if (rotationDegrees > 360)
             {
-                Vector3 curPos = p.From<C>();
-                drawing.DrawLine(prevPos, curPos, color, thickness);
-                prevPos = curPos;
+                float pushOutFinal = arrowThickness * 6 * rotationDegrees / 360;
+                pushOutPerStep = pushOutFinal / numSteps;
+            }
+
+            Quaternion deltaRotation = Quaternion.AngleAxis(rotationDegrees / (float)numSteps, rotationAxis);
+            List<Vector3> points = new List<Vector3>();
+
+            Quaternion currentRotation = Quaternion.LookRotation(startVector);
+            for (int step = 0; step < numSteps; ++step)
+            {
+                points.Add(sphereCenter + currentRotation * Vector3.forward * sphereRadius);
+                currentRotation = deltaRotation * currentRotation;
+                sphereRadius += pushOutPerStep;
+            }
+
+            drawing.DrawLineStrip(color, arrowThickness, points.ToArray());
+            drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
+        }
+
+
+        public static void GUI(this MColorRGBA message)
+        {
+            Color oldBackgroundColor = UnityEngine.GUI.color;
+
+            GUILayout.BeginHorizontal();
+            UnityEngine.GUI.backgroundColor = message.ToUnityColor();
+            GUILayout.Box("", s_ColorSwatchStyle);
+            UnityEngine.GUI.backgroundColor = oldBackgroundColor;
+            GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
+            GUILayout.EndHorizontal();
+        }
+
+        static string[] s_DiagnosticLevelTable = new string[]
+        {
+            "OK","WARN","ERROR","STALE"
+        };
+
+        public static void GUI(this MDiagnosticStatus message)
+        {
+            string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
+            GUILayout.Label($"Status of {message.name}|{message.hardware_id}: {status}");
+            GUILayout.Label(message.message);
+            foreach (MKeyValue keyValue in message.values)
+            {
+                GUILayout.Label($"   {keyValue.key}: {keyValue.value}");
             }
         }
 
-        public static void GUI(this MPolygon message)
+        public static void GUI(this MDiagnosticArray message)
         {
-            GUILayout.Label($"({message.points.Length} points):");
-            foreach (MPoint32 p in message.points)
-                GUI(p);
+            message.header.GUI();
+            foreach (MDiagnosticStatus status in message.status)
+                status.GUI();
         }
 
-        public static void Draw<C>(this MAccel message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        static string[] s_GoalStatusTable = new string[]
         {
-            Vector3 originPos = (origin == null) ? Vector3.zero: origin.transform.position;
-            drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
+            "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
+        };
+
+        public static void GUI(this MGoalStatus message)
+        {
+            string status = (message.status >= 0 && message.status < s_GoalStatusTable.Length) ? s_GoalStatusTable[message.status] : $"INVALID({message.status})";
+            GUILayout.Label($"Status: {message.goal_id} = {status}");
+            GUILayout.Label(message.text);
+        }
+
+        public static void GUI(this MGoalStatusArray message)
+        {
+            message.header.GUI();
+            foreach (MGoalStatus status in message.status_list)
+                status.GUI();
+        }
+
+        public static void GUI(this MHeader message)
+        {
+            GUILayout.Label($"<{message.seq} {message.frame_id} {TimeToString(message.stamp)}>");
         }
 
         public static void GUI(this MInertia message)
@@ -290,46 +326,123 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        static string[] s_GoalStatusTable = new string[]
+        public static void GUI(this MMesh message)
         {
-            "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
-        };
-
-        public static void GUI(this MGoalStatus message)
-        {
-            string status = (message.status >= 0 && message.status < s_GoalStatusTable.Length) ? s_GoalStatusTable[message.status] : $"INVALID({message.status})";
-            GUILayout.Label($"Status: {message.goal_id} = {status}");
-            GUILayout.Label(message.text);
+            foreach (MPoint p in message.vertices)
+                p.GUI();
+            foreach (MMeshTriangle tri in message.triangles)
+                tri.GUI();
         }
 
-        public static void GUI(this MGoalStatusArray message)
+        public static void GUI(this MMeshTriangle message)
         {
-            message.header.GUI();
-            foreach (MGoalStatus status in message.status_list)
-                status.GUI();
+            string text = "["+String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray())+"]";
+                GUILayout.Label(text);
         }
 
-        static string[] s_DiagnosticLevelTable = new string[]
+        public static void GUI(this MPoint message, string name)
         {
-            "OK","WARN","ERROR","STALE"
-        };
+            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
+            if (name == null || name == "")
+                GUILayout.Label(body);
+            else
+                GUILayout.Label($"{name}: {body}");
+        }
 
-        public static void GUI(this MDiagnosticStatus message)
+        public static void GUI(this MPoint message)
         {
-            string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
-            GUILayout.Label($"Status of {message.name}|{message.hardware_id}: {status}");
-            GUILayout.Label(message.message);
-            foreach(MKeyValue keyValue in message.values)
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
+        public static void GUI(this MPoint32 message, string name)
+        {
+            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
+            if (name == null || name == "")
+                GUILayout.Label(body);
+            else
+                GUILayout.Label($"{name}: {body}");
+        }
+
+        public static void GUI(this MPoint32 message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
+        public static void GUI(this MPolygon message)
+        {
+            GUILayout.Label($"({message.points.Length} points):");
+            foreach (MPoint32 p in message.points)
+                GUI(p);
+        }
+
+        public static void GUI(this MPose message)
+        {
+            message.position.GUI("Position");
+            message.orientation.GUI("Orientation");
+        }
+
+        public static void GUI(this MPoseArray message)
+        {
+            GUI(message.header);
+            for (int Idx = 0; Idx < message.poses.Length; ++Idx)
             {
-                GUILayout.Label($"   {keyValue.key}: {keyValue.value}");
+                MPose pose = message.poses[Idx];
+                pose.position.GUI($"[{Idx}] Position");
+                pose.orientation.GUI("Orientation");
             }
         }
 
-        public static void GUI(this MDiagnosticArray message)
+
+        public static void GUI(this MQuaternion message, string label)
         {
-            message.header.GUI();
-            foreach (MDiagnosticStatus status in message.status)
-                status.GUI();
+            if (label != "" && label != null)
+                label += ": ";
+            GUILayout.Label($"{label}[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+        }
+
+        public static void GUI(this MQuaternion message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+        }
+
+        public static void GUI(this MTime message)
+        {
+            GUILayout.Label(TimeToString(message));
+        }
+
+        public static void GUI(this MTransform message)
+        {
+            message.translation.GUI("Translation");
+            message.rotation.GUI("Rotation");
+        }
+
+        public static void GUI(this MVector3 message, string name)
+        {
+            string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
+            if (name == null || name == "")
+                GUILayout.Label(body);
+            else
+                GUILayout.Label($"{name}: {body}");
+        }
+
+        public static void GUI(this MVector3 message)
+        {
+            GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
+        public static void GUIGrid<T>(T[] data, int width)
+        {
+            int dataIndex = 0;
+            while (dataIndex < data.Length)
+            {
+                GUILayout.BeginHorizontal();
+                for (int Idx = 0; Idx < width && dataIndex < data.Length; ++Idx)
+                {
+                    GUILayout.Label(data[dataIndex].ToString());
+                    dataIndex++;
+                }
+                GUILayout.EndHorizontal();
+            }
         }
 
         public static void GUI(this MSelfTestResponse message)
@@ -351,18 +464,6 @@ namespace Unity.Robotics.MessageVisualizers
             fixedWidth = 25,
             fixedHeight = 25
         };
-
-        public static void GUI(this MColorRGBA message)
-        {
-            Color oldBackgroundColor = UnityEngine.GUI.color;
-
-            GUILayout.BeginHorizontal();
-            UnityEngine.GUI.backgroundColor = message.ToUnityColor();
-            GUILayout.Box("", s_ColorSwatchStyle);
-            UnityEngine.GUI.backgroundColor = oldBackgroundColor;
-            GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
-            GUILayout.EndHorizontal();
-        }
 
         public static Color32 ToUnityColor(this MColorRGBA message)
         {
@@ -422,49 +523,6 @@ namespace Unity.Robotics.MessageVisualizers
                 }
                 GUILayout.EndVertical();
             }
-        }
-
-        public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
-        {
-            DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
-        }
-
-        public static void DrawRotationArrow(BasicDrawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
-        {
-            Vector3 axis;
-            float angleDegrees;
-            rotation.ToAngleAxis(out angleDegrees, out axis);
-            DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
-        }
-
-        public static void DrawRotationArrow(BasicDrawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
-        {
-            Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
-            if (startVector.sqrMagnitude < 0.01f)
-                startVector = Vector3.forward;
-
-            float degreesPerStep = 10.0f; // approximately
-            int numSteps = Mathf.Max((int)(rotationDegrees / degreesPerStep), 2);
-            float pushOutPerStep = 0;
-            if (rotationDegrees > 360)
-            {
-                float pushOutFinal = arrowThickness * 6 * rotationDegrees / 360;
-                pushOutPerStep = pushOutFinal / numSteps;
-            }
-
-            Quaternion deltaRotation = Quaternion.AngleAxis(rotationDegrees / (float)numSteps, rotationAxis);
-            List<Vector3> points = new List<Vector3>();
-
-            Quaternion currentRotation = Quaternion.LookRotation(startVector);
-            for (int step = 0; step < numSteps; ++step)
-            {
-                points.Add( sphereCenter + currentRotation * Vector3.forward * sphereRadius );
-                currentRotation = deltaRotation * currentRotation;
-                sphereRadius += pushOutPerStep;
-            }
-
-            drawing.DrawLineStrip(color, arrowThickness, points.ToArray());
-            drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
         }
     }
 }

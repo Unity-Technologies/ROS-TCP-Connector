@@ -62,6 +62,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
 
+        // Generic version - for normal use
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
         {
             SubscriberCallback subCallbacks;
@@ -76,6 +77,28 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); return null; });
+        }
+        
+        // System.Type version for when the message type is unknown at compile time
+        public void ReflectionSubscribe(string topic, Type messageType, Action<Message> callback)
+        {
+            SubscriberCallback subCallbacks;
+            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            {
+                subCallbacks = new SubscriberCallback
+                {
+                    messageConstructor = messageType.GetConstructor(new Type[0]),
+                    callbacks = new List<Func<Message, Message>> { }
+                };
+                subscribers.Add(topic, subCallbacks);
+            }
+
+            subCallbacks.callbacks.Add((Message msg) => { callback(msg); return null; });
+        }
+
+        public bool HasSubscriber(string topic)
+        {
+            return subscribers.ContainsKey(topic);
         }
 
         public void ImplementService<T>(string topic, Func<T, Message> callback)
@@ -276,6 +299,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (!subscribers.TryGetValue(topicName, out subs))
                 return; // not interested in this topic
+
+            if(subs.messageConstructor == null)
+            {
+                if (hudPanel != null)
+                    hudPanel.SetLastMessageRaw(topicName, content);
+                return;
+            }
 
             Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
             msg.Deserialize(content, 0);

@@ -39,7 +39,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void AddDirty(BasicDrawing drawing)
         {
-            m_Drawings.Add(drawing);
+            m_Dirty.Add(drawing);
         }
 
         public void DestroyDrawing(BasicDrawing drawing)
@@ -57,6 +57,7 @@ namespace Unity.Robotics.MessageVisualizers
             return newDrawing;
         }
 
+        
         void LateUpdate()
         {
             foreach (BasicDrawing drawing in m_Dirty)
@@ -77,7 +78,10 @@ namespace Unity.Robotics.MessageVisualizers
                 if (m_Drawings[Idx] == null)
                     m_Drawings.RemoveAt(Idx);
                 else
+                {
                     m_Drawings[Idx].OnDrawingGUI(m_Camera);
+                    ++Idx;
+                }
             }
 
             GUI.color = oldColor;

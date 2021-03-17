@@ -24,6 +24,11 @@ namespace Unity.Robotics.MessageVisualizers
         List<LabelInfo3D> m_Labels = new List<LabelInfo3D>();
         bool m_isDirty = false;
 
+        public static BasicDrawing Create(float duration = -1, Material material = null)
+        {
+            return BasicDrawingManager.CreateDrawing(duration, material);
+        }
+
         public void Init(BasicDrawingManager parent, Material material, float duration = -1)
         {
             m_Mesh = new Mesh();
@@ -117,6 +122,88 @@ namespace Unity.Robotics.MessageVisualizers
             Vector3 arrowheadJoint = to - direction * arrowheadLength;
             DrawLine(from, arrowheadJoint, color, thickness);
             DrawCone(arrowheadJoint, to, color, arrowheadRadius);
+        }
+
+        public void DrawCuboid(Vector3 center, Vector3 halfSize, Color32 color)
+        {
+            DrawParallelepiped(center, new Vector3(halfSize.x, 0, 0), new Vector3(0, halfSize.y, 0), new Vector3(0, 0, halfSize.z), color);
+        }
+
+        public void DrawCuboid(Vector3 center, Vector3 halfSize, Quaternion rotation, Color32 color)
+        {
+            DrawParallelepiped(center,
+                rotation * new Vector3(halfSize.x,0,0),
+                rotation * new Vector3(0, halfSize.y, 0),
+                rotation * new Vector3(0, 0, halfSize.z),
+                color);
+        }
+
+        public void DrawParallelepiped(Vector3 center, Vector3 x, Vector3 y, Vector3 z, Color32 color)
+        {
+            int start = m_Vertices.Count;
+            m_Vertices.Add(center - x - y - z); // 0
+            m_Vertices.Add(center - x - y + z); // 1
+            m_Vertices.Add(center - x + y - z); // 2
+            m_Vertices.Add(center - x + y + z); // 3
+            m_Vertices.Add(center + x - y - z); // 4
+            m_Vertices.Add(center + x - y + z); // 5
+            m_Vertices.Add(center + x + y - z); // 6
+            m_Vertices.Add(center + x + y + z); // 7
+            for(int Idx = 0; Idx < 8; ++Idx)
+                m_Colors32.Add(color);
+            AddQuad(start, 0, 1, 3, 2); // left face
+            AddQuad(start, 4, 6, 7, 5); // right face
+            AddQuad(start, 2, 3, 7, 6); // top face
+            AddQuad(start, 0, 4, 5, 1); // bottom face
+            AddQuad(start, 0, 2, 6, 4); // back face
+            AddQuad(start, 1, 5, 7, 3); // front face
+            SetDirty();
+        }
+
+        public void DrawSphere(Vector3 center, float radius, Color32 color, int numDivisions = 8)
+        {
+            int start = m_Vertices.Count;
+            m_Vertices.Add(center + new Vector3(0, radius, 0));
+            m_Colors32.Add(color);
+            m_Vertices.Add(center - new Vector3(0, radius, 0));
+            m_Colors32.Add(color);
+
+            int numRings = (numDivisions / 2) - 1;
+            float yawStep = Mathf.PI * 2 / numDivisions;
+            float pitchStep = Mathf.PI / (numRings+1);
+            int lastRingStart = 2 + numRings - 1;
+
+            for (int vertexIdx = 0; vertexIdx < numDivisions; ++vertexIdx)
+            {
+                float yaw = vertexIdx * yawStep;
+                Vector3 sideVector = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
+                for (int ringIdx = 0; ringIdx < numRings; ++ringIdx)
+                {
+                    float pitch = Mathf.PI * 0.5f - (ringIdx+1) * pitchStep;
+                    m_Vertices.Add(center + sideVector * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch));
+                    m_Colors32.Add(color);
+
+                    if (ringIdx + 1 < numRings)
+                    {
+                        AddQuad(start + 2,
+                            vertexIdx * numRings + ringIdx,
+                            vertexIdx * numRings + ringIdx + 1,
+                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx + 1,
+                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx);
+                    }
+                }
+
+                AddTriangles(start,
+                    0,
+                    2 + vertexIdx * numRings,
+                    2 + ((vertexIdx + 1) % numDivisions) * numRings,
+
+                    1,
+                    lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings,
+                    lastRingStart + vertexIdx * numRings
+                    );
+            }
+            SetDirty();
         }
 
         public void DrawCone(Vector3 basePosition, Vector3 tipPosition, Color32 color, float radius, int numRingVertices = 8)
@@ -232,6 +319,24 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+        // indices in clockwise order
+        void AddQuad(int offset, int a, int b, int c, int d)
+        {
+            AddQuad(offset + a, offset + b, offset + c, offset + d);
+        }
+
+        // indices in clockwise order
+        void AddQuad(int a, int b, int c, int d)
+        {
+            m_Triangles.Add(a);
+            m_Triangles.Add(b);
+            m_Triangles.Add(c);
+
+            m_Triangles.Add(a);
+            m_Triangles.Add(c);
+            m_Triangles.Add(d);
+        }
+
         public void DrawLabel(string text, Vector3 position, Color color, float worldSpacing = 0)
         {
             m_Labels.Add(new LabelInfo3D { text = text, position = position, color = color, worldSpacing = worldSpacing });
@@ -292,11 +397,11 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Refresh()
         {
+            m_isDirty = false;
             m_Mesh.Clear();
             m_Mesh.vertices = m_Vertices.ToArray();
             m_Mesh.colors32 = m_Colors32.ToArray();
             m_Mesh.triangles = m_Triangles.ToArray();
-            m_isDirty = false;
         }
 
         void SetDirty()
