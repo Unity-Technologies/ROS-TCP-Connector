@@ -435,12 +435,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 if(newFilter != "" && newFilter != m_MessageTypeFilter)
                 {
                     m_FilteredMessageTypes.Clear();
+                    string newFilterLowercase = newFilter.ToLower();
                     foreach(string messageType in s_AllMessageTypes.Keys)
                     {
-                        if(messageType.Contains(newFilter))
+                        if(messageType.ToLower().Contains(newFilterLowercase))
                             m_FilteredMessageTypes.Add(messageType);
                     }
                 }
+                m_MessageTypeFilter = newFilter;
 
                 foreach (string messageTypeName in m_FilteredMessageTypes)
                 {

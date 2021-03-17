@@ -150,26 +150,31 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MSolidPrimitive message, BasicDrawing drawing, Color color, GameObject origin = null)
             where C : ICoordinateSpace, new()
         {
+            Vector3 originPosition = origin != null ? origin.transform.position : Vector3.zero;
+            Quaternion originRotation = origin != null ? origin.transform.rotation : Quaternion.identity;
             switch (message.type)
             {
                 case MSolidPrimitive.BOX:
                     drawing.DrawCuboid(
+                        originPosition,
                         new Vector3<C>(
-                            (float)message.dimensions[MSolidPrimitive.BOX_X],
-                            (float)message.dimensions[MSolidPrimitive.BOX_Y],
-                            (float)message.dimensions[MSolidPrimitive.BOX_Z]).toUnity,
-                        origin.transform.position,
-                        origin.transform.rotation,
+                            (float)message.dimensions[MSolidPrimitive.BOX_X]*0.5f,
+                            (float)message.dimensions[MSolidPrimitive.BOX_Y]*0.5f,
+                            (float)message.dimensions[MSolidPrimitive.BOX_Z]*0.5f).toUnity,
+                        originRotation,
                         color
                     );
                     break;
                 case MSolidPrimitive.SPHERE:
-                    //drawing.DrawSphere(origin.transform.position, message.dimensions[MSolidPrimitive.SPHERE_RADIUS]);
+                    drawing.DrawSphere(originPosition, color, (float)message.dimensions[MSolidPrimitive.SPHERE_RADIUS]);
                     break;
                 case MSolidPrimitive.CYLINDER:
+                    Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[MSolidPrimitive.CYLINDER_HEIGHT] * 0.5f;
+                    drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[MSolidPrimitive.CYLINDER_RADIUS]);
                     break;
                 case MSolidPrimitive.CONE:
-                    //drawing.DrawCone();
+                    Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[MSolidPrimitive.CONE_HEIGHT] * 0.5f;
+                    drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[MSolidPrimitive.CONE_RADIUS]);
                 break;
             }
         }

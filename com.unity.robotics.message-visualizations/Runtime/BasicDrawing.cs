@@ -160,7 +160,7 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
-        public void DrawSphere(Vector3 center, float radius, Color32 color, int numDivisions = 8)
+        public void DrawSphere(Vector3 center, Color32 color, float radius, int numDivisions = 8)
         {
             int start = m_Vertices.Count;
             m_Vertices.Add(center + new Vector3(0, radius, 0));
@@ -203,6 +203,100 @@ namespace Unity.Robotics.MessageVisualizers
                     lastRingStart + vertexIdx * numRings
                     );
             }
+            SetDirty();
+        }
+
+        public void DrawCircle(Vector3 center, Vector3 normal, Color32 color, float radius, int numRingVertices = 8)
+        {
+            DrawCircleOneSided(center, normal, color, radius, numRingVertices);
+            DrawCircleOneSided(center, -normal, color, radius, numRingVertices);
+        }
+
+        public void DrawCircleOneSided(Vector3 center, Vector3 normal, Color32 color, float radius, int numRingVertices = 8)
+        {
+            Vector3 forwardVector = ((Mathf.Abs(normal.z) < Mathf.Abs(normal.x)) ? new Vector3(normal.y, -normal.x, 0) : new Vector3(0, -normal.z, normal.y)).normalized * radius;
+            Vector3 sideVector = Vector3.Cross(forwardVector, normal).normalized * radius;
+
+            float angleScale = Mathf.PI * 2.0f / numRingVertices;
+
+            int start = m_Vertices.Count;
+            m_Vertices.Add(center);
+            m_Colors32.Add(color);
+
+            m_Vertices.Add(center + forwardVector);
+            m_Colors32.Add(color);
+            for (int step = 1; step < numRingVertices; ++step)
+            {
+                float angle = step * angleScale;
+                m_Vertices.Add(center + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
+                m_Colors32.Add(color);
+
+                m_Triangles.Add(start); // center
+                m_Triangles.Add(start + step + 1); // new ring vertex
+                m_Triangles.Add(start + step); // previous ring vertex
+            }
+
+            m_Triangles.Add(start); // center
+            m_Triangles.Add(start + numRingVertices); // last ring vertex
+            m_Triangles.Add(start + 1); // first ring vertex
+            SetDirty();
+        }
+
+        public void DrawCylinder(Vector3 bottom, Vector3 top, Color32 color, float radius, int numRingVertices = 8)
+        {
+            int start = m_Vertices.Count;
+            Vector3 upVector = top - bottom;
+            Vector3 forwardVector = ((Mathf.Abs(upVector.z) < Mathf.Abs(upVector.x)) ? new Vector3(upVector.y, -upVector.x, 0) : new Vector3(0, -upVector.z, upVector.y)).normalized * radius;
+            Vector3 sideVector = Vector3.Cross(forwardVector, upVector).normalized * radius;
+            float angleScale = Mathf.PI * 2.0f / numRingVertices;
+
+            m_Vertices.Add(bottom);
+            m_Colors32.Add(color);
+
+            m_Vertices.Add(top);
+            m_Colors32.Add(color);
+
+            m_Vertices.Add(bottom+forwardVector);
+            m_Colors32.Add(color);
+
+            m_Vertices.Add(top+forwardVector);
+            m_Colors32.Add(color);
+
+            for (int step = 1; step < numRingVertices; ++step)
+            {
+                float angle = step * angleScale;
+                m_Vertices.Add(bottom + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
+                m_Colors32.Add(color);
+
+                m_Vertices.Add(top + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
+                m_Colors32.Add(color);
+
+                // bottom circle
+                m_Triangles.Add(start); // bottom
+                m_Triangles.Add(start + step*2); // previous bottom ring vertex
+                m_Triangles.Add(start + step * 2 + 2); // new bottom ring vertex
+
+                // top circle
+                m_Triangles.Add(start + 1); // top
+                m_Triangles.Add(start + step*2 + 3); // new top ring vertex
+                m_Triangles.Add(start + step * 2 + 1); // previous top ring vertex
+
+                // cylinder wall
+                AddQuad(start + step*2, 0, 1, 3, 2);
+            }
+
+            // bottom circle
+            m_Triangles.Add(start); // bottom
+            m_Triangles.Add(start + numRingVertices * 2); // last bottom ring vertex
+            m_Triangles.Add(start + 2); // first bottom ring vertex
+
+            // top circle
+            m_Triangles.Add(start + 1); // top
+            m_Triangles.Add(start + 3); // first top ring vertex
+            m_Triangles.Add(start + numRingVertices * 2 + 1); // last top ring vertex
+
+            // cylinder wall
+            AddQuad(start, 3, 2, numRingVertices * 2, numRingVertices*2+1 );
             SetDirty();
         }
 
