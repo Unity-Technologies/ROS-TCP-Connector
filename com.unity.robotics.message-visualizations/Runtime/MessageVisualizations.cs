@@ -415,6 +415,28 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label(TimeToString(message));
         }
 
+        public static void GUI(this MSolidPrimitive message)
+        {
+            switch(message.type)
+            {
+                case MSolidPrimitive.BOX:
+                    GUILayout.Label($"SolidPrimitive BOX\n[X:{message.dimensions[MSolidPrimitive.BOX_X]}, Y:{message.dimensions[MSolidPrimitive.BOX_Y]}, Z:{message.dimensions[MSolidPrimitive.BOX_Z]}]");
+                    break;
+                case MSolidPrimitive.SPHERE:
+                    GUILayout.Label($"SolidPrimitive SPHERE\nRadius: {message.dimensions[MSolidPrimitive.SPHERE_RADIUS]}");
+                    break;
+                case MSolidPrimitive.CYLINDER:
+                    GUILayout.Label($"SolidPrimitive CYLINDER\nHeight: {message.dimensions[MSolidPrimitive.CYLINDER_HEIGHT]}\nRadius: {message.dimensions[MSolidPrimitive.CYLINDER_RADIUS]}");
+                    break;
+                case MSolidPrimitive.CONE:
+                    GUILayout.Label($"SolidPrimitive CONE\nHeight: {message.dimensions[MSolidPrimitive.CONE_HEIGHT]}\nRadius: {message.dimensions[MSolidPrimitive.CONE_RADIUS]}");
+                    break;
+                default:
+                    GUILayout.Label($"INVALID shape {message.type}!?");
+                    break;
+            }
+        }
+
         public static void GUI(this MTransform message)
         {
             message.translation.GUI("Translation");

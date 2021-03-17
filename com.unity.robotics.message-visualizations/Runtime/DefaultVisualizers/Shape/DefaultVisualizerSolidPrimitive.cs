@@ -16,8 +16,8 @@ public class DefaultVisualizerSolidPrimitive : BasicVisualizer<MSolidPrimitive>
         message.Draw<FLU>(drawing, color, m_Origin);
     }
 
-    public override Action CreateGUI(MSolidPrimitive message, MessageMetadata meta, BasicDrawing drawing)
+    public override Action CreateGUI(MSolidPrimitive message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
-        return base.CreateGUI(message, meta, drawing);
-    }
+        message.GUI();
+    };
 }
