@@ -51,19 +51,6 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static string TimeToString(MTime message)
-        {
-            DateTime time = message.ToDateTime();
-            return time.ToString("G") + $"({message.nsecs})"; // G: format using short date and long time
-        }
-
-        public static DateTime ToDateTime(this MTime message)
-        {
-            DateTime time = new DateTime(message.secs);
-            time = time.AddMilliseconds(message.nsecs / 1E6);
-            return time;
-        }
-
         public static void Draw<C>(this MAccel message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
@@ -75,11 +62,31 @@ namespace Unity.Robotics.MessageVisualizers
         {
             Mesh mesh = new Mesh();
             mesh.vertices = message.vertices.Select(v => v.From<C>()).ToArray();
-            mesh.triangles = message.triangles.SelectMany(tri => tri.vertex_indices.Select(i=>(int)i)).ToArray();
+            mesh.triangles = message.triangles.SelectMany(tri => tri.vertex_indices.Select(i => (int)i)).ToArray();
             if (origin != null)
                 drawing.DrawMesh(mesh, origin.transform, color);
             else
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
+        }
+
+        public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
+        {
+            message.Draw<C>(drawing, color, (center != null)? center.transform.position: Vector3.zero, size);
+        }
+
+        public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
+        {
+            Vector3 normal = new Vector3<C>((float)message.coef[0], (float)message.coef[1], (float)message.coef[2]).toUnity;
+            float d = (float)message.coef[3];
+
+            float normalScale = (Vector3.Dot(normal, origin) + d)/normal.sqrMagnitude;
+            Vector3 center = origin - normal * normalScale;
+
+            Vector3 forward = (Mathf.Abs(normal.x) > Mathf.Abs(normal.y)) ? Vector3.Cross(normal, Vector3.up).normalized : Vector3.Cross(normal, Vector3.right).normalized;
+            Vector3 side = Vector3.Cross(normal, forward).normalized;
+            Vector3 diagonalA = (forward + side) * size;
+            Vector3 diagonalB = (forward - side) * size;
+            drawing.DrawQuad(center - diagonalA, center + diagonalB, center+ diagonalA, center - diagonalB, color, true);
         }
 
         public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -250,16 +257,22 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
         }
 
+        public static void GUI(this MAccel message)
+        {
+            message.linear.GUI("Linear");
+            message.angular.GUI("Angular");
+        }
 
-        public static void GUI(this MColorRGBA message)
+        public static void GUI(this MColorRGBA message, bool withText = true)
         {
             Color oldBackgroundColor = UnityEngine.GUI.color;
 
             GUILayout.BeginHorizontal();
-            UnityEngine.GUI.backgroundColor = message.ToUnityColor();
+            UnityEngine.GUI.backgroundColor = message.ToColor();
             GUILayout.Box("", s_ColorSwatchStyle);
             UnityEngine.GUI.backgroundColor = oldBackgroundColor;
-            GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
+            if(withText)
+                GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
             GUILayout.EndHorizontal();
         }
 
@@ -307,7 +320,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MHeader message)
         {
-            GUILayout.Label($"<{message.seq} {message.frame_id} {TimeToString(message.stamp)}>");
+            GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
         }
 
         public static void GUI(this MInertia message)
@@ -397,7 +410,6 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-
         public static void GUI(this MQuaternion message, string label)
         {
             if (label != "" && label != null)
@@ -410,9 +422,17 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
+        public static void GUI(this MSelfTestResponse message)
+        {
+            string pass = message.passed != 0 ? "OK" : "FAIL";
+            GUILayout.Label($"Self test {message.id}: {pass}");
+            foreach (MDiagnosticStatus status in message.status)
+                status.GUI();
+        }
+
         public static void GUI(this MTime message)
         {
-            GUILayout.Label(TimeToString(message));
+            GUILayout.Label(message.ToTimestampString());
         }
 
         public static void GUI(this MSolidPrimitive message)
@@ -472,30 +492,11 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUI(this MSelfTestResponse message)
-        {
-            string pass = message.passed != 0 ? "OK" : "FAIL";
-            GUILayout.Label($"Self test {message.id}: {pass}");
-            foreach (MDiagnosticStatus status in message.status)
-                status.GUI();
-        }
-
-        public static void GUI(this MAccel message)
-        {
-            message.linear.GUI("Linear");
-            message.angular.GUI("Angular");
-        }
-
         static readonly GUIStyle s_ColorSwatchStyle = new GUIStyle {
             normal = new GUIStyleState { background = Texture2D.whiteTexture },
             fixedWidth = 25,
             fixedHeight = 25
         };
-
-        public static Color32 ToUnityColor(this MColorRGBA message)
-        {
-            return new Color32((byte)message.r, (byte)message.g, (byte)message.b, (byte)message.a);
-        }
 
         public static void GUIMultiArray<T>(this MMultiArrayLayout layout, T[] data, ref bool tabulate)
         {

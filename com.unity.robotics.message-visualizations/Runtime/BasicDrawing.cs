@@ -114,6 +114,22 @@ namespace Unity.Robotics.MessageVisualizers
             DrawLabel(label, point, color, radius * 1.5f);
         }
 
+        public void DrawQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color32 color, bool doubleSided = false)
+        {
+            int start = m_Vertices.Count;
+            m_Vertices.Add(a);
+            m_Colors32.Add(color);
+            m_Vertices.Add(b);
+            m_Colors32.Add(color);
+            m_Vertices.Add(c);
+            m_Colors32.Add(color);
+            m_Vertices.Add(d);
+            m_Colors32.Add(color);
+            AddQuad(start, 0, 1, 2, 3);
+            if (doubleSided)
+                AddQuad(start, 3, 2, 1, 0);
+        }
+
         public void DrawArrow(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f, float arrowheadScale = 3)
         {
             float arrowheadRadius = thickness * arrowheadScale;
