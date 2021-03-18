@@ -1,6 +1,7 @@
 using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -16,6 +17,7 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
+    
         // Variables required for ROS communication
         [FormerlySerializedAs("hostName")] public string rosIPAddress = "127.0.0.1";
         [FormerlySerializedAs("hostPort")] public int rosPort = 10000;
@@ -23,11 +25,11 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("If blank, determine IP automatically.")]
         public string overrideUnityIP = "";
 
-        public bool keepConnections = true;
+        public bool keepConnections = false;
 
         TcpListener tcpListener;
         [Tooltip("Network timeout (in seconds)")]
-        public float networkTimeoutSeconds = 2;
+        public float networkTimeoutSeconds = 10;
 
         public int unityPort = 5005;
         bool alreadyStartedServer = false;
@@ -177,34 +179,35 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             var numberOfBytesRead = 0;
-            try
-            {
-                // Get first bytes to determine length of service name
-                byte[] rawServiceBytes = new byte[4];
-                networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
-                int topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
-                // Create container and read service name from network stream
-                byte[] serviceNameBytes = new byte[topicLength];
-                networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
-                string serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
-                // Get leading bytes to determine length of remaining full message
-                byte[] full_message_size_bytes = new byte[4];
-                networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
-                int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
-                // Create container and read message from network stream
-                byte[] readBuffer = new byte[full_message_size];
-                while (networkStream.DataAvailable && numberOfBytesRead < full_message_size)
-                {
-                    var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
-                    numberOfBytesRead += readBytes;
-                }
+            // Get first bytes to determine length of service name
+            var rawServiceBytes = new byte[4];
+            networkStream.Read(rawServiceBytes, 0, rawServiceBytes.Length);
+            var topicLength = BitConverter.ToInt32(rawServiceBytes, 0);
+            // Create container and read service name from network stream
+            var serviceNameBytes = new byte[topicLength];
+            networkStream.Read(serviceNameBytes, 0, serviceNameBytes.Length);
+            var serviceName = Encoding.ASCII.GetString(serviceNameBytes, 0, topicLength);
+            Debug.Assert(serviceName == rosServiceName, 
+                $"Attempting to read message for service {rosServiceName} on {nameof(networkStream)} " + 
+                $"but got message for {serviceName} instead");
 
-                serviceResponse.Deserialize(readBuffer, 0);
-            }
-            catch (Exception e)
+            // Get leading vars to determine length of remaining full message
+            var fullMessageSizeBytes = new byte[4];
+            networkStream.Read(fullMessageSizeBytes, 0, fullMessageSizeBytes.Length);
+            var fullMessageSize = BitConverter.ToInt32(fullMessageSizeBytes, 0);
+            // Create container and read message from network stream
+            var readBuffer = new byte[fullMessageSize];
+            while (networkStream.DataAvailable && numberOfBytesRead < fullMessageSize)
             {
-                Debug.LogError("Exception raised!! " + e);
+                var readBytes = networkStream.Read(readBuffer, 0, readBuffer.Length);
+                numberOfBytesRead += readBytes;
             }
+
+            Debug.Assert(numberOfBytesRead == fullMessageSize, 
+                $"Attempted to read {fullMessageSize} bytes for service {serviceName} " + 
+                $"but got {numberOfBytesRead} instead");
+
+            serviceResponse.Deserialize(readBuffer, 0);
 
             finish:
             callback(serviceResponse);
@@ -229,12 +232,12 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(SYSCOMMAND_SUBSCRIBE,
-                new SysCommand_Subscribe {topic = topic, message_name = rosMessageName});
+                new SysCommands.Subscribe {topic = topic, message_name = rosMessageName});
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish {topic = topic, message_name = rosMessageName});
+            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommands.Publish {topic = topic, message_name = rosMessageName});
         }
 
         private static ROSConnection _instance;
@@ -286,8 +289,8 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             // Must be send first as it may change how connections are handled
-            SendSysCommand(SYSCOMMAND_CONNECTIONS_PARAMETERS, new SysCommand_ConnectionsParameters 
-                { keep_connections = this.keepConnections, timeout_in_s = networkTimeoutSeconds });
+            SendSysCommand(SYSCOMMAND_CONNECTIONS_PARAMETERS, new SysCommands.ConnectionsParameters 
+                { keep_connections = keepConnections, timeout_in_s = networkTimeoutSeconds });
 
             SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
                 new MUnityHandshakeRequest(overrideUnityIP, (ushort) unityPort), RosUnityHandshakeCallback);
@@ -554,12 +557,6 @@ namespace Unity.Robotics.ROSTCPConnector
             System.Buffer.BlockCopy(bytesMsg, 0, messageBuffer, offset, bytesMsg.Length);
 
             return messageBuffer;
-        }
-
-        struct SysCommand_ConnectionsParameters
-        {
-            public bool keep_connections;
-            public float timeout_in_s;
         }
 
         protected async Task<TcpClient> Connect()
