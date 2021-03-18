@@ -89,6 +89,74 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
+        public void DrawPath(IEnumerable<Vector3> path, Color32 color, float thickness = 0.1f)
+        {
+            IEnumerator<Vector3> enumerator = path.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return; // empty path
+            
+            Vector3 pointA = enumerator.Current;
+            if (!enumerator.MoveNext())
+            {
+                // only one point in path
+                DrawPoint(pointA, color, thickness);
+                return;
+            }
+            Vector3 pointB = enumerator.Current;
+            Vector3 oldSideVector = Vector3.Cross(Vector3.up, (pointB - pointA)).normalized * thickness;
+            int oldVertexIndex = m_Vertices.Count;
+            m_Vertices.Add(pointA - oldSideVector);
+            m_Colors32.Add(color);
+            m_Vertices.Add(pointA + oldSideVector);
+            m_Colors32.Add(color);
+
+            while (enumerator.MoveNext())
+            {
+                Vector3 pointC = enumerator.Current;
+                
+                // create new vertices around pointB.
+                Vector3 newSideVector = Vector3.Cross(Vector3.up, (pointC-pointB)).normalized * thickness;
+                m_Vertices.Add(pointB - oldSideVector); //2
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB + oldSideVector); //3
+                m_Colors32.Add(color);
+                AddQuad(oldVertexIndex, 0, 2, 3, 1);
+
+                if (Vector3.Dot(pointB-pointA, newSideVector) > 0)
+                {
+                    // left turn
+                    m_Vertices.Add(pointB + (oldSideVector + newSideVector).normalized * thickness); //4
+                    m_Colors32.Add(color);
+                    AddQuad(oldVertexIndex, 2, 6, 4, 3);
+                }
+                else
+                {
+                    // right turn
+                    m_Vertices.Add(pointB - (oldSideVector + newSideVector).normalized * thickness); //4
+                    m_Colors32.Add(color);
+                    AddQuad(oldVertexIndex, 2, 4, 5, 3);
+                }
+
+                int nextVertexIndex = m_Vertices.Count;
+                m_Vertices.Add(pointB - newSideVector); //5
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB + newSideVector); //6
+                m_Colors32.Add(color);
+
+                pointA = pointB;
+                pointB = pointC;
+                oldVertexIndex = nextVertexIndex;
+                oldSideVector = newSideVector;
+            }
+
+            m_Vertices.Add(pointB - oldSideVector);
+            m_Colors32.Add(color);
+            m_Vertices.Add(pointB + oldSideVector);
+            m_Colors32.Add(color);
+            AddQuad(oldVertexIndex, 0, 2, 3, 1);
+            SetDirty();
+        }
+
         public void DrawPoint(Vector3 point, Color32 color, float radius = 0.1f)
         {
             // draw a point as an octahedron
@@ -427,6 +495,13 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 m_Triangles.Add(firstIdx + offset);
             }
+        }
+
+        void AddTriangle(int firstIdx, int a, int b, int c)
+        {
+            m_Triangles.Add(firstIdx + a);
+            m_Triangles.Add(firstIdx + b);
+            m_Triangles.Add(firstIdx + c);
         }
 
         // indices in clockwise order

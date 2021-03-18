@@ -1,6 +1,7 @@
 using RosMessageTypes.Actionlib;
 using RosMessageTypes.Diagnostic;
 using RosMessageTypes.Geometry;
+using RosMessageTypes.Nav;
 using RosMessageTypes.Shape;
 using RosMessageTypes.Std;
 using System;
@@ -67,6 +68,11 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, origin.transform, color);
             else
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
+        }
+
+        public static void Draw<C>(this MPath message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
         }
 
         public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
