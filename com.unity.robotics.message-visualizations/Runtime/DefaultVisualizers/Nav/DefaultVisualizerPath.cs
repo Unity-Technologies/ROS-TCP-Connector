@@ -20,7 +20,7 @@ public class DefaultVisualizerPath : BasicVisualizer<MPath>
     public override Action CreateGUI(MPath message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        foreach(MPoseStamped pose in message.poses)
+        foreach (MPoseStamped pose in message.poses)
         {
             pose.header.GUI();
             pose.pose.GUI();

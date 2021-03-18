@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicDrawing: MonoBehaviour
+    public class BasicDrawing : MonoBehaviour
     {
         static GUIStyle s_LabelStyle;
 
@@ -40,7 +40,7 @@ namespace Unity.Robotics.MessageVisualizers
             MeshRenderer mrenderer = gameObject.AddComponent<MeshRenderer>();
             mrenderer.sharedMaterial = material;
 
-            if(duration >= 0)
+            if (duration >= 0)
             {
                 StartCoroutine(DestroyAfterDelay(duration));
             }
@@ -94,7 +94,7 @@ namespace Unity.Robotics.MessageVisualizers
             IEnumerator<Vector3> enumerator = path.GetEnumerator();
             if (!enumerator.MoveNext())
                 return; // empty path
-            
+
             Vector3 pointA = enumerator.Current;
             if (!enumerator.MoveNext())
             {
@@ -113,16 +113,16 @@ namespace Unity.Robotics.MessageVisualizers
             while (enumerator.MoveNext())
             {
                 Vector3 pointC = enumerator.Current;
-                
+
                 // create new vertices around pointB.
-                Vector3 newSideVector = Vector3.Cross(Vector3.up, (pointC-pointB)).normalized * thickness;
+                Vector3 newSideVector = Vector3.Cross(Vector3.up, (pointC - pointB)).normalized * thickness;
                 m_Vertices.Add(pointB - oldSideVector); //2
                 m_Colors32.Add(color);
                 m_Vertices.Add(pointB + oldSideVector); //3
                 m_Colors32.Add(color);
                 AddQuad(oldVertexIndex, 0, 2, 3, 1);
 
-                if (Vector3.Dot(pointB-pointA, newSideVector) > 0)
+                if (Vector3.Dot(pointB - pointA, newSideVector) > 0)
                 {
                     // left turn
                     m_Vertices.Add(pointB + (oldSideVector + newSideVector).normalized * thickness); //4
@@ -216,7 +216,7 @@ namespace Unity.Robotics.MessageVisualizers
         public void DrawCuboid(Vector3 center, Vector3 halfSize, Quaternion rotation, Color32 color)
         {
             DrawParallelepiped(center,
-                rotation * new Vector3(halfSize.x,0,0),
+                rotation * new Vector3(halfSize.x, 0, 0),
                 rotation * new Vector3(0, halfSize.y, 0),
                 rotation * new Vector3(0, 0, halfSize.z),
                 color);
@@ -233,7 +233,7 @@ namespace Unity.Robotics.MessageVisualizers
             m_Vertices.Add(center + x - y + z); // 5
             m_Vertices.Add(center + x + y - z); // 6
             m_Vertices.Add(center + x + y + z); // 7
-            for(int Idx = 0; Idx < 8; ++Idx)
+            for (int Idx = 0; Idx < 8; ++Idx)
                 m_Colors32.Add(color);
             AddQuad(start, 0, 1, 3, 2); // left face
             AddQuad(start, 4, 6, 7, 5); // right face
@@ -254,7 +254,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             int numRings = (numDivisions / 2) - 1;
             float yawStep = Mathf.PI * 2 / numDivisions;
-            float pitchStep = Mathf.PI / (numRings+1);
+            float pitchStep = Mathf.PI / (numRings + 1);
             int lastRingStart = 2 + numRings - 1;
 
             for (int vertexIdx = 0; vertexIdx < numDivisions; ++vertexIdx)
@@ -263,7 +263,7 @@ namespace Unity.Robotics.MessageVisualizers
                 Vector3 sideVector = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
                 for (int ringIdx = 0; ringIdx < numRings; ++ringIdx)
                 {
-                    float pitch = Mathf.PI * 0.5f - (ringIdx+1) * pitchStep;
+                    float pitch = Mathf.PI * 0.5f - (ringIdx + 1) * pitchStep;
                     m_Vertices.Add(center + sideVector * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch));
                     m_Colors32.Add(color);
 
@@ -340,10 +340,10 @@ namespace Unity.Robotics.MessageVisualizers
             m_Vertices.Add(top);
             m_Colors32.Add(color);
 
-            m_Vertices.Add(bottom+forwardVector);
+            m_Vertices.Add(bottom + forwardVector);
             m_Colors32.Add(color);
 
-            m_Vertices.Add(top+forwardVector);
+            m_Vertices.Add(top + forwardVector);
             m_Colors32.Add(color);
 
             for (int step = 1; step < numRingVertices; ++step)
@@ -357,16 +357,16 @@ namespace Unity.Robotics.MessageVisualizers
 
                 // bottom circle
                 m_Triangles.Add(start); // bottom
-                m_Triangles.Add(start + step*2); // previous bottom ring vertex
+                m_Triangles.Add(start + step * 2); // previous bottom ring vertex
                 m_Triangles.Add(start + step * 2 + 2); // new bottom ring vertex
 
                 // top circle
                 m_Triangles.Add(start + 1); // top
-                m_Triangles.Add(start + step*2 + 3); // new top ring vertex
+                m_Triangles.Add(start + step * 2 + 3); // new top ring vertex
                 m_Triangles.Add(start + step * 2 + 1); // previous top ring vertex
 
                 // cylinder wall
-                AddQuad(start + step*2, 0, 1, 3, 2);
+                AddQuad(start + step * 2, 0, 1, 3, 2);
             }
 
             // bottom circle
@@ -380,7 +380,7 @@ namespace Unity.Robotics.MessageVisualizers
             m_Triangles.Add(start + numRingVertices * 2 + 1); // last top ring vertex
 
             // cylinder wall
-            AddQuad(start, 3, 2, numRingVertices * 2, numRingVertices*2+1 );
+            AddQuad(start, 3, 2, numRingVertices * 2, numRingVertices * 2 + 1);
             SetDirty();
         }
 
@@ -388,7 +388,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             int start = m_Vertices.Count;
             m_Vertices.Add(basePosition);
-            m_Colors32.Add(new Color32((byte)(color.r/2), (byte)(color.g/2), (byte)(color.b/2),255));
+            m_Colors32.Add(new Color32((byte)(color.r / 2), (byte)(color.g / 2), (byte)(color.b / 2), 255));
             m_Vertices.Add(tipPosition);
             m_Colors32.Add(color);
             Vector3 heightVector = tipPosition - basePosition;
@@ -401,13 +401,13 @@ namespace Unity.Robotics.MessageVisualizers
 
             for (int step = 1; step < numRingVertices; ++step)
             {
-                float angle = step*angleScale;
+                float angle = step * angleScale;
                 m_Vertices.Add(basePosition + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
                 m_Colors32.Add(color);
 
-                m_Triangles.Add(start+1); // tip
-                m_Triangles.Add(start+ step+2); // new ring vertex
-                m_Triangles.Add(start + step+1); // previous ring vertex
+                m_Triangles.Add(start + 1); // tip
+                m_Triangles.Add(start + step + 2); // new ring vertex
+                m_Triangles.Add(start + step + 1); // previous ring vertex
 
                 m_Triangles.Add(start); // base
                 m_Triangles.Add(start + step + 1); // previous ring vertex

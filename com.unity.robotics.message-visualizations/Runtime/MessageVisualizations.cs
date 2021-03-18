@@ -77,7 +77,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
         {
-            message.Draw<C>(drawing, color, (center != null)? center.transform.position: Vector3.zero, size);
+            message.Draw<C>(drawing, color, (center != null) ? center.transform.position : Vector3.zero, size);
         }
 
         public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
@@ -85,14 +85,14 @@ namespace Unity.Robotics.MessageVisualizers
             Vector3 normal = new Vector3<C>((float)message.coef[0], (float)message.coef[1], (float)message.coef[2]).toUnity;
             float d = (float)message.coef[3];
 
-            float normalScale = (Vector3.Dot(normal, origin) + d)/normal.sqrMagnitude;
+            float normalScale = (Vector3.Dot(normal, origin) + d) / normal.sqrMagnitude;
             Vector3 center = origin - normal * normalScale;
 
             Vector3 forward = (Mathf.Abs(normal.x) > Mathf.Abs(normal.y)) ? Vector3.Cross(normal, Vector3.up).normalized : Vector3.Cross(normal, Vector3.right).normalized;
             Vector3 side = Vector3.Cross(normal, forward).normalized;
             Vector3 diagonalA = (forward + side) * size;
             Vector3 diagonalB = (forward - side) * size;
-            drawing.DrawQuad(center - diagonalA, center + diagonalB, center+ diagonalA, center - diagonalB, color, true);
+            drawing.DrawQuad(center - diagonalA, center + diagonalB, center + diagonalA, center - diagonalB, color, true);
         }
 
         public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -171,9 +171,9 @@ namespace Unity.Robotics.MessageVisualizers
                     drawing.DrawCuboid(
                         originPosition,
                         new Vector3<C>(
-                            (float)message.dimensions[MSolidPrimitive.BOX_X]*0.5f,
-                            (float)message.dimensions[MSolidPrimitive.BOX_Y]*0.5f,
-                            (float)message.dimensions[MSolidPrimitive.BOX_Z]*0.5f).toUnity,
+                            (float)message.dimensions[MSolidPrimitive.BOX_X] * 0.5f,
+                            (float)message.dimensions[MSolidPrimitive.BOX_Y] * 0.5f,
+                            (float)message.dimensions[MSolidPrimitive.BOX_Z] * 0.5f).toUnity,
                         originRotation,
                         color
                     );
@@ -188,7 +188,7 @@ namespace Unity.Robotics.MessageVisualizers
                 case MSolidPrimitive.CONE:
                     Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[MSolidPrimitive.CONE_HEIGHT] * 0.5f;
                     drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[MSolidPrimitive.CONE_RADIUS]);
-                break;
+                    break;
             }
         }
 
@@ -277,7 +277,7 @@ namespace Unity.Robotics.MessageVisualizers
             UnityEngine.GUI.backgroundColor = message.ToColor();
             GUILayout.Box("", s_ColorSwatchStyle);
             UnityEngine.GUI.backgroundColor = oldBackgroundColor;
-            if(withText)
+            if (withText)
                 GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
             GUILayout.EndHorizontal();
         }
@@ -360,8 +360,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MMeshTriangle message)
         {
-            string text = "["+String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray())+"]";
-                GUILayout.Label(text);
+            string text = "[" + String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray()) + "]";
+            GUILayout.Label(text);
         }
 
         public static void GUI(this MPoint message, string name)
@@ -443,7 +443,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MSolidPrimitive message)
         {
-            switch(message.type)
+            switch (message.type)
             {
                 case MSolidPrimitive.BOX:
                     GUILayout.Label($"SolidPrimitive BOX\n[X:{message.dimensions[MSolidPrimitive.BOX_X]}, Y:{message.dimensions[MSolidPrimitive.BOX_Y]}, Z:{message.dimensions[MSolidPrimitive.BOX_Z]}]");
@@ -498,7 +498,8 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        static readonly GUIStyle s_ColorSwatchStyle = new GUIStyle {
+        static readonly GUIStyle s_ColorSwatchStyle = new GUIStyle
+        {
             normal = new GUIStyleState { background = Texture2D.whiteTexture },
             fixedWidth = 25,
             fixedHeight = 25
@@ -514,7 +515,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUIMultiArray<T>(this MMultiArrayLayout layout, T[] data, bool tabulate = true)
         {
-            if(s_ArrayContainerStyle == null)
+            if (s_ArrayContainerStyle == null)
             {
                 s_ArrayContainerStyle = UnityEngine.GUI.skin.GetStyle("box");
             }
@@ -527,7 +528,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (layout.dim.Length > depth + 1)
             {
                 uint stride = layout.dim[depth + 1].stride;
-                if(depth > 0)
+                if (depth > 0)
                     GUILayout.BeginVertical(s_ArrayContainerStyle);
                 for (int step = 0; step < size; ++step)
                 {

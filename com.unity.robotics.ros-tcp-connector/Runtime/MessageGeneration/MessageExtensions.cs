@@ -24,7 +24,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static MTime ToMTime(this DateTime dateTime, uint nsecs = 0)
         {
-            return new MTime { secs = (uint)dateTime.Ticks, nsecs = (uint)(dateTime.Millisecond*1E6) };
+            return new MTime { secs = (uint)dateTime.Ticks, nsecs = (uint)(dateTime.Millisecond * 1E6) };
         }
 
         public static Color32 ToColor(this MColorRGBA message)
