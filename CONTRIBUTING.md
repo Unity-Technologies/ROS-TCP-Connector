@@ -12,7 +12,7 @@ as we expect all our contributors to follow it.
 
 Second, before starting on a project that you intend to contribute to any of our
 Unity Robotics packages or tutorials, we **strongly** recommend posting on the repository's
-[Issues page](https://github.com/Unity-Technologies/ROS-TCP-Connector/issueshttps://github.com/Unity-Technologies/ROS-TCP-Connector/issues) and
+[Issues page](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues) and
 briefly outlining the changes you plan to make. This will enable us to provide
 some context that may be helpful for you. This could range from advice and
 feedback on how to optimally perform your changes or reasons for not doing it.
@@ -59,7 +59,7 @@ When you open a pull request, you will be asked to acknowledge our Contributor
 License Agreement. We allow both individual contributions and contributions made
 on behalf of companies. We use an open source tool called CLA assistant. If you
 have any questions on our CLA, please
-[submit an issue](https://github.com/Unity-Technologies/ROS-TCP-Connector/issueshttps://github.com/Unity-Technologies/ROS-TCP-Connector/issues) or
+[submit an issue](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues) or
 email us at [unity-robotics@unity3d.com](mailto:unity-robotics@unity3d.com).
 
 ## Contribution review
