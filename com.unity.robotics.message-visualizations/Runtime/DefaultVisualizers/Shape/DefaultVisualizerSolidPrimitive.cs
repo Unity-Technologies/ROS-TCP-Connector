@@ -9,7 +9,7 @@ using UnityEngine;
 public class DefaultVisualizerSolidPrimitive : BasicVisualizer<MSolidPrimitive>
 {
     [SerializeField]
-    public GameObject m_Origin;
+    GameObject m_Origin;
 
     public override void Draw(BasicDrawing drawing, MSolidPrimitive message, MessageMetadata meta, Color color, string label)
     {

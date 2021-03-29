@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-
     public class BasicDrawingManager : MonoBehaviour
     {
         static BasicDrawingManager s_Instance;

@@ -534,6 +534,15 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Color32 color)
         {
+            Material colorMaterial = (color.a < 255) ?
+                new Material(BasicDrawingManager.instance.UnlitColorAlphaMaterial) :
+                new Material(BasicDrawingManager.instance.UnlitColorMaterial);
+            colorMaterial.color = color;
+            DrawMesh(source, position, rotation, scale, colorMaterial);
+        }
+
+        public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Material material)
+        {
             GameObject meshObject = new GameObject(source.name);
             m_Supplemental.Add(meshObject);
             meshObject.transform.parent = transform;
@@ -543,8 +552,7 @@ namespace Unity.Robotics.MessageVisualizers
             MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
             mfilter.sharedMesh = source;
             MeshRenderer mrenderer = meshObject.AddComponent<MeshRenderer>();
-            mrenderer.material = (color.a < 255) ? BasicDrawingManager.instance.UnlitColorAlphaMaterial : BasicDrawingManager.instance.UnlitColorMaterial;
-            mrenderer.material.color = color;
+            mrenderer.sharedMaterial = material;
         }
 
         public void Clear()

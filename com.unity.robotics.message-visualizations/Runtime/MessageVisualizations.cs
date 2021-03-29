@@ -59,6 +59,13 @@ namespace Unity.Robotics.MessageVisualizers
             DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
         }
 
+        public static void Draw<C>(this MGridCells message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            //BasicDrawing.PointCloud pointCloud = drawing.CreatePointCloud();
+            //foreach (MPoint p in message.cells)
+                //pointCloud.AddPoint(p.From<C>());
+        }
+
         public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
         {
             Mesh mesh = new Mesh();
@@ -68,6 +75,38 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, origin.transform, color);
             else
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
+        }
+
+        static Mesh s_OccupancyGridMesh;
+        static Material s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/Color"));
+
+        public static void Draw<C>(this MOccupancyGrid message, BasicDrawing drawing) where C : ICoordinateSpace, new()
+        {
+            Vector3 origin = message.info.origin.position.From<C>();
+            Quaternion rotation = message.info.origin.orientation.From<C>();
+            int width = (int)message.info.width;
+            int height = (int)message.info.height;
+            float scale = message.info.resolution;
+
+            if (s_OccupancyGridMesh == null)
+            {
+                s_OccupancyGridMesh = new Mesh();
+                s_OccupancyGridMesh.vertices = new Vector3[] { Vector3.zero, new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0) };
+                s_OccupancyGridMesh.uv = new Vector2[] { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
+                s_OccupancyGridMesh.triangles = new int[] { 0, 1, 2, 2, 3, 0, };
+                s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/OccupancyGrid"));
+            }
+
+            Texture2D gridTexture = new Texture2D(width, height, TextureFormat.R8, true);
+            gridTexture.wrapMode = TextureWrapMode.Clamp;
+            gridTexture.filterMode = FilterMode.Point;
+            gridTexture.SetPixelData(message.data, 0);
+            gridTexture.Apply();
+
+            Material gridMaterial = new Material(s_OccupancyGridMaterial);
+            gridMaterial.mainTexture = gridTexture;
+
+            drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
         }
 
         public static void Draw<C>(this MPath message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
@@ -119,7 +158,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MPolygon message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            Vector3 prevPos = message.points[message.points.Length - 1].From<FLU>();
+            Vector3 prevPos = message.points[message.points.Length - 1].From<C>();
             foreach (MPoint32 p in message.points)
             {
                 Vector3 curPos = p.From<C>();
@@ -348,6 +387,14 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label(message.iyz.ToString());
             GUILayout.Label(message.izz.ToString());
             GUILayout.EndHorizontal();
+        }
+
+        public static void GUI(this MMapMetaData message)
+        {
+            GUILayout.Label($"Load time: {message.map_load_time.ToTimestampString()}");
+            GUILayout.Label($"Resolution: {message.resolution}");
+            GUILayout.Label($"Size: {message.width}x{message.height}");
+            message.origin.GUI();
         }
 
         public static void GUI(this MMesh message)
