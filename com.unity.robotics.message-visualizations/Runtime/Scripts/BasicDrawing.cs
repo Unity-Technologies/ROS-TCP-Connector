@@ -555,9 +555,9 @@ namespace Unity.Robotics.MessageVisualizers
             mrenderer.sharedMaterial = material;
         }
 
-        public PointCloudDrawing AddPointCloud(float radius, int numPoints = 0, Material material = null)
+        public PointCloudDrawing AddPointCloud(int numPoints = 0, Material material = null)
         {
-            PointCloudDrawing result = PointCloudDrawing.Create(radius, gameObject, numPoints, material);
+            PointCloudDrawing result = PointCloudDrawing.Create(gameObject, numPoints, material);
             m_Supplemental.Add(result.gameObject);
             return result;
         }

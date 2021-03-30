@@ -3,7 +3,6 @@
     Properties
     {
         _MainTex("Texture", 2D) = "white" {}
-        _Radius("Radius", float) = 0.1
     }
     
     SubShader
@@ -21,14 +20,13 @@
 
             #include "UnityCG.cginc"
 
-            float _Radius;
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
             struct appdata
             {
                 float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
+                float3 uvr : TEXCOORD0;
                 float4 color : COLOR;
             };
 
@@ -46,10 +44,11 @@
                     float4(v.vertex.x, v.vertex.y, v.vertex.z, 0)
                 );
 
-                float2 uv = v.uv;
+                float2 uv = v.uvr.xy;
+                float radius = v.uvr.z;
                 //Pack index into color.a: float2 uv = float2(round(v.color.a * 255 * 0.4), round(v.color.a * 255 % 2));
-                o.vertex.x += (uv.x - 0.5) * 2 * _Radius * _ScreenParams.y / _ScreenParams.x;
-                o.vertex.y -= (uv.y - 0.5) * 2 * _Radius;
+                o.vertex.x += (uv.x - 0.5) * 2 * radius * _ScreenParams.y / _ScreenParams.x;
+                o.vertex.y -= (uv.y - 0.5) * 2 * radius;
                 o.uv = uv;
                 o.color = v.color;
                 o.color.a = 1;

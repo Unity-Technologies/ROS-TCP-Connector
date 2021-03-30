@@ -9,26 +9,28 @@ namespace Unity.Robotics.MessageVisualizers
     {
         Mesh m_Mesh;
         List<Vector3> m_Vertices = new List<Vector3>();
-        List<Vector2> m_UVs = new List<Vector2>();
+        List<Vector3> m_UVRs = new List<Vector3>(); // texture UV and point radius
         List<Color32> m_Colors32 = new List<Color32>();
         List<int> m_Triangles = new List<int>();
+        float rootHalf;
 
-        public static PointCloudDrawing Create(float radius, GameObject parent = null, int numPoints = 0, Material material = null)
+        public static PointCloudDrawing Create(GameObject parent = null, int numPoints = 0, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("PointCloud");
             if (parent != null)
                 newDrawingObj.transform.parent = parent.transform;
             PointCloudDrawing newDrawing = newDrawingObj.AddComponent<PointCloudDrawing>();
-            newDrawing.Init(radius, numPoints, material);
+            newDrawing.Init(numPoints, material);
             return newDrawing;
         }
 
-        public void Init(float radius, int numPoints = 0, Material material = null)
+        public void Init(int numPoints = 0, Material material = null)
         {
             m_Mesh = new Mesh();
             m_Vertices.Capacity = numPoints * 4;
-            m_UVs.Capacity = numPoints * 4;
+            m_UVRs.Capacity = numPoints * 4;
             m_Colors32.Capacity = numPoints * 4;
+            rootHalf = Mathf.Sqrt(0.5f);
 
             if (material == null)
                 material = BasicDrawingManager.instance.UnlitPointCloudMaterial;
@@ -37,28 +39,23 @@ namespace Unity.Robotics.MessageVisualizers
             mfilter.sharedMesh = m_Mesh;
 
             MeshRenderer mrenderer = gameObject.AddComponent<MeshRenderer>();
-            mrenderer.material = material;
-            mrenderer.material.SetFloat("_Radius", radius);
+            mrenderer.sharedMaterial = material;
         }
 
-        public void AddPoint(Vector3 point, Color32 color)
+        public void AddPoint(Vector3 point, Color32 color, float radius)
         {
             int start = m_Vertices.Count;
 
             for (int Idx = 0; Idx < 4; ++Idx)
             {
-                // memory saving idea: forget the separate UV channel, just record the vertex index
-                // in the (unused) color alpha channel, and have the shader deduce UVs from it
-                // color.a = (byte)Idx;
-
                 m_Vertices.Add(point);
                 m_Colors32.Add(color);
             }
 
-            m_UVs.Add(Vector2.zero);
-            m_UVs.Add(Vector2.up);
-            m_UVs.Add(Vector2.right);
-            m_UVs.Add(Vector2.one);
+            m_UVRs.Add(new Vector3(0, 0, radius));
+            m_UVRs.Add(new Vector3(0, 1, radius));
+            m_UVRs.Add(new Vector3(1, 0, radius));
+            m_UVRs.Add(new Vector3(1, 1, radius));
 
             m_Triangles.Add(start + 0);
             m_Triangles.Add(start + 1);
@@ -69,11 +66,31 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
+        public void AddTriangle(Vector3 point, Color32 color, float radius)
+        {
+            int start = m_Vertices.Count;
+
+            for (int Idx = 0; Idx < 3; ++Idx)
+            {
+                m_Vertices.Add(point);
+                m_Colors32.Add(color);
+            }
+
+            m_UVRs.Add(new Vector3(0.5f-rootHalf, 0.5f, radius));
+            m_UVRs.Add(new Vector3(1, 1.5f+rootHalf, radius));
+            m_UVRs.Add(new Vector3(1, -0.5f - rootHalf, radius));
+
+            m_Triangles.Add(start + 0);
+            m_Triangles.Add(start + 1);
+            m_Triangles.Add(start + 2);
+            SetDirty();
+        }
+
         void ClearBuffers()
         {
             m_Vertices.Clear();
             m_Colors32.Clear();
-            m_UVs.Clear();
+            m_UVRs.Clear();
             m_Triangles.Clear();
         }
 
@@ -97,7 +114,7 @@ namespace Unity.Robotics.MessageVisualizers
             m_Mesh.indexFormat = m_Vertices.Count < 65536 ? UnityEngine.Rendering.IndexFormat.UInt16 : UnityEngine.Rendering.IndexFormat.UInt32;
             m_Mesh.vertices = m_Vertices.ToArray();
             m_Mesh.colors32 = m_Colors32.ToArray();
-            m_Mesh.uv = m_UVs.ToArray();
+            m_Mesh.SetUVs(0, m_UVRs.ToArray());
             m_Mesh.triangles = m_Triangles.ToArray();
         }
 
