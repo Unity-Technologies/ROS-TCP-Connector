@@ -27,12 +27,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new MTime { secs = (uint)dateTime.Ticks, nsecs = (uint)(dateTime.Millisecond * 1E6) };
         }
 
-        public static Color32 ToColor(this MColorRGBA message)
+        public static Color ToUnityColor(this MColorRGBA message)
         {
-            return new Color32((byte)message.r, (byte)message.g, (byte)message.b, (byte)message.a);
+            return new Color(message.r, message.g, message.b, message.a);
         }
 
-        public static MColorRGBA ToMColorRGBA(this Color32 color)
+        public static MColorRGBA ToMColorRGBA(this Color color)
         {
             return new MColorRGBA(color.r, color.g, color.b, color.a);
         }
