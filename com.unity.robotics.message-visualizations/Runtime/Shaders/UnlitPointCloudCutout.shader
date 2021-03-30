@@ -1,4 +1,4 @@
-﻿Shader "Unlit/PointCloud"
+﻿Shader "Unlit/PointCloudCutout"
 {
     Properties
     {
@@ -11,7 +11,6 @@
         Tags {"Queue" = "AlphaTest" "IgnoreProjector" = "True"  "RenderType" = "TransparentCutout" }
         LOD 100
         ZWrite On
-        AlphaTest Greater 0.5
         Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
@@ -40,19 +39,20 @@
                 float4 color : COLOR;
             };
 
-            v2f vert (appdata v)
+            v2f vert(appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(
                     float4(v.vertex.x, v.vertex.y, v.vertex.z, 0)
                 );
 
-                o.vertex.x += (v.uv.x - 0.5) * 2 * _Radius * _ScreenParams.y / _ScreenParams.x;
-                o.vertex.y -= (v.uv.y - 0.5) * 2 * _Radius;
-                //o.vertex.x += v.uv.x*0.1;
-                //o.vertex.y += v.uv.y*0.1;
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                float2 uv = v.uv;
+                //Pack index into color.a: float2 uv = float2(round(v.color.a * 255 * 0.4), round(v.color.a * 255 % 2));
+                o.vertex.x += (uv.x - 0.5) * 2 * _Radius * _ScreenParams.y / _ScreenParams.x;
+                o.vertex.y -= (uv.y - 0.5) * 2 * _Radius;
+                o.uv = uv;
                 o.color = v.color;
+                o.color.a = 1;
                 return o;
             }
 

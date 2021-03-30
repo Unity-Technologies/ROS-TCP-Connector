@@ -61,9 +61,14 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MGridCells message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
-            //BasicDrawing.PointCloud pointCloud = drawing.CreatePointCloud();
-            //foreach (MPoint p in message.cells)
-                //pointCloud.AddPoint(p.From<C>());
+            DrawPointCloud<C>(message.cells, drawing, color, radius);
+        }
+
+        public static void DrawPointCloud<C>(MPoint[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            PointCloudDrawing pointCloud = drawing.AddPointCloud(radius, points.Length);
+            foreach (MPoint p in points)
+                pointCloud.AddPoint(p.From<C>(), color);
         }
 
         public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()

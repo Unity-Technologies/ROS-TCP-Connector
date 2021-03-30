@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 510451985b980bd408abb32cc38843d9
+guid: 4b8089fd78123c643998ee91beb76df7
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -32,7 +32,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
+    filterMode: 1
     aniso: -1
     mipBias: -100
     wrapU: 1
@@ -50,7 +50,7 @@ TextureImporter:
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
-  alphaIsTransparency: 0
+  alphaIsTransparency: 1
   spriteTessellationDetail: -1
   textureType: 0
   textureShape: 1

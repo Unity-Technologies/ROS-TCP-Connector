@@ -11,14 +11,17 @@ namespace Unity.Robotics.MessageVisualizers
         {
             get
             {
+#if UNITY_EDITOR
                 if (s_Instance == null)
                 {
                     GameObject newDebugDrawObj = new GameObject("DrawingManager");
                     s_Instance = newDebugDrawObj.AddComponent<BasicDrawingManager>();
-                    s_Instance.Material = new Material(Shader.Find("Unlit/VertexColor"));
-                    s_Instance.UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
-                    s_Instance.UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
+                    s_Instance.m_UnlitVertexColorMaterial = new Material(Shader.Find("Unlit/VertexColor"));
+                    s_Instance.m_UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
+                    s_Instance.m_UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
+                    s_Instance.m_UnlitPointCloudMaterial = new Material(Shader.Find("Unlit/PointCloud"));
                 }
+#endif
                 return s_Instance;
             }
         }
@@ -26,9 +29,20 @@ namespace Unity.Robotics.MessageVisualizers
         Camera m_Camera;
         List<BasicDrawing> m_Drawings = new List<BasicDrawing>();
         List<BasicDrawing> m_Dirty = new List<BasicDrawing>();
-        public Material Material { get; private set; }
-        public Material UnlitColorMaterial { get; private set; }
-        public Material UnlitColorAlphaMaterial { get; private set; }
+
+        [SerializeField]
+        Material m_UnlitVertexColorMaterial;
+        [SerializeField]
+        Material m_UnlitColorMaterial;
+        [SerializeField]
+        Material m_UnlitColorAlphaMaterial;
+        [SerializeField]
+        Material m_UnlitPointCloudMaterial;
+
+        public Material UnlitVertexColorMaterial => m_UnlitVertexColorMaterial;
+        public Material UnlitColorMaterial => m_UnlitColorMaterial;
+        public Material UnlitColorAlphaMaterial => m_UnlitColorAlphaMaterial;
+        public Material UnlitPointCloudMaterial => m_UnlitPointCloudMaterial;
 
         void Awake()
         {
@@ -51,7 +65,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             GameObject newDrawingObj = new GameObject("Drawing");
             BasicDrawing newDrawing = newDrawingObj.AddComponent<BasicDrawing>();
-            newDrawing.Init(instance, material != null ? material : instance.Material, duration);
+            newDrawing.Init(instance, material != null ? material : instance.UnlitVertexColorMaterial, duration);
             instance.m_Drawings.Add(newDrawing);
             return newDrawing;
         }
