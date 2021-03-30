@@ -319,7 +319,7 @@ namespace Unity.Robotics.MessageVisualizers
             Color oldBackgroundColor = UnityEngine.GUI.color;
 
             GUILayout.BeginHorizontal();
-            UnityEngine.GUI.backgroundColor = message.ToColor();
+            UnityEngine.GUI.backgroundColor = message.ToUnityColor();
             GUILayout.Box("", s_ColorSwatchStyle);
             UnityEngine.GUI.backgroundColor = oldBackgroundColor;
             if (withText)
