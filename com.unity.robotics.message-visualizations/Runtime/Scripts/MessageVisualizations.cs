@@ -2,6 +2,7 @@ using RosMessageTypes.Actionlib;
 using RosMessageTypes.Diagnostic;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
+using RosMessageTypes.Sensor;
 using RosMessageTypes.Shape;
 using RosMessageTypes.Std;
 using System;
@@ -350,6 +351,11 @@ namespace Unity.Robotics.MessageVisualizers
                 status.GUI();
         }
 
+        public static void GUI(this MFluidPressure message)
+        {
+            GUILayout.Label($"Fluid Pressure: {message.fluid_pressure} (Pascals)\nVariance: {message.variance}");
+        }
+
         static string[] s_GoalStatusTable = new string[]
         {
             "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
@@ -372,6 +378,11 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MHeader message)
         {
             GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
+        }
+
+        public static void GUI(this MIlluminance message)
+        {
+            GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
         }
 
         public static void GUI(this MInertia message)
@@ -481,6 +492,11 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
+        public static void GUI(this MRelativeHumidity message)
+        {
+            GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");
+        }
+
         public static void GUI(this MSelfTestResponse message)
         {
             string pass = message.passed != 0 ? "OK" : "FAIL";
@@ -514,6 +530,11 @@ namespace Unity.Robotics.MessageVisualizers
                     GUILayout.Label($"INVALID shape {message.type}!?");
                     break;
             }
+        }
+
+        public static void GUI(this MTemperature message)
+        {
+            GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
         }
 
         public static void GUI(this MTransform message)
