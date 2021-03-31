@@ -23,6 +23,7 @@ namespace Unity.Robotics.MessageVisualizers
         List<int> m_Triangles = new List<int>();
         List<LabelInfo3D> m_Labels = new List<LabelInfo3D>();
         bool m_isDirty = false;
+        Coroutine m_DestroyAfterDelay;
 
         public static BasicDrawing Create(float duration = -1, Material material = null)
         {
@@ -42,7 +43,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (duration >= 0)
             {
-                StartCoroutine(DestroyAfterDelay(duration));
+                SetDuration(duration);
             }
 
             if (s_LabelStyle == null)
@@ -55,6 +56,19 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+        public void SetDuration(float duration)
+        {
+            if (m_DestroyAfterDelay != null)
+                StopCoroutine(m_DestroyAfterDelay);
+            m_DestroyAfterDelay = StartCoroutine(DestroyAfterDelay(duration));
+        }
+
+        public void ClearDuration()
+        {
+            if (m_DestroyAfterDelay != null)
+                StopCoroutine(m_DestroyAfterDelay);
+        }
+
         public IEnumerator DestroyAfterDelay(float duration)
         {
             yield return new WaitForSeconds(duration);
@@ -63,6 +77,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawLine(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f)
         {
+            DrawLine(from, to, color, color, thickness);
+        }
+
+        public void DrawLine(Vector3 from, Vector3 to, Color32 fromColor, Color32 toColor, float thickness = 0.1f)
+        {
+            // Could do this by calling DrawCylinder - but hardcoding it is more efficient
             Vector3 forwardVector = (to - from).normalized;
             Vector3 sideVector;
             if (Vector3.Dot(forwardVector, Vector3.up) > 0.9f) // just want any vector perpendicular to forwardVector
@@ -80,8 +100,10 @@ namespace Unity.Robotics.MessageVisualizers
             m_Vertices.Add(to + upVector);// 6
             m_Vertices.Add(to - upVector);
 
-            for (int Idx = 0; Idx < 8; ++Idx)
-                m_Colors32.Add(color);
+            for (int Idx = 0; Idx < 4; ++Idx)
+                m_Colors32.Add(fromColor);
+            for (int Idx = 0; Idx < 4; ++Idx)
+                m_Colors32.Add(toColor);
 
             AddTriangles(start, 0, 2, 4, 4, 2, 6, 1, 5, 2, 2, 5, 6);
             AddTriangles(start, 0, 4, 3, 3, 4, 7, 1, 3, 5, 5, 3, 7);
@@ -198,10 +220,10 @@ namespace Unity.Robotics.MessageVisualizers
                 AddQuad(start, 3, 2, 1, 0);
         }
 
-        public void DrawArrow(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f, float arrowheadScale = 3)
+        public void DrawArrow(Vector3 from, Vector3 to, Color32 color, float thickness = 0.1f, float arrowheadScale = 3, float arrowheadGradient = 0.5f)
         {
             float arrowheadRadius = thickness * arrowheadScale;
-            float arrowheadLength = arrowheadRadius * 4;
+            float arrowheadLength = arrowheadRadius / arrowheadGradient;
             Vector3 direction = (to - from).normalized;
             Vector3 arrowheadJoint = to - direction * arrowheadLength;
             DrawLine(from, arrowheadJoint, color, thickness);
@@ -244,12 +266,18 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
-        public void DrawSphere(Vector3 center, Color32 color, float radius, int numDivisions = 8)
+        public void DrawSphere(Vector3 center, Color32 color, float radius, int numDivisions = 16)
+        {
+            DrawSpheroid(center, new Vector3(radius, radius, radius), Quaternion.identity, color, numDivisions);
+        }
+
+        public void DrawSpheroid(Vector3 center, Vector3 radii, Quaternion rotation, Color32 color, int numDivisions = 16)
         {
             int start = m_Vertices.Count;
-            m_Vertices.Add(center + new Vector3(0, radius, 0));
+            Vector3 upVector = rotation * Vector3.up * radii.y;
+            m_Vertices.Add(center + upVector);
             m_Colors32.Add(color);
-            m_Vertices.Add(center - new Vector3(0, radius, 0));
+            m_Vertices.Add(center - upVector);
             m_Colors32.Add(color);
 
             int numRings = (numDivisions / 2) - 1;
@@ -260,11 +288,11 @@ namespace Unity.Robotics.MessageVisualizers
             for (int vertexIdx = 0; vertexIdx < numDivisions; ++vertexIdx)
             {
                 float yaw = vertexIdx * yawStep;
-                Vector3 sideVector = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
+                Vector3 sideVector = rotation * new Vector3(Mathf.Sin(yaw) * radii.x, 0, Mathf.Cos(yaw) * radii.z);
                 for (int ringIdx = 0; ringIdx < numRings; ++ringIdx)
                 {
                     float pitch = Mathf.PI * 0.5f - (ringIdx + 1) * pitchStep;
-                    m_Vertices.Add(center + sideVector * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch));
+                    m_Vertices.Add(center + sideVector * Mathf.Cos(pitch) + upVector * Mathf.Sin(pitch));
                     m_Colors32.Add(color);
 
                     if (ringIdx + 1 < numRings)
@@ -328,6 +356,11 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawCylinder(Vector3 bottom, Vector3 top, Color32 color, float radius, int numRingVertices = 8)
         {
+            DrawCylinder(bottom, top, color, color, radius, numRingVertices);
+        }
+
+        public void DrawCylinder(Vector3 bottom, Vector3 top, Color32 bottomColor, Color32 topColor, float radius, int numRingVertices = 8)
+        {
             int start = m_Vertices.Count;
             Vector3 upVector = top - bottom;
             Vector3 forwardVector = ((Mathf.Abs(upVector.z) < Mathf.Abs(upVector.x)) ? new Vector3(upVector.y, -upVector.x, 0) : new Vector3(0, -upVector.z, upVector.y)).normalized * radius;
@@ -335,25 +368,25 @@ namespace Unity.Robotics.MessageVisualizers
             float angleScale = Mathf.PI * 2.0f / numRingVertices;
 
             m_Vertices.Add(bottom);
-            m_Colors32.Add(color);
+            m_Colors32.Add(bottomColor);
 
             m_Vertices.Add(top);
-            m_Colors32.Add(color);
+            m_Colors32.Add(topColor);
 
             m_Vertices.Add(bottom + forwardVector);
-            m_Colors32.Add(color);
+            m_Colors32.Add(bottomColor);
 
             m_Vertices.Add(top + forwardVector);
-            m_Colors32.Add(color);
+            m_Colors32.Add(topColor);
 
             for (int step = 1; step < numRingVertices; ++step)
             {
                 float angle = step * angleScale;
                 m_Vertices.Add(bottom + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
-                m_Colors32.Add(color);
+                m_Colors32.Add(bottomColor);
 
                 m_Vertices.Add(top + forwardVector * Mathf.Cos(angle) + sideVector * Mathf.Sin(angle));
-                m_Colors32.Add(color);
+                m_Colors32.Add(topColor);
 
                 // bottom circle
                 m_Triangles.Add(start); // bottom
@@ -424,7 +457,7 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
-        public void DrawTriangle(Color32 color, Vector3 a, Vector3 b, Vector3 c)
+        public void DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color32 color)
         {
             int start = m_Vertices.Count;
             m_Vertices.Add(a);
@@ -432,6 +465,19 @@ namespace Unity.Robotics.MessageVisualizers
             m_Vertices.Add(c);
             for (int Idx = 0; Idx < 3; ++Idx)
                 m_Colors32.Add(color);
+            AddTriangles(start, 0, 1, 2);
+            SetDirty();
+        }
+
+        public void DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color32 colorA, Color32 colorB, Color32 colorC)
+        {
+            int start = m_Vertices.Count;
+            m_Vertices.Add(a);
+            m_Colors32.Add(colorA);
+            m_Vertices.Add(b);
+            m_Colors32.Add(colorB);
+            m_Vertices.Add(c);
+            m_Colors32.Add(colorC);
             AddTriangles(start, 0, 1, 2);
             SetDirty();
         }
@@ -473,7 +519,7 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
-        public void DrawLines(Color32 color, float thickness, params Vector3[] pointPairs)
+        public void DrawLines(Vector3[] pointPairs, Color32 color, float thickness)
         {
             for (int Idx = 1; Idx < pointPairs.Length; Idx += 2)
             {
@@ -481,11 +527,27 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawLineStrip(Color32 color, float thickness, params Vector3[] stripPoints)
+        public void DrawLines(Vector3[] pointPairs, Color32[] colorPairs, float thickness)
+        {
+            for (int Idx = 1; Idx < pointPairs.Length; Idx += 2)
+            {
+                DrawLine(pointPairs[Idx - 1], pointPairs[Idx], colorPairs[Idx-1], colorPairs[Idx], thickness);
+            }
+        }
+
+        public void DrawLineStrip(Vector3[] stripPoints, Color32 color, float thickness)
         {
             for (int Idx = 1; Idx < stripPoints.Length; ++Idx)
             {
-                DrawLine(stripPoints[Idx - 1], stripPoints[Idx], color, thickness);
+                DrawLine(stripPoints[Idx - 1], stripPoints[Idx], color, color, thickness);
+            }
+        }
+
+        public void DrawLineStrip(Vector3[] stripPoints, Color32[] stripColors, float thickness)
+        {
+            for (int Idx = 1; Idx < stripPoints.Length; ++Idx)
+            {
+                DrawLine(stripPoints[Idx - 1], stripPoints[Idx], stripColors[Idx-1], stripColors[Idx], thickness);
             }
         }
 
@@ -599,6 +661,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             m_isDirty = false;
             m_Mesh.Clear();
+            m_Mesh.indexFormat = m_Vertices.Count < 65536 ? UnityEngine.Rendering.IndexFormat.UInt16 : UnityEngine.Rendering.IndexFormat.UInt32;
             m_Mesh.vertices = m_Vertices.ToArray();
             m_Mesh.colors32 = m_Colors32.ToArray();
             m_Mesh.triangles = m_Triangles.ToArray();

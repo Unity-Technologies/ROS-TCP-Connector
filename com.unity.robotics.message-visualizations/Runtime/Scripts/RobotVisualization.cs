@@ -137,7 +137,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawJointPath(BasicDrawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
         {
-            drawing.DrawLineStrip(color, pathThickness, jointPlacements.Select(p => p[jointIndex].Position).ToArray());
+            drawing.DrawLineStrip(jointPlacements.Select(p => p[jointIndex].Position).ToArray(), color, pathThickness);
         }
 
         public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color)
