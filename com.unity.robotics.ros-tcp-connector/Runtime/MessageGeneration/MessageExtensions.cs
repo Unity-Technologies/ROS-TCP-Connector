@@ -1,4 +1,5 @@
-﻿using RosMessageTypes.Std;
+﻿using RosMessageTypes.Sensor;
+using RosMessageTypes.Std;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,6 +36,34 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static MColorRGBA ToMColorRGBA(this Color color)
         {
             return new MColorRGBA(color.r, color.g, color.b, color.a);
+        }
+
+        public static Texture2D ToTexture2D(this MCompressedImage message)
+        {
+            var tex = new Texture2D(1, 1);
+            tex.LoadImage(message.data);
+            tex.Apply();
+            return tex;
+        }
+
+        public static Texture2D ToTexture2D(this MImage message)
+        {
+            var tex = new Texture2D(1, 1);
+            tex.LoadImage(message.data);
+            tex.Apply();
+            return tex;
+        }
+
+        public static MCompressedImage ToMCompressedImage(this Texture2D tex, string format="jpeg")
+        {
+            var data = tex.GetRawTextureData();
+            return new MCompressedImage(new MHeader(), format, data);
+        }
+
+        public static MImage ToMImage(this Texture2D tex, string encoding="RGBA", byte isBigEndian=0, uint step=4)
+        {
+            var data = tex.GetRawTextureData();
+            return new MImage(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
         }
     }
 }

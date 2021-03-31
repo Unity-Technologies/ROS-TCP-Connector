@@ -328,6 +328,18 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
+        public static void GUI(this MCompressedImage message)
+        {
+            var img = message.ToTexture2D();
+            float scale = 200f / img.width;
+            var imgStyle = new GUIStyle 
+            {
+                fixedWidth = 200,
+                fixedHeight = img.height * scale
+            };
+            GUILayout.Box(img, imgStyle);
+        }
+
         static string[] s_DiagnosticLevelTable = new string[]
         {
             "OK","WARN","ERROR","STALE"
@@ -383,6 +395,18 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MIlluminance message)
         {
             GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
+        }
+
+        public static void GUI(this MImage message)
+        {
+            var img = message.ToTexture2D();
+            float scale = 200f / img.width;
+            var imgStyle = new GUIStyle 
+            {
+                fixedWidth = 200,
+                fixedHeight = img.height * scale
+            };
+            GUILayout.Box(img, imgStyle);
         }
 
         public static void GUI(this MInertia message)
