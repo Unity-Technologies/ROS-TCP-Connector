@@ -327,17 +327,13 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
             GUILayout.EndHorizontal();
         }
-
+        
         public static void GUI(this MCompressedImage message)
         {
+            // TODO: Rescale/recenter image based on window height/width
             var img = message.ToTexture2D();
-            float scale = 200f / img.width;
-            var imgStyle = new GUIStyle 
-            {
-                fixedWidth = 200,
-                fixedHeight = img.height * scale
-            };
-            GUILayout.Box(img, imgStyle);
+            var origRatio = (float)img.width / (float)img.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), img);
         }
 
         static string[] s_DiagnosticLevelTable = new string[]
@@ -399,14 +395,10 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MImage message)
         {
+            // TODO: Rescale/recenter image based on window height/width
             var img = message.ToTexture2D();
-            float scale = 200f / img.width;
-            var imgStyle = new GUIStyle 
-            {
-                fixedWidth = 200,
-                fixedHeight = img.height * scale
-            };
-            GUILayout.Box(img, imgStyle);
+            var origRatio = (float)img.width / (float)img.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), img);
         }
 
         public static void GUI(this MInertia message)
