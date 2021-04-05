@@ -422,6 +422,60 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
+        public static void GUI(this MJoy message)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LT));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RT));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LB));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RB));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.DPad));
+            GUILayout.BeginVertical();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Back));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Power));
+            GUILayout.EndVertical();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Start));
+            GUILayout.BeginVertical();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RPress));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LPress));
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();
+            GUILayoutUtility.GetAspectRect(1);
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Y));
+            GUILayoutUtility.GetAspectRect(1);
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.X));
+            GUILayoutUtility.GetAspectRect(1);
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.A));
+            GUILayout.EndVertical();
+            GUILayout.BeginVertical();
+            GUILayoutUtility.GetAspectRect(1);
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.B));
+            GUILayoutUtility.GetAspectRect(1);
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            // GUILayout.BeginVertical();
+            // GUILayout.Label("LStick (axes 0, 1)");
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LStick));
+            // GUILayout.EndVertical();
+            // GUILayout.BeginVertical();
+            // GUILayout.Label("RStick (axes 3, 4)");
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RStick));
+            // GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+
         public static void GUI(this MMapMetaData message)
         {
             GUILayout.Label($"Load time: {message.map_load_time.ToTimestampString()}");

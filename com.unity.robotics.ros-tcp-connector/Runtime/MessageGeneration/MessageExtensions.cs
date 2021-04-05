@@ -41,35 +41,40 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        public static byte[] EncodingConversion(byte[] toConvert, string from)
+        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height)
         {
+            if (from == "mono8" || from == "mono16" || from == "rgb8" || from == "rgba8") 
+            {
+                Debug.Log($"Conversion not supported from {from}, returning original byte array!");
+                return toConvert;
+            }
+
             Dictionary<int, int> channelConversion = new Dictionary<int, int>();
 
             // TODO: Is it safe to assume 8UC3 will default to bgr8?
-
-            // Three channels
-            if (from[from.Length - 1] == 3) 
-            {
-                channelConversion.Add(0, 2); // B -> R
-                channelConversion.Add(1, 1); // G -> G
-                channelConversion.Add(2, 0); // R -> B
-            }
-            else {
-                channelConversion.Add(0, 2); // B -> R 
-                channelConversion.Add(1, 1); // G -> G
-                channelConversion.Add(2, 0); // R -> B
-                channelConversion.Add(3, 3); // A -> A
-            }
+            channelConversion.Add(0, 2); // B -> R 
+            channelConversion.Add(1, 1); // G -> G
+            channelConversion.Add(2, 0); // R -> B
+            channelConversion.Add(3, 3); // A -> A
             
             int idx = 0;
             int pixel = 0;
+            int flipIdx;
+            int tmpR;
+            int tmpC;
+            int tmpH = height - 1;
+            int tmpW = width * 3;
 
             byte[] converted = new byte[toConvert.Length];
 
+            // Bit shift BGR->RGB and flip across X axis
             for (int i = 0; i < toConvert.Length; i++)
             {
                 pixel = i / 3;
-                converted[i] = toConvert[pixel * 3 + channelConversion[idx]];
+                tmpR = tmpH - (i / tmpW);
+                tmpC = i % tmpW;
+                flipIdx = ((tmpR * tmpW) + tmpC);
+                converted[flipIdx] = toConvert[pixel * 3 + channelConversion[idx]];
 
                 idx = (idx + 1) % 3;
             }
@@ -86,7 +91,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "8UC2":
                     return TextureFormat.RG16;
                 case "8UC3":
-                    // TODO: arrives BGR, needs RGB conversion
                     return TextureFormat.RGB24;
                 case "8UC4":
                     return TextureFormat.RGBA32;
@@ -143,12 +147,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "mono16":
                     return TextureFormat.R16;
                 case "bgr8":
-                    // return TextureFormat.RGB24;
-                    throw new NotImplementedException();
+                    return TextureFormat.RGB24;
                 case "rgb8":
                     return TextureFormat.RGB24;
                 case "bgra8":
-                    throw new NotImplementedException();
+                    return TextureFormat.RGBA32;
                 case "rgba8":
                     return TextureFormat.RGBA32;
             }
@@ -165,23 +168,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static Texture2D ToTexture2D(this MImage message)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, EncodingToTextureFormat(message.encoding), false);
-            var data = EncodingConversion(message.data, message.encoding);
-            tex.LoadRawTextureData(message.data);
+            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height);
+            tex.LoadRawTextureData(data);
             tex.Apply();
             return tex;
-
-            // TODO: Needs to flip image 180º
-            // Texture2D modified = new Texture2D(tex.width, tex.height);
-            // for (int i = 0; i < tex.width; i++)
-            // {
-            //     for (int j = 0; j < tex.height; j++)
-            //     {
-            //         var color = tex.GetPixel(i, tex.height - j);
-            //         modified.SetPixel(i, j, color);
-            //     }
-            // }
-            // modified.Apply();
-            // return modified;
         }
 
         public static MCompressedImage ToMCompressedImage(this Texture2D tex, string format="jpeg")
@@ -194,6 +184,139 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             var data = tex.GetRawTextureData();
             return new MImage(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
+        }
+
+        public enum JoystickRegion 
+        {
+            LStick,
+            RStick,
+            LT,
+            RT,
+            DPad,
+            LB,
+            RB,
+            Back,
+            Start,
+            Power,
+            LPress,
+            RPress,
+            A,
+            B,
+            X,
+            Y
+        };
+
+        // TODO: Consider multiple controller layouts
+
+        public static Texture2D TextureFromJoy(this MJoy message, JoystickRegion region) 
+        {
+            Color[] colorHighlight = new Color[100];
+            for (int i = 0; i < colorHighlight.Length; i++)
+            {
+                colorHighlight[i] = Color.red;
+            }
+
+            // Color[] colorPressed = new Color[2500];
+            // for (int i = 0; i < colorPressed.Length; i++)
+            // {
+            //     colorPressed[i] = Color.blue;
+            // }
+
+            Texture2D tex;
+            int x = 0;
+            int y = 0;
+
+            switch (region)
+            {
+                case JoystickRegion.LStick:
+                    tex = new Texture2D(50, 50);
+                    x = (Mathf.FloorToInt(message.axes[0] * -20) + tex.width / 2);
+                    y = (Mathf.FloorToInt(message.axes[1] * 20) + tex.height / 2);
+                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.RStick:
+                    tex = new Texture2D(50, 50);
+                    x = (Mathf.FloorToInt(message.axes[3] * -20) + tex.width / 2);
+                    y = (Mathf.FloorToInt(message.axes[4] * 20) + tex.height / 2);
+                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.DPad:
+                    tex = new Texture2D(50, 50);
+                    x = (Mathf.FloorToInt(message.axes[6] * -20) + tex.width / 2);
+                    y = (Mathf.FloorToInt(message.axes[7] * 20) + tex.height / 2);
+                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.LT:
+                    tex = new Texture2D(25, 50);
+                    y = Mathf.FloorToInt(message.axes[2] * 20) + tex.height / 2;
+                    tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
+                    break;
+                case JoystickRegion.RT:
+                    tex = new Texture2D(25, 50);
+                    y = Mathf.FloorToInt(message.axes[5] * 20) + tex.height / 2;
+                    tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
+                    break;
+                case JoystickRegion.LB:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[4] == 1)
+                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.RB:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[5] == 1)
+                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.Back:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[6] == 1)
+                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.Start:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[7] == 1)
+                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.Power:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[8] == 1)
+                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
+                    break;
+                case JoystickRegion.LPress:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[9] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                case JoystickRegion.RPress:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[10] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                case JoystickRegion.A:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[0] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                case JoystickRegion.B:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[1] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                case JoystickRegion.X:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[2] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                case JoystickRegion.Y:
+                    tex = new Texture2D(10, 10);
+                    if (message.buttons[3] == 1)
+                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
+                    break;
+                default:
+                    tex = new Texture2D(1,1);
+                    break;
+            }
+            tex.Apply();
+            return tex;
         }
     }
 }
