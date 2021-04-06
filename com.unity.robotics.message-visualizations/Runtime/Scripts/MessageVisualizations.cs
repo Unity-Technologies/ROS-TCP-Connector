@@ -315,6 +315,18 @@ namespace Unity.Robotics.MessageVisualizers
             message.angular.GUI("Angular");
         }
 
+        public static void GUI(this MBatteryState message)
+        {
+            GUILayout.Label($"Voltage: {message.voltage} (V)\nTemperature: {message.temperature} (ºC)\nCurrent: {message.current} (A)\nCharge: {message.charge} (Ah)\nCapacity: {message.capacity} (Ah)\nDesign Capacity: {message.design_capacity} (Ah)\nPercentage: {message.percentage}");
+            GUILayout.Label($"Power supply status: {(MessageExtensions.BatteryStateStatusConstants)message.power_supply_status}");
+            GUILayout.Label($"Power supply health: {(MessageExtensions.BatteryStateHealthConstants)message.power_supply_health}");
+            GUILayout.Label($"Power supply technology: {(MessageExtensions.BatteryStateTechnologyConstants)message.power_supply_technology}");
+            GUILayout.Label($"Present: {message.present}");
+            GUILayout.Label($"Cell voltage: {String.Join(", ", message.cell_voltage)}");
+            GUILayout.Label($"Cell temperature: {String.Join(", ", message.cell_temperature)}");
+            GUILayout.Label($"Location: {message.location}\nSerial number: {message.serial_number}");
+        }
+
         public static void GUI(this MColorRGBA message, bool withText = true)
         {
             Color oldBackgroundColor = UnityEngine.GUI.color;
@@ -422,57 +434,54 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        public static void GUI(this MJoy message)
+        public static void GUI(this MJoy message, ref int layout)
         {
+            string[] selStrings = {"DS4", "X360 Windows", "X360 Linux", "X360 (Wired)", "F710"};
+            layout = GUILayout.SelectionGrid(layout, selStrings, 2);
+
+            // Triggers
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LT));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RT));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LT, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RT, layout));
             GUILayout.EndHorizontal();
 
+            // Shoulders
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LB));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RB));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LB, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RB, layout));
             GUILayout.EndHorizontal();
 
+            // Dpad, central buttons
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.DPad));
-            GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Back));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Power));
-            GUILayout.EndVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Start));
-            GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RPress));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LPress));
-            GUILayout.EndVertical();
 
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.DPad, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Back, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Power, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Start, layout));
+
+            // N/E/S/W buttons
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Y));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BWest, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.X));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BNorth, layout));
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.A));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BSouth, layout));
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.B));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BEast, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
 
+            // Joysticks
             GUILayout.BeginHorizontal();
-            // GUILayout.BeginVertical();
-            // GUILayout.Label("LStick (axes 0, 1)");
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LStick));
-            // GUILayout.EndVertical();
-            // GUILayout.BeginVertical();
-            // GUILayout.Label("RStick (axes 3, 4)");
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RStick));
-            // GUILayout.EndVertical();
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LStick, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RStick, layout));
             GUILayout.EndHorizontal();
         }
 
@@ -575,11 +584,6 @@ namespace Unity.Robotics.MessageVisualizers
                 status.GUI();
         }
 
-        public static void GUI(this MTime message)
-        {
-            GUILayout.Label(message.ToTimestampString());
-        }
-
         public static void GUI(this MSolidPrimitive message)
         {
             switch (message.type)
@@ -605,6 +609,16 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MTemperature message)
         {
             GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
+        }
+
+        public static void GUI(this MTime message)
+        {
+            GUILayout.Label(message.ToTimestampString());
+        }
+
+        public static void GUI(this MTimeReference message)
+        {
+            GUILayout.Label($"{message.time_ref.ToTimestampString()}\n{message.source}");
         }
 
         public static void GUI(this MTransform message)

@@ -188,27 +188,25 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public enum JoystickRegion 
         {
+            BSouth = 0,
+            BEast = 1,
+            BWest = 2,
+            BNorth = 3,
+            LB = 4,
+            RB = 5,
+            Back = 6,
+            Start = 7,
+            Power = 8,
+            LPress = 9,
+            RPress = 10,
             LStick,
             RStick,
             LT,
             RT,
-            DPad,
-            LB,
-            RB,
-            Back,
-            Start,
-            Power,
-            LPress,
-            RPress,
-            A,
-            B,
-            X,
-            Y
+            DPad
         };
 
-        // TODO: Consider multiple controller layouts
-
-        public static Texture2D TextureFromJoy(this MJoy message, JoystickRegion region) 
+        public static Texture2D TextureFromJoy(this MJoy message, JoystickRegion region, int layout=0) 
         {
             Color[] colorHighlight = new Color[100];
             for (int i = 0; i < colorHighlight.Length; i++)
@@ -216,107 +214,212 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 colorHighlight[i] = Color.red;
             }
 
-            // Color[] colorPressed = new Color[2500];
-            // for (int i = 0; i < colorPressed.Length; i++)
-            // {
-            //     colorPressed[i] = Color.blue;
-            // }
+            Color[] colorPress = new Color[2500];
+            for (int i = 0; i < colorPress.Length; i++)
+            {
+                colorPress[i] = Color.blue;
+            }
 
             Texture2D tex;
             int x = 0;
             int y = 0;
+            int lAxisX = 0;
+            int lAxisY = 1;
+            int rAxisX = 2;
+            int rAxisY = 3;
+            int ltAxis = 4;
+            int rtAxis = 5;
+            int dAxisX = 6;
+            int dAxisY = 7;
+            int buttonIdx = (int)region;
 
-            switch (region)
+            if (layout == 0) 
             {
-                case JoystickRegion.LStick:
-                    tex = new Texture2D(50, 50);
-                    x = (Mathf.FloorToInt(message.axes[0] * -20) + tex.width / 2);
-                    y = (Mathf.FloorToInt(message.axes[1] * 20) + tex.height / 2);
-                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.RStick:
-                    tex = new Texture2D(50, 50);
-                    x = (Mathf.FloorToInt(message.axes[3] * -20) + tex.width / 2);
-                    y = (Mathf.FloorToInt(message.axes[4] * 20) + tex.height / 2);
-                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.DPad:
-                    tex = new Texture2D(50, 50);
-                    x = (Mathf.FloorToInt(message.axes[6] * -20) + tex.width / 2);
-                    y = (Mathf.FloorToInt(message.axes[7] * 20) + tex.height / 2);
-                    tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.LT:
-                    tex = new Texture2D(25, 50);
-                    y = Mathf.FloorToInt(message.axes[2] * 20) + tex.height / 2;
-                    tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
-                    break;
-                case JoystickRegion.RT:
-                    tex = new Texture2D(25, 50);
-                    y = Mathf.FloorToInt(message.axes[5] * 20) + tex.height / 2;
-                    tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
-                    break;
-                case JoystickRegion.LB:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[4] == 1)
-                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.RB:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[5] == 1)
-                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.Back:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[6] == 1)
-                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.Start:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[7] == 1)
-                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.Power:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[8] == 1)
-                        tex.SetPixels(0, 0, 10, 10, colorHighlight);
-                    break;
-                case JoystickRegion.LPress:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[9] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                case JoystickRegion.RPress:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[10] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                case JoystickRegion.A:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[0] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                case JoystickRegion.B:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[1] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                case JoystickRegion.X:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[2] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                case JoystickRegion.Y:
-                    tex = new Texture2D(10, 10);
-                    if (message.buttons[3] == 1)
-                        tex.SetPixels(0, 0, tex.width, tex.height, colorHighlight);
-                    break;
-                default:
-                    tex = new Texture2D(1,1);
-                    break;
+                // Dualshock 4
+                switch (region)
+                {
+                    case JoystickRegion.BSouth:
+                        buttonIdx = 0;
+                        break;
+                    case JoystickRegion.BEast:
+                        buttonIdx = 1;
+                        break;
+                    case JoystickRegion.BWest:
+                        buttonIdx = 3;
+                        break;
+                    case JoystickRegion.BNorth:
+                        buttonIdx = 2;
+                        break;
+                    case JoystickRegion.LT:
+                        ltAxis = 2;
+                        break;
+                    case JoystickRegion.Back:
+                        buttonIdx = 8;
+                        break;
+                    case JoystickRegion.Start:
+                        buttonIdx = 9;
+                        break;
+                    case JoystickRegion.Power:
+                        buttonIdx = 10;
+                        break;
+                    case JoystickRegion.LStick:
+                        buttonIdx = 11;
+                        break;
+                    case JoystickRegion.RStick:
+                        rAxisX = 3;
+                        rAxisY = 4;
+                        buttonIdx = 12;
+                        break;
+                }
+            }
+            else if (layout == 1) 
+            {
+                // Microsoft Xbox 360 Wireless Controller for Windows
+                switch (region)
+                {
+                    case JoystickRegion.Back:
+                        buttonIdx = 14;
+                        break;
+                }
+            }
+            else if (layout == 2) 
+            {
+                // Microsoft Xbox 360 Wireless Controller for Linux
+            }
+            else if (layout == 3) 
+            {
+                // Microsoft Xbox 360 Wired Controller for Linux
+                switch (region)
+                {
+                    case JoystickRegion.LT:
+                        ltAxis = 2;
+                        break;
+                    case JoystickRegion.RStick:
+                        rAxisX = 3;
+                        rAxisY = 4;
+                        break;
+                }
+            }
+            else if (layout == 4) 
+            {
+                // Logitech Wireless Gamepad F710
+                switch (region)
+                {
+                    case JoystickRegion.BSouth:
+                        buttonIdx = 1;
+                        break;
+                    case JoystickRegion.BEast:
+                        buttonIdx = 2;
+                        break;
+                    case JoystickRegion.BWest:
+                        buttonIdx = 0;
+                        break;
+                    case JoystickRegion.BNorth:
+                        buttonIdx = 3;
+                        break;
+                    case JoystickRegion.LT:
+                        buttonIdx = 6;
+                        break;
+                    case JoystickRegion.RT:
+                        buttonIdx = 7;
+                        break;
+                    case JoystickRegion.Back:
+                        buttonIdx = 8;
+                        break;
+                    case JoystickRegion.Start:
+                        buttonIdx = 9;
+                        break;
+                    case JoystickRegion.LPress:
+                        buttonIdx = 10;
+                        break;
+                    case JoystickRegion.RPress:
+                        buttonIdx = 11;
+                        break;
+                }
+            }
+
+            if ((int)region <= 10) 
+            {
+                // Define small button context
+                tex = new Texture2D(10, 10);
+                if (message.buttons[buttonIdx] == 1)
+                    tex.SetPixels(0, 0, 10, 10, colorHighlight);
+            }
+            else {
+                // Axes
+                switch (region)
+                {
+                    case JoystickRegion.LStick:
+                        tex = new Texture2D(50, 50);
+                        x = (Mathf.FloorToInt(message.axes[lAxisX] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[lAxisY] * 20) + tex.height / 2);
+                        if (message.buttons[buttonIdx] == 1)
+                            tex.SetPixels(0, 0, 50, 50, colorPress);
+                        tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                        break;
+                    case JoystickRegion.RStick:
+                        tex = new Texture2D(50, 50);
+                        x = (Mathf.FloorToInt(message.axes[rAxisX] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[rAxisY] * 20) + tex.height / 2);
+                        if (message.buttons[buttonIdx] == 1)
+                            tex.SetPixels(0, 0, 50, 50, colorPress);
+                        tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                        break;
+                    case JoystickRegion.DPad:
+                        tex = new Texture2D(50, 50);
+                        x = (Mathf.FloorToInt(message.axes[dAxisX] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[dAxisY] * 20) + tex.height / 2);
+                        tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
+                        break;
+                    case JoystickRegion.LT:
+                        tex = new Texture2D(25, 50);
+                        y = Mathf.FloorToInt(message.axes[ltAxis] * 20) + tex.height / 2;
+                        tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
+                        break;
+                    case JoystickRegion.RT:
+                        tex = new Texture2D(25, 50);
+                        y = Mathf.FloorToInt(message.axes[rtAxis] * 20) + tex.height / 2;
+                        tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
+                        break;
+                    default:
+                        tex = new Texture2D(1,1);
+                        break;
+                }
             }
             tex.Apply();
             return tex;
+        }
+
+        public enum BatteryStateStatusConstants
+        {
+            POWER_SUPPLY_STATUS_UNKNOWN = 0,
+            POWER_SUPPLY_STATUS_CHARGING = 1,
+            POWER_SUPPLY_STATUS_DISCHARGING = 2,
+            POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
+            POWER_SUPPLY_STATUS_FULL = 4
+        }
+
+        public enum BatteryStateHealthConstants
+        {
+            POWER_SUPPLY_HEALTH_UNKNOWN = 0,
+            POWER_SUPPLY_HEALTH_GOOD = 1,
+            POWER_SUPPLY_HEALTH_OVERHEAT = 2,
+            POWER_SUPPLY_HEALTH_DEAD = 3,
+            POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
+            POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
+            POWER_SUPPLY_HEALTH_COLD = 6,
+            POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
+            POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8
+        }
+        public enum BatteryStateTechnologyConstants
+        {
+            POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
+            POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
+            POWER_SUPPLY_TECHNOLOGY_LION = 2,
+            POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
+            POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
+            POWER_SUPPLY_TECHNOLOGY_NICD = 5,
+            POWER_SUPPLY_TECHNOLOGY_LIMN = 6
         }
     }
 }
