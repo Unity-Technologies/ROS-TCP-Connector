@@ -451,9 +451,9 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RB, layout));
             GUILayout.EndHorizontal();
 
-            // Dpad, central buttons
             GUILayout.BeginHorizontal();
 
+            // Dpad, central buttons
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.DPad, layout));
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Back, layout));
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Power, layout));
@@ -483,6 +483,19 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LStick, layout));
             GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RStick, layout));
             GUILayout.EndHorizontal();
+        }
+
+        public static void GUI(this MJoyFeedback message)
+        {
+            GUILayout.Label($"Type: {(MessageExtensions.JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
+        }
+
+        public static void GUI(this MJoyFeedbackArray message)
+        {
+            foreach (MJoyFeedback m in message.array)
+            {
+                m.GUI();
+            }
         }
 
         public static void GUI(this MMapMetaData message)

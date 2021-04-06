@@ -198,12 +198,28 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             Start = 7,
             Power = 8,
             LPress = 9,
-            RPress = 10,
-            LStick,
-            RStick,
-            LT,
-            RT,
-            DPad
+            RPress = 10, 
+            LStick, RStick, LT, RT, DPad, lAxisX, lAxisY, 
+            rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
+        };
+
+        static Dictionary<JoystickRegion, int> JoyRemapLookup = new Dictionary<JoystickRegion, int>() 
+        {
+            { JoystickRegion.BSouth, (int)JoystickRegion.BSouth },
+            { JoystickRegion.BEast, (int)JoystickRegion.BEast },
+            { JoystickRegion.BWest, (int)JoystickRegion.BWest },
+            { JoystickRegion.BNorth, (int)JoystickRegion.BNorth },
+            { JoystickRegion.LB, (int)JoystickRegion.LB },
+            { JoystickRegion.RB, (int)JoystickRegion.RB },
+            { JoystickRegion.Back, (int)JoystickRegion.Back },
+            { JoystickRegion.Start, (int)JoystickRegion.Start },
+            { JoystickRegion.Power, (int)JoystickRegion.Power },
+            { JoystickRegion.LPress, (int)JoystickRegion.LPress },
+            { JoystickRegion.RPress, (int)JoystickRegion.RPress },
+            { JoystickRegion.lAxisX, 0 }, { JoystickRegion.lAxisY, 1 },
+            { JoystickRegion.rAxisX, 2 }, { JoystickRegion.rAxisY, 3 },
+            { JoystickRegion.ltAxis, 4 }, { JoystickRegion.rtAxis, 5 },
+            { JoystickRegion.dAxisX, 6 }, { JoystickRegion.dAxisY, 7 },
         };
 
         public static Texture2D TextureFromJoy(this MJoy message, JoystickRegion region, int layout=0) 
@@ -223,64 +239,27 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             Texture2D tex;
             int x = 0;
             int y = 0;
-            int lAxisX = 0;
-            int lAxisY = 1;
-            int rAxisX = 2;
-            int rAxisY = 3;
-            int ltAxis = 4;
-            int rtAxis = 5;
-            int dAxisX = 6;
-            int dAxisY = 7;
-            int buttonIdx = (int)region;
 
             if (layout == 0) 
             {
                 // Dualshock 4
-                switch (region)
-                {
-                    case JoystickRegion.BSouth:
-                        buttonIdx = 0;
-                        break;
-                    case JoystickRegion.BEast:
-                        buttonIdx = 1;
-                        break;
-                    case JoystickRegion.BWest:
-                        buttonIdx = 3;
-                        break;
-                    case JoystickRegion.BNorth:
-                        buttonIdx = 2;
-                        break;
-                    case JoystickRegion.LT:
-                        ltAxis = 2;
-                        break;
-                    case JoystickRegion.Back:
-                        buttonIdx = 8;
-                        break;
-                    case JoystickRegion.Start:
-                        buttonIdx = 9;
-                        break;
-                    case JoystickRegion.Power:
-                        buttonIdx = 10;
-                        break;
-                    case JoystickRegion.LStick:
-                        buttonIdx = 11;
-                        break;
-                    case JoystickRegion.RStick:
-                        rAxisX = 3;
-                        rAxisY = 4;
-                        buttonIdx = 12;
-                        break;
-                }
+                JoyRemapLookup[JoystickRegion.BSouth] = 0;
+                JoyRemapLookup[JoystickRegion.BEast] = 1;
+                JoyRemapLookup[JoystickRegion.BWest] = 3;
+                JoyRemapLookup[JoystickRegion.BNorth] = 2;
+                JoyRemapLookup[JoystickRegion.Back] = 8;
+                JoyRemapLookup[JoystickRegion.Start] = 9;
+                JoyRemapLookup[JoystickRegion.Power]= 10;
+                JoyRemapLookup[JoystickRegion.LPress]= 11;
+                JoyRemapLookup[JoystickRegion.ltAxis] = 2;
+                JoyRemapLookup[JoystickRegion.rAxisX]= 3;
+                JoyRemapLookup[JoystickRegion.rAxisY]= 4;
+                JoyRemapLookup[JoystickRegion.RPress]= 12;
             }
             else if (layout == 1) 
             {
                 // Microsoft Xbox 360 Wireless Controller for Windows
-                switch (region)
-                {
-                    case JoystickRegion.Back:
-                        buttonIdx = 14;
-                        break;
-                }
+                JoyRemapLookup[JoystickRegion.Back] = 14;
             }
             else if (layout == 2) 
             {
@@ -289,60 +268,30 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             else if (layout == 3) 
             {
                 // Microsoft Xbox 360 Wired Controller for Linux
-                switch (region)
-                {
-                    case JoystickRegion.LT:
-                        ltAxis = 2;
-                        break;
-                    case JoystickRegion.RStick:
-                        rAxisX = 3;
-                        rAxisY = 4;
-                        break;
-                }
+                JoyRemapLookup[JoystickRegion.ltAxis] = 2;
+                JoyRemapLookup[JoystickRegion.rAxisX] = 3;
+                JoyRemapLookup[JoystickRegion.rAxisY] = 4;
             }
             else if (layout == 4) 
             {
                 // Logitech Wireless Gamepad F710
-                switch (region)
-                {
-                    case JoystickRegion.BSouth:
-                        buttonIdx = 1;
-                        break;
-                    case JoystickRegion.BEast:
-                        buttonIdx = 2;
-                        break;
-                    case JoystickRegion.BWest:
-                        buttonIdx = 0;
-                        break;
-                    case JoystickRegion.BNorth:
-                        buttonIdx = 3;
-                        break;
-                    case JoystickRegion.LT:
-                        buttonIdx = 6;
-                        break;
-                    case JoystickRegion.RT:
-                        buttonIdx = 7;
-                        break;
-                    case JoystickRegion.Back:
-                        buttonIdx = 8;
-                        break;
-                    case JoystickRegion.Start:
-                        buttonIdx = 9;
-                        break;
-                    case JoystickRegion.LPress:
-                        buttonIdx = 10;
-                        break;
-                    case JoystickRegion.RPress:
-                        buttonIdx = 11;
-                        break;
-                }
+                JoyRemapLookup[JoystickRegion.BSouth] = 1;
+                JoyRemapLookup[JoystickRegion.BEast] = 2;
+                JoyRemapLookup[JoystickRegion.BWest] = 0;
+                JoyRemapLookup[JoystickRegion.BNorth] = 3;
+                JoyRemapLookup[JoystickRegion.ltAxis] = 6;
+                JoyRemapLookup[JoystickRegion.rtAxis] = 7;
+                JoyRemapLookup[JoystickRegion.Back] = 8;
+                JoyRemapLookup[JoystickRegion.Start] = 9;
+                JoyRemapLookup[JoystickRegion.LPress] = 10;
+                JoyRemapLookup[JoystickRegion.RPress] = 11;
             }
 
             if ((int)region <= 10) 
             {
                 // Define small button context
                 tex = new Texture2D(10, 10);
-                if (message.buttons[buttonIdx] == 1)
+                if (message.buttons[JoyRemapLookup[region]] == 1)
                     tex.SetPixels(0, 0, 10, 10, colorHighlight);
             }
             else {
@@ -351,34 +300,34 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 {
                     case JoystickRegion.LStick:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[lAxisX] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[lAxisY] * 20) + tex.height / 2);
-                        if (message.buttons[buttonIdx] == 1)
+                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.lAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.lAxisY]] * 20) + tex.height / 2);
+                        if (message.buttons[JoyRemapLookup[JoystickRegion.LPress]] == 1)
                             tex.SetPixels(0, 0, 50, 50, colorPress);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
                     case JoystickRegion.RStick:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[rAxisX] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[rAxisY] * 20) + tex.height / 2);
-                        if (message.buttons[buttonIdx] == 1)
+                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rAxisY]] * 20) + tex.height / 2);
+                        if (message.buttons[JoyRemapLookup[JoystickRegion.RPress]] == 1)
                             tex.SetPixels(0, 0, 50, 50, colorPress);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
                     case JoystickRegion.DPad:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[dAxisX] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[dAxisY] * 20) + tex.height / 2);
+                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.dAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.dAxisY]] * 20) + tex.height / 2);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
                     case JoystickRegion.LT:
                         tex = new Texture2D(25, 50);
-                        y = Mathf.FloorToInt(message.axes[ltAxis] * 20) + tex.height / 2;
+                        y = Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.ltAxis]] * 20) + tex.height / 2;
                         tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
                         break;
                     case JoystickRegion.RT:
                         tex = new Texture2D(25, 50);
-                        y = Mathf.FloorToInt(message.axes[rtAxis] * 20) + tex.height / 2;
+                        y = Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rtAxis]] * 20) + tex.height / 2;
                         tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
                         break;
                     default:
@@ -420,6 +369,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
             POWER_SUPPLY_TECHNOLOGY_NICD = 5,
             POWER_SUPPLY_TECHNOLOGY_LIMN = 6
+        }
+
+        public enum JoyFeedbackTypes
+        {
+            TYPE_LED    = 0,
+            TYPE_RUMBLE = 1,
+            TYPE_BUZZER = 2,
         }
     }
 }
