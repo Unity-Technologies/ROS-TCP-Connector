@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -224,11 +225,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
+            if(!IPFormatIsCorrect(rosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
             if (overrideUnityIP != "")
             {
+                if(!IPFormatIsCorrect(overrideUnityIP))
+                    Debug.LogError("Override Unity IP address is not correct");
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
@@ -587,6 +592,39 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 networkStream.Write(segmentData, 0, segmentData.Length);
             }
+        }
+
+        public static bool IPFormatIsCorrect(string iPaddress)
+        {
+            string[] subAdds = iPaddress.Split('.');
+            if(subAdds.Length != 4)
+            {
+                Debug.LogError($"{subAdds.Length} is incorrect number of octets in IP address");
+                return false;
+            }
+            foreach(string subAdd in subAdds)
+            {
+                try
+                {
+                    int number = Int32.Parse(subAdd,NumberStyles.None);
+                    if(!(number >= 0 && number <= 255))
+                    {
+                        Debug.LogError($"{number} is incorrect value of octets in IP address (0-255)");
+                        return false;
+                    }
+                }
+                catch (FormatException)
+                {
+                    Debug.LogError($"Unable to convert '{subAdd}'.");
+                    return false;
+                }
+                catch (OverflowException)
+                {
+                    Debug.LogError($"'{subAdd}' is out of range of the Int32 type.");
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
