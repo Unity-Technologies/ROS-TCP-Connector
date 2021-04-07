@@ -596,6 +596,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public static bool IPFormatIsCorrect(string iPaddress)
         {
+            //if IP address is set using
+            if(Char.IsLetter(iPaddress[0]))
+            {
+                foreach(Char subChar in iPaddress)
+                {
+                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                        return false;
+                }
+
+                if(!Char.IsLetterOrDigit(iPaddress[iPaddress.Length - 1]))
+                    return false;
+                return true;
+            }
+
             string[] subAdds = iPaddress.Split('.');
             if(subAdds.Length != 4)
             {
