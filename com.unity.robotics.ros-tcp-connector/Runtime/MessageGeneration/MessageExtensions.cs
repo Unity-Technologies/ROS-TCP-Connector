@@ -38,45 +38,61 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new MColorRGBA(color.r, color.g, color.b, color.a);
         }
 
+        static Dictionary<int, int> channelConversion = new Dictionary<int, int>() 
+        {
+            { 0, 2 }, // B -> R 
+            { 1, 1 }, // G -> G
+            { 2, 0 }, // R -> B
+            { 3, 3 }  // A -> A  
+        };
+
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height)
+        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert)
         {
-            if (from == "mono8" || from == "mono16" || from == "rgb8" || from == "rgba8") 
+            // Set number of channels to calculate conversion offsets
+            int channels = 3;
+
+            if (from[from.Length - 1] == '1' || from.Contains("mono"))
             {
-                Debug.Log($"Conversion not supported from {from}, returning original byte array!");
-                return toConvert;
+                channels = 1;
+            }
+            else if (from[from.Length - 1] == '4' || from.Contains("a"))
+            {
+                channels = 4;
             }
 
-            Dictionary<int, int> channelConversion = new Dictionary<int, int>();
-
-            // TODO: Is it safe to assume 8UC3 will default to bgr8?
-            channelConversion.Add(0, 2); // B -> R 
-            channelConversion.Add(1, 1); // G -> G
-            channelConversion.Add(2, 0); // R -> B
-            channelConversion.Add(3, 3); // A -> A
-            
             int idx = 0;
             int pixel = 0;
             int flipIdx;
             int tmpR;
             int tmpC;
             int tmpH = height - 1;
-            int tmpW = width * 3;
+            int tmpW = width * channels;
 
             byte[] converted = new byte[toConvert.Length];
 
             // Bit shift BGR->RGB and flip across X axis
             for (int i = 0; i < toConvert.Length; i++)
             {
-                pixel = i / 3;
+                pixel = i / channels;
                 tmpR = tmpH - (i / tmpW);
                 tmpC = i % tmpW;
                 flipIdx = ((tmpR * tmpW) + tmpC);
-                converted[flipIdx] = toConvert[pixel * 3 + channelConversion[idx]];
+                if (channels > 1)
+                {
+                    if (convert)
+                        converted[flipIdx] = toConvert[pixel * channels + channelConversion[idx]];
+                    else 
+                        converted[flipIdx] = toConvert[pixel * channels + idx];
+                }
+                else 
+                {
+                    converted[flipIdx] = toConvert[pixel * channels];
+                }
 
-                idx = (idx + 1) % 3;
+                idx = (idx + 1) % channels;
             }
 
             return converted;
@@ -165,10 +181,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this MImage message)
+        public static Texture2D ToTexture2D(this MImage message, bool convert)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, EncodingToTextureFormat(message.encoding), false);
-            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height);
+            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert);
             tex.LoadRawTextureData(data);
             tex.Apply();
             return tex;
@@ -186,7 +202,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new MImage(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
         }
 
-        public enum JoystickRegion 
+        public enum JoyRegion 
         {
             BSouth = 0,
             BEast = 1,
@@ -203,26 +219,116 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
         };
 
-        static Dictionary<JoystickRegion, int> JoyRemapLookup = new Dictionary<JoystickRegion, int>() 
+        public enum JoyLayout
         {
-            { JoystickRegion.BSouth, (int)JoystickRegion.BSouth },
-            { JoystickRegion.BEast, (int)JoystickRegion.BEast },
-            { JoystickRegion.BWest, (int)JoystickRegion.BWest },
-            { JoystickRegion.BNorth, (int)JoystickRegion.BNorth },
-            { JoystickRegion.LB, (int)JoystickRegion.LB },
-            { JoystickRegion.RB, (int)JoystickRegion.RB },
-            { JoystickRegion.Back, (int)JoystickRegion.Back },
-            { JoystickRegion.Start, (int)JoystickRegion.Start },
-            { JoystickRegion.Power, (int)JoystickRegion.Power },
-            { JoystickRegion.LPress, (int)JoystickRegion.LPress },
-            { JoystickRegion.RPress, (int)JoystickRegion.RPress },
-            { JoystickRegion.lAxisX, 0 }, { JoystickRegion.lAxisY, 1 },
-            { JoystickRegion.rAxisX, 2 }, { JoystickRegion.rAxisY, 3 },
-            { JoystickRegion.ltAxis, 4 }, { JoystickRegion.rtAxis, 5 },
-            { JoystickRegion.dAxisX, 6 }, { JoystickRegion.dAxisY, 7 },
+            DS4 = 0,
+            XB360Windows = 1,
+            XB360Linux = 2,
+            XB360Wired = 3,
+            F710 = 4
+        }
+
+        static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>() 
+        {
+            { JoyRegion.BSouth, 0 }, { JoyRegion.BEast, 1 },
+            { JoyRegion.BWest, 3 }, { JoyRegion.BNorth, 2 },
+            { JoyRegion.LB, (int)JoyRegion.LB },
+            { JoyRegion.RB, (int)JoyRegion.RB },
+            { JoyRegion.Back, 8 }, { JoyRegion.Start, 9 },
+            { JoyRegion.Power, 10 }, { JoyRegion.LPress, 11 },
+            { JoyRegion.RPress, 12 },
+            { JoyRegion.lAxisX, 0 }, { JoyRegion.lAxisY, 1 },
+            { JoyRegion.rAxisX, 3 }, { JoyRegion.rAxisY, 4 },
+            { JoyRegion.ltAxis, 2 }, { JoyRegion.rtAxis, 5 },
+            { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
         };
 
-        public static Texture2D TextureFromJoy(this MJoy message, JoystickRegion region, int layout=0) 
+        static Dictionary<JoyRegion, int> joyXB360Windows = new Dictionary<JoyRegion, int>() 
+        {
+            { JoyRegion.BSouth, (int)JoyRegion.BSouth },
+            { JoyRegion.BEast, (int)JoyRegion.BEast },
+            { JoyRegion.BWest, (int)JoyRegion.BWest },
+            { JoyRegion.BNorth, (int)JoyRegion.BNorth },
+            { JoyRegion.LB, (int)JoyRegion.LB },
+            { JoyRegion.RB, (int)JoyRegion.RB },
+            { JoyRegion.Back, 14 },
+            { JoyRegion.Start, (int)JoyRegion.Start },
+            { JoyRegion.Power, (int)JoyRegion.Power },
+            { JoyRegion.LPress, (int)JoyRegion.LPress },
+            { JoyRegion.RPress, (int)JoyRegion.RPress },
+            { JoyRegion.lAxisX, 0 }, { JoyRegion.lAxisY, 1 },
+            { JoyRegion.rAxisX, 2 }, { JoyRegion.rAxisY, 3 },
+            { JoyRegion.ltAxis, 4 }, { JoyRegion.rtAxis, 5 },
+            { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
+        };
+
+        static Dictionary<JoyRegion, int> joyXB360Linux = new Dictionary<JoyRegion, int>() 
+        {
+            { JoyRegion.BSouth, (int)JoyRegion.BSouth },
+            { JoyRegion.BEast, (int)JoyRegion.BEast },
+            { JoyRegion.BWest, (int)JoyRegion.BWest },
+            { JoyRegion.BNorth, (int)JoyRegion.BNorth },
+            { JoyRegion.LB, (int)JoyRegion.LB },
+            { JoyRegion.RB, (int)JoyRegion.RB },
+            { JoyRegion.Back, (int)JoyRegion.Back },
+            { JoyRegion.Start, (int)JoyRegion.Start },
+            { JoyRegion.Power, (int)JoyRegion.Power },
+            { JoyRegion.LPress, (int)JoyRegion.LPress },
+            { JoyRegion.RPress, (int)JoyRegion.RPress },
+            { JoyRegion.lAxisX, 0 }, { JoyRegion.lAxisY, 1 },
+            { JoyRegion.rAxisX, 2 }, { JoyRegion.rAxisY, 3 },
+            { JoyRegion.ltAxis, 4 }, { JoyRegion.rtAxis, 5 },
+            { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
+        };
+
+        static Dictionary<JoyRegion, int> joyXB360Wired = new Dictionary<JoyRegion, int>() 
+        {
+            { JoyRegion.BSouth, (int)JoyRegion.BSouth },
+            { JoyRegion.BEast, (int)JoyRegion.BEast },
+            { JoyRegion.BWest, (int)JoyRegion.BWest },
+            { JoyRegion.BNorth, (int)JoyRegion.BNorth },
+            { JoyRegion.LB, (int)JoyRegion.LB },
+            { JoyRegion.RB, (int)JoyRegion.RB },
+            { JoyRegion.Back, (int)JoyRegion.Back },
+            { JoyRegion.Start, (int)JoyRegion.Start },
+            { JoyRegion.Power, (int)JoyRegion.Power },
+            { JoyRegion.LPress, (int)JoyRegion.LPress },
+            { JoyRegion.RPress, (int)JoyRegion.RPress },
+            { JoyRegion.lAxisX, 0 }, { JoyRegion.lAxisY, 1 },
+            { JoyRegion.rAxisX, 3 }, { JoyRegion.rAxisY, 4 },
+            { JoyRegion.ltAxis, 2 }, { JoyRegion.rtAxis, 5 },
+            { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
+        };
+
+        static Dictionary<JoyRegion, int> joyF710 = new Dictionary<JoyRegion, int>() 
+        {
+            { JoyRegion.BSouth, 1 }, { JoyRegion.BEast, 2 },
+            { JoyRegion.BWest, 0 }, { JoyRegion.BNorth, 3 },
+            { JoyRegion.LB, (int)JoyRegion.LB },
+            { JoyRegion.RB, (int)JoyRegion.RB },
+            { JoyRegion.Back, 8 }, { JoyRegion.Start, 9 },
+            { JoyRegion.Power, (int)JoyRegion.Power },
+            { JoyRegion.LPress, 10 }, { JoyRegion.RPress, 11 },
+            { JoyRegion.lAxisX, 0 }, { JoyRegion.lAxisY, 1 },
+            { JoyRegion.rAxisX, 2 }, { JoyRegion.rAxisY, 3 },
+            { JoyRegion.ltAxis, 6 }, { JoyRegion.rtAxis, 7 },
+            { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
+        };
+
+        static Dictionary<JoyLayout, Dictionary<JoyRegion, int>> layoutToMap = new Dictionary<JoyLayout, Dictionary<JoyRegion, int>>()
+        {
+            { JoyLayout.DS4, joyDS4 },
+            { JoyLayout.XB360Windows, joyXB360Windows },
+            { JoyLayout.XB360Linux, joyXB360Linux },
+            { JoyLayout.XB360Wired, joyXB360Wired },
+            { JoyLayout.F710, joyF710 }
+        };
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>Texture2D with an assigned </returns>
+        public static Texture2D TextureFromJoy(this MJoy message, JoyRegion region, int layout=0) 
         {
             Color[] colorHighlight = new Color[100];
             for (int i = 0; i < colorHighlight.Length; i++)
@@ -239,95 +345,49 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             Texture2D tex;
             int x = 0;
             int y = 0;
-
-            if (layout == 0) 
-            {
-                // Dualshock 4
-                JoyRemapLookup[JoystickRegion.BSouth] = 0;
-                JoyRemapLookup[JoystickRegion.BEast] = 1;
-                JoyRemapLookup[JoystickRegion.BWest] = 3;
-                JoyRemapLookup[JoystickRegion.BNorth] = 2;
-                JoyRemapLookup[JoystickRegion.Back] = 8;
-                JoyRemapLookup[JoystickRegion.Start] = 9;
-                JoyRemapLookup[JoystickRegion.Power]= 10;
-                JoyRemapLookup[JoystickRegion.LPress]= 11;
-                JoyRemapLookup[JoystickRegion.ltAxis] = 2;
-                JoyRemapLookup[JoystickRegion.rAxisX]= 3;
-                JoyRemapLookup[JoystickRegion.rAxisY]= 4;
-                JoyRemapLookup[JoystickRegion.RPress]= 12;
-            }
-            else if (layout == 1) 
-            {
-                // Microsoft Xbox 360 Wireless Controller for Windows
-                JoyRemapLookup[JoystickRegion.Back] = 14;
-            }
-            else if (layout == 2) 
-            {
-                // Microsoft Xbox 360 Wireless Controller for Linux
-            }
-            else if (layout == 3) 
-            {
-                // Microsoft Xbox 360 Wired Controller for Linux
-                JoyRemapLookup[JoystickRegion.ltAxis] = 2;
-                JoyRemapLookup[JoystickRegion.rAxisX] = 3;
-                JoyRemapLookup[JoystickRegion.rAxisY] = 4;
-            }
-            else if (layout == 4) 
-            {
-                // Logitech Wireless Gamepad F710
-                JoyRemapLookup[JoystickRegion.BSouth] = 1;
-                JoyRemapLookup[JoystickRegion.BEast] = 2;
-                JoyRemapLookup[JoystickRegion.BWest] = 0;
-                JoyRemapLookup[JoystickRegion.BNorth] = 3;
-                JoyRemapLookup[JoystickRegion.ltAxis] = 6;
-                JoyRemapLookup[JoystickRegion.rtAxis] = 7;
-                JoyRemapLookup[JoystickRegion.Back] = 8;
-                JoyRemapLookup[JoystickRegion.Start] = 9;
-                JoyRemapLookup[JoystickRegion.LPress] = 10;
-                JoyRemapLookup[JoystickRegion.RPress] = 11;
-            }
+            var layoutMap = layoutToMap[(JoyLayout)layout];
 
             if ((int)region <= 10) 
             {
                 // Define small button context
                 tex = new Texture2D(10, 10);
-                if (message.buttons[JoyRemapLookup[region]] == 1)
+                if (message.buttons[layoutMap[region]] == 1)
                     tex.SetPixels(0, 0, 10, 10, colorHighlight);
             }
             else {
                 // Axes
                 switch (region)
                 {
-                    case JoystickRegion.LStick:
+                    case JoyRegion.LStick:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.lAxisX]] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.lAxisY]] * 20) + tex.height / 2);
-                        if (message.buttons[JoyRemapLookup[JoystickRegion.LPress]] == 1)
+                        x = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.lAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.lAxisY]] * 20) + tex.height / 2);
+                        if (message.buttons[layoutMap[JoyRegion.LPress]] == 1)
                             tex.SetPixels(0, 0, 50, 50, colorPress);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
-                    case JoystickRegion.RStick:
+                    case JoyRegion.RStick:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rAxisX]] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rAxisY]] * 20) + tex.height / 2);
-                        if (message.buttons[JoyRemapLookup[JoystickRegion.RPress]] == 1)
+                        x = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.rAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.rAxisY]] * 20) + tex.height / 2);
+                        if (message.buttons[layoutMap[JoyRegion.RPress]] == 1)
                             tex.SetPixels(0, 0, 50, 50, colorPress);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
-                    case JoystickRegion.DPad:
+                    case JoyRegion.DPad:
                         tex = new Texture2D(50, 50);
-                        x = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.dAxisX]] * -20) + tex.width / 2);
-                        y = (Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.dAxisY]] * 20) + tex.height / 2);
+                        x = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.dAxisX]] * -20) + tex.width / 2);
+                        y = (Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.dAxisY]] * 20) + tex.height / 2);
                         tex.SetPixels(x - 5, y - 5, 10, 10, colorHighlight);
                         break;
-                    case JoystickRegion.LT:
+                    case JoyRegion.LT:
                         tex = new Texture2D(25, 50);
-                        y = Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.ltAxis]] * 20) + tex.height / 2;
+                        y = Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.ltAxis]] * 20) + tex.height / 2;
                         tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
                         break;
-                    case JoystickRegion.RT:
+                    case JoyRegion.RT:
                         tex = new Texture2D(25, 50);
-                        y = Mathf.FloorToInt(message.axes[JoyRemapLookup[JoystickRegion.rtAxis]] * 20) + tex.height / 2;
+                        y = Mathf.FloorToInt(message.axes[layoutMap[JoyRegion.rtAxis]] * 20) + tex.height / 2;
                         tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
                         break;
                     default:
@@ -376,6 +436,60 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             TYPE_LED    = 0,
             TYPE_RUMBLE = 1,
             TYPE_BUZZER = 2,
+        }
+
+        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message)
+        {
+            var tex = new Texture2D((int)message.x_offset + (int)message.width + 10, (int)message.y_offset + (int)message.height + 10);
+
+            // Initialize ROI color block 
+            Color[] colors = new Color[(int)message.height * (int)message.width];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                colors[i] = Color.red;
+            }
+
+            tex.SetPixels((int)message.x_offset, (int)message.y_offset, (int)message.width, (int)message.height, colors);
+            tex.Apply();
+
+            return tex;
+        }
+
+        public enum RangeRadiationTypes
+        {
+            ULTRASOUND = 0,
+            INFRARED = 1
+        }
+
+        public enum NavSatStatuses
+        {
+            STATUS_NO_FIX =  -1,        // unable to fix position
+            STATUS_FIX =      0,        // unaugmented fix
+            STATUS_SBAS_FIX = 1,        // with satellite-based augmentation
+            STATUS_GBAS_FIX = 2         // with ground-based augmentation
+        }
+
+        public enum NavSatStatusServices
+        {
+            SERVICE_GPS =     1,
+            SERVICE_GLONASS = 2,
+            SERVICE_COMPASS = 4,      // includes BeiDou.
+            SERVICE_GALILEO = 8
+        }
+
+        public enum NavSatFixCovariance
+        {
+            COVARIANCE_TYPE_UNKNOWN = 0,
+            COVARIANCE_TYPE_APPROXIMATED = 1,
+            COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
+            COVARIANCE_TYPE_KNOWN = 3
+        }
+
+        public static string ToLatLongString(this MNavSatFix message)
+        {
+            string lat = (message.latitude > 0) ? "ºN" : "ºS";
+            string lon = (message.longitude > 0) ? "ºE" : "ºW";
+            return $"{message.latitude}{lat} {message.longitude}{lon}";
         }
     }
 }

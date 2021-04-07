@@ -346,6 +346,7 @@ namespace Unity.Robotics.MessageVisualizers
             var img = message.ToTexture2D();
             var origRatio = (float)img.width / (float)img.height;
             UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), img);
+            GUILayout.Label($"Format: {message.format}");
         }
 
         static string[] s_DiagnosticLevelTable = new string[]
@@ -405,12 +406,15 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
         }
 
-        public static void GUI(this MImage message)
+        public static void GUI(this MImage message, ref Texture2D tex, ref bool convert)
         {
             // TODO: Rescale/recenter image based on window height/width
-            var img = message.ToTexture2D();
-            var origRatio = (float)img.width / (float)img.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), img);
+            if (!message.encoding.Contains("1") && !message.encoding.Contains("mono"))
+                convert = GUILayout.Toggle(convert, "Convert from BGR");
+            tex = message.ToTexture2D(convert);
+            var origRatio = (float)tex.width / (float)tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
         }
 
         public static void GUI(this MInertia message)
@@ -441,38 +445,38 @@ namespace Unity.Robotics.MessageVisualizers
 
             // Triggers
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LT, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RT, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LT, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RT, layout));
             GUILayout.EndHorizontal();
 
             // Shoulders
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LB, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RB, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LB, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RB, layout));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
 
             // Dpad, central buttons
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.DPad, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Back, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Power, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.Start, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.DPad, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Back, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Power, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Start, layout));
 
             // N/E/S/W buttons
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BWest, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BWest, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BNorth, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BNorth, layout));
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BSouth, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BSouth, layout));
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.BEast, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BEast, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
 
@@ -480,8 +484,8 @@ namespace Unity.Robotics.MessageVisualizers
 
             // Joysticks
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.LStick, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoystickRegion.RStick, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LStick, layout));
+            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RStick, layout));
             GUILayout.EndHorizontal();
         }
 
@@ -518,6 +522,17 @@ namespace Unity.Robotics.MessageVisualizers
         {
             string text = "[" + String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray()) + "]";
             GUILayout.Label(text);
+        }
+
+        public static void GUI(this MNavSatFix message)
+        {
+            message.status.GUI();
+            GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(MessageExtensions.NavSatFixCovariance)message.position_covariance_type}");
+        }
+
+        public static void GUI(this MNavSatStatus message)
+        {
+            GUILayout.Label($"Status: {(MessageExtensions.NavSatStatuses)message.status}\nService: {(MessageExtensions.NavSatStatusServices)message.service}");
         }
 
         public static void GUI(this MPoint message, string name)
@@ -582,6 +597,18 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MQuaternion message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
+        }
+
+        public static void GUI(this MRange message)
+        {
+            // TODO: Draw arc and size of ranges
+            GUILayout.Label($"Radiation type: {(MessageExtensions.RangeRadiationTypes)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
+        }
+
+        public static void GUI(this MRegionOfInterest message)
+        {
+            GUILayout.Box(message.RegionOfInterestTexture());
+            GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
         }
 
         public static void GUI(this MRelativeHumidity message)
