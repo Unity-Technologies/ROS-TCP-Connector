@@ -300,6 +300,10 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!networkStream.CanRead)
                 return;
 
+            byte[] timeoutBytes = new byte[4];
+            networkStream.Read(timeoutBytes, 0, 4);
+            float timeout = BitConverter.ToSingle(timeoutBytes, 0);
+
             SubscriberCallback subs;
 
             float lastDataReceivedRealTimestamp = 0;
@@ -348,7 +352,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 await Task.Yield();
             }
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + 15);
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeout); // time out if idle too long.
             networkStream.Close();
         }
 
