@@ -294,13 +294,6 @@ namespace Unity.Robotics.ROSTCPConnector
                     if (!subscribers.TryGetValue(topicName, out subs))
                         continue; // not interested in this topic
 
-                    if (subs.messageConstructor == null)
-                    {
-                        if (hudPanel != null)
-                            hudPanel.SetLastMessageRaw(topicName, content);
-                        return;
-                    }
-
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(content, 0);
 
