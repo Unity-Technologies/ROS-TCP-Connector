@@ -15,6 +15,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return message.ToDateTime().ToString("G") + $"(+{message.nsecs})";
         }
 
+        public static long ToLongTime(this MTime message)
+        {
+            return (long)message.secs << 32 | message.nsecs;
+        }
+
         public static DateTime ToDateTime(this MTime message)
         {
             DateTime time = new DateTime(message.secs);

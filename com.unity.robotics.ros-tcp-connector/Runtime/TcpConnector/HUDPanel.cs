@@ -37,6 +37,10 @@ namespace Unity.Robotics.ROSTCPConnector
         Rect m_TopicMenuRect = new Rect(20, 70, 250, 200);
         string m_TopicFilter = "";
 
+        bool m_ShowingTransforms;
+        Vector2 m_TransformMenuScrollPosition;
+        Rect m_TransformMenuRect = new Rect(20, 70, 250, 200);
+
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
         void SaveLayout()
@@ -197,9 +201,11 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label(m_UnityListenAddress, s_IPStyle);
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Visualizations"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Topics"))
             {
                 m_ShowingTopics = !m_ShowingTopics;
+                m_ShowingTransforms = false;
                 if (m_ShowingTopics)
                 {
                     ResizeTopicsWindow();
@@ -209,6 +215,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                 }
             }
+            if (GUILayout.Button("Transforms"))
+            {
+                m_ShowingTransforms = !m_ShowingTransforms;
+                m_ShowingTopics = false;
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
 
@@ -241,25 +253,34 @@ namespace Unity.Robotics.ROSTCPConnector
                 window.DrawWindow();
             }
 
+            if (s_TopicMenuStyle == null)
+            {
+                s_TopicMenuStyle = new GUIStyle
+                {
+                    stretchHeight = GUI.skin.box.stretchHeight,
+                    stretchWidth = GUI.skin.box.stretchWidth,
+                    padding = GUI.skin.box.padding,
+                    border = GUI.skin.box.border,
+                    normal = { background = GUI.skin.box.normal.background },
+                };
+            }
+
             // Topics menu
             if (m_ShowingTopics)
             {
-                if (s_TopicMenuStyle == null)
-                {
-                    s_TopicMenuStyle = new GUIStyle
-                    {
-                        stretchHeight = GUI.skin.box.stretchHeight,
-                        stretchWidth = GUI.skin.box.stretchWidth,
-                        padding = GUI.skin.box.padding,
-                        border = GUI.skin.box.border,
-                        normal = { background = GUI.skin.box.normal.background },
-                    };
-                }
-
                 GUI.Window(0, m_TopicMenuRect, DrawTopicMenuContents, "", s_TopicMenuStyle);
 
                 if (Event.current.type == EventType.MouseDown)
-                    TryCloseTopicMenu();
+                    m_ShowingTopics = ShouldKeepMenuOpen();
+            }
+
+            // Transforms menu
+            if(m_ShowingTransforms)
+            {
+                GUI.Window(0, m_TransformMenuRect, DrawTransformMenuContents, "", s_TopicMenuStyle);
+
+                if (Event.current.type == EventType.MouseDown)
+                    m_ShowingTransforms = ShouldKeepMenuOpen();
             }
         }
 
@@ -352,7 +373,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                     rule.SetShowWindow(showWindow);
                     rule.SetShowDrawing(showDrawing);
-                    TryCloseTopicMenu();
+                    m_ShowingTopics = ShouldKeepMenuOpen();
                     break;
                 }
             }
@@ -367,11 +388,16 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void TryCloseTopicMenu()
+        void DrawTransformMenuContents(int id)
+        {
+            foreach(string tfName in TFSystem.instance.GetTransformNames())
+                GUILayout.Label(tfName);
+        }
+
+        public bool ShouldKeepMenuOpen()
         {
             // If the user is holding shift, don't close the topic menu on selecting a topic
-            if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
-                m_ShowingTopics = false;
+            return (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
         }
 
         class HUDLayoutSave
