@@ -322,8 +322,8 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                 }
                 await Task.Yield();
-            }
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeout);
+            } 
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeout); // time out if idle too long.
             networkStream.Close();
         }
 
