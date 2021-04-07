@@ -292,6 +292,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
                 while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
+                    if (!Application.isPlaying)
+                    {
+                        networkStream.Close();
+                        return;
+                    }
+
                     (string topicName, byte[] content) = await ReadMessageContents(networkStream);
                     lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
 
