@@ -406,15 +406,25 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
         }
 
-        public static void GUI(this MImage message, ref Texture2D tex, ref bool convert)
+        public static void GUI(this MImage message, ref Texture2D tex, ref bool convert, ref bool flipY)
         {
             // TODO: Rescale/recenter image based on window height/width
+            GUILayout.BeginHorizontal();
             if (!message.encoding.Contains("1") && !message.encoding.Contains("mono"))
-                convert = GUILayout.Toggle(convert, "Convert from BGR");
-            tex = message.ToTexture2D(convert);
+                convert = GUILayout.Toggle(convert, "From BGR");
+            flipY = GUILayout.Toggle(flipY, "Flip Y");
+            GUILayout.EndHorizontal();
+            tex = message.ToTexture2D(convert, flipY);
             var origRatio = (float)tex.width / (float)tex.height;
             UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
+        }
+
+        public static void GUI(this MImu message)
+        {
+            message.orientation.GUI();
+            message.angular_velocity.GUI();
+            message.linear_acceleration.GUI();
         }
 
         public static void GUI(this MInertia message)

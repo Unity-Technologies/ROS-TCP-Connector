@@ -49,8 +49,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert)
+        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert, bool flipY)
         {
+            // No modifications necessary; return original array
+            if (!convert && !flipY)
+                return toConvert;
+
             // Set number of channels to calculate conversion offsets
             int channels = 3;
 
@@ -66,6 +70,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             int idx = 0;
             int pixel = 0;
             int flipIdx;
+            int fromIdx;
             int tmpR;
             int tmpC;
             int tmpH = height - 1;
@@ -79,19 +84,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 pixel = i / channels;
                 tmpR = tmpH - (i / tmpW);
                 tmpC = i % tmpW;
-                flipIdx = ((tmpR * tmpW) + tmpC);
+                flipIdx = (flipY) ? ((tmpR * tmpW) + tmpC) : i;
                 if (channels > 1)
-                {
-                    if (convert)
-                        converted[flipIdx] = toConvert[pixel * channels + channelConversion[idx]];
-                    else 
-                        converted[flipIdx] = toConvert[pixel * channels + idx];
-                }
-                else 
-                {
-                    converted[flipIdx] = toConvert[pixel * channels];
-                }
+                    fromIdx = (convert) ? pixel * channels + channelConversion[idx] : pixel * channels + idx;
+                else
+                    fromIdx = pixel * channels;
 
+                converted[flipIdx] = toConvert[fromIdx];
                 idx = (idx + 1) % channels;
             }
 
@@ -181,10 +180,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this MImage message, bool convert)
+        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, EncodingToTextureFormat(message.encoding), false);
-            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert);
+            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
             tex.LoadRawTextureData(data);
             tex.Apply();
             return tex;

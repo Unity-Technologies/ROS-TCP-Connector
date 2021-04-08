@@ -7,13 +7,13 @@ using UnityEngine;
 
 public class DefaultVisualizerImage : BasicVisualizer<MImage>
 {
-    [SerializeField]
-    bool m_convertFromBGR = true;
+    bool m_ConvertFromBGR = true;
+    bool m_FlipY = false;
 
     Texture2D m_Tex;
 
     public override Action CreateGUI(MImage message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
-        message.GUI(ref m_Tex, ref m_convertFromBGR);
+        message.GUI(ref m_Tex, ref m_ConvertFromBGR, ref m_FlipY);
     };
 }
