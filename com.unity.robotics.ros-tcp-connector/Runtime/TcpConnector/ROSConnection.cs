@@ -39,6 +39,9 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("While waiting to read a full message, check this many times before giving up.")]
         public int awaitDataReadRetry = 10;
 
+        [Tooltip("Close connection if nothing has been sent for this long (seconds).")]
+        public float timeoutOnIdle = 10;
+
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
@@ -278,10 +281,6 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!networkStream.CanRead)
                 return;
 
-            byte[] timeoutBytes = new byte[4];
-            networkStream.Read(timeoutBytes, 0, 4);
-            float timeout = BitConverter.ToSingle(timeoutBytes, 0);
-
             SubscriberCallback subs;
 
             float lastDataReceivedRealTimestamp = 0;
@@ -329,7 +328,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 await Task.Yield();
             } 
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeout); // time out if idle too long.
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeoutOnIdle); // time out if idle too long.
             networkStream.Close();
         }
 
