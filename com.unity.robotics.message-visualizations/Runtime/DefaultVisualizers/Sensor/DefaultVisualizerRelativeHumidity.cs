@@ -9,6 +9,7 @@ public class DefaultVisualizerRelativeHumidity : BasicVisualizer<MRelativeHumidi
 {
     public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
+        message.header.GUI();
         message.GUI();
     };
 }

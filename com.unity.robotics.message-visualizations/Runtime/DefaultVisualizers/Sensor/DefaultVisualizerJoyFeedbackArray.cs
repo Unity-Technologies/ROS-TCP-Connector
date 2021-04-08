@@ -9,6 +9,9 @@ public class DefaultVisualizerJoyFeedbackArray : BasicVisualizer<MJoyFeedbackArr
 {
     public override Action CreateGUI(MJoyFeedbackArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
-        message.GUI();
+        foreach (MJoyFeedback m in message.array)
+        {
+            m.GUI();
+        }
     };
 }

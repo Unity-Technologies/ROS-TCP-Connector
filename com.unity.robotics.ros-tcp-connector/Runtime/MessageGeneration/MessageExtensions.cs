@@ -7,6 +7,102 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
+    public enum BatteryStateStatusConstants
+    {
+        POWER_SUPPLY_STATUS_UNKNOWN = 0,
+        POWER_SUPPLY_STATUS_CHARGING = 1,
+        POWER_SUPPLY_STATUS_DISCHARGING = 2,
+        POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
+        POWER_SUPPLY_STATUS_FULL = 4
+    };
+
+    public enum BatteryStateHealthConstants
+    {
+        POWER_SUPPLY_HEALTH_UNKNOWN = 0,
+        POWER_SUPPLY_HEALTH_GOOD = 1,
+        POWER_SUPPLY_HEALTH_OVERHEAT = 2,
+        POWER_SUPPLY_HEALTH_DEAD = 3,
+        POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
+        POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
+        POWER_SUPPLY_HEALTH_COLD = 6,
+        POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
+        POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8
+    };
+
+    public enum BatteryStateTechnologyConstants
+    {
+        POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
+        POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
+        POWER_SUPPLY_TECHNOLOGY_LION = 2,
+        POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
+        POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
+        POWER_SUPPLY_TECHNOLOGY_NICD = 5,
+        POWER_SUPPLY_TECHNOLOGY_LIMN = 6
+    };
+
+    public enum JoyFeedbackTypes
+    {
+        TYPE_LED    = 0,
+        TYPE_RUMBLE = 1,
+        TYPE_BUZZER = 2,
+    };
+
+    public enum JoyLayout
+    {
+        DS4 = 0,
+        XB360Windows = 1,
+        XB360Linux = 2,
+        XB360Wired = 3,
+        F710 = 4
+    };
+    
+    public enum JoyRegion 
+    {
+        BSouth = 0,
+        BEast = 1,
+        BWest = 2,
+        BNorth = 3,
+        LB = 4,
+        RB = 5,
+        Back = 6,
+        Start = 7,
+        Power = 8,
+        LPress = 9,
+        RPress = 10, 
+        LStick, RStick, LT, RT, DPad, lAxisX, lAxisY, 
+        rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
+    };
+
+    public enum NavSatStatuses
+    {
+        STATUS_NO_FIX =  -1,        // unable to fix position
+        STATUS_FIX =      0,        // unaugmented fix
+        STATUS_SBAS_FIX = 1,        // with satellite-based augmentation
+        STATUS_GBAS_FIX = 2         // with ground-based augmentation
+    };
+
+    public enum NavSatStatusServices
+    {
+        SERVICE_GPS =     1,
+        SERVICE_GLONASS = 2,
+        SERVICE_COMPASS = 4,      // includes BeiDou.
+        SERVICE_GALILEO = 8
+    };
+
+    public enum NavSatFixCovariance
+    {
+        COVARIANCE_TYPE_UNKNOWN = 0,
+        COVARIANCE_TYPE_APPROXIMATED = 1,
+        COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
+        COVARIANCE_TYPE_KNOWN = 3
+    };
+
+    public enum RangeRadiationTypes
+    {
+        ULTRASOUND = 0,
+        INFRARED = 1
+    };
+
     // Convenience functions for built-in message types
     public static class MessageExtensions
     {
@@ -97,7 +193,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return converted;
         }
 
-        public static TextureFormat EncodingToTextureFormat(string encoding)
+        public static TextureFormat EncodingToTextureFormat(this string encoding)
         {
             switch (encoding)
             {
@@ -182,7 +278,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY)
         {
-            var tex = new Texture2D((int)message.width, (int)message.height, EncodingToTextureFormat(message.encoding), false);
+            var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
             var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
             tex.LoadRawTextureData(data);
             tex.Apply();
@@ -199,32 +295,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             var data = tex.GetRawTextureData();
             return new MImage(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
-        }
-
-        public enum JoyRegion 
-        {
-            BSouth = 0,
-            BEast = 1,
-            BWest = 2,
-            BNorth = 3,
-            LB = 4,
-            RB = 5,
-            Back = 6,
-            Start = 7,
-            Power = 8,
-            LPress = 9,
-            RPress = 10, 
-            LStick, RStick, LT, RT, DPad, lAxisX, lAxisY, 
-            rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
-        };
-
-        public enum JoyLayout
-        {
-            DS4 = 0,
-            XB360Windows = 1,
-            XB360Linux = 2,
-            XB360Wired = 3,
-            F710 = 4
         }
 
         static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>() 
@@ -398,90 +468,39 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public enum BatteryStateStatusConstants
+        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int height, int width)
         {
-            POWER_SUPPLY_STATUS_UNKNOWN = 0,
-            POWER_SUPPLY_STATUS_CHARGING = 1,
-            POWER_SUPPLY_STATUS_DISCHARGING = 2,
-            POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
-            POWER_SUPPLY_STATUS_FULL = 4
-        }
+            int x_off = (int)message.x_offset;
+            int y_off = (int)message.y_offset;
+            int mWidth = (int)message.width;
+            int mHeight = (int)message.height;
 
-        public enum BatteryStateHealthConstants
-        {
-            POWER_SUPPLY_HEALTH_UNKNOWN = 0,
-            POWER_SUPPLY_HEALTH_GOOD = 1,
-            POWER_SUPPLY_HEALTH_OVERHEAT = 2,
-            POWER_SUPPLY_HEALTH_DEAD = 3,
-            POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
-            POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
-            POWER_SUPPLY_HEALTH_COLD = 6,
-            POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
-            POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8
-        }
-        public enum BatteryStateTechnologyConstants
-        {
-            POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
-            POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
-            POWER_SUPPLY_TECHNOLOGY_LION = 2,
-            POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
-            POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
-            POWER_SUPPLY_TECHNOLOGY_NICD = 5,
-            POWER_SUPPLY_TECHNOLOGY_LIMN = 6
-        }
-
-        public enum JoyFeedbackTypes
-        {
-            TYPE_LED    = 0,
-            TYPE_RUMBLE = 1,
-            TYPE_BUZZER = 2,
-        }
-
-        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message)
-        {
-            var tex = new Texture2D((int)message.x_offset + (int)message.width + 10, (int)message.y_offset + (int)message.height + 10);
-
-            // Initialize ROI color block 
-            Color[] colors = new Color[(int)message.height * (int)message.width];
-            for (int i = 0; i < colors.Length; i++)
+            Texture2D overlay;
+            if (tex == null)
             {
-                colors[i] = Color.red;
+                // No texture provided, just return approximation
+                if (width == null || height == null)
+                    overlay = new Texture2D(x_off + mWidth + 10, y_off + mHeight + 10);
+                else 
+                    overlay = new Texture2D(width, height);
+
+                // Initialize ROI color block 
+                Color[] colors = new Color[mHeight * mWidth];
+                for (int i = 0; i < colors.Length; i++)
+                {
+                    colors[i] = Color.red;
+                }
+
+                overlay.SetPixels(x_off, y_off, mWidth, mHeight, colors);
             }
-
-            tex.SetPixels((int)message.x_offset, (int)message.y_offset, (int)message.width, (int)message.height, colors);
-            tex.Apply();
-
-            return tex;
-        }
-
-        public enum RangeRadiationTypes
-        {
-            ULTRASOUND = 0,
-            INFRARED = 1
-        }
-
-        public enum NavSatStatuses
-        {
-            STATUS_NO_FIX =  -1,        // unable to fix position
-            STATUS_FIX =      0,        // unaugmented fix
-            STATUS_SBAS_FIX = 1,        // with satellite-based augmentation
-            STATUS_GBAS_FIX = 2         // with ground-based augmentation
-        }
-
-        public enum NavSatStatusServices
-        {
-            SERVICE_GPS =     1,
-            SERVICE_GLONASS = 2,
-            SERVICE_COMPASS = 4,      // includes BeiDou.
-            SERVICE_GALILEO = 8
-        }
-
-        public enum NavSatFixCovariance
-        {
-            COVARIANCE_TYPE_UNKNOWN = 0,
-            COVARIANCE_TYPE_APPROXIMATED = 1,
-            COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
-            COVARIANCE_TYPE_KNOWN = 3
+            else 
+            {
+                // Crop out ROI from input texture
+                overlay = new Texture2D(mWidth, mHeight, tex.format, true);
+                overlay.SetPixels(0, 0, mWidth, mHeight, tex.GetPixels(x_off, y_off, mWidth, mHeight));
+            }
+            overlay.Apply();
+            return overlay;
         }
 
         public static string ToLatLongString(this MNavSatFix message)

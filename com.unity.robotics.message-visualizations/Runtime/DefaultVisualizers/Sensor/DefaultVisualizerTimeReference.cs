@@ -9,6 +9,7 @@ public class DefaultVisualizerTimeReference : BasicVisualizer<MTimeReference>
 {
     public override Action CreateGUI(MTimeReference message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
+        message.header.GUI();
         message.GUI();
     };
 }

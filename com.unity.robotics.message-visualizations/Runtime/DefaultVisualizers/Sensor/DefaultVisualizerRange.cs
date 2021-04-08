@@ -18,6 +18,7 @@ public class DefaultVisualizerRange : BasicVisualizer<MRange>
         
     public override Action CreateGUI(MRange message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
+        message.header.GUI();
         message.GUI();
     };
 }

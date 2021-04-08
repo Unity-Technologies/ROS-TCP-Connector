@@ -9,6 +9,7 @@ public class DefaultVisualizerBatteryState : BasicVisualizer<MBatteryState>
 {
     public override Action CreateGUI(MBatteryState message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
+        message.header.GUI();
         message.GUI();
     };
 }

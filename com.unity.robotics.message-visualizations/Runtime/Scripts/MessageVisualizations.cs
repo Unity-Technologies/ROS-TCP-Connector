@@ -318,13 +318,20 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MBatteryState message)
         {
             GUILayout.Label($"Voltage: {message.voltage} (V)\nTemperature: {message.temperature} (ºC)\nCurrent: {message.current} (A)\nCharge: {message.charge} (Ah)\nCapacity: {message.capacity} (Ah)\nDesign Capacity: {message.design_capacity} (Ah)\nPercentage: {message.percentage}");
-            GUILayout.Label($"Power supply status: {(MessageExtensions.BatteryStateStatusConstants)message.power_supply_status}");
-            GUILayout.Label($"Power supply health: {(MessageExtensions.BatteryStateHealthConstants)message.power_supply_health}");
-            GUILayout.Label($"Power supply technology: {(MessageExtensions.BatteryStateTechnologyConstants)message.power_supply_technology}");
+            GUILayout.Label($"Power supply status: {(BatteryStateStatusConstants)message.power_supply_status}");
+            GUILayout.Label($"Power supply health: {(BatteryStateHealthConstants)message.power_supply_health}");
+            GUILayout.Label($"Power supply technology: {(BatteryStateTechnologyConstants)message.power_supply_technology}");
             GUILayout.Label($"Present: {message.present}");
             GUILayout.Label($"Cell voltage: {String.Join(", ", message.cell_voltage)}");
             GUILayout.Label($"Cell temperature: {String.Join(", ", message.cell_temperature)}");
             GUILayout.Label($"Location: {message.location}\nSerial number: {message.serial_number}");
+        }
+
+        public static void GUI(this MCameraInfo message)
+        {
+            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nDistortion model: {message.distortion_model}");
+            GUILayout.Label($"Distortion parameters: {String.Join(", ", message.D)}");
+            GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
         }
 
         public static void GUI(this MColorRGBA message, bool withText = true)
@@ -340,12 +347,11 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
         
-        public static void GUI(this MCompressedImage message)
+        public static void GUI(this MCompressedImage message, Texture2D tex)
         {
             // TODO: Rescale/recenter image based on window height/width
-            var img = message.ToTexture2D();
-            var origRatio = (float)img.width / (float)img.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), img);
+            var origRatio = (float)tex.width / (float)tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
             GUILayout.Label($"Format: {message.format}");
         }
 
@@ -406,15 +412,9 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
         }
 
-        public static void GUI(this MImage message, ref Texture2D tex, ref bool convert, ref bool flipY)
+        public static void GUI(this MImage message, Texture2D tex)
         {
             // TODO: Rescale/recenter image based on window height/width
-            GUILayout.BeginHorizontal();
-            if (!message.encoding.Contains("1") && !message.encoding.Contains("mono"))
-                convert = GUILayout.Toggle(convert, "From BGR");
-            flipY = GUILayout.Toggle(flipY, "Flip Y");
-            GUILayout.EndHorizontal();
-            tex = message.ToTexture2D(convert, flipY);
             var origRatio = (float)tex.width / (float)tex.height;
             UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
@@ -448,45 +448,44 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        public static void GUI(this MJoy message, ref int layout)
+        public static void GUI(this MJoy message, ref int layout, string[] selStrings)
         {
-            string[] selStrings = {"DS4", "X360 Windows", "X360 Linux", "X360 (Wired)", "F710"};
             layout = GUILayout.SelectionGrid(layout, selStrings, 2);
 
             // Triggers
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LT, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RT, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.LT, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.RT, layout));
             GUILayout.EndHorizontal();
 
             // Shoulders
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LB, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RB, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.LB, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.RB, layout));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
 
             // Dpad, central buttons
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.DPad, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Back, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Power, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.Start, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.DPad, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.Back, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.Power, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.Start, layout));
 
             // N/E/S/W buttons
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BWest, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.BWest, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BNorth, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.BNorth, layout));
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BSouth, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.BSouth, layout));
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
             GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.BEast, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.BEast, layout));
             GUILayoutUtility.GetAspectRect(1);
             GUILayout.EndVertical();
 
@@ -494,22 +493,14 @@ namespace Unity.Robotics.MessageVisualizers
 
             // Joysticks
             GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.LStick, layout));
-            GUILayout.Box(message.TextureFromJoy(MessageExtensions.JoyRegion.RStick, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.LStick, layout));
+            GUILayout.Box(message.TextureFromJoy(JoyRegion.RStick, layout));
             GUILayout.EndHorizontal();
         }
 
         public static void GUI(this MJoyFeedback message)
         {
-            GUILayout.Label($"Type: {(MessageExtensions.JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
-        }
-
-        public static void GUI(this MJoyFeedbackArray message)
-        {
-            foreach (MJoyFeedback m in message.array)
-            {
-                m.GUI();
-            }
+            GUILayout.Label($"Type: {(JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
         }
 
         public static void GUI(this MMapMetaData message)
@@ -537,12 +528,12 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MNavSatFix message)
         {
             message.status.GUI();
-            GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(MessageExtensions.NavSatFixCovariance)message.position_covariance_type}");
+            GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFixCovariance)message.position_covariance_type}");
         }
 
         public static void GUI(this MNavSatStatus message)
         {
-            GUILayout.Label($"Status: {(MessageExtensions.NavSatStatuses)message.status}\nService: {(MessageExtensions.NavSatStatusServices)message.service}");
+            GUILayout.Label($"Status: {(NavSatStatuses)message.status}\nService: {(NavSatStatusServices)message.service}");
         }
 
         public static void GUI(this MPoint message, string name)
@@ -611,13 +602,14 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MRange message)
         {
-            // TODO: Draw arc and size of ranges
-            GUILayout.Label($"Radiation type: {(MessageExtensions.RangeRadiationTypes)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
+            GUILayout.Label($"Radiation type: {(RangeRadiationTypes)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
         }
 
-        public static void GUI(this MRegionOfInterest message)
+        public static void GUI(this MRegionOfInterest message, Texture2D tex, int height, int width)
         {
-            GUILayout.Box(message.RegionOfInterestTexture());
+            var img = message.RegionOfInterestTexture(tex, height, width);
+            var ratio = (float)img.width / (float)img.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), img);
             GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
         }
 
