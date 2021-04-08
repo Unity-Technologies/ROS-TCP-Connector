@@ -66,6 +66,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 new GUIContent("Max Read retries",
                     "While waiting to read a full message, check this many times before giving up."),
                 prefab.awaitDataReadRetry);
+            prefab.timeoutOnIdle = EditorGUILayout.FloatField(
+                new GUIContent("Timeout on idle (seconds)",
+                    "If no messages have been sent for this long, close the connection."),
+                prefab.timeoutOnIdle);
 
             if (GUI.changed)
             {

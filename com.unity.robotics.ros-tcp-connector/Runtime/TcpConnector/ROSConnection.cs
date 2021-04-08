@@ -39,6 +39,9 @@ namespace Unity.Robotics.ROSTCPConnector
         [Tooltip("While waiting to read a full message, check this many times before giving up.")]
         public int awaitDataReadRetry = 10;
 
+        [Tooltip("Close connection if nothing has been sent for this long (seconds).")]
+        public float timeoutOnIdle = 10;
+
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
 
@@ -191,7 +194,6 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         private static ROSConnection _instance;
-
         public static ROSConnection instance
         {
             get
@@ -271,43 +273,63 @@ namespace Unity.Robotics.ROSTCPConnector
             await Task.Yield();
 
             // continue asynchronously on another thread
-            await ReadMessage(tcpClient.GetStream());
+            await ReadFromStream(tcpClient.GetStream());
         }
 
-        async Task ReadMessage(NetworkStream networkStream)
+        async Task ReadFromStream(NetworkStream networkStream)
         {
             if (!networkStream.CanRead)
                 return;
 
             SubscriberCallback subs;
 
-            (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-
-            if (!subscribers.TryGetValue(topicName, out subs))
-                return; // not interested in this topic
-
-            Message msg = (Message) subs.messageConstructor.Invoke(new object[0]);
-            msg.Deserialize(content, 0);
-
-            if (hudPanel != null)
-                hudPanel.SetLastMessageReceived(topicName, msg);
-
-            foreach (Func<Message, Message> callback in subs.callbacks)
+            float lastDataReceivedRealTimestamp = 0;
+            do
             {
-                try
+                // try to keep reading messages as long as the networkstream has data.
+                // But if it's taking too long, don't freeze forever.
+                float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
+                while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
-                    Message response = callback(msg);
-                    if (response != null)
+                    if (!Application.isPlaying)
                     {
-                        // if the callback has a response, it's implementing a service
-                        WriteDataStaggered(networkStream, topicName, response);
+                        networkStream.Close();
+                        return;
+                    }
+
+                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
+
+                    if (!subscribers.TryGetValue(topicName, out subs))
+                        continue; // not interested in this topic
+
+                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+                    msg.Deserialize(content, 0);
+
+                    if (hudPanel != null)
+                        hudPanel.SetLastMessageReceived(topicName, msg);
+
+                    foreach (Func<Message, Message> callback in subs.callbacks)
+                    {
+                        try
+                        {
+                            Message response = callback(msg);
+                            if (response != null)
+                            {
+                                // if the callback has a response, it's implementing a service
+                                WriteDataStaggered(networkStream, topicName, response);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Subscriber callback problem: " + e);
+                        }
                     }
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError("Subscriber callback problem: " + e);
-                }
-            }
+                await Task.Yield();
+            } 
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeoutOnIdle); // time out if idle too long.
+            networkStream.Close();
         }
 
         async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
