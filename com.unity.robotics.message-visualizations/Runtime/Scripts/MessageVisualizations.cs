@@ -660,7 +660,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MTimeReference message)
         {
-            GUILayout.Label($"{message.time_ref.ToTimestampString()}\n{message.source}");
+            GUILayout.Label($"Time reference:{message.time_ref.ToTimestampString()}\nSource: {message.source}");
         }
 
         public static void GUI(this MTransform message)

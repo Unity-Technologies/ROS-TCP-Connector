@@ -154,7 +154,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Set number of channels to calculate conversion offsets
             int channels = 3;
 
-            if (from[from.Length - 1] == '1' || from.Contains("mono"))
+            if (from[from.Length - 1] == '1' || from.Contains("mono") || from.Contains("bayer"))
             {
                 channels = 1;
             }
@@ -265,6 +265,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     return TextureFormat.RGBA32;
                 case "rgba8":
                     return TextureFormat.RGBA32;
+                case "bayer_rggb8":
+                    return TextureFormat.R8;
+                case "bayer_bggr8":
+                    return TextureFormat.R8;
+                case "bayer_gbrg8":
+                    return TextureFormat.R8;
+                case "bayer_grbg8":
+                    return TextureFormat.R8;
+                case "bayer_rggb16":
+                    return TextureFormat.R16;
+                case "bayer_bggr16":
+                    return TextureFormat.R16;
+                case "bayer_gbrg16":
+                    return TextureFormat.R16;
+                case "bayer_grbg16":
+                    return TextureFormat.R16;
             }
             return TextureFormat.RGB24;
         }

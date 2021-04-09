@@ -22,7 +22,7 @@ public class DefaultVisualizerImage : BasicVisualizer<MImage>
 		{
             message.header.GUI();
             GUILayout.BeginHorizontal();
-            if (!message.encoding.Contains("1") && !message.encoding.Contains("mono"))
+            if (!message.encoding.Contains("1") && !message.encoding.Contains("mono") && !message.encoding.Contains("bayer"))
                 convertBgr = GUILayout.Toggle(convertBgr, "From BGR");
             flipY = GUILayout.Toggle(flipY, "Flip Y");
             GUILayout.EndHorizontal();
