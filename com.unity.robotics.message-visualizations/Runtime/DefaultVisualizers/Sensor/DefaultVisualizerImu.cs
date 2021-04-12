@@ -10,13 +10,12 @@ public class DefaultVisualizerImu : BasicVisualizer<MImu>
 {
     public override void Draw(BasicDrawing drawing, MImu message, MessageMetadata meta, Color color, string label)
     {
-        message.orientation.Draw<FLU>(drawing);
-        // message.angular_velocity.Draw<FLU>(drawing);
-        // message.linear_acceleration.Draw<FLU>(drawing);
+        message.Draw<FLU>(drawing, color);
     }
 
     public override Action CreateGUI(MImu message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
+        message.header.GUI();
         message.GUI();
         MessageVisualizations.GUIGrid(message.orientation_covariance, 3);
         MessageVisualizations.GUIGrid(message.angular_velocity_covariance, 3);

@@ -65,6 +65,13 @@ namespace Unity.Robotics.MessageVisualizers
             DrawPointCloud<C>(message.cells, drawing, color, radius);
         }
 
+        public static void Draw<C>(this MImu message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            message.orientation.Draw<FLU>(drawing);
+            drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
+        }
+
         public static void DrawPointCloud<C>(MPoint[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
@@ -422,9 +429,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MImu message)
         {
-            message.orientation.GUI();
-            message.angular_velocity.GUI();
-            message.linear_acceleration.GUI();
+            message.orientation.GUI("Orientation");
+            message.angular_velocity.GUI("Angular velocity");
+            message.linear_acceleration.GUI("Linear acceleration");
         }
 
         public static void GUI(this MInertia message)
