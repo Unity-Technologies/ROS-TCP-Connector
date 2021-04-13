@@ -19,7 +19,7 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.instance.RegisterSubscriber("/tf", MTFMessage.RosMessageName);
+            ROSConnection.instance.RegisterSubscriber("/tf", MTFMessage.k_RosMessageName);
             ROSConnection.instance.Subscribe<MTFMessage>("/tf", instance.ReceiveTF);
         }
     }

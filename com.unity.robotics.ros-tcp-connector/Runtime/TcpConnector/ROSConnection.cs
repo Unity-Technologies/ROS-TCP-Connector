@@ -1,4 +1,3 @@
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections.Generic;
@@ -8,12 +7,9 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEngine.Serialization;
-using RosMessageTypes.Tf2;
-using RosMessageTypes.Geometry;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using System.Collections.Concurrent;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -197,9 +193,9 @@ namespace Unity.Robotics.ROSTCPConnector
             return await t.Task;
         }
 
-        public void GetTopicList(Action<string[]> callback)
+        public void GetTopicList(Action<string[], string[]> callback)
         {
-            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
+            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics, response.messageNames));
         }
 
         public void RegisterSubscriber(string topic, string rosMessageName)
@@ -291,6 +287,8 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             await Task.Yield();
 
+            Debug.Log("New connection");
+
             // continue asynchronously on another thread
             await ReadFromStream(tcpClient.GetStream());
         }
@@ -299,10 +297,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (!networkStream.CanRead)
                 return;
-
-            byte[] timeoutBytes = new byte[4];
-            networkStream.Read(timeoutBytes, 0, 4);
-            float timeout = BitConverter.ToSingle(timeoutBytes, 0);
 
             SubscriberCallback subs;
 
@@ -326,12 +320,13 @@ namespace Unity.Robotics.ROSTCPConnector
                     if (!subscribers.TryGetValue(topicName, out subs))
                         continue; // not interested in this topic
 
-                    if (subs.messageConstructor == null)
+                    /*
+                    if(subs.messageConstructor == null)
                     {
                         if (hudPanel != null)
                             hudPanel.SetLastMessageRaw(topicName, content);
                         return;
-                    }
+                    }*/
 
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(content, 0);
@@ -358,7 +353,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 await Task.Yield();
             }
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeout); // time out if idle too long.
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + 15); // time out if idle too long.
             networkStream.Close();
         }
 
@@ -388,6 +383,8 @@ namespace Unity.Robotics.ROSTCPConnector
             // Read in message contents until completion, or until attempts are maxed out
             while (bytesRemaining > 0 && attempts <= this.awaitDataReadRetry)
             {
+                UnityEngine.Profiling.Profiler.BeginSample("Read "+ bytesRemaining);
+
                 if (attempts == this.awaitDataReadRetry)
                 {
                     Debug.LogError("No more data to read network stream after " + awaitDataReadRetry + " attempts.");
@@ -398,12 +395,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(readChunkSize, bytesRemaining));
                 totalBytesRead += bytesRead;
                 bytesRemaining -= bytesRead;
-            
+
+                UnityEngine.Profiling.Profiler.EndSample();
+
                 if (!networkStream.DataAvailable)
                 {
                     attempts++;
                     await Task.Yield();
-                } 
+                }
             }
 
             return Tuple.Create(topicName, readBuffer);

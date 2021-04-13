@@ -18,6 +18,41 @@ namespace Unity.Robotics.ROSTCPConnector
         public static GUIStyle s_IPStyle;
         public static GUIStyle s_BoldStyle;
         public static GUIStyle s_TopicMenuStyle;
+        static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
+        static Dictionary<string, Type> s_MessageTypesByName;
+
+        public static string GetMessageNameByTopic(string topic)
+        {
+            string rosMessageName;
+            if (!s_MessageNamesByTopic.TryGetValue(topic, out rosMessageName))
+            {
+                return null;
+            }
+
+            return rosMessageName;
+        }
+
+        public static Type GetMessageClassByName(string rosMessageName)
+        {
+            if(s_MessageTypesByName == null)
+            {
+                s_MessageTypesByName = new Dictionary<string, Type>();
+                Type baseMessageType = typeof(Message);
+                foreach (Type classType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()))
+                {
+                    if(baseMessageType.IsAssignableFrom(classType))
+                    {
+                        FieldInfo messageNameField = classType.GetField("k_RosMessageName");
+                        if(messageNameField != null)
+                            s_MessageTypesByName[(string)messageNameField.GetValue(null)] = classType;
+                    }
+                }
+            }
+
+            Type result;
+            s_MessageTypesByName.TryGetValue(rosMessageName, out result);
+            return result;
+        }
 
         // ROS Message variables
         string m_RosConnectAddress = "";
@@ -104,6 +139,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
         }
 
+        /*
         public void SetLastMessageRaw(string topic, byte[] data)
         {
             HUDVisualizationRule rule;
@@ -113,7 +149,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             if (rule != null)
                 rule.SetMessageRaw(data, new MessageMetadata(topic, DateTime.Now));
-        }
+        }*/
 
         public int AddServiceRequest(string topic, Message request)
         {
@@ -209,7 +245,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (m_ShowingTopics)
                 {
                     ResizeTopicsWindow();
-                    if (!m_DidRequestTopics)
+                    if (true)//!m_DidRequestTopics)
                     {
                         RequestTopics();
                     }
@@ -290,12 +326,14 @@ namespace Unity.Robotics.ROSTCPConnector
             ROSConnection.instance.GetTopicList(RegisterTopics);
         }
 
-        void RegisterTopics(string[] topics)
+        void RegisterTopics(string[] topics, string[] messageNames)
         {
-            foreach (string topic in topics)
+            for(int Idx = 0; Idx < topics.Length; ++Idx)
             {
+                string topic = topics[Idx];
                 if (!m_AllTopics.ContainsKey(topic))
                     m_AllTopics.Add(topic, null);
+                s_MessageNamesByTopic[topic] = messageNames[Idx];
             }
             ResizeTopicsWindow();
         }
@@ -316,7 +354,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
                 {
-                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, this);
+                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), this);
                     rule.SetShowWindow(true);
                     rule.SetShowDrawing(true);
                     m_AllTopics.Add(m_TopicFilter, rule);
@@ -368,7 +406,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     if (rule == null)
                     {
-                        rule = new HUDVisualizationRule(kv.Key, this);
+                        rule = new HUDVisualizationRule(kv.Key, GetMessageNameByTopic(kv.Key), this);
                         m_AllTopics[kv.Key] = rule;
                     }
                     rule.SetShowWindow(showWindow);

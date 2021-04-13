@@ -12,6 +12,7 @@ namespace Unity.Robotics.ROSTCPConnector
     public class HUDVisualizationRule
     {
         public string Topic { get; private set; }
+        public string RosMessageName { get; private set; }
         public bool ShowWindow { get; private set; }
         public bool ShowDrawing { get; private set; }
         public Vector2 WindowScrollPosition { get; set; }
@@ -35,6 +36,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             public Rect Rect;
             public string Topic;
+            public string RosMessageName;
             public bool ShowWindow;
             public bool ShowDrawing;
         }
@@ -45,16 +47,29 @@ namespace Unity.Robotics.ROSTCPConnector
             m_WindowRect = saveState.Rect;
             m_WindowID = hud.GetNextWindowID();
             Topic = saveState.Topic;
+            RosMessageName = saveState.RosMessageName;
+            m_Contents = new MessageWindowContents(this, Topic);
+            if (!ROSConnection.instance.HasSubscriber(Topic))
+            {
+                Type messageType = HUDPanel.GetMessageClassByName(saveState.RosMessageName);
+                if (messageType == null)
+                    Debug.LogError($"Failed to subscribe to {saveState.RosMessageName} - no class for this message type!");
+                else
+                    ROSConnection.instance.ReflectionSubscribe(Topic, messageType, (Message m) => { });
+
+                ROSConnection.instance.RegisterSubscriber(Topic, saveState.RosMessageName);
+            }
             SetShowWindow(saveState.ShowWindow);
             SetShowDrawing(saveState.ShowDrawing);
         }
 
-        public HUDVisualizationRule(string topic, HUDPanel hud)
+        public HUDVisualizationRule(string topic, string rosMessageName, HUDPanel hud)
         {
             m_Hud = hud;
             m_WindowRect = new Rect(50, 70, 200, 100);
             m_WindowID = hud.GetNextWindowID();
             Topic = topic;
+            RosMessageName = rosMessageName;
         }
 
         public SaveState CreateSaveState()
@@ -66,6 +81,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 Rect = m_WindowRect,
                 Topic = Topic,
+                RosMessageName = RosMessageName,
                 ShowWindow = ShowWindow,
                 ShowDrawing = ShowDrawing,
             };
@@ -81,13 +97,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Contents.ShowDrawing(true);
         }
 
+        /*
         public void SetMessageRaw(byte[] data, MessageMetadata meta)
         {
             if (m_Contents != null)
                 m_Contents.ShowDrawing(false);
 
             m_Contents = new UnknownMessageWindowContents(this, data, meta);
-        }
+        }*/
 
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
         {
@@ -134,25 +151,43 @@ namespace Unity.Robotics.ROSTCPConnector
         public void SetShowWindow(bool showWindow)
         {
             bool hasWindow = this.ShowWindow;
-            this.ShowWindow = showWindow;
-            if (showWindow != hasWindow)
+            if (showWindow == hasWindow)
+                return;
+
+            if (!showWindow)
             {
-                if (showWindow)
+                this.ShowWindow = false;
+                m_Hud.RemoveWindow(this);
+                return;
+            }
+
+            if (m_Contents == null)
+            {
+                string rosMessageName = HUDPanel.GetMessageNameByTopic(Topic);
+                if (ROSConnection.instance.HasSubscriber(Topic))
                 {
-                    if (m_Contents == null)
-                    {
-                        if (ROSConnection.instance.HasSubscriber(Topic))
-                            m_Contents = new MessageWindowContents(this, null, new MessageMetadata(Topic, DateTime.Now));
-                        else
-                            m_Contents = new UnknownMessageWindowContents(this, Topic);
-                    }
-                    m_Hud.AddWindow(this);
+                    m_Contents = new MessageWindowContents(this, Topic);
                 }
                 else
                 {
-                    m_Hud.RemoveWindow(this);
+                    Type messageClass = rosMessageName != null ? HUDPanel.GetMessageClassByName(rosMessageName): null;
+                    if (messageClass == null)
+                    {
+                        //m_Contents = new UnknownMessageWindowContents(this, Topic);
+                        return;
+                    }
+                    else
+                    {
+                        ROSConnection.instance.RegisterSubscriber(Topic, rosMessageName);
+                        // TODO: this should not be necessary
+                        ROSConnection.instance.ReflectionSubscribe(Topic, messageClass, (Message m) => { });
+                        m_Contents = new MessageWindowContents(this, Topic);
+                    }
                 }
             }
+
+            this.ShowWindow = true;
+            m_Hud.AddWindow(this);
         }
 
         public bool TryDragWindow(Event current)
@@ -216,6 +251,13 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Rule = rule;
                 m_Message = message;
                 m_Meta = meta;
+            }
+
+            public MessageWindowContents(HUDVisualizationRule rule, string topic)
+            {
+                m_Rule = rule;
+                m_Message = null;
+                m_Meta = new MessageMetadata(topic, DateTime.Now);
             }
 
             public void ShowDrawing(bool show)
@@ -365,11 +407,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        /*
         class UnknownMessageWindowContents : IWindowContents
         {
             HUDVisualizationRule m_Rule;
             string m_MessageTypeFilter = "";
-            static Dictionary<string, Type> s_AllMessageTypes;
             List<string> m_FilteredMessageTypes = new List<string>();
             byte[] m_MessageData;
             MessageMetadata m_Meta;
@@ -379,35 +421,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Rule = rule;
                 m_MessageData = data;
                 m_Meta = meta;
-                InitAllMessageTypes();
             }
 
             public UnknownMessageWindowContents(HUDVisualizationRule rule, string topic)
             {
                 m_Rule = rule;
                 m_Meta = new MessageMetadata(topic, DateTime.Now);
-                InitAllMessageTypes();
-            }
-
-            void InitAllMessageTypes()
-            {
-                if (s_AllMessageTypes != null)
-                    return;
-
-                s_AllMessageTypes = new Dictionary<string, Type>();
-                foreach (Type classType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a=>a.GetTypes()))
-                {
-                    FieldInfo rosMessageNameField = classType.GetField("RosMessageName");
-                    // not interested in anything that doesn't have a RosMessageName, such as Action<> or the base Message class
-                    if (rosMessageNameField != null)
-                    {
-                        if (!typeof(Message).IsAssignableFrom(classType))
-                            continue;
-
-                        string messageName = (string)rosMessageNameField.GetValue(null);
-                        s_AllMessageTypes[messageName] = classType;
-                    }
-                }
             }
 
             public bool HasDrawing => false;
@@ -466,6 +485,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 GUILayout.EndScrollView();
             }
-        }
+        }*/
     }
 }

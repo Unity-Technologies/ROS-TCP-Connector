@@ -18,7 +18,8 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
     public override void Start()
     {
         base.Start();
-        m_RobotData = new RobotVisualization(m_UrdfRobot);
+        if(m_UrdfRobot != null)
+            m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
     public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta, Color color, string label)
