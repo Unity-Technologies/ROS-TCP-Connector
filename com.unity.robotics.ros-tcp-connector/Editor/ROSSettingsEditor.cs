@@ -17,9 +17,6 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         ROSConnection prefab;
-        string rosIP = "127.0.0.1";
-        string unityOverrideIP = "";
-
         protected virtual void OnGUI()
         {
             if (prefab == null)
@@ -43,29 +40,21 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             }
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
-            rosIP = EditorGUILayout.TextField("ROS IP Address", rosIP);
+            prefab.rosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.rosIPAddress);
             prefab.rosPort = EditorGUILayout.IntField("ROS Port", prefab.rosPort);
             EditorGUILayout.Space();
-            unityOverrideIP = EditorGUILayout.TextField(
+            prefab.overrideUnityIP = EditorGUILayout.TextField(
                 new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."),
-                unityOverrideIP);
+                prefab.overrideUnityIP);
             prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
-            if (GUILayout.Button("Set IP"))
+            if ((prefab.overrideUnityIP != "" && !ROSConnection.IPFormatIsCorrect(prefab.overrideUnityIP)))
             {   
-                if(unityOverrideIP != "")
-                {
-                    if(ROSConnection.IPFormatIsCorrect(unityOverrideIP))
-                        prefab.overrideUnityIP = unityOverrideIP;
-                    else
-                        Debug.LogError("Override Unity IP Address is incorrect");
-                }
-                
-                if(ROSConnection.IPFormatIsCorrect(rosIP))
-                    prefab.rosIPAddress = rosIP;
-                else
-                    Debug.LogError("ROS IP Address is incorrect");
-                
-                this.Close();
+                EditorGUILayout.HelpBox("Unity Override IP invalid", MessageType.Warning);
+            }
+
+            if(!ROSConnection.IPFormatIsCorrect(prefab.rosIPAddress))
+            {
+                EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);

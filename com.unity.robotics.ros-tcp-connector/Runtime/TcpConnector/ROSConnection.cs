@@ -594,51 +594,31 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public static bool IPFormatIsCorrect(string iPaddress)
+        public static bool IPFormatIsCorrect(string ipAddress)
         {
-            //if IP address is set using
-            if(Char.IsLetter(iPaddress[0]))
+            if(ipAddress == null || ipAddress == "")
+                return false;
+            if(Char.IsLetter(ipAddress[0]))
             {
-                foreach(Char subChar in iPaddress)
+                foreach(Char subChar in ipAddress)
                 {
                     if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
                         return false;
                 }
 
-                if(!Char.IsLetterOrDigit(iPaddress[iPaddress.Length - 1]))
+                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
                     return false;
                 return true;
             }
 
-            string[] subAdds = iPaddress.Split('.');
+            string[] subAdds = ipAddress.Split('.');
             if(subAdds.Length != 4)
             {
                 Debug.LogError($"{subAdds.Length} is incorrect number of octets in IP address");
                 return false;
             }
-            foreach(string subAdd in subAdds)
-            {
-                try
-                {
-                    int number = Int32.Parse(subAdd,NumberStyles.None);
-                    if(!(number >= 0 && number <= 255))
-                    {
-                        Debug.LogError($"{number} is incorrect value of octets in IP address (0-255)");
-                        return false;
-                    }
-                }
-                catch (FormatException)
-                {
-                    Debug.LogError($"Unable to convert '{subAdd}'.");
-                    return false;
-                }
-                catch (OverflowException)
-                {
-                    Debug.LogError($"'{subAdd}' is out of range of the Int32 type.");
-                    return false;
-                }
-            }
-            return true;
+            IPAddress parsedipAddress;
+            return IPAddress.TryParse(ipAddress, out parsedipAddress);
         }
     }
 }
