@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -226,11 +227,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
+            if(!IPFormatIsCorrect(rosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
             if (overrideUnityIP != "")
             {
+                if(!IPFormatIsCorrect(overrideUnityIP))
+                    Debug.LogError("Override Unity IP address is not correct");
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
@@ -609,6 +614,34 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 networkStream.Write(segmentData, 0, segmentData.Length);
             }
+        }
+
+        public static bool IPFormatIsCorrect(string ipAddress)
+        {
+            if(ipAddress == null || ipAddress == "")
+                return false;
+            
+            // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
+            if(Char.IsLetter(ipAddress[0]))
+            {
+                foreach(Char subChar in ipAddress)
+                {
+                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                        return false;
+                }
+
+                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
+                    return false;
+                return true;
+            }
+
+            string[] subAdds = ipAddress.Split('.');
+            if(subAdds.Length != 4)
+            {
+                return false;
+            }
+            IPAddress parsedipAddress;
+            return IPAddress.TryParse(ipAddress, out parsedipAddress);
         }
     }
 }
