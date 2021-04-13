@@ -616,7 +616,6 @@ namespace Unity.Robotics.ROSTCPConnector
             string[] subAdds = ipAddress.Split('.');
             if(subAdds.Length != 4)
             {
-                Debug.LogError($"{subAdds.Length} is incorrect number of octets in IP address");
                 return false;
             }
             IPAddress parsedipAddress;
