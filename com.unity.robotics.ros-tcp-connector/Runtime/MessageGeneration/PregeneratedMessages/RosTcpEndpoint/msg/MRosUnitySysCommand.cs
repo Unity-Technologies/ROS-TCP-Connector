@@ -9,7 +9,8 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MRosUnitySysCommand : Message
     {
-        public const string RosMessageName = "ros_tcp_endpoint/RosUnitySysCommand";
+        public const string k_RosMessageName = "ros_tcp_endpoint/RosUnitySysCommand";
+        public override string RosMessageName => k_RosMessageName;
 
         public string command;
         public string params_json;

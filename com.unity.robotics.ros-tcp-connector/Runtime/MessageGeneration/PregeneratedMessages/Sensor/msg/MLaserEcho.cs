@@ -9,7 +9,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MLaserEcho : Message
     {
-        public const string RosMessageName = "sensor_msgs/LaserEcho";
+        public const string k_RosMessageName = "sensor_msgs/LaserEcho";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message is a submessage of MultiEchoLaserScan and is not intended
         //  to be used separately.

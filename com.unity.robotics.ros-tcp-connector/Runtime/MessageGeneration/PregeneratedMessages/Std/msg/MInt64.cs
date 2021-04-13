@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MInt64 : Message
     {
-        public const string RosMessageName = "std_msgs/Int64";
+        public const string k_RosMessageName = "std_msgs/Int64";
+        public override string RosMessageName => k_RosMessageName;
 
         public long data;
 

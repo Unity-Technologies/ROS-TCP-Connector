@@ -9,7 +9,8 @@ namespace RosMessageTypes.Nav
 {
     public class MGetPlanRequest : Message
     {
-        public const string RosMessageName = "nav_msgs/GetPlan";
+        public const string k_RosMessageName = "nav_msgs/GetPlan";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Get a plan from the current position to the goal Pose 
         //  The start pose for the plan

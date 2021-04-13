@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MChar : Message
     {
-        public const string RosMessageName = "std_msgs/Char";
+        public const string k_RosMessageName = "std_msgs/Char";
+        public override string RosMessageName => k_RosMessageName;
 
         public byte data;
 

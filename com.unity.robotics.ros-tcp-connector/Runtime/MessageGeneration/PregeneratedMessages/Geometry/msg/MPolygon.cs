@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MPolygon : Message
     {
-        public const string RosMessageName = "geometry_msgs/Polygon";
+        public const string k_RosMessageName = "geometry_msgs/Polygon";
+        public override string RosMessageName => k_RosMessageName;
 
         // A specification of a polygon where the first and last points are assumed to be connected
         public MPoint32[] points;

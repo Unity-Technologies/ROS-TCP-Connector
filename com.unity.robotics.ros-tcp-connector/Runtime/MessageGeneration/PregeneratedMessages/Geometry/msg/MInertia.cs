@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MInertia : Message
     {
-        public const string RosMessageName = "geometry_msgs/Inertia";
+        public const string k_RosMessageName = "geometry_msgs/Inertia";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Mass [kg]
         public double m;

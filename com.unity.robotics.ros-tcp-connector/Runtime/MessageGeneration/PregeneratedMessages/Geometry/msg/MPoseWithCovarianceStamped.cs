@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MPoseWithCovarianceStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/PoseWithCovarianceStamped";
+        public const string k_RosMessageName = "geometry_msgs/PoseWithCovarianceStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses an estimated pose with a reference coordinate frame and timestamp
         public MHeader header;

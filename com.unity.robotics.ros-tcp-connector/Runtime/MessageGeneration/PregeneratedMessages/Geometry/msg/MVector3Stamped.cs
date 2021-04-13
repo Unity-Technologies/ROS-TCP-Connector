@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MVector3Stamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/Vector3Stamped";
+        public const string k_RosMessageName = "geometry_msgs/Vector3Stamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a Vector3 with reference coordinate frame and timestamp
         public MHeader header;

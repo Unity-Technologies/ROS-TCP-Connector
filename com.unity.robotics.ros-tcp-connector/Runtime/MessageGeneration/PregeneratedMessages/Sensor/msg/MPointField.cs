@@ -9,7 +9,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MPointField : Message
     {
-        public const string RosMessageName = "sensor_msgs/PointField";
+        public const string k_RosMessageName = "sensor_msgs/PointField";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message holds the description of one point entry in the
         //  PointCloud2 message format.

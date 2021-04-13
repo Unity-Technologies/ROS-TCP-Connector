@@ -10,7 +10,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MMarker : Message
     {
-        public const string RosMessageName = "visualization_msgs/Marker";
+        public const string k_RosMessageName = "visualization_msgs/Marker";
+        public override string RosMessageName => k_RosMessageName;
 
         //  See http://www.ros.org/wiki/rviz/DisplayTypes/Marker and http://www.ros.org/wiki/rviz/Tutorials/Markers%3A%20Basic%20Shapes for more information on using this message with rviz
         public const byte ARROW = 0;

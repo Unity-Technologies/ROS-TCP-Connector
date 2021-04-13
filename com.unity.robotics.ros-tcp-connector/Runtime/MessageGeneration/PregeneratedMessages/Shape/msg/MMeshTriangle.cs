@@ -9,7 +9,8 @@ namespace RosMessageTypes.Shape
 {
     public class MMeshTriangle : Message
     {
-        public const string RosMessageName = "shape_msgs/MeshTriangle";
+        public const string k_RosMessageName = "shape_msgs/MeshTriangle";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Definition of a triangle's vertices
         public uint[] vertex_indices;

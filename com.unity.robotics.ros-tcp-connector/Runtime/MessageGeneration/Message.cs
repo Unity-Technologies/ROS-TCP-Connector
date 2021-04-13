@@ -7,6 +7,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public abstract class Message
     {
+        public abstract string RosMessageName { get; }
+
         /// <summary>
         ///    Read four bytes from an array of bytes and covert to an int32.
         ///     

@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MAccelStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/AccelStamped";
+        public const string k_RosMessageName = "geometry_msgs/AccelStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  An accel with reference coordinate frame and timestamp
         public MHeader header;

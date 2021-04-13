@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MUInt16MultiArray : Message
     {
-        public const string RosMessageName = "std_msgs/UInt16MultiArray";
+        public const string k_RosMessageName = "std_msgs/UInt16MultiArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Please look at the MultiArrayLayout message definition for
         //  documentation on all multiarrays.

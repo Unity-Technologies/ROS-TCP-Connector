@@ -10,7 +10,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MInteractiveMarker : Message
     {
-        public const string RosMessageName = "visualization_msgs/InteractiveMarker";
+        public const string k_RosMessageName = "visualization_msgs/InteractiveMarker";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Time/frame info.
         //  If header.time is set to 0, the marker will be retransformed into

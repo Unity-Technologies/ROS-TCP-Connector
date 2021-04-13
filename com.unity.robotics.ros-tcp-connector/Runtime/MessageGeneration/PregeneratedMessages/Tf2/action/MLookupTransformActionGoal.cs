@@ -7,7 +7,9 @@ namespace RosMessageTypes.Tf2
 {
     public class MLookupTransformActionGoal : ActionGoal<MLookupTransformGoal>
     {
-        public const string RosMessageName = "tf2_msgs/LookupTransformActionGoal";
+        public const string k_RosMessageName = "tf2_msgs/LookupTransformActionGoal";
+        public override string RosMessageName => k_RosMessageName;
+
 
         public MLookupTransformActionGoal() : base()
         {

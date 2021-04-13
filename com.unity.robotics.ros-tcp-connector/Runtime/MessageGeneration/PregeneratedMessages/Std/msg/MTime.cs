@@ -7,7 +7,9 @@ namespace RosMessageTypes.Std
 {
     public class MTime : Message
     {
-        public const string RosMessageName = "std_msgs/Time";
+        public const string k_RosMessageName = "std_msgs/Time";
+        public override string RosMessageName => k_RosMessageName;
+
         public uint secs;
         public uint nsecs;
 

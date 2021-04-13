@@ -9,7 +9,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MSetCameraInfoRequest : Message
     {
-        public const string RosMessageName = "sensor_msgs/SetCameraInfo";
+        public const string k_RosMessageName = "sensor_msgs/SetCameraInfo";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This service requests that a camera stores the given CameraInfo 
         //  as that camera's calibration information.

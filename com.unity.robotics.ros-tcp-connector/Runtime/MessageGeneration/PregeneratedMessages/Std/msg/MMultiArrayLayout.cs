@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MMultiArrayLayout : Message
     {
-        public const string RosMessageName = "std_msgs/MultiArrayLayout";
+        public const string k_RosMessageName = "std_msgs/MultiArrayLayout";
+        public override string RosMessageName => k_RosMessageName;
 
         //  The multiarray declares a generic multi-dimensional array of a
         //  particular data type.  Dimensions are ordered from outer most

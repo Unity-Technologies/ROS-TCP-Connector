@@ -10,7 +10,8 @@ namespace RosMessageTypes.Actionlib
 {
     public class MGoalID : Message
     {
-        public const string RosMessageName = "actionlib_msgs/GoalID";
+        public const string k_RosMessageName = "actionlib_msgs/GoalID";
+        public override string RosMessageName => k_RosMessageName;
 
         //  The stamp should store the time at which this goal was requested.
         //  It is used by an action server when it tries to preempt all

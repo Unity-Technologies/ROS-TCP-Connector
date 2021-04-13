@@ -333,8 +333,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 // Write ROS package name
                 writer.Write(
-                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + type + "\";\n"
-                    );
+                    TWO_TABS + "public const string k_RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + type + "\";\n" +
+                    TWO_TABS + "public override string RosMessageName => k_RosMessageName;\n\n"
+                );
 
                 // Record goal/result/feedback declaration
                 symbolTable.Add(MsgAutoGenUtilities.LowerFirstLetter(type), msgName);
@@ -399,8 +400,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 // Write ROS package name
                 writer.Write(
-                    TWO_TABS + "public const string RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + "\";\n"
-                    );
+                    TWO_TABS + "public const string k_RosMessageName = \"" + rosPackageName + "/" + inFileName + "Action" + "\";\n" +
+                    TWO_TABS + "public override string RosMessageName => k_RosMessageName;\n\n"
+                );
 
                 // Record variables
                 // Action Goal

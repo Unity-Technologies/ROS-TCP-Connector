@@ -10,7 +10,8 @@ namespace RosMessageTypes.Nav
 {
     public class MOccupancyGrid : Message
     {
-        public const string RosMessageName = "nav_msgs/OccupancyGrid";
+        public const string k_RosMessageName = "nav_msgs/OccupancyGrid";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a 2-D grid map, in which each cell represents the probability of
         //  occupancy.

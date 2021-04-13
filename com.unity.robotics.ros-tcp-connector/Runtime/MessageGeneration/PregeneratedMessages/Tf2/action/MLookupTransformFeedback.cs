@@ -9,7 +9,8 @@ namespace RosMessageTypes.Tf2
 {
     public class MLookupTransformFeedback : Message
     {
-        public const string RosMessageName = "tf2_msgs/LookupTransform";
+        public const string k_RosMessageName = "tf2_msgs/LookupTransform";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public MLookupTransformFeedback()

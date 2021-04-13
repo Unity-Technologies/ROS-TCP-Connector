@@ -9,7 +9,8 @@ namespace RosMessageTypes.Diagnostic
 {
     public class MKeyValue : Message
     {
-        public const string RosMessageName = "diagnostic_msgs/KeyValue";
+        public const string k_RosMessageName = "diagnostic_msgs/KeyValue";
+        public override string RosMessageName => k_RosMessageName;
 
         public string key;
         //  what to label this value when viewing

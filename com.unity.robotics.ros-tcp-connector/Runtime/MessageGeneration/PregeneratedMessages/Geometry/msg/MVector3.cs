@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MVector3 : Message
     {
-        public const string RosMessageName = "geometry_msgs/Vector3";
+        public const string k_RosMessageName = "geometry_msgs/Vector3";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a vector in free space. 
         //  It is only meant to represent a direction. Therefore, it does not

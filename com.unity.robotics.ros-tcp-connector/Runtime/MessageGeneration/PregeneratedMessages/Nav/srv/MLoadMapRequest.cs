@@ -9,7 +9,8 @@ namespace RosMessageTypes.Nav
 {
     public class MLoadMapRequest : Message
     {
-        public const string RosMessageName = "nav_msgs/LoadMap";
+        public const string k_RosMessageName = "nav_msgs/LoadMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  URL of map resource
         //  Can be an absolute path to a file: file:///path/to/maps/floor1.yaml

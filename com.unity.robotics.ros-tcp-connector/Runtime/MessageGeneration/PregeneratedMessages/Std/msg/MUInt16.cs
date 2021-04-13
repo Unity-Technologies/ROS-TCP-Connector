@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MUInt16 : Message
     {
-        public const string RosMessageName = "std_msgs/UInt16";
+        public const string k_RosMessageName = "std_msgs/UInt16";
+        public override string RosMessageName => k_RosMessageName;
 
         public ushort data;
 

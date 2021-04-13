@@ -9,7 +9,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MMarkerArray : Message
     {
-        public const string RosMessageName = "visualization_msgs/MarkerArray";
+        public const string k_RosMessageName = "visualization_msgs/MarkerArray";
+        public override string RosMessageName => k_RosMessageName;
 
         public MMarker[] markers;
 

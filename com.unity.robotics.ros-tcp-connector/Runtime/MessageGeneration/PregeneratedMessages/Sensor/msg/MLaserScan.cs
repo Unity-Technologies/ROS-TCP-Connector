@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MLaserScan : Message
     {
-        public const string RosMessageName = "sensor_msgs/LaserScan";
+        public const string k_RosMessageName = "sensor_msgs/LaserScan";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single scan from a planar laser range-finder
         // 

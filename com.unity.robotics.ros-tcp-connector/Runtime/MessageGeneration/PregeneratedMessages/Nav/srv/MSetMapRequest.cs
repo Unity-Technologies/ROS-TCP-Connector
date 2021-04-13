@@ -9,7 +9,8 @@ namespace RosMessageTypes.Nav
 {
     public class MSetMapRequest : Message
     {
-        public const string RosMessageName = "nav_msgs/SetMap";
+        public const string k_RosMessageName = "nav_msgs/SetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Set a new map together with an initial pose
         public MOccupancyGrid map;

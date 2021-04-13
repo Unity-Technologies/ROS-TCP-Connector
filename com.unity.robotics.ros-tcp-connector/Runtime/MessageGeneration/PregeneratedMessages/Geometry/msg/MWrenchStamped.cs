@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MWrenchStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/WrenchStamped";
+        public const string k_RosMessageName = "geometry_msgs/WrenchStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  A wrench with reference coordinate frame and timestamp
         public MHeader header;

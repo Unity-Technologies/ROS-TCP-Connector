@@ -10,7 +10,8 @@ namespace RosMessageTypes.Std
 {
     public class MHeader : Message
     {
-        public const string RosMessageName = "std_msgs/Header";
+        public const string k_RosMessageName = "std_msgs/Header";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Standard metadata for higher-level stamped data types.
         //  This is generally used to communicate timestamped data 

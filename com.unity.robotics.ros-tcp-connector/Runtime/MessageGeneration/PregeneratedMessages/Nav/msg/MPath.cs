@@ -10,7 +10,8 @@ namespace RosMessageTypes.Nav
 {
     public class MPath : Message
     {
-        public const string RosMessageName = "nav_msgs/Path";
+        public const string k_RosMessageName = "nav_msgs/Path";
+        public override string RosMessageName => k_RosMessageName;
 
         // An array of poses that represents a Path for a robot to follow
         public MHeader header;

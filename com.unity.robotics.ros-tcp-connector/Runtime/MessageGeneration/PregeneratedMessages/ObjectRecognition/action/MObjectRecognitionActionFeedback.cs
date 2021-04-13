@@ -7,7 +7,9 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MObjectRecognitionActionFeedback : ActionFeedback<MObjectRecognitionFeedback>
     {
-        public const string RosMessageName = "object_recognition_msgs-master/ObjectRecognitionActionFeedback";
+        public const string k_RosMessageName = "object_recognition_msgs-master/ObjectRecognitionActionFeedback";
+        public override string RosMessageName => k_RosMessageName;
+
 
         public MObjectRecognitionActionFeedback() : base()
         {

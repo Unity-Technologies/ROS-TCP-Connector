@@ -9,7 +9,8 @@ namespace RosMessageTypes.Diagnostic
 {
     public class MSelfTestRequest : Message
     {
-        public const string RosMessageName = "diagnostic_msgs/SelfTest";
+        public const string k_RosMessageName = "diagnostic_msgs/SelfTest";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public MSelfTestRequest()

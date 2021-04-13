@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MJointState : Message
     {
-        public const string RosMessageName = "sensor_msgs/JointState";
+        public const string k_RosMessageName = "sensor_msgs/JointState";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This is a message that holds data to describe the state of a set of torque controlled joints. 
         // 

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MMultiArrayDimension : Message
     {
-        public const string RosMessageName = "std_msgs/MultiArrayDimension";
+        public const string k_RosMessageName = "std_msgs/MultiArrayDimension";
+        public override string RosMessageName => k_RosMessageName;
 
         public string label;
         //  label of given dimension

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MTwist : Message
     {
-        public const string RosMessageName = "geometry_msgs/Twist";
+        public const string k_RosMessageName = "geometry_msgs/Twist";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses velocity in free space broken into its linear and angular parts.
         public MVector3 linear;

@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MMagneticField : Message
     {
-        public const string RosMessageName = "sensor_msgs/MagneticField";
+        public const string k_RosMessageName = "sensor_msgs/MagneticField";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Measurement of the Magnetic Field vector at a specific location.
         //  If the covariance of the measurement is known, it should be filled in

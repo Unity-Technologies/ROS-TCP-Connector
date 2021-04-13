@@ -9,7 +9,8 @@ namespace RosMessageTypes.Tf2
 {
     public class MTFMessage : Message
     {
-        public const string RosMessageName = "tf2_msgs/TFMessage";
+        public const string k_RosMessageName = "tf2_msgs/TFMessage";
+        public override string RosMessageName => k_RosMessageName;
 
         public Geometry.MTransformStamped[] transforms;
 

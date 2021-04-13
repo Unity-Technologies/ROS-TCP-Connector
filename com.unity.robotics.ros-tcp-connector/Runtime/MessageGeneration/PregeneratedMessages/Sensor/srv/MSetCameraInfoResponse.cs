@@ -9,7 +9,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MSetCameraInfoResponse : Message
     {
-        public const string RosMessageName = "sensor_msgs/SetCameraInfo";
+        public const string k_RosMessageName = "sensor_msgs/SetCameraInfo";
+        public override string RosMessageName => k_RosMessageName;
 
         public bool success;
         //  True if the call succeeded

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MPose2D : Message
     {
-        public const string RosMessageName = "geometry_msgs/Pose2D";
+        public const string k_RosMessageName = "geometry_msgs/Pose2D";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Deprecated
         //  Please use the full 3D pose.

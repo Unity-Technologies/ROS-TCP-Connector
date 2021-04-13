@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MMultiDOFJointState : Message
     {
-        public const string RosMessageName = "sensor_msgs/MultiDOFJointState";
+        public const string k_RosMessageName = "sensor_msgs/MultiDOFJointState";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Representation of state for joints with multiple degrees of freedom, 
         //  following the structure of JointState.

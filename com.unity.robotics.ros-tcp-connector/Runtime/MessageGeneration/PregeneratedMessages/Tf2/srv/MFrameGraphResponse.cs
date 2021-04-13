@@ -9,7 +9,8 @@ namespace RosMessageTypes.Tf2
 {
     public class MFrameGraphResponse : Message
     {
-        public const string RosMessageName = "tf2_msgs/FrameGraph";
+        public const string k_RosMessageName = "tf2_msgs/FrameGraph";
+        public override string RosMessageName => k_RosMessageName;
 
         public string frame_yaml;
 

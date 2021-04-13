@@ -9,7 +9,8 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MObjectRecognitionResult : Message
     {
-        public const string RosMessageName = "object_recognition_msgs-master/ObjectRecognition";
+        public const string k_RosMessageName = "object_recognition_msgs-master/ObjectRecognition";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Send the found objects, see the msg files for docs
         public MRecognizedObjectArray recognized_objects;

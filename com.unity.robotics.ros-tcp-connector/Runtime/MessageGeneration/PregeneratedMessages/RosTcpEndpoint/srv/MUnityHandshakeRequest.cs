@@ -9,7 +9,8 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MUnityHandshakeRequest : Message
     {
-        public const string RosMessageName = "Ros_Tcp_Endpoint/UnityHandshake";
+        public const string k_RosMessageName = "ROS_TCP_Endpoint/UnityHandshake";
+        public override string RosMessageName => k_RosMessageName;
 
         public string ip;
         public ushort port;

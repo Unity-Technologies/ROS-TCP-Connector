@@ -6,7 +6,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public class MDuration : Message
     {
-        public const string RosMessageName = "std_msgs/Duration";
+        public const string k_RosMessageName = "std_msgs/Duration";
+        public override string RosMessageName => k_RosMessageName;
 
         public int secs;
         public int nsecs;

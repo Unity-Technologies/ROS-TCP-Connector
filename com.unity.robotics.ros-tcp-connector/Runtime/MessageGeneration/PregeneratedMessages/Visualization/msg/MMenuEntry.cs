@@ -9,7 +9,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MMenuEntry : Message
     {
-        public const string RosMessageName = "visualization_msgs/MenuEntry";
+        public const string k_RosMessageName = "visualization_msgs/MenuEntry";
+        public override string RosMessageName => k_RosMessageName;
 
         //  MenuEntry message.
         //  Each InteractiveMarker message has an array of MenuEntry messages.

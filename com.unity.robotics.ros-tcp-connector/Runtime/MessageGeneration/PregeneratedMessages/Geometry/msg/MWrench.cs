@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MWrench : Message
     {
-        public const string RosMessageName = "geometry_msgs/Wrench";
+        public const string k_RosMessageName = "geometry_msgs/Wrench";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents force in free space, separated into
         //  its linear and angular parts.
