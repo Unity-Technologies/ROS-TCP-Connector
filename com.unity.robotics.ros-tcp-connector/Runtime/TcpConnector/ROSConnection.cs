@@ -598,6 +598,8 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if(ipAddress == null || ipAddress == "")
                 return false;
+            
+            // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
             if(Char.IsLetter(ipAddress[0]))
             {
                 foreach(Char subChar in ipAddress)
