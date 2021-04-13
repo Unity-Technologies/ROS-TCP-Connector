@@ -17,7 +17,6 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         ROSConnection prefab;
-
         protected virtual void OnGUI()
         {
             if (prefab == null)
@@ -48,6 +47,15 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."),
                 prefab.overrideUnityIP);
             prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
+            if ((prefab.overrideUnityIP != "" && !ROSConnection.IPFormatIsCorrect(prefab.overrideUnityIP)))
+            {   
+                EditorGUILayout.HelpBox("Unity Override IP invalid", MessageType.Warning);
+            }
+
+            if(!ROSConnection.IPFormatIsCorrect(prefab.rosIPAddress))
+            {
+                EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
+            }
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);
             prefab.awaitDataMaxRetries = EditorGUILayout.IntField(
