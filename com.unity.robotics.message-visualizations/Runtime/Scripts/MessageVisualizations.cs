@@ -80,6 +80,44 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
+        public static void DrawPointCloud<C>(MPoint32[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
+            foreach (MPoint32 p in points)
+                pointCloud.AddPoint(p.From<C>(), color, radius);
+            pointCloud.Bake();
+        }
+
+        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            DrawPointCloud<C>(message.points, drawing, color);
+        }
+
+        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            List<MPoint> points = new List<MPoint>();
+            Dictionary<int, int> fieldToOffset = new Dictionary<int, int>();
+
+            // Find offset based on field
+            for (int i = 0; i < message.fields.Length; i++)
+            {
+                fieldToOffset.Add(i, (int)message.fields[i].offset);
+            }
+
+            for (int i = 0; i < message.data.Length / message.point_step; i++) 
+            {
+                // TODO: convert type based on PointField
+                // TODO: grab data by PointField name?
+                var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[0]);
+                var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[1]);
+                var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[2]);
+
+                // TODO: intensity, ring
+                points.Add(new MPoint(x, y, z));
+            }
+            DrawPointCloud<C>(points.ToArray(), drawing, color);
+        }
+
         public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
         {
             Mesh mesh = new Mesh();
@@ -341,6 +379,11 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
         }
 
+        public static void GUI(this MChannelFloat32 message)
+        {
+            GUILayout.Label($"Name: {message.name}\nValues length: {message.values.Length}");
+        }
+
         public static void GUI(this MColorRGBA message, bool withText = true)
         {
             Color oldBackgroundColor = UnityEngine.GUI.color;
@@ -569,6 +612,29 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MPoint32 message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
+        public static void GUI(this MPointCloud message)
+        {
+            GUILayout.Label($"Length of points: {message.points.Length}");
+            foreach (MChannelFloat32 channel in message.channels)
+            {
+                channel.GUI();
+            }
+        }
+
+        public static void GUI(this MPointCloud2 message)
+        {
+            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nData length: {message.data.Length}\nPoint step: {message.point_step}\nRow step: {message.row_step}\nIs dense: {message.is_dense}");
+            foreach (MPointField field in message.fields)
+            {
+                field.GUI();
+            }
+        }
+
+        public static void GUI(this MPointField message)
+        {
+            GUILayout.Label($"Name: {message.name}\nOffset: {message.offset}\nDatatype: {(PointFieldFormat)message.datatype}\nCount: {message.count}");
         }
 
         public static void GUI(this MPolygon message)

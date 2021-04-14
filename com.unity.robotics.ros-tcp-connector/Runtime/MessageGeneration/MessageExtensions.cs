@@ -103,6 +103,18 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         INFRARED = 1
     };
 
+    public enum PointFieldFormat
+    {
+        INT8    = 1,
+        UINT8   = 2,
+        INT16   = 3,
+        UINT16  = 4,
+        INT32   = 5,
+        UINT32  = 6,
+        FLOAT32 = 7,
+        FLOAT64 = 8
+    }
+
     // Convenience functions for built-in message types
     public static class MessageExtensions
     {
@@ -484,7 +496,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int height, int width)
+        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int? height, int? width)
         {
             int x_off = (int)message.x_offset;
             int y_off = (int)message.y_offset;
@@ -498,7 +510,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 if (width == null || height == null)
                     overlay = new Texture2D(x_off + mWidth + 10, y_off + mHeight + 10);
                 else 
-                    overlay = new Texture2D(width, height);
+                    overlay = new Texture2D((int)width, (int)height);
 
                 // Initialize ROI color block 
                 Color[] colors = new Color[mHeight * mWidth];
@@ -524,6 +536,30 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string lat = (message.latitude > 0) ? "ºN" : "ºS";
             string lon = (message.longitude > 0) ? "ºE" : "ºW";
             return $"{message.latitude}{lat} {message.longitude}{lon}";
+        }
+
+        public static Type FormatToType(int datatype)
+        {
+            PointFieldFormat format = (PointFieldFormat)datatype;
+            switch(format) {
+                case PointFieldFormat.INT8:
+                    return typeof(int);
+                case PointFieldFormat.UINT8:
+                    return typeof(int);
+                case PointFieldFormat.INT16:
+                    return typeof(int);
+                case PointFieldFormat.UINT16:
+                    return typeof(int);
+                case PointFieldFormat.INT32:
+                    return typeof(int);
+                case PointFieldFormat.UINT32:
+                    return typeof(int);
+                case PointFieldFormat.FLOAT32:
+                    return typeof(float);
+                case PointFieldFormat.FLOAT64:
+                    return typeof(float);
+            }
+            return null;
         }
     }
 }
