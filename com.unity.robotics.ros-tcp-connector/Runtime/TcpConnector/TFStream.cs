@@ -46,10 +46,13 @@ public class TFStream
 {
     public string Name { get; private set; }
     public TFStream Parent { get; private set; }
+    public IEnumerable<TFStream> Children => m_Children;
+
     // oldest first
     List<long> m_Timestamps = new List<long>();
     // same order as m_Timestamps
     List<TFFrame> m_Frames = new List<TFFrame>();
+    List<TFStream> m_Children = new List<TFStream>();
     GameObject m_GameObject;
 
     // Visualization settings
@@ -61,6 +64,9 @@ public class TFStream
     {
         Parent = parent;
         Name = name;
+
+        if (parent != null)
+            parent.m_Children.Add(this);
     }
 
     public void Add(long timestamp, Vector3 translation, Quaternion rotation)
