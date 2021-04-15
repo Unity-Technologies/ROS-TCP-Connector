@@ -74,7 +74,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         bool m_ShowingTransforms;
         Vector2 m_TransformMenuScrollPosition;
-        Rect m_TransformMenuRect = new Rect(20, 70, 250, 200);
+        Rect m_TransformMenuRect = new Rect(20, 70, 270, 200);
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
@@ -414,12 +414,14 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        const float k_TFNameWidth = 140;
+        const float k_IndentWidth = 10;
+        const float k_TFNameWidth = 136;
         const float k_CheckboxWidth = 35;
         void DrawTransformMenuContents(int id)
         {
-            GUI.changed = false;
+            m_TransformMenuScrollPosition = GUILayout.BeginScrollView(m_TransformMenuScrollPosition);
 
+            GUI.changed = false;
             GUILayout.BeginHorizontal(GUILayout.Height(20));
             GUILayout.Label("", GUILayout.Width(k_TFNameWidth));
             TFSystem.instance.ShowTFAxesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFAxesDefault, "Axes",
@@ -429,22 +431,35 @@ namespace Unity.Robotics.ROSTCPConnector
             TFSystem.instance.ShowTFNamesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFNamesDefault, "Lbl",
                 (stream, check) => stream.ShowName = check);
             GUILayout.EndHorizontal();
+            bool globalChange = GUI.changed;
 
+            // draw the root objects
             foreach (TFStream stream in TFSystem.instance.GetTransforms())
             {
-                GUI.changed = false;
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(stream.Name, GUILayout.Width(k_TFNameWidth));
-                stream.ShowAxes = GUILayout.Toggle(stream.ShowAxes, "", GUILayout.Width(k_CheckboxWidth));
-                stream.ShowLink = GUILayout.Toggle(stream.ShowLink, "", GUILayout.Width(k_CheckboxWidth));
-                stream.ShowName = GUILayout.Toggle(stream.ShowName, "", GUILayout.Width(k_CheckboxWidth));
-                GUILayout.EndHorizontal();
-                if(GUI.changed)
-                {
-                    TFSystem.UpdateVisualization(stream);
-                }
-                GUI.changed = false;
+                if(stream.Parent == null)
+                    DrawTFStreamHierarchy(stream, 0, globalChange);
             }
+
+            GUILayout.EndScrollView();
+        }
+
+        void DrawTFStreamHierarchy(TFStream stream, int indent, bool globalChange)
+        {
+            GUI.changed = false;
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(indent * k_IndentWidth);
+            GUILayout.Label(stream.Name, GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth));
+            stream.ShowAxes = GUILayout.Toggle(stream.ShowAxes, "", GUILayout.Width(k_CheckboxWidth));
+            stream.ShowLink = GUILayout.Toggle(stream.ShowLink, "", GUILayout.Width(k_CheckboxWidth));
+            stream.ShowName = GUILayout.Toggle(stream.ShowName, "", GUILayout.Width(k_CheckboxWidth));
+            GUILayout.EndHorizontal();
+            if (GUI.changed || globalChange)
+            {
+                TFSystem.UpdateVisualization(stream);
+            }
+
+            foreach (TFStream child in stream.Children)
+                DrawTFStreamHierarchy(child, indent+1, globalChange);
         }
 
         bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TFStream, bool> setter)
