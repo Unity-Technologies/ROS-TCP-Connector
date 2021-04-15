@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MTwistWithCovariance : Message
     {
-        public const string RosMessageName = "geometry_msgs/TwistWithCovariance";
+        public const string k_RosMessageName = "geometry_msgs/TwistWithCovariance";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses velocity in free space with uncertainty.
         public MTwist twist;

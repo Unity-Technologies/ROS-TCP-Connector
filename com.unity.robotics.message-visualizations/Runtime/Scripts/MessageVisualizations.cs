@@ -5,6 +5,7 @@ using RosMessageTypes.Nav;
 using RosMessageTypes.Sensor;
 using RosMessageTypes.Shape;
 using RosMessageTypes.Std;
+using RosMessageTypes.Visualization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,6 +114,198 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>(), color);
+        }
+        public static void Draw<C>(this MLaserScan message, BasicDrawing drawing, float pointRadius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), pointRadius);
+        }
+
+        public static void Draw<C>(this MLaserScan message, PointCloudDrawing pointCloud, float pointRadius = 0.01f) where C: ICoordinateSpace, new()
+        {
+            pointCloud.SetCapacity(message.ranges.Length);
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+            // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
+            float angle = -message.angle_min;
+            foreach(float range in message.ranges)
+            {
+                Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
+                Vector3 worldPoint = frame.TransformPoint(localPoint);
+                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
+                pointCloud.AddPoint(worldPoint, c, pointRadius);
+                angle -= message.angle_increment;
+            }
+            pointCloud.Bake();
+        }
+
+        public static void Draw<C>(this MMarker marker, BasicDrawing drawing) where C : ICoordinateSpace, new()
+        {
+            switch (marker.type)
+            {
+                case MMarker.ARROW:
+                    Vector3 startPoint;
+                    Vector3 endPoint;
+                    if (marker.points.Length >= 2)
+                    {
+                        startPoint = marker.points[0].From<C>();
+                        endPoint = marker.points[1].From<C>();
+
+                        float arrowheadGradient = 0.5f;
+                        if (marker.scale.z != 0)
+                            arrowheadGradient = (float)(marker.scale.y / marker.scale.z);
+
+                        drawing.DrawArrow(startPoint, endPoint, marker.color.ToUnityColor(),
+                            (float)marker.scale.x, (float)(marker.scale.y / marker.scale.x), arrowheadGradient);
+                    }
+                    else
+                    {
+                        startPoint = marker.pose.position.From<C>();
+                        endPoint = startPoint + marker.pose.orientation.From<C>() * Vector3.forward * (float)marker.scale.x;
+
+                        drawing.DrawArrow(startPoint, endPoint, marker.color.ToUnityColor(), (float)marker.scale.y);
+                    }
+                    break;
+                case MMarker.CUBE:
+                    drawing.DrawCuboid(marker.pose.position.From<C>(), marker.scale.From<C>() * 0.5f, marker.pose.orientation.From<C>(), marker.color.ToUnityColor());
+                    break;
+                case MMarker.SPHERE:
+                    drawing.DrawSpheroid(marker.pose.position.From<C>(), marker.scale.From<C>() * 0.5f, marker.pose.orientation.From<C>(), marker.color.ToUnityColor());
+                    break;
+                case MMarker.CYLINDER:
+                    drawing.transform.position = marker.pose.position.From<C>();
+                    drawing.transform.rotation = marker.pose.orientation.From<C>();
+                    drawing.transform.localScale = marker.scale.From<C>();
+                    drawing.DrawCylinder(new Vector3(0, -0.5f, 0), new Vector3(0, 0.5f, 0), marker.color.ToUnityColor(), 0.5f);
+                    break;
+                case MMarker.LINE_STRIP:
+                    drawing.transform.position = marker.pose.position.From<C>();
+                    drawing.transform.rotation = marker.pose.orientation.From<C>();
+                    if (marker.colors.Length == marker.points.Length)
+                    {
+                        drawing.DrawLineStrip(marker.points.Select(p => p.From<C>()).ToArray(), marker.colors.Select(c=>(Color32)c.ToUnityColor()).ToArray(), (float)marker.scale.x);
+                    }
+                    else
+                    {
+                        drawing.DrawLineStrip(marker.points.Select(p => p.From<C>()).ToArray(), marker.color.ToUnityColor(), (float)marker.scale.x);
+                    }
+                    break;
+                case MMarker.LINE_LIST:
+                    drawing.transform.position = marker.pose.position.From<C>();
+                    drawing.transform.rotation = marker.pose.orientation.From<C>();
+                    if (marker.colors.Length == marker.points.Length)
+                    {
+                        drawing.DrawLines(marker.points.Select(p => p.From<C>()).ToArray(), marker.colors.Select(c => (Color32)c.ToUnityColor()).ToArray(), (float)marker.scale.x);
+                    }
+                    else
+                    {
+                        drawing.DrawLines(marker.points.Select(p => p.From<C>()).ToArray(), marker.color.ToUnityColor(), (float)marker.scale.x);
+                    }
+                    break;
+                case MMarker.CUBE_LIST:
+                    {
+                        drawing.transform.position = marker.pose.position.From<C>();
+                        drawing.transform.rotation = marker.pose.orientation.From<C>();
+                        Vector3 cubeScale = marker.scale.From<C>() * 0.5f;
+                        if (marker.colors.Length == marker.points.Length)
+                        {
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                drawing.DrawCuboid(marker.points[Idx].From<C>(), cubeScale, marker.colors[Idx].ToUnityColor());
+                            }
+                        }
+                        else
+                        {
+                            Color32 color = marker.color.ToUnityColor();
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                drawing.DrawCuboid(marker.points[Idx].From<C>(), cubeScale, color);
+                            }
+                        }
+                    }
+                    break;
+                case MMarker.SPHERE_LIST:
+                    {
+                        drawing.transform.position = marker.pose.position.From<C>();
+                        drawing.transform.rotation = marker.pose.orientation.From<C>();
+                        Vector3 radii = marker.scale.From<C>() * 0.5f;
+                        if (marker.colors.Length == marker.points.Length)
+                        {
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                drawing.DrawSpheroid(marker.points[Idx].From<C>(), radii, Quaternion.identity, marker.colors[Idx].ToUnityColor());
+                            }
+                        }
+                        else
+                        {
+                            Color32 color = marker.color.ToUnityColor();
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                drawing.DrawSpheroid(marker.points[Idx].From<C>(), radii, Quaternion.identity, color);
+                            }
+                        }
+                    }
+                    break;
+                case MMarker.POINTS:
+                    {
+                        PointCloudDrawing cloud = drawing.AddPointCloud(marker.points.Length);
+                        cloud.transform.position = marker.pose.position.From<C>();
+                        cloud.transform.rotation = marker.pose.orientation.From<C>();
+                        float radius = (float)marker.scale.x;
+                        if (marker.colors.Length == marker.points.Length)
+                        {
+                            for(int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                cloud.AddPoint(marker.points[Idx].From<C>(), marker.colors[Idx].ToUnityColor(), radius);
+                            }
+                        }
+                        else
+                        {
+                            Color32 color = marker.color.ToUnityColor();
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            {
+                                cloud.AddPoint(marker.points[Idx].From<C>(), color, radius);
+                            }
+                        }
+                        cloud.Bake();
+                    }
+                    break;
+                case MMarker.TEXT_VIEW_FACING:
+                    drawing.DrawLabel(marker.text, marker.pose.position.From<C>(), marker.color.ToUnityColor());
+                    break;
+                case MMarker.MESH_RESOURCE:
+                    break;
+                case MMarker.TRIANGLE_LIST:
+                    {
+                        drawing.transform.position = marker.pose.position.From<C>();
+                        drawing.transform.rotation = marker.pose.orientation.From<C>();
+                        float radius = (float)marker.scale.x;
+                        if (marker.colors.Length == marker.points.Length)
+                        {
+                            for (int Idx = 2; Idx < marker.points.Length; Idx+=3)
+                            {
+                                drawing.DrawTriangle(
+                                    marker.points[Idx - 2].From<C>(),
+                                    marker.points[Idx - 1].From<C>(),
+                                    marker.points[Idx].From<C>(),
+                                    marker.colors[Idx - 2].ToUnityColor(),
+                                    marker.colors[Idx - 1].ToUnityColor(),
+                                    marker.colors[Idx].ToUnityColor());
+                            }
+                        }
+                        else
+                        {
+                            Color32 color = marker.color.ToUnityColor();
+                            for (int Idx = 2; Idx < marker.points.Length; Idx+=3)
+                            {
+                                drawing.DrawTriangle(
+                                    marker.points[Idx-2].From<C>(),
+                                    marker.points[Idx-1].From<C>(),
+                                    marker.points[Idx].From<C>(),
+                                    color);
+                            }
+                        }
+                    }
+                    break;
+            }
         }
 
         public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
@@ -345,7 +538,7 @@ namespace Unity.Robotics.MessageVisualizers
                 sphereRadius += pushOutPerStep;
             }
 
-            drawing.DrawLineStrip(color, arrowThickness, points.ToArray());
+            drawing.DrawLineStrip(points.ToArray(), color, arrowThickness);
             drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
         }
 

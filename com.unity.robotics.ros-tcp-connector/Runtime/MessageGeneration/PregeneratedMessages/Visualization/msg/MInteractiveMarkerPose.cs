@@ -10,7 +10,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MInteractiveMarkerPose : Message
     {
-        public const string RosMessageName = "visualization_msgs/InteractiveMarkerPose";
+        public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerPose";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Time/frame info.
         public MHeader header;

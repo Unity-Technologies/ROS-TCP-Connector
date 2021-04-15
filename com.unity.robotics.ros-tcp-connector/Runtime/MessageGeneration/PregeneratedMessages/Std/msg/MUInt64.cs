@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MUInt64 : Message
     {
-        public const string RosMessageName = "std_msgs/UInt64";
+        public const string k_RosMessageName = "std_msgs/UInt64";
+        public override string RosMessageName => k_RosMessageName;
 
         public ulong data;
 

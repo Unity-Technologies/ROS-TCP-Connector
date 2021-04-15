@@ -9,7 +9,8 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MRosUnityTopicListRequest : Message
     {
-        public const string RosMessageName = "Ros_Tcp_Endpoint/RosUnityTopicList";
+        public const string k_RosMessageName = "ROS_TCP_Endpoint/RosUnityTopicList";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public MRosUnityTopicListRequest()

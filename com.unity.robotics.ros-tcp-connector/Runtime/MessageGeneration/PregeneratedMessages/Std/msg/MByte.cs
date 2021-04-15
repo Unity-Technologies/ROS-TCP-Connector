@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MByte : Message
     {
-        public const string RosMessageName = "std_msgs/Byte";
+        public const string k_RosMessageName = "std_msgs/Byte";
+        public override string RosMessageName => k_RosMessageName;
 
         public sbyte data;
 

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MByteMultiArray : Message
     {
-        public const string RosMessageName = "std_msgs/ByteMultiArray";
+        public const string k_RosMessageName = "std_msgs/ByteMultiArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Please look at the MultiArrayLayout message definition for
         //  documentation on all multiarrays.

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Diagnostic
 {
     public class MAddDiagnosticsRequest : Message
     {
-        public const string RosMessageName = "diagnostic_msgs/AddDiagnostics";
+        public const string k_RosMessageName = "diagnostic_msgs/AddDiagnostics";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This service is used as part of the process for loading analyzers at runtime,
         //  and should be used by a loader script or program, not as a standalone service.

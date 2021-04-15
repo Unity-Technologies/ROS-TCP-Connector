@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MNavSatFix : Message
     {
-        public const string RosMessageName = "sensor_msgs/NavSatFix";
+        public const string k_RosMessageName = "sensor_msgs/NavSatFix";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Navigation Satellite fix for any Global Navigation Satellite System
         // 

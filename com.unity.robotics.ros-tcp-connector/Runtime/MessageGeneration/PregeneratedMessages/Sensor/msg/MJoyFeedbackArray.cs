@@ -9,7 +9,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MJoyFeedbackArray : Message
     {
-        public const string RosMessageName = "sensor_msgs/JoyFeedbackArray";
+        public const string k_RosMessageName = "sensor_msgs/JoyFeedbackArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message publishes values for multiple feedback at once. 
         public MJoyFeedback[] array;

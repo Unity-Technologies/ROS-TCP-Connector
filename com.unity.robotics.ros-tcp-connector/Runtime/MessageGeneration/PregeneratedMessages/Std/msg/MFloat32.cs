@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MFloat32 : Message
     {
-        public const string RosMessageName = "std_msgs/Float32";
+        public const string k_RosMessageName = "std_msgs/Float32";
+        public override string RosMessageName => k_RosMessageName;
 
         public float data;
 

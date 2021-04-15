@@ -9,7 +9,8 @@ namespace RosMessageTypes.Shape
 {
     public class MMesh : Message
     {
-        public const string RosMessageName = "shape_msgs/Mesh";
+        public const string k_RosMessageName = "shape_msgs/Mesh";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Definition of a mesh
         //  list of triangles; the index values refer to positions in vertices[]

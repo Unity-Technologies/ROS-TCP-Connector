@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MString : Message
     {
-        public const string RosMessageName = "std_msgs/String";
+        public const string k_RosMessageName = "std_msgs/String";
+        public override string RosMessageName => k_RosMessageName;
 
         public string data;
 

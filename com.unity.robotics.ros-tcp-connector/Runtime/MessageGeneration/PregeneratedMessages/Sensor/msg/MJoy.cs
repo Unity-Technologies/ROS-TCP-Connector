@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MJoy : Message
     {
-        public const string RosMessageName = "sensor_msgs/Joy";
+        public const string k_RosMessageName = "sensor_msgs/Joy";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Reports the state of a joysticks axes and buttons.
         public MHeader header;

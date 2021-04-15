@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MPointCloud : Message
     {
-        public const string RosMessageName = "sensor_msgs/PointCloud";
+        public const string k_RosMessageName = "sensor_msgs/PointCloud";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message holds a collection of 3d points, plus optional additional
         //  information about each point.

@@ -24,13 +24,18 @@ namespace Unity.Robotics.MessageVisualizers
             return newDrawing;
         }
 
-        public void Init(int numPoints = 0, Material material = null)
+        public void SetCapacity(int numPoints)
         {
-            m_Mesh = new Mesh();
             m_Vertices.Capacity = numPoints * 4;
             m_UVRs.Capacity = numPoints * 4;
             m_Colors32.Capacity = numPoints * 4;
+        }
+
+        public void Init(int numPoints = 0, Material material = null)
+        {
+            m_Mesh = new Mesh();
             rootHalf = Mathf.Sqrt(0.5f);
+            SetCapacity(numPoints);
 
             if (material == null)
                 material = BasicDrawingManager.instance.UnlitPointCloudMaterial;

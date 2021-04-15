@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MPoint : Message
     {
-        public const string RosMessageName = "geometry_msgs/Point";
+        public const string k_RosMessageName = "geometry_msgs/Point";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This contains the position of a point in free space
         public double x;

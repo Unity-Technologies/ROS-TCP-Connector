@@ -9,7 +9,8 @@ namespace RosMessageTypes.Shape
 {
     public class MSolidPrimitive : Message
     {
-        public const string RosMessageName = "shape_msgs/SolidPrimitive";
+        public const string k_RosMessageName = "shape_msgs/SolidPrimitive";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Define box, sphere, cylinder, cone 
         //  All shapes are defined to have their bounding boxes centered around 0,0,0.

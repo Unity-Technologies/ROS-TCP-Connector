@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MInt8 : Message
     {
-        public const string RosMessageName = "std_msgs/Int8";
+        public const string k_RosMessageName = "std_msgs/Int8";
+        public override string RosMessageName => k_RosMessageName;
 
         public sbyte data;
 

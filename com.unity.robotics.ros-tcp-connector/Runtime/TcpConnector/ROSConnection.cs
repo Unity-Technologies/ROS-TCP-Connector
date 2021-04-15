@@ -1,4 +1,3 @@
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -53,6 +53,7 @@ namespace Unity.Robotics.ROSTCPConnector
         internal HUDPanel hudPanel = null;
 
         public bool showHUD = true;
+        public bool listenForTFMessages = true;
 
         struct SubscriberCallback
         {
@@ -192,9 +193,9 @@ namespace Unity.Robotics.ROSTCPConnector
             return await t.Task;
         }
 
-        public void GetTopicList(Action<string[]> callback)
+        public void GetTopicList(Action<string[], string[]> callback)
         {
-            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
+            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics, response.messageNames));
         }
 
         public void RegisterSubscriber(string topic, string rosMessageName)
@@ -235,11 +236,13 @@ namespace Unity.Robotics.ROSTCPConnector
             if (_instance == null)
                 _instance = this;
         }
-
-        private void Start()
+        void Start()
         {
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+
+            if (listenForTFMessages)
+                TFSystem.Init();
 
             if (overrideUnityIP != "")
             {
@@ -284,51 +287,72 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             await Task.Yield();
 
+            Debug.Log("New connection");
+
             // continue asynchronously on another thread
-            await ReadMessage(tcpClient.GetStream());
+            await ReadFromStream(tcpClient.GetStream());
         }
 
-        async Task ReadMessage(NetworkStream networkStream)
+        async Task ReadFromStream(NetworkStream networkStream)
         {
             if (!networkStream.CanRead)
                 return;
 
             SubscriberCallback subs;
 
-            (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-
-            if (!subscribers.TryGetValue(topicName, out subs))
-                return; // not interested in this topic
-
-            if(subs.messageConstructor == null)
+            float lastDataReceivedRealTimestamp = 0;
+            do
             {
-                if (hudPanel != null)
-                    hudPanel.SetLastMessageRaw(topicName, content);
-                return;
-            }
-
-            Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
-            msg.Deserialize(content, 0);
-
-            if (hudPanel != null)
-                hudPanel.SetLastMessageReceived(topicName, msg);
-
-            foreach (Func<Message, Message> callback in subs.callbacks)
-            {
-                try
+                // try to keep reading messages as long as the networkstream has data.
+                // But if it's taking too long, don't freeze forever.
+                float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
+                while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
-                    Message response = callback(msg);
-                    if (response != null)
+                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
+
+                    if (!Application.isPlaying)
                     {
-                        // if the callback has a response, it's implementing a service
-                        WriteDataStaggered(networkStream, topicName, response);
+                        networkStream.Close();
+                        return;
+                    }
+
+                    if (!subscribers.TryGetValue(topicName, out subs))
+                        continue; // not interested in this topic
+
+                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+                    msg.Deserialize(content, 0);
+
+                    if (hudPanel != null)
+                        hudPanel.SetLastMessageReceived(topicName, msg);
+
+                    foreach (Func<Message, Message> callback in subs.callbacks)
+                    {
+                        try
+                        {
+                            Message response = callback(msg);
+                            if (response != null)
+                            {
+                                // if the callback has a response, it's implementing a service
+                                WriteDataStaggered(networkStream, topicName, response);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Subscriber callback problem: " + e);
+                        }
                     }
                 }
-                catch (Exception e)
+                await Task.Yield();
+
+                if (!Application.isPlaying)
                 {
-                    Debug.LogError("Subscriber callback problem: " + e);
+                    networkStream.Close();
+                    return;
                 }
             }
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + 15); // time out if idle too long.
+            networkStream.Close();
         }
 
         async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
@@ -347,6 +371,8 @@ namespace Unity.Robotics.ROSTCPConnector
             networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
             int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
 
+            //Debug.Log($"Reading message contents: topic \"{topicName}\" size {full_message_size}");
+
             byte[] readBuffer = new byte[full_message_size];
             int bytesRemaining = full_message_size;
             int totalBytesRead = 0;
@@ -355,6 +381,8 @@ namespace Unity.Robotics.ROSTCPConnector
             // Read in message contents until completion, or until attempts are maxed out
             while (bytesRemaining > 0 && attempts <= this.awaitDataReadRetry)
             {
+                UnityEngine.Profiling.Profiler.BeginSample("Read "+ bytesRemaining);
+
                 if (attempts == this.awaitDataReadRetry)
                 {
                     Debug.LogError("No more data to read network stream after " + awaitDataReadRetry + " attempts.");
@@ -366,12 +394,15 @@ namespace Unity.Robotics.ROSTCPConnector
                 totalBytesRead += bytesRead;
                 bytesRemaining -= bytesRead;
 
+                UnityEngine.Profiling.Profiler.EndSample();
+
                 if (!networkStream.DataAvailable)
                 {
                     attempts++;
                     await Task.Yield();
                 }
             }
+
             return Tuple.Create(topicName, readBuffer);
         }
 
@@ -403,6 +434,7 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         TcpListener tcpListener;
+        int numConnections = 0;
 
         protected async void StartMessageServer(string ip, int port)
         {
@@ -428,6 +460,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         var tcpClient = await tcpListener.AcceptTcpClientAsync();
 
+                        //Debug.Log("Connection "+(++numConnections) + "at time " + Time.realtimeSinceStartup);
                         var task = StartHandleConnectionAsync(tcpClient);
                         // if already faulted, re-throw any error on the calling context
                         if (task.IsFaulted)

@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MEmpty : Message
     {
-        public const string RosMessageName = "std_msgs/Empty";
+        public const string k_RosMessageName = "std_msgs/Empty";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public MEmpty()

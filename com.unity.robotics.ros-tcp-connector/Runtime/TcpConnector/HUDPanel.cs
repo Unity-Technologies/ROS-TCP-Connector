@@ -18,6 +18,41 @@ namespace Unity.Robotics.ROSTCPConnector
         public static GUIStyle s_IPStyle;
         public static GUIStyle s_BoldStyle;
         public static GUIStyle s_TopicMenuStyle;
+        static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
+        static Dictionary<string, Type> s_MessageTypesByName;
+
+        public static string GetMessageNameByTopic(string topic)
+        {
+            string rosMessageName;
+            if (!s_MessageNamesByTopic.TryGetValue(topic, out rosMessageName))
+            {
+                return null;
+            }
+
+            return rosMessageName;
+        }
+
+        public static Type GetMessageClassByName(string rosMessageName)
+        {
+            if(s_MessageTypesByName == null)
+            {
+                s_MessageTypesByName = new Dictionary<string, Type>();
+                Type baseMessageType = typeof(Message);
+                foreach (Type classType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()))
+                {
+                    if(baseMessageType.IsAssignableFrom(classType))
+                    {
+                        FieldInfo messageNameField = classType.GetField("k_RosMessageName");
+                        if(messageNameField != null)
+                            s_MessageTypesByName[(string)messageNameField.GetValue(null)] = classType;
+                    }
+                }
+            }
+
+            Type result;
+            s_MessageTypesByName.TryGetValue(rosMessageName, out result);
+            return result;
+        }
 
         // ROS Message variables
         string m_RosConnectAddress = "";
@@ -36,6 +71,10 @@ namespace Unity.Robotics.ROSTCPConnector
         Vector2 m_TopicMenuScrollPosition;
         Rect m_TopicMenuRect = new Rect(20, 70, 250, 200);
         string m_TopicFilter = "";
+
+        bool m_ShowingTransforms;
+        Vector2 m_TransformMenuScrollPosition;
+        Rect m_TransformMenuRect = new Rect(20, 70, 250, 200);
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
@@ -98,17 +137,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             if (rule != null)
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
-        }
-
-        public void SetLastMessageRaw(string topic, byte[] data)
-        {
-            HUDVisualizationRule rule;
-            if (!m_AllTopics.TryGetValue(topic, out rule))
-            {
-                m_AllTopics.Add(topic, null);
-            }
-            if (rule != null)
-                rule.SetMessageRaw(data, new MessageMetadata(topic, DateTime.Now));
         }
 
         public int AddServiceRequest(string topic, Message request)
@@ -197,18 +225,26 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label(m_UnityListenAddress, s_IPStyle);
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Visualizations"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Topics"))
             {
                 m_ShowingTopics = !m_ShowingTopics;
+                m_ShowingTransforms = false;
                 if (m_ShowingTopics)
                 {
                     ResizeTopicsWindow();
-                    if (!m_DidRequestTopics)
+                    if (true)//!m_DidRequestTopics)
                     {
                         RequestTopics();
                     }
                 }
             }
+            if (GUILayout.Button("Transforms"))
+            {
+                m_ShowingTransforms = !m_ShowingTransforms;
+                m_ShowingTopics = false;
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
 
@@ -241,25 +277,34 @@ namespace Unity.Robotics.ROSTCPConnector
                 window.DrawWindow();
             }
 
+            if (s_TopicMenuStyle == null)
+            {
+                s_TopicMenuStyle = new GUIStyle
+                {
+                    stretchHeight = GUI.skin.box.stretchHeight,
+                    stretchWidth = GUI.skin.box.stretchWidth,
+                    padding = GUI.skin.box.padding,
+                    border = GUI.skin.box.border,
+                    normal = { background = GUI.skin.box.normal.background },
+                };
+            }
+
             // Topics menu
             if (m_ShowingTopics)
             {
-                if (s_TopicMenuStyle == null)
-                {
-                    s_TopicMenuStyle = new GUIStyle
-                    {
-                        stretchHeight = GUI.skin.box.stretchHeight,
-                        stretchWidth = GUI.skin.box.stretchWidth,
-                        padding = GUI.skin.box.padding,
-                        border = GUI.skin.box.border,
-                        normal = { background = GUI.skin.box.normal.background },
-                    };
-                }
-
                 GUI.Window(0, m_TopicMenuRect, DrawTopicMenuContents, "", s_TopicMenuStyle);
 
                 if (Event.current.type == EventType.MouseDown)
-                    TryCloseTopicMenu();
+                    m_ShowingTopics = ShouldKeepMenuOpen();
+            }
+
+            // Transforms menu
+            if(m_ShowingTransforms)
+            {
+                GUI.Window(0, m_TransformMenuRect, DrawTransformMenuContents, "", s_TopicMenuStyle);
+
+                if (Event.current.type == EventType.MouseDown)
+                    m_ShowingTransforms = ShouldKeepMenuOpen();
             }
         }
 
@@ -269,12 +314,14 @@ namespace Unity.Robotics.ROSTCPConnector
             ROSConnection.instance.GetTopicList(RegisterTopics);
         }
 
-        void RegisterTopics(string[] topics)
+        void RegisterTopics(string[] topics, string[] messageNames)
         {
-            foreach (string topic in topics)
+            for(int Idx = 0; Idx < topics.Length; ++Idx)
             {
+                string topic = topics[Idx];
                 if (!m_AllTopics.ContainsKey(topic))
                     m_AllTopics.Add(topic, null);
+                s_MessageNamesByTopic[topic] = messageNames[Idx];
             }
             ResizeTopicsWindow();
         }
@@ -295,7 +342,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
                 {
-                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, this);
+                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), this);
                     rule.SetShowWindow(true);
                     rule.SetShowDrawing(true);
                     m_AllTopics.Add(m_TopicFilter, rule);
@@ -347,12 +394,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     if (rule == null)
                     {
-                        rule = new HUDVisualizationRule(kv.Key, this);
+                        rule = new HUDVisualizationRule(kv.Key, GetMessageNameByTopic(kv.Key), this);
                         m_AllTopics[kv.Key] = rule;
                     }
                     rule.SetShowWindow(showWindow);
                     rule.SetShowDrawing(showDrawing);
-                    TryCloseTopicMenu();
+                    m_ShowingTopics = ShouldKeepMenuOpen();
                     break;
                 }
             }
@@ -367,11 +414,62 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void TryCloseTopicMenu()
+        const float k_TFNameWidth = 140;
+        const float k_CheckboxWidth = 35;
+        void DrawTransformMenuContents(int id)
+        {
+            GUI.changed = false;
+
+            GUILayout.BeginHorizontal(GUILayout.Height(20));
+            GUILayout.Label("", GUILayout.Width(k_TFNameWidth));
+            TFSystem.instance.ShowTFAxesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFAxesDefault, "Axes",
+                (stream, check) => stream.ShowAxes = check);
+            TFSystem.instance.ShowTFLinksDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFLinksDefault, "Link",
+                (stream, check) => stream.ShowLink = check);
+            TFSystem.instance.ShowTFNamesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFNamesDefault, "Lbl",
+                (stream, check) => stream.ShowName = check);
+            GUILayout.EndHorizontal();
+
+            foreach (TFStream stream in TFSystem.instance.GetTransforms())
+            {
+                GUI.changed = false;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(stream.Name, GUILayout.Width(k_TFNameWidth));
+                stream.ShowAxes = GUILayout.Toggle(stream.ShowAxes, "", GUILayout.Width(k_CheckboxWidth));
+                stream.ShowLink = GUILayout.Toggle(stream.ShowLink, "", GUILayout.Width(k_CheckboxWidth));
+                stream.ShowName = GUILayout.Toggle(stream.ShowName, "", GUILayout.Width(k_CheckboxWidth));
+                GUILayout.EndHorizontal();
+                if(GUI.changed)
+                {
+                    TFSystem.UpdateVisualization(stream);
+                }
+                GUI.changed = false;
+            }
+        }
+
+        bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TFStream, bool> setter)
+        {
+            bool result = GUILayout.Toggle(wasChecked, "", GUILayout.Width(k_CheckboxWidth));
+            
+            Rect checkbox = GUILayoutUtility.GetLastRect();
+            Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(label));
+            Rect labelRect = new Rect(checkbox.xMin - textSize.x, checkbox.yMin, textSize.x, checkbox.height);
+            GUI.Label(labelRect, label);
+
+            if (wasChecked != result)
+            {
+                foreach(TFStream stream in TFSystem.instance.GetTransforms())
+                {
+                    setter(stream, result);
+                }
+            }
+            return result;
+        }
+
+        public bool ShouldKeepMenuOpen()
         {
             // If the user is holding shift, don't close the topic menu on selecting a topic
-            if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
-                m_ShowingTopics = false;
+            return (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
         }
 
         class HUDLayoutSave

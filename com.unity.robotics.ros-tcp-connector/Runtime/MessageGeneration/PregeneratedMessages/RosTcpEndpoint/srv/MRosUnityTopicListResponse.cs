@@ -9,18 +9,22 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MRosUnityTopicListResponse : Message
     {
-        public const string RosMessageName = "Ros_Tcp_Endpoint/RosUnityTopicList";
+        public const string k_RosMessageName = "ROS_TCP_Endpoint/RosUnityTopicList";
+        public override string RosMessageName => k_RosMessageName;
 
         public string[] topics;
+        public string[] messageNames;
 
         public MRosUnityTopicListResponse()
         {
             this.topics = new string[0];
+            this.messageNames = new string[0];
         }
 
-        public MRosUnityTopicListResponse(string[] topics)
+        public MRosUnityTopicListResponse(string[] topics, string[] messageNames)
         {
             this.topics = topics;
+            this.messageNames = messageNames;
         }
         public override List<byte[]> SerializationStatements()
         {
@@ -28,6 +32,10 @@ namespace RosMessageTypes.RosTcpEndpoint
             
             listOfSerializations.Add(BitConverter.GetBytes(topics.Length));
             foreach(var entry in topics)
+                listOfSerializations.Add(SerializeString(entry));
+            
+            listOfSerializations.Add(BitConverter.GetBytes(messageNames.Length));
+            foreach(var entry in messageNames)
                 listOfSerializations.Add(SerializeString(entry));
 
             return listOfSerializations;
@@ -46,6 +54,17 @@ namespace RosMessageTypes.RosTcpEndpoint
                 this.topics[i] = DeserializeString(data, offset, topicsStringBytesLength);
                 offset += topicsStringBytesLength;
             }
+            
+            var messageNamesArrayLength = DeserializeLength(data, offset);
+            offset += 4;
+            this.messageNames= new string[messageNamesArrayLength];
+            for(var i = 0; i < messageNamesArrayLength; i++)
+            {
+                var messageNamesStringBytesLength = DeserializeLength(data, offset);
+                offset += 4;
+                this.messageNames[i] = DeserializeString(data, offset, messageNamesStringBytesLength);
+                offset += messageNamesStringBytesLength;
+            }
 
             return offset;
         }
@@ -53,7 +72,8 @@ namespace RosMessageTypes.RosTcpEndpoint
         public override string ToString()
         {
             return "MRosUnityTopicListResponse: " +
-            "\ntopics: " + System.String.Join(", ", topics.ToList());
+            "\ntopics: " + System.String.Join(", ", topics.ToList()) +
+            "\nmessageNames: " + System.String.Join(", ", messageNames.ToList());
         }
     }
 }

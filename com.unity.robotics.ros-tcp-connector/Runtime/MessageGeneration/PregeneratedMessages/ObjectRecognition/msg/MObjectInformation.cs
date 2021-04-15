@@ -9,7 +9,8 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MObjectInformation : Message
     {
-        public const string RosMessageName = "object_recognition_msgs/ObjectInformation";
+        public const string k_RosMessageName = "object_recognition_msgs/ObjectInformation";
+        public override string RosMessageName => k_RosMessageName;
 
         // ############################################# VISUALIZATION INFO ######################################################
         // ################## THIS INFO SHOULD BE OBTAINED INDEPENDENTLY FROM THE CORE, LIKE IN AN RVIZ PLUGIN ###################

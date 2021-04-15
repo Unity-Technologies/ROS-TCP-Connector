@@ -9,7 +9,8 @@ namespace RosMessageTypes.Std
 {
     public class MBool : Message
     {
-        public const string RosMessageName = "std_msgs/Bool";
+        public const string k_RosMessageName = "std_msgs/Bool";
+        public override string RosMessageName => k_RosMessageName;
 
         public bool data;
 

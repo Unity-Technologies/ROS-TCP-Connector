@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MIlluminance : Message
     {
-        public const string RosMessageName = "sensor_msgs/Illuminance";
+        public const string k_RosMessageName = "sensor_msgs/Illuminance";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single photometric illuminance measurement.  Light should be assumed to be
         //  measured along the sensor's x-axis (the area of detection is the y-z plane).

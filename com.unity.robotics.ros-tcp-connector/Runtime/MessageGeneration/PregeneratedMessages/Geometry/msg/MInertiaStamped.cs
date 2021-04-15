@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MInertiaStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/InertiaStamped";
+        public const string k_RosMessageName = "geometry_msgs/InertiaStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         public MHeader header;
         public MInertia inertia;

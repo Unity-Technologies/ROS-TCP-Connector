@@ -10,7 +10,8 @@ namespace RosMessageTypes.Nav
 {
     public class MMapMetaData : Message
     {
-        public const string RosMessageName = "nav_msgs/MapMetaData";
+        public const string k_RosMessageName = "nav_msgs/MapMetaData";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This hold basic information about the characterists of the OccupancyGrid
         //  The time at which the map was loaded

@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MPolygonStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/PolygonStamped";
+        public const string k_RosMessageName = "geometry_msgs/PolygonStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a Polygon with reference coordinate frame and timestamp
         public MHeader header;

@@ -10,7 +10,8 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MRecognizedObject : Message
     {
-        public const string RosMessageName = "object_recognition_msgs/RecognizedObject";
+        public const string k_RosMessageName = "object_recognition_msgs/RecognizedObject";
+        public override string RosMessageName => k_RosMessageName;
 
         // #################################################### HEADER ###########################################################
         //  The header frame corresponds to the pose frame, NOT the point_cloud frame.

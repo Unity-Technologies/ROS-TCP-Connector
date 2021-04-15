@@ -9,7 +9,8 @@ namespace RosMessageTypes.Nav
 {
     public class MGetMapResult : Message
     {
-        public const string RosMessageName = "nav_msgs/GetMap";
+        public const string k_RosMessageName = "nav_msgs/GetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         public MOccupancyGrid map;
 

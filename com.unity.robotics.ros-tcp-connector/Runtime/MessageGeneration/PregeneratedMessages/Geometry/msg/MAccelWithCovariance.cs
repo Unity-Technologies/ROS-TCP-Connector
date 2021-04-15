@@ -9,7 +9,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MAccelWithCovariance : Message
     {
-        public const string RosMessageName = "geometry_msgs/AccelWithCovariance";
+        public const string k_RosMessageName = "geometry_msgs/AccelWithCovariance";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses acceleration in free space with uncertainty.
         public MAccel accel;

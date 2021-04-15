@@ -10,7 +10,8 @@ namespace RosMessageTypes.Geometry
 {
     public class MTwistWithCovarianceStamped : Message
     {
-        public const string RosMessageName = "geometry_msgs/TwistWithCovarianceStamped";
+        public const string k_RosMessageName = "geometry_msgs/TwistWithCovarianceStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents an estimated twist with reference coordinate frame and timestamp.
         public MHeader header;

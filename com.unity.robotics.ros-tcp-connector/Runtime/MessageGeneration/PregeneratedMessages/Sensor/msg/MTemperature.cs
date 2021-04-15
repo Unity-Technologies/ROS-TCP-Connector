@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MTemperature : Message
     {
-        public const string RosMessageName = "sensor_msgs/Temperature";
+        public const string k_RosMessageName = "sensor_msgs/Temperature";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single temperature reading.
         public MHeader header;

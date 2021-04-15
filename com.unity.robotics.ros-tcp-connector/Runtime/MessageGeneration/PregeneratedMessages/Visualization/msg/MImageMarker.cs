@@ -10,7 +10,8 @@ namespace RosMessageTypes.Visualization
 {
     public class MImageMarker : Message
     {
-        public const string RosMessageName = "visualization_msgs/ImageMarker";
+        public const string k_RosMessageName = "visualization_msgs/ImageMarker";
+        public override string RosMessageName => k_RosMessageName;
 
         public const byte CIRCLE = 0;
         public const byte LINE_STRIP = 1;

@@ -14,12 +14,16 @@ namespace Unity.Robotics.MessageVisualizers
 #if UNITY_EDITOR
                 if (s_Instance == null)
                 {
-                    GameObject newDebugDrawObj = new GameObject("DrawingManager");
-                    s_Instance = newDebugDrawObj.AddComponent<BasicDrawingManager>();
-                    s_Instance.m_UnlitVertexColorMaterial = new Material(Shader.Find("Unlit/VertexColor"));
-                    s_Instance.m_UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
-                    s_Instance.m_UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
-                    s_Instance.m_UnlitPointCloudMaterial = new Material(Shader.Find("Unlit/PointCloud"));
+                    s_Instance = FindObjectOfType<BasicDrawingManager>();
+                    if (s_Instance == null)
+                    {
+                        GameObject newDebugDrawObj = new GameObject("DrawingManager");
+                        s_Instance = newDebugDrawObj.AddComponent<BasicDrawingManager>();
+                        s_Instance.m_UnlitVertexColorMaterial = new Material(Shader.Find("Unlit/VertexColor"));
+                        s_Instance.m_UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
+                        s_Instance.m_UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
+                        s_Instance.m_UnlitPointCloudMaterial = new Material(Shader.Find("Unlit/PointCloud"));
+                    }
                 }
 #endif
                 return s_Instance;

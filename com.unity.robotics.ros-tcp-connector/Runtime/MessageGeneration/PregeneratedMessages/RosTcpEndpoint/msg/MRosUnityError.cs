@@ -9,7 +9,8 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MRosUnityError : Message
     {
-        public const string RosMessageName = "ros_tcp_endpoint/RosUnityError";
+        public const string k_RosMessageName = "ros_tcp_endpoint/RosUnityError";
+        public override string RosMessageName => k_RosMessageName;
 
         public string message;
 

@@ -10,7 +10,8 @@ namespace RosMessageTypes.Octomap
 {
     public class MOctomapWithPose : Message
     {
-        public const string RosMessageName = "octomap_msgs/OctomapWithPose";
+        public const string k_RosMessageName = "octomap_msgs/OctomapWithPose";
+        public override string RosMessageName => k_RosMessageName;
 
         //  A 3D map in binary format, as Octree
         public MHeader header;

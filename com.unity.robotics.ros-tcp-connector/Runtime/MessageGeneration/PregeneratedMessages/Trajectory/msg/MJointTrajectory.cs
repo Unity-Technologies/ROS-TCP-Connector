@@ -10,7 +10,8 @@ namespace RosMessageTypes.Trajectory
 {
     public class MJointTrajectory : Message
     {
-        public const string RosMessageName = "trajectory_msgs/JointTrajectory";
+        public const string k_RosMessageName = "trajectory_msgs/JointTrajectory";
+        public override string RosMessageName => k_RosMessageName;
 
         public MHeader header;
         public string[] joint_names;

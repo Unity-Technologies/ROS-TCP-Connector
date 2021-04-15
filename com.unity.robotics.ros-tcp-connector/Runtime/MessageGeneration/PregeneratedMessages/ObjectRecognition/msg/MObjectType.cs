@@ -9,7 +9,8 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MObjectType : Message
     {
-        public const string RosMessageName = "object_recognition_msgs/ObjectType";
+        public const string k_RosMessageName = "object_recognition_msgs/ObjectType";
+        public override string RosMessageName => k_RosMessageName;
 
         // ################################################# OBJECT ID #########################################################
         //  Contains information about the type of a found object. Those two sets of parameters together uniquely define an

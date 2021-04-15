@@ -9,7 +9,8 @@ namespace RosMessageTypes.ObjectRecognition
 {
     public class MGetObjectInformationResponse : Message
     {
-        public const string RosMessageName = "object_recognition_msgs-master/GetObjectInformation";
+        public const string k_RosMessageName = "object_recognition_msgs-master/GetObjectInformation";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Extra object info 
         public MObjectInformation information;

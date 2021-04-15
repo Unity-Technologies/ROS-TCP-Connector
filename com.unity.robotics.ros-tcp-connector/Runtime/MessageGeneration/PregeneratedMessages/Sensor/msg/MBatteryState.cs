@@ -10,7 +10,8 @@ namespace RosMessageTypes.Sensor
 {
     public class MBatteryState : Message
     {
-        public const string RosMessageName = "sensor_msgs/BatteryState";
+        public const string k_RosMessageName = "sensor_msgs/BatteryState";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Constants are chosen to match the enums in the linux kernel
         //  defined in include/linux/power_supply.h as of version 3.7
