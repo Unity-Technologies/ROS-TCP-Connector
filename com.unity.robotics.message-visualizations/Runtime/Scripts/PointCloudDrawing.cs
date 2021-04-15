@@ -7,21 +7,38 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class PointCloudDrawing : MonoBehaviour
     {
+        static readonly float k_SqrtPointFive = Mathf.Sqrt(0.5f);
+
         Mesh m_Mesh;
         List<Vector3> m_Vertices = new List<Vector3>();
         List<Vector3> m_UVRs = new List<Vector3>(); // texture UV and point radius
         List<Color32> m_Colors32 = new List<Color32>();
         List<int> m_Triangles = new List<int>();
-        float rootHalf;
+        MeshRenderer m_MeshRenderer;
 
         public static PointCloudDrawing Create(GameObject parent = null, int numPoints = 0, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("PointCloud");
             if (parent != null)
+            {
                 newDrawingObj.transform.parent = parent.transform;
+                newDrawingObj.transform.localPosition = Vector3.zero;
+                newDrawingObj.transform.localRotation = Quaternion.identity;
+            }
             PointCloudDrawing newDrawing = newDrawingObj.AddComponent<PointCloudDrawing>();
-            newDrawing.Init(numPoints, material);
+            newDrawing.SetCapacity(numPoints);
+            newDrawing.SetMaterial(material);
             return newDrawing;
+        }
+
+        public void Awake()
+        {
+            m_Mesh = new Mesh();
+
+            MeshFilter mfilter = gameObject.AddComponent<MeshFilter>();
+            mfilter.sharedMesh = m_Mesh;
+
+            m_MeshRenderer = gameObject.AddComponent<MeshRenderer>();
         }
 
         public void SetCapacity(int numPoints)
@@ -31,20 +48,12 @@ namespace Unity.Robotics.MessageVisualizers
             m_Colors32.Capacity = numPoints * 4;
         }
 
-        public void Init(int numPoints = 0, Material material = null)
+        public void SetMaterial(Material material)
         {
-            m_Mesh = new Mesh();
-            rootHalf = Mathf.Sqrt(0.5f);
-            SetCapacity(numPoints);
-
             if (material == null)
                 material = BasicDrawingManager.instance.UnlitPointCloudMaterial;
 
-            MeshFilter mfilter = gameObject.AddComponent<MeshFilter>();
-            mfilter.sharedMesh = m_Mesh;
-
-            MeshRenderer mrenderer = gameObject.AddComponent<MeshRenderer>();
-            mrenderer.sharedMaterial = material;
+            m_MeshRenderer.sharedMaterial = material;
         }
 
         public void AddPoint(Vector3 point, Color32 color, float radius)
@@ -81,9 +90,9 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Colors32.Add(color);
             }
 
-            m_UVRs.Add(new Vector3(0.5f-rootHalf, 0.5f, radius));
-            m_UVRs.Add(new Vector3(1, 1.5f+rootHalf, radius));
-            m_UVRs.Add(new Vector3(1, -0.5f - rootHalf, radius));
+            m_UVRs.Add(new Vector3(0.5f- k_SqrtPointFive, 0.5f, radius));
+            m_UVRs.Add(new Vector3(1, 1.5f+ k_SqrtPointFive, radius));
+            m_UVRs.Add(new Vector3(1, -0.5f - k_SqrtPointFive, radius));
 
             m_Triangles.Add(start + 0);
             m_Triangles.Add(start + 1);

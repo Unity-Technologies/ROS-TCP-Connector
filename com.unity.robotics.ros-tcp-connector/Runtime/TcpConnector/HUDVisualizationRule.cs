@@ -89,21 +89,23 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetMessage(Message message, MessageMetadata meta)
         {
-            if (m_Contents != null)
-                m_Contents.ShowDrawing(false);
+            if (m_Contents is MessageWindowContents)
+                ((MessageWindowContents)m_Contents).SetMessage(message, meta);
+            else
+                m_Contents = new MessageWindowContents(this, message, meta);
 
-            m_Contents = new MessageWindowContents(this, message, meta);
             if (ShowDrawing)
                 m_Contents.ShowDrawing(true);
         }
 
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
         {
-            if (m_Contents != null)
-                m_Contents.ShowDrawing(false);
-
             this.m_ServiceID = serviceID;
-            m_Contents = new ServiceWindowContents(this, request, requestMeta);
+            if (m_Contents is ServiceWindowContents)
+                ((ServiceWindowContents)m_Contents).SetRequest(request, requestMeta);
+            else
+                m_Contents = new ServiceWindowContents(this, request, requestMeta);
+
             if (ShowDrawing)
                 m_Contents.ShowDrawing(true);
         }
@@ -115,12 +117,12 @@ namespace Unity.Robotics.ROSTCPConnector
             if (this.m_ServiceID != serviceID)
                 return;
 
-            if (m_Contents != null)
-                m_Contents.ShowDrawing(false);
-
-            ((ServiceWindowContents)m_Contents).SetResponse(response, responseMeta);
-            if (ShowDrawing)
-                m_Contents.ShowDrawing(true);
+            if (m_Contents is ServiceWindowContents)
+            {
+                ((ServiceWindowContents)m_Contents).SetResponse(response, responseMeta);
+                if (ShowDrawing)
+                    m_Contents.ShowDrawing(true);
+            }
         }
 
         public void DrawWindow()
@@ -251,6 +253,13 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Meta = new MessageMetadata(topic, DateTime.Now);
             }
 
+            public void SetMessage(Message message, MessageMetadata meta)
+            {
+                m_Message = message;
+                m_Meta = meta;
+                m_VisualizerGUI = null;
+            }
+
             public void ShowDrawing(bool show)
             {
                 if (show)
@@ -259,7 +268,13 @@ namespace Unity.Robotics.ROSTCPConnector
                         m_VisualizerConfig = VisualizationRegister.GetVisualizer(m_Message, m_Meta);
 
                     if (m_VisualizerConfig != null)
-                        m_VisualizerDrawing = m_VisualizerConfig.CreateDrawing(m_Message, m_Meta);
+                    {
+                        object oldDrawing = m_VisualizerDrawing;
+                        m_VisualizerDrawing = m_VisualizerConfig.CreateDrawing(m_Message, m_Meta, oldDrawing);
+
+                        if (oldDrawing != null && oldDrawing != m_VisualizerDrawing)
+                            m_VisualizerConfig.DeleteDrawing(oldDrawing);
+                    }
                 }
                 else
                 {
@@ -319,10 +334,18 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_RequestMeta = requestMeta;
             }
 
+            public void SetRequest(Message request, MessageMetadata requestMeta)
+            {
+                m_Request = request;
+                m_RequestMeta = requestMeta;
+                m_RequestGUI = null;
+            }
+
             public void SetResponse(Message response, MessageMetadata responseMeta)
             {
                 m_Response = response;
                 m_ResponseMeta = responseMeta;
+                m_ResponseGUI = null;
             }
 
             public void ShowDrawing(bool show)
@@ -336,10 +359,10 @@ namespace Unity.Robotics.ROSTCPConnector
                         m_ResponseVisualizer = VisualizationRegister.GetVisualizer(m_Response, m_ResponseMeta);
 
                     if (m_RequestVisualizer != null && m_RequestDrawing == null)
-                        m_RequestDrawing = m_RequestVisualizer.CreateDrawing(m_Request, m_RequestMeta);
+                        m_RequestDrawing = m_RequestVisualizer.CreateDrawing(m_Request, m_RequestMeta, m_RequestDrawing);
 
                     if (m_ResponseVisualizer != null && m_ResponseDrawing == null)
-                        m_ResponseDrawing = m_ResponseVisualizer.CreateDrawing(m_Response, m_ResponseMeta);
+                        m_ResponseDrawing = m_ResponseVisualizer.CreateDrawing(m_Response, m_ResponseMeta, m_ResponseDrawing);
                 }
                 else
                 {
