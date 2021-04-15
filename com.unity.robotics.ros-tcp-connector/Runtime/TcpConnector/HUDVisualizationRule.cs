@@ -97,15 +97,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Contents.ShowDrawing(true);
         }
 
-        /*
-        public void SetMessageRaw(byte[] data, MessageMetadata meta)
-        {
-            if (m_Contents != null)
-                m_Contents.ShowDrawing(false);
-
-            m_Contents = new UnknownMessageWindowContents(this, data, meta);
-        }*/
-
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
         {
             if (m_Contents != null)
@@ -173,7 +164,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     Type messageClass = rosMessageName != null ? HUDPanel.GetMessageClassByName(rosMessageName): null;
                     if (messageClass == null)
                     {
-                        //m_Contents = new UnknownMessageWindowContents(this, Topic);
+                        Debug.LogError("No defined message class for " + rosMessageName);
                         return;
                     }
                     else
@@ -406,85 +397,5 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.EndScrollView();
             }
         }
-
-        /*
-        class UnknownMessageWindowContents : IWindowContents
-        {
-            HUDVisualizationRule m_Rule;
-            string m_MessageTypeFilter = "";
-            List<string> m_FilteredMessageTypes = new List<string>();
-            byte[] m_MessageData;
-            MessageMetadata m_Meta;
-
-            public UnknownMessageWindowContents(HUDVisualizationRule rule, byte[] data, MessageMetadata meta)
-            {
-                m_Rule = rule;
-                m_MessageData = data;
-                m_Meta = meta;
-            }
-
-            public UnknownMessageWindowContents(HUDVisualizationRule rule, string topic)
-            {
-                m_Rule = rule;
-                m_Meta = new MessageMetadata(topic, DateTime.Now);
-            }
-
-            public bool HasDrawing => false;
-
-            public void ShowDrawing(bool show)
-            {
-            }
-
-            public void DrawWindow(int windowID, Rect windowRect)
-            {
-                GUI.Window(windowID, windowRect, DrawWindowContents, m_Meta.Topic);
-            }
-
-            void DrawWindowContents(int windowID)
-            {
-                if (ROSConnection.instance.HasSubscriber(m_Meta.Topic)) // if a real subscriber has been registered, abort this process
-                {
-                    m_Rule.SetMessage(null, m_Meta);
-                    return;
-                }
-
-                GUILayout.Label($"Select type for message {m_Meta.Topic}:");
-                m_Rule.WindowScrollPosition = GUILayout.BeginScrollView(m_Rule.WindowScrollPosition);
-                string newFilter = GUILayout.TextField(m_MessageTypeFilter);
-                if(newFilter != "" && newFilter != m_MessageTypeFilter)
-                {
-                    m_FilteredMessageTypes.Clear();
-                    string newFilterLowercase = newFilter.ToLower();
-                    foreach(string messageType in s_AllMessageTypes.Keys)
-                    {
-                        if(messageType.ToLower().Contains(newFilterLowercase))
-                            m_FilteredMessageTypes.Add(messageType);
-                    }
-                }
-                m_MessageTypeFilter = newFilter;
-
-                foreach (string messageTypeName in m_FilteredMessageTypes)
-                {
-                    if (GUILayout.Button(messageTypeName))
-                    {
-                        // Create a dummy subscriber so that ROSConnection can deserialize messages on this topic
-                        Type messageType = s_AllMessageTypes[messageTypeName];
-                        if (!ROSConnection.instance.HasSubscriber(m_Meta.Topic))
-                            ROSConnection.instance.RegisterSubscriber(m_Meta.Topic, messageTypeName);
-
-                        ROSConnection.instance.ReflectionSubscribe(m_Meta.Topic, messageType, (Message m) => { });
-
-                        // Now just switch to the normal message view and display the message (if any)
-                        Message msg = null;
-                        if (m_MessageData != null)
-                            msg = (Message)messageType.GetConstructor(new Type[0]).Invoke(new object[0]);
-
-                        m_Rule.SetMessage(msg, m_Meta);
-                        m_Rule.WindowScrollPosition = Vector2.zero;
-                    }
-                }
-                GUILayout.EndScrollView();
-            }
-        }*/
     }
 }
