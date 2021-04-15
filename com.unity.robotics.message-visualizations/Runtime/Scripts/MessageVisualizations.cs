@@ -96,7 +96,13 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
-            List<MPoint> points = new List<MPoint>();
+            message.Draw<C>(drawing.AddPointCloud((int)(message.data.Length / message.point_step)), color, radius);
+        }
+
+        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            pointCloud.SetCapacity((int)(message.data.Length / message.point_step));
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
 
             for (int i = 0; i < message.data.Length / message.point_step; i++) 
             {
@@ -104,11 +110,12 @@ namespace Unity.Robotics.MessageVisualizers
                 var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[0].offset);
                 var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[1].offset);
                 var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[2].offset);
-
+                MPoint localPoint = new MPoint(x, y, z);
+                Vector3 worldPoint = frame.TransformPoint(localPoint.From<FLU>());
                 // TODO: intensity, ring?
-                points.Add(new MPoint(x, y, z));
+                pointCloud.AddPoint(worldPoint, color, radius);
             }
-            DrawPointCloud<C>(points.ToArray(), drawing, color);
+            pointCloud.Bake();
         }
 
         public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color) where C : ICoordinateSpace, new()
@@ -319,6 +326,31 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
         }
 
+        public static void Draw<C>(this MMultiEchoLaserScan message, BasicDrawing drawing, float pointRadius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), pointRadius);
+        }
+
+        public static void Draw<C>(this MMultiEchoLaserScan message, PointCloudDrawing pointCloud, float pointRadius = 0.01f) where C: ICoordinateSpace, new()
+        {
+            pointCloud.SetCapacity(message.ranges.Length);
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+            // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
+            float angle = -message.angle_min;
+            foreach(MLaserEcho echo in message.ranges)
+            {
+                foreach (float range in echo.echoes)
+                {
+                    Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
+                    Vector3 worldPoint = frame.TransformPoint(localPoint);
+                    Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
+                    pointCloud.AddPoint(worldPoint, c, pointRadius);
+                }
+                angle -= message.angle_increment;
+            }
+            pointCloud.Bake();
+        }
+
         static Mesh s_OccupancyGridMesh;
         static Material s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/Color"));
 
@@ -439,6 +471,23 @@ namespace Unity.Robotics.MessageVisualizers
             where C : ICoordinateSpace, new()
         {
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
+        }
+
+        public static void Draw<C>(this MRange message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
+            where C : ICoordinateSpace, new()
+        {
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+
+            var s = Mathf.Asin(message.field_of_view);
+            var c = Mathf.Acos(message.field_of_view);
+            Color col = Color.HSVToRGB(Mathf.InverseLerp(message.min_range, message.max_range, message.range), 1, 1);
+
+            Vector3 end = new Vector3(message.range * c, 0, message.range * s);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
+
+            end = matrix.MultiplyPoint(end);
+
+            drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
         }
 
         public static void Draw<C>(this MSolidPrimitive message, BasicDrawing drawing, Color color, GameObject origin = null)
