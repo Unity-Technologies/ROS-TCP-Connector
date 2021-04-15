@@ -41,19 +41,26 @@ public struct TFFrame
     }
 }
 
-// Represents a hierarchy of transforms changing over time.
+// Represents a transform frame changing over time.
 public class TFStream
 {
-    // in ascending order of time
+    public string Name { get; private set; }
+    public TFStream Parent { get; private set; }
+    // oldest first
     List<long> m_Timestamps = new List<long>();
-    // same order as m_Times
+    // same order as m_Timestamps
     List<TFFrame> m_Frames = new List<TFFrame>();
-    TFStream m_Parent;
     GameObject m_GameObject;
 
-    public TFStream(TFStream parent)
+    // Visualization settings
+    public bool ShowAxes { get; set; }
+    public bool ShowLink { get; set; }
+    public bool ShowName { get; set; }
+
+    public TFStream(TFStream parent, string name)
     {
-        m_Parent = parent;
+        Parent = parent;
+        Name = name;
     }
 
     public void Add(long timestamp, Vector3 translation, Quaternion rotation)
@@ -81,7 +88,7 @@ public class TFStream
             }
         }
 
-        // for now, just a lazy way to keep the buffer from growing infinitely: every 100 frames, discard the oldest 50
+        // for now, just a lazy way to keep the buffer from growing infinitely: every 50 updates, discard the oldest 50
         if (m_Timestamps.Count > 100)
         {
             m_Timestamps.RemoveRange(0, 50);
@@ -89,7 +96,7 @@ public class TFStream
         }
     }
 
-    public TFFrame GetLocalTF(long time)
+    public TFFrame GetLocalTF(long time = 0)
     {
         // this stream has no data at all, so just report identity.
         if (m_Frames.Count == 0)
@@ -125,11 +132,11 @@ public class TFStream
         }
     }
 
-    public TFFrame GetWorldTF(long time)
+    public TFFrame GetWorldTF(long time = 0)
     {
         TFFrame parent;
-        if (m_Parent != null)
-            parent = m_Parent.GetWorldTF(time);
+        if (Parent != null)
+            parent = Parent.GetWorldTF(time);
         else
             parent = TFFrame.identity;
 
@@ -145,7 +152,7 @@ public class TFStream
         if (m_Timestamps.Count == 0 || m_Timestamps[0] > time || m_Timestamps[m_Timestamps.Count - 1] < time)
             return false;
 
-        if (m_Parent != null && !m_Parent.IsTimeStable(time))
+        if (Parent != null && !Parent.IsTimeStable(time))
             return false;
 
         return true;

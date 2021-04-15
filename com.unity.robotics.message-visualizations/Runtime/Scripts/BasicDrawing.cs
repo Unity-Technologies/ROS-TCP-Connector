@@ -645,7 +645,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             foreach (LabelInfo3D label in m_Labels)
             {
-                Vector3 screenPos = cam.WorldToScreenPoint(label.position + cam.transform.right * label.worldSpacing);
+                Vector3 screenPos = cam.WorldToScreenPoint(transform.TransformPoint(label.position) + cam.transform.right * label.worldSpacing);
                 Vector3 guiPos = GUIUtility.ScreenToGUIPoint(screenPos);
                 GUI.color = label.color;
                 GUIContent labelContent = new GUIContent(label.text);

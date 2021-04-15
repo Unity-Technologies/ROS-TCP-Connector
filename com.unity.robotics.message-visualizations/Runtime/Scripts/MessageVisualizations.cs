@@ -2,6 +2,7 @@ using RosMessageTypes.Actionlib;
 using RosMessageTypes.Diagnostic;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
+using RosMessageTypes.Sensor;
 using RosMessageTypes.Shape;
 using RosMessageTypes.Std;
 using RosMessageTypes.Visualization;
@@ -70,6 +71,28 @@ namespace Unity.Robotics.MessageVisualizers
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
             foreach (MPoint p in points)
                 pointCloud.AddPoint(p.From<C>(), color, radius);
+            pointCloud.Bake();
+        }
+
+        public static void Draw<C>(this MLaserScan message, BasicDrawing drawing, float pointRadius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), pointRadius);
+        }
+
+        public static void Draw<C>(this MLaserScan message, PointCloudDrawing pointCloud, float pointRadius = 0.01f) where C: ICoordinateSpace, new()
+        {
+            pointCloud.SetCapacity(message.ranges.Length);
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+            // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
+            float angle = -message.angle_min;
+            foreach(float range in message.ranges)
+            {
+                Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
+                Vector3 worldPoint = frame.TransformPoint(localPoint);
+                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
+                pointCloud.AddPoint(worldPoint, c, pointRadius);
+                angle -= message.angle_increment;
+            }
             pointCloud.Bake();
         }
 

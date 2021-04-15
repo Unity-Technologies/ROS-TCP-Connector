@@ -426,10 +426,56 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        const float k_TFNameWidth = 140;
+        const float k_CheckboxWidth = 35;
         void DrawTransformMenuContents(int id)
         {
-            foreach(string tfName in TFSystem.instance.GetTransformNames())
-                GUILayout.Label(tfName);
+            GUI.changed = false;
+
+            GUILayout.BeginHorizontal(GUILayout.Height(20));
+            GUILayout.Label("", GUILayout.Width(k_TFNameWidth));
+            TFSystem.instance.ShowTFAxesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFAxesDefault, "Axes",
+                (stream, check) => stream.ShowAxes = check);
+            TFSystem.instance.ShowTFLinksDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFLinksDefault, "Link",
+                (stream, check) => stream.ShowLink = check);
+            TFSystem.instance.ShowTFNamesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFNamesDefault, "Lbl",
+                (stream, check) => stream.ShowName = check);
+            GUILayout.EndHorizontal();
+
+            foreach (TFStream stream in TFSystem.instance.GetTransforms())
+            {
+                GUI.changed = false;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(stream.Name, GUILayout.Width(k_TFNameWidth));
+                stream.ShowAxes = GUILayout.Toggle(stream.ShowAxes, "", GUILayout.Width(k_CheckboxWidth));
+                stream.ShowLink = GUILayout.Toggle(stream.ShowLink, "", GUILayout.Width(k_CheckboxWidth));
+                stream.ShowName = GUILayout.Toggle(stream.ShowName, "", GUILayout.Width(k_CheckboxWidth));
+                GUILayout.EndHorizontal();
+                if(GUI.changed)
+                {
+                    TFSystem.UpdateVisualization(stream);
+                }
+                GUI.changed = false;
+            }
+        }
+
+        bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TFStream, bool> setter)
+        {
+            bool result = GUILayout.Toggle(wasChecked, "", GUILayout.Width(k_CheckboxWidth));
+            
+            Rect checkbox = GUILayoutUtility.GetLastRect();
+            Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(label));
+            Rect labelRect = new Rect(checkbox.xMin - textSize.x, checkbox.yMin, textSize.x, checkbox.height);
+            GUI.Label(labelRect, label);
+
+            if (wasChecked != result)
+            {
+                foreach(TFStream stream in TFSystem.instance.GetTransforms())
+                {
+                    setter(stream, result);
+                }
+            }
+            return result;
         }
 
         public bool ShouldKeepMenuOpen()

@@ -9,10 +9,20 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
+public interface ITFSystemVisualizer
+{
+    void OnChanged(TFStream stream);
+}
+
 public class TFSystem
 {
     Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
     public static TFSystem instance { get; private set; }
+
+    // Default visualization settings
+    public bool ShowTFAxesDefault { get; set; }
+    public bool ShowTFLinksDefault { get; set; }
+    public bool ShowTFNamesDefault { get; set; }
 
     public static void Init()
     {
@@ -25,6 +35,25 @@ public class TFSystem
     }
 
     public IEnumerable<string> GetTransformNames() => m_TransformTable.Keys;
+    public IEnumerable<TFStream> GetTransforms() => m_TransformTable.Values;
+
+    static ITFSystemVisualizer s_Visualizer = null;
+
+    public static void Register(ITFSystemVisualizer visualizer)
+    {
+        s_Visualizer = visualizer;
+        if (instance != null)
+        {
+            foreach (TFStream stream in instance.m_TransformTable.Values)
+                UpdateVisualization(stream);
+        }
+    }
+
+    public static void UpdateVisualization(TFStream stream)
+    {
+        if(s_Visualizer != null)
+            s_Visualizer.OnChanged(stream);
+    }
 
     public TFFrame GetTransform(MHeader header)
     {
@@ -65,14 +94,18 @@ public class TFSystem
             if (slash <= 0)
             {
                 // there's no slash, or only an initial slash - just create a new root object
-                tf = new TFStream(null);
+                tf = new TFStream(null, singleName);
             }
             else
             {
                 TFStream parent = GetOrCreateTFStream(frame_id.Substring(0, slash));
-                tf = new TFStream(parent);
+                tf = new TFStream(parent, singleName);
             }
+            tf.ShowAxes = ShowTFAxesDefault;
+            tf.ShowLink = ShowTFLinksDefault;
+            tf.ShowName = ShowTFNamesDefault;
             m_TransformTable[singleName] = tf;
+            UpdateVisualization(tf);
         }
         return tf;
     }
@@ -88,7 +121,7 @@ public class TFSystem
                 tf_message.transform.translation.From<FLU>(),
                 tf_message.transform.rotation.From<FLU>()
             );
-            tf.ShowWidget(frame_id);
+            UpdateVisualization(tf);
         }
     }
 }
