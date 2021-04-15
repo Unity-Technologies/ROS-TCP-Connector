@@ -9,18 +9,10 @@ using UnityEngine;
 public class DefaultVisualizerLaserScan : BasicVisualizer<MLaserScan>
 {
     public float pointRadius = 0.05f;
-    PointCloudDrawing pointCloud;
 
     public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta, Color color, string label)
     {
-        // Big performance hack, reuse the same pointcloud for each drawing to reduce the amount of GC we're doing.
-        // this breaks the UI's ability to turn off this visualization. TODO: pool PointCloudDrawings instead of destroying them?
-        if (pointCloud == null)
-        {
-            drawing = BasicDrawing.Create();
-            pointCloud = drawing.AddPointCloud(message.ranges.Length);
-        }
-        message.Draw<FLU>(pointCloud);
+        message.Draw<FLU>(drawing, pointRadius);
     }
 
     public override Action CreateGUI(MLaserScan message, MessageMetadata meta, BasicDrawing drawing) => () =>

@@ -19,7 +19,12 @@ namespace Unity.Robotics.MessageVisualizers
         Mesh m_Mesh;
         List<Vector3> m_Vertices = new List<Vector3>();
         List<Color32> m_Colors32 = new List<Color32>();
-        List<GameObject> m_Supplemental = new List<GameObject>();
+        // When drawing a mesh, it's easier and faster to create a separate object to represent the mesh, than copy its vertices into our drawing
+        List<MeshRenderer> m_SupplementalMeshes = new List<MeshRenderer>();
+        // For efficiency, when a BasicDrawing is cleared, its supplemental meshes go dormant instead of being deleted. They get reawakened by calling AddMesh.
+        Queue<MeshRenderer> m_DormantMeshes = new Queue<MeshRenderer>();
+        List<PointCloudDrawing> m_PointClouds = new List<PointCloudDrawing>();
+        Queue<PointCloudDrawing> m_DormantPointClouds = new Queue<PointCloudDrawing>();
         List<int> m_Triangles = new List<int>();
         List<LabelInfo3D> m_Labels = new List<LabelInfo3D>();
         bool m_isDirty = false;
@@ -605,22 +610,43 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Material material)
         {
-            GameObject meshObject = new GameObject(source.name);
-            m_Supplemental.Add(meshObject);
+            GameObject meshObject;
+            MeshRenderer mrenderer;
+            if (m_DormantMeshes.Count > 0)
+            {
+                mrenderer = m_DormantMeshes.Dequeue();
+                mrenderer.enabled = true;
+                meshObject = mrenderer.gameObject;
+            }
+            else
+            {
+                meshObject = new GameObject(source.name);
+                MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
+                mfilter.sharedMesh = source;
+                mrenderer = meshObject.AddComponent<MeshRenderer>();
+            }
             meshObject.transform.parent = transform;
             meshObject.transform.position = position;
             meshObject.transform.rotation = rotation;
             meshObject.transform.localScale = scale;
-            MeshFilter mfilter = meshObject.AddComponent<MeshFilter>();
-            mfilter.sharedMesh = source;
-            MeshRenderer mrenderer = meshObject.AddComponent<MeshRenderer>();
             mrenderer.sharedMaterial = material;
+            m_SupplementalMeshes.Add(mrenderer);
         }
 
         public PointCloudDrawing AddPointCloud(int numPoints = 0, Material material = null)
         {
-            PointCloudDrawing result = PointCloudDrawing.Create(gameObject, numPoints, material);
-            m_Supplemental.Add(result.gameObject);
+            PointCloudDrawing result;
+            if (m_DormantPointClouds.Count > 0)
+            {
+                result = m_DormantPointClouds.Dequeue();
+                result.SetCapacity(numPoints);
+                result.SetMaterial(material);
+            }
+            else
+            {
+                result = PointCloudDrawing.Create(gameObject, numPoints, material);
+            }
+            m_PointClouds.Add(result);
             return result;
         }
 
@@ -630,9 +656,18 @@ namespace Unity.Robotics.MessageVisualizers
             m_Colors32.Clear();
             m_Triangles.Clear();
             m_Labels.Clear();
-            foreach (GameObject obj in m_Supplemental)
-                GameObject.Destroy(obj);
-            m_Supplemental.Clear();
+            foreach (MeshRenderer obj in m_SupplementalMeshes)
+            {
+                obj.enabled = false;
+                m_DormantMeshes.Enqueue(obj);
+            }
+            m_SupplementalMeshes.Clear();
+            foreach (PointCloudDrawing pointCloud in m_PointClouds)
+            {
+                pointCloud.Clear();
+                m_DormantPointClouds.Enqueue(pointCloud);
+            }
+            m_PointClouds.Clear();
             SetDirty();
         }
 

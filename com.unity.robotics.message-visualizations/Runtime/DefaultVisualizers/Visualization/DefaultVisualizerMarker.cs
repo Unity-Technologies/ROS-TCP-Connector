@@ -19,7 +19,7 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualizer, IPriority
         VisualizationRegister.RegisterVisualizer<MMarkerArray>(this, Priority);
     }
 
-    public object CreateDrawing(Message message, MessageMetadata meta)
+    public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
     {
         if (message is MMarkerArray)
         {

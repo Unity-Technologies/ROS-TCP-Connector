@@ -7,7 +7,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public interface IVisualizer
     {
-        object CreateDrawing(Message message, MessageMetadata meta);
+        object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing);
         void DeleteDrawing(object drawing);
         Action CreateGUI(Message message, MessageMetadata meta, object drawing);
     }
@@ -71,7 +71,7 @@ namespace Unity.Robotics.MessageVisualizers
             // If you're trying to register the default visualizer, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }
 
-            public object CreateDrawing(Message message, MessageMetadata meta) => null;
+            public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing) => null;
 
             public void DeleteDrawing(object drawing) { }
 

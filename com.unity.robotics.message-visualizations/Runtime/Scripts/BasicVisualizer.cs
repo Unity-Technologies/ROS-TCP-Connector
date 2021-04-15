@@ -33,14 +33,24 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Color.a = 1;
         }
 
-        public object CreateDrawing(Message message, MessageMetadata meta)
+        public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
         {
             if (!AssertMessageType(message, meta))
             {
                 return null;
             }
 
-            BasicDrawing drawing = BasicDrawingManager.CreateDrawing();
+            BasicDrawing drawing;
+            if (oldDrawing != null)
+            {
+                drawing = (BasicDrawing)oldDrawing;
+                drawing.Clear();
+            }
+            else
+            {
+                drawing = BasicDrawingManager.CreateDrawing();
+            }
+
             Draw(drawing, (TargetMessageType)message, meta, SelectColor(meta), SelectLabel(meta));
             return drawing;
         }
