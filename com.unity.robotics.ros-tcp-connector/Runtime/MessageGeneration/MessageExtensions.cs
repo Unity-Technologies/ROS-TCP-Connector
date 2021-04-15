@@ -422,9 +422,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         };
 
         /// <summary>
-        /// 
+        /// Creates a new Texture2D that displays the current input values of a region of the MJoy message
         /// </summary>
-        /// <returns>Texture2D with an assigned </returns>
+        /// <returns>Texture2D corresponding to this region and layout</returns>
         public static Texture2D TextureFromJoy(this MJoy message, JoyRegion region, int layout=0) 
         {
             Color[] colorHighlight = new Color[100];
@@ -496,7 +496,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int? height, int? width)
+        /// <summary>
+        /// Creates a new Texture2D that grabs a region of interest of a given texture, if applicable. Otherwise, an approximated empty texture with a highlighted region is returned. 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="tex"></param>
+        /// <param name="height"></param>
+        /// <param name="width"></param>
+        /// <returns></returns>
+        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int height, int width)
         {
             int x_off = (int)message.x_offset;
             int y_off = (int)message.y_offset;
@@ -507,10 +515,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             if (tex == null)
             {
                 // No texture provided, just return approximation
-                if (width == null || height == null)
+                if (width == 0 || height == 0)
                     overlay = new Texture2D(x_off + mWidth + 10, y_off + mHeight + 10);
                 else 
-                    overlay = new Texture2D((int)width, (int)height);
+                    overlay = new Texture2D(width, height);
 
                 // Initialize ROI color block 
                 Color[] colors = new Color[mHeight * mWidth];
@@ -536,30 +544,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string lat = (message.latitude > 0) ? "ºN" : "ºS";
             string lon = (message.longitude > 0) ? "ºE" : "ºW";
             return $"{message.latitude}{lat} {message.longitude}{lon}";
-        }
-
-        public static Type FormatToType(int datatype)
-        {
-            PointFieldFormat format = (PointFieldFormat)datatype;
-            switch(format) {
-                case PointFieldFormat.INT8:
-                    return typeof(int);
-                case PointFieldFormat.UINT8:
-                    return typeof(int);
-                case PointFieldFormat.INT16:
-                    return typeof(int);
-                case PointFieldFormat.UINT16:
-                    return typeof(int);
-                case PointFieldFormat.INT32:
-                    return typeof(int);
-                case PointFieldFormat.UINT32:
-                    return typeof(int);
-                case PointFieldFormat.FLOAT32:
-                    return typeof(float);
-                case PointFieldFormat.FLOAT64:
-                    return typeof(float);
-            }
-            return null;
         }
     }
 }

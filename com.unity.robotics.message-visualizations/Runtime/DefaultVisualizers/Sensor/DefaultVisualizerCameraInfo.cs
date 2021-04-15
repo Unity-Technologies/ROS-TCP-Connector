@@ -12,9 +12,9 @@ public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
     {
         message.header.GUI();
         message.GUI();
-        MessageVisualizations.GUIGrid(message.K, 3);
-        MessageVisualizations.GUIGrid(message.R, 3);
-        MessageVisualizations.GUIGrid(message.P, 3);
+        MessageVisualizations.GUIGrid(message.K, 3, "K");
+        MessageVisualizations.GUIGrid(message.R, 3, "R");
+        MessageVisualizations.GUIGrid(message.P, 3, "P");
         message.roi.GUI(m_BaseImg, (int)message.height, (int)message.width);
     };
 }

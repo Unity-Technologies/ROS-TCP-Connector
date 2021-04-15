@@ -96,26 +96,23 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             List<MPoint> points = new List<MPoint>();
-            Dictionary<int, int> fieldToOffset = new Dictionary<int, int>();
-
-            // Find offset based on field
-            for (int i = 0; i < message.fields.Length; i++)
-            {
-                fieldToOffset.Add(i, (int)message.fields[i].offset);
-            }
 
             for (int i = 0; i < message.data.Length / message.point_step; i++) 
             {
-                // TODO: convert type based on PointField
                 // TODO: grab data by PointField name?
-                var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[0]);
-                var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[1]);
-                var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + fieldToOffset[2]);
+                var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[0].offset);
+                var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[1].offset);
+                var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[2].offset);
 
-                // TODO: intensity, ring
+                // TODO: intensity, ring?
                 points.Add(new MPoint(x, y, z));
             }
             DrawPointCloud<C>(points.ToArray(), drawing, color);
+        }
+
+        public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>(), color);
         }
 
         public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
@@ -309,8 +306,6 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLabel(label, point, color, size * 1.5f);
         }
 
-
-
         public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
@@ -498,6 +493,14 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
+        public static void GUI(this MJointState message)
+        {
+            for (int i = 0; i < message.name.Length; i++)
+            {
+                GUILayout.Label($"Name: {message.name[i]}\nPosition: {message.position[i]}\nVelocity: {message.velocity[i]}\nEffort: {message.effort[i]}");
+            }
+        }
+
         public static void GUI(this MJoy message, ref int layout, string[] selStrings)
         {
             layout = GUILayout.SelectionGrid(layout, selStrings, 2);
@@ -551,6 +554,11 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MJoyFeedback message)
         {
             GUILayout.Label($"Type: {(JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
+        }
+
+        public static void GUI(this MMagneticField message)
+        {
+            message.magnetic_field.GUI("Magnetic field (Tesla)");
         }
 
         public static void GUI(this MMapMetaData message)
@@ -759,6 +767,22 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUIGrid<T>(T[] data, int width)
         {
             int dataIndex = 0;
+            while (dataIndex < data.Length)
+            {
+                GUILayout.BeginHorizontal();
+                for (int Idx = 0; Idx < width && dataIndex < data.Length; ++Idx)
+                {
+                    GUILayout.Label(data[dataIndex].ToString());
+                    dataIndex++;
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        public static void GUIGrid<T>(T[] data, int width, string name)
+        {
+            int dataIndex = 0;
+            GUILayout.Label(name);
             while (dataIndex < data.Length)
             {
                 GUILayout.BeginHorizontal();

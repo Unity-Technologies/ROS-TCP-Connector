@@ -17,8 +17,8 @@ public class DefaultVisualizerImu : BasicVisualizer<MImu>
     {
         message.header.GUI();
         message.GUI();
-        MessageVisualizations.GUIGrid(message.orientation_covariance, 3);
-        MessageVisualizations.GUIGrid(message.angular_velocity_covariance, 3);
-        MessageVisualizations.GUIGrid(message.linear_acceleration_covariance, 3);
+        MessageVisualizations.GUIGrid(message.orientation_covariance, 3, "Orientation covariance:");
+        MessageVisualizations.GUIGrid(message.angular_velocity_covariance, 3, "Angular velocity covariance:");
+        MessageVisualizations.GUIGrid(message.linear_acceleration_covariance, 3, "Linear acceleration covariance:");
     };
 }
