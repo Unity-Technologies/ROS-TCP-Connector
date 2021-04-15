@@ -308,25 +308,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
                 while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
+                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
+
                     if (!Application.isPlaying)
                     {
                         networkStream.Close();
                         return;
                     }
 
-                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
-
                     if (!subscribers.TryGetValue(topicName, out subs))
                         continue; // not interested in this topic
-
-                    /*
-                    if(subs.messageConstructor == null)
-                    {
-                        if (hudPanel != null)
-                            hudPanel.SetLastMessageRaw(topicName, content);
-                        return;
-                    }*/
 
                     Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
                     msg.Deserialize(content, 0);
@@ -352,6 +344,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                 }
                 await Task.Yield();
+
+                if (!Application.isPlaying)
+                {
+                    networkStream.Close();
+                    return;
+                }
             }
             while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + 15); // time out if idle too long.
             networkStream.Close();

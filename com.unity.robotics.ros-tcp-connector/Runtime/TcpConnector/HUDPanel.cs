@@ -139,18 +139,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
         }
 
-        /*
-        public void SetLastMessageRaw(string topic, byte[] data)
-        {
-            HUDVisualizationRule rule;
-            if (!m_AllTopics.TryGetValue(topic, out rule))
-            {
-                m_AllTopics.Add(topic, null);
-            }
-            if (rule != null)
-                rule.SetMessageRaw(data, new MessageMetadata(topic, DateTime.Now));
-        }*/
-
         public int AddServiceRequest(string topic, Message request)
         {
             int serviceID = m_NextServiceID;

@@ -657,6 +657,22 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+#if UNITY_EDITOR
+        void OnDrawGizmos()
+        {
+            if (m_Labels.Count == 0)
+                return;
+            Camera cam = UnityEditor.SceneView.currentDrawingSceneView.camera;
+            GUIStyle style = new GUIStyle();
+            foreach (LabelInfo3D label in m_Labels)
+            {
+                style.normal.textColor = label.color;
+                Vector3 worldPos = transform.TransformPoint(label.position + cam.transform.right * label.worldSpacing);
+                UnityEditor.Handles.Label(worldPos, label.text, style);
+            }
+        }
+#endif
+
         public void Refresh()
         {
             m_isDirty = false;
