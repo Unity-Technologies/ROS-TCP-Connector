@@ -17,7 +17,10 @@ public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage
         return () =>
 		{
             message.header.GUI();
-			message.GUI(m_Tex);
+			// TODO: Rescale/recenter image based on window height/width
+            var origRatio = (float)m_Tex.width / (float)m_Tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
+            GUILayout.Label($"Format: {message.format}");
 		};
     }
 }

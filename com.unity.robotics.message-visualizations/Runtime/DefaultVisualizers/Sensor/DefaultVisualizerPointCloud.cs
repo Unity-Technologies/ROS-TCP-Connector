@@ -16,6 +16,10 @@ public class DefaultVisualizerPointCloud : BasicVisualizer<MPointCloud>
     public override Action CreateGUI(MPointCloud message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        GUILayout.Label($"Length of points: {message.points.Length}");
+        foreach (MChannelFloat32 channel in message.channels)
+        {
+            channel.GUI();
+        }
     };
 }

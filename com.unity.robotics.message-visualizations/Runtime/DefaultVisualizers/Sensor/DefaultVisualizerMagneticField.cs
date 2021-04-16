@@ -16,7 +16,7 @@ public class DefaultVisualizerMagneticField : BasicVisualizer<MMagneticField>
     public override Action CreateGUI(MMagneticField message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        message.magnetic_field.GUI("Magnetic field (Tesla)");
         MessageVisualizations.GUIGrid(message.magnetic_field_covariance, 3, "Covariance");
     };
 }

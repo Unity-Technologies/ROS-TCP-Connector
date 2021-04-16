@@ -106,7 +106,6 @@ namespace Unity.Robotics.MessageVisualizers
 
             for (int i = 0; i < message.data.Length / message.point_step; i++) 
             {
-                // TODO: grab data by PointField name?
                 var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[0].offset);
                 var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[1].offset);
                 var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[2].offset);
@@ -484,7 +483,6 @@ namespace Unity.Robotics.MessageVisualizers
 
             Vector3 end = new Vector3(message.range * c, 0, message.range * s);
             Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
-
             end = matrix.MultiplyPoint(end);
 
             drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
@@ -596,26 +594,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.linear.GUI("Linear");
             message.angular.GUI("Angular");
         }
-
-        public static void GUI(this MBatteryState message)
-        {
-            GUILayout.Label($"Voltage: {message.voltage} (V)\nTemperature: {message.temperature} (ºC)\nCurrent: {message.current} (A)\nCharge: {message.charge} (Ah)\nCapacity: {message.capacity} (Ah)\nDesign Capacity: {message.design_capacity} (Ah)\nPercentage: {message.percentage}");
-            GUILayout.Label($"Power supply status: {(BatteryStateStatusConstants)message.power_supply_status}");
-            GUILayout.Label($"Power supply health: {(BatteryStateHealthConstants)message.power_supply_health}");
-            GUILayout.Label($"Power supply technology: {(BatteryStateTechnologyConstants)message.power_supply_technology}");
-            GUILayout.Label($"Present: {message.present}");
-            GUILayout.Label($"Cell voltage: {String.Join(", ", message.cell_voltage)}");
-            GUILayout.Label($"Cell temperature: {String.Join(", ", message.cell_temperature)}");
-            GUILayout.Label($"Location: {message.location}\nSerial number: {message.serial_number}");
-        }
-
-        public static void GUI(this MCameraInfo message)
-        {
-            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nDistortion model: {message.distortion_model}");
-            GUILayout.Label($"Distortion parameters: {String.Join(", ", message.D)}");
-            GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
-        }
-
+        
         public static void GUI(this MChannelFloat32 message)
         {
             GUILayout.Label($"Name: {message.name}\nValues length: {message.values.Length}");
@@ -632,14 +611,6 @@ namespace Unity.Robotics.MessageVisualizers
             if (withText)
                 GUILayout.Label($"R{message.r} G{message.g} B{message.b} A{message.a}");
             GUILayout.EndHorizontal();
-        }
-        
-        public static void GUI(this MCompressedImage message, Texture2D tex)
-        {
-            // TODO: Rescale/recenter image based on window height/width
-            var origRatio = (float)tex.width / (float)tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
-            GUILayout.Label($"Format: {message.format}");
         }
 
         static string[] s_DiagnosticLevelTable = new string[]
@@ -663,11 +634,6 @@ namespace Unity.Robotics.MessageVisualizers
             message.header.GUI();
             foreach (MDiagnosticStatus status in message.status)
                 status.GUI();
-        }
-
-        public static void GUI(this MFluidPressure message)
-        {
-            GUILayout.Label($"Fluid Pressure: {message.fluid_pressure} (Pascals)\nVariance: {message.variance}");
         }
 
         static string[] s_GoalStatusTable = new string[]
@@ -694,26 +660,6 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
         }
 
-        public static void GUI(this MIlluminance message)
-        {
-            GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
-        }
-
-        public static void GUI(this MImage message, Texture2D tex)
-        {
-            // TODO: Rescale/recenter image based on window height/width
-            var origRatio = (float)tex.width / (float)tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
-            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
-        }
-
-        public static void GUI(this MImu message)
-        {
-            message.orientation.GUI("Orientation");
-            message.angular_velocity.GUI("Angular velocity");
-            message.linear_acceleration.GUI("Linear acceleration");
-        }
-
         public static void GUI(this MInertia message)
         {
             GUILayout.Label($"Mass: {message.m}kg");
@@ -735,72 +681,9 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        public static void GUI(this MJointState message)
-        {
-            for (int i = 0; i < message.name.Length; i++)
-            {
-                GUILayout.Label($"Name: {message.name[i]}\nPosition: {message.position[i]}\nVelocity: {message.velocity[i]}\nEffort: {message.effort[i]}");
-            }
-        }
-
-        public static void GUI(this MJoy message, ref int layout, string[] selStrings)
-        {
-            layout = GUILayout.SelectionGrid(layout, selStrings, 2);
-
-            // Triggers
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.LT, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.RT, layout));
-            GUILayout.EndHorizontal();
-
-            // Shoulders
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.LB, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.RB, layout));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-
-            // Dpad, central buttons
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.DPad, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.Back, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.Power, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.Start, layout));
-
-            // N/E/S/W buttons
-            GUILayout.BeginVertical();
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.BWest, layout));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical();
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.BNorth, layout));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.BSouth, layout));
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical();
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.BEast, layout));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
-
-            // Joysticks
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.LStick, layout));
-            GUILayout.Box(message.TextureFromJoy(JoyRegion.RStick, layout));
-            GUILayout.EndHorizontal();
-        }
-
         public static void GUI(this MJoyFeedback message)
         {
             GUILayout.Label($"Type: {(JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
-        }
-
-        public static void GUI(this MMagneticField message)
-        {
-            message.magnetic_field.GUI("Magnetic field (Tesla)");
         }
 
         public static void GUI(this MMapMetaData message)
@@ -823,12 +706,6 @@ namespace Unity.Robotics.MessageVisualizers
         {
             string text = "[" + String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray()) + "]";
             GUILayout.Label(text);
-        }
-
-        public static void GUI(this MNavSatFix message)
-        {
-            message.status.GUI();
-            GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFixCovariance)message.position_covariance_type}");
         }
 
         public static void GUI(this MNavSatStatus message)
@@ -862,24 +739,6 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MPoint32 message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
-        }
-
-        public static void GUI(this MPointCloud message)
-        {
-            GUILayout.Label($"Length of points: {message.points.Length}");
-            foreach (MChannelFloat32 channel in message.channels)
-            {
-                channel.GUI();
-            }
-        }
-
-        public static void GUI(this MPointCloud2 message)
-        {
-            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nData length: {message.data.Length}\nPoint step: {message.point_step}\nRow step: {message.row_step}\nIs dense: {message.is_dense}");
-            foreach (MPointField field in message.fields)
-            {
-                field.GUI();
-            }
         }
 
         public static void GUI(this MPointField message)
@@ -923,22 +782,11 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void GUI(this MRange message)
+        public static void GUI(this MRegionOfInterest message, Texture2D tex)
         {
-            GUILayout.Label($"Radiation type: {(RangeRadiationTypes)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
-        }
-
-        public static void GUI(this MRegionOfInterest message, Texture2D tex, int height, int width)
-        {
-            var img = message.RegionOfInterestTexture(tex, height, width);
-            var ratio = (float)img.width / (float)img.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), img);
+            var ratio = (float)tex.width / (float)tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
             GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
-        }
-
-        public static void GUI(this MRelativeHumidity message)
-        {
-            GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");
         }
 
         public static void GUI(this MSelfTestResponse message)
@@ -971,19 +819,9 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUI(this MTemperature message)
-        {
-            GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
-        }
-
         public static void GUI(this MTime message)
         {
             GUILayout.Label(message.ToTimestampString());
-        }
-
-        public static void GUI(this MTimeReference message)
-        {
-            GUILayout.Label($"Time reference:{message.time_ref.ToTimestampString()}\nSource: {message.source}");
         }
 
         public static void GUI(this MTransform message)

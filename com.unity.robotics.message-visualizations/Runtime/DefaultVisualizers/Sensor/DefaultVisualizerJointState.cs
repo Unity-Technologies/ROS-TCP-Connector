@@ -16,6 +16,9 @@ public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
     public override Action CreateGUI(MJointState message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        for (int i = 0; i < message.name.Length; i++)
+        {
+            GUILayout.Label($"Name: {message.name[i]}\nPosition: {message.position[i]}\nVelocity: {message.velocity[i]}\nEffort: {message.effort[i]}");
+        }
     };
 }

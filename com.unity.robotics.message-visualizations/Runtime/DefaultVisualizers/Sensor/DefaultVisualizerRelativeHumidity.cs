@@ -10,6 +10,6 @@ public class DefaultVisualizerRelativeHumidity : BasicVisualizer<MRelativeHumidi
     public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");
     };
 }

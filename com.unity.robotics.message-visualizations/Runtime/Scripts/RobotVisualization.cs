@@ -1,4 +1,5 @@
-﻿using RosMessageTypes.Trajectory;
+﻿using RosMessageTypes.Sensor;
+using RosMessageTypes.Trajectory;
 using RosSharp.Urdf;
 using System;
 using System.Collections;
@@ -55,6 +56,35 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 result[Idx] = GetJointPlacements(trajectory.points[Idx], trajectory.joint_names);
             }
+            return result;
+        }
+
+        public JointPlacement[] GetJointPlacements(MJointState jointState)
+        {
+            Quaternion lastWorldRotation = m_Robot.transform.rotation;
+            Vector3 lastWorldPosition = m_Robot.transform.position;
+            GameObject lastJoint = m_Robot.gameObject;
+            JointPlacement[] result = new JointPlacement[jointState.name.Length];
+
+            for (int i = 0; i < jointState.name.Length; ++i)
+            {
+                JointPlacement jointData = m_JointsByName[jointState.name[i]];
+                float rotationDegrees = (float)(jointState.position[i] * Mathf.Rad2Deg);
+
+                ArticulationBody body = jointData.Joint.GetComponent<ArticulationBody>();
+                Quaternion jointRotation = body.anchorRotation * Quaternion.Euler(rotationDegrees, 0, 0) * Quaternion.Inverse(body.anchorRotation);
+                Quaternion localRotation = jointData.Rotation * jointRotation;
+                Vector3 localPosition = lastJoint.transform.InverseTransformPoint(body.transform.position);
+                Vector3 worldPosition = lastWorldPosition + lastWorldRotation * localPosition;
+                Quaternion worldRotation = lastWorldRotation * localRotation;
+
+                result[i] = new JointPlacement { Joint = jointData.Joint, Position = worldPosition, Rotation = worldRotation };
+
+                lastWorldPosition = worldPosition;
+                lastWorldRotation = worldRotation;
+                lastJoint = body.gameObject;
+            }
+
             return result;
         }
 

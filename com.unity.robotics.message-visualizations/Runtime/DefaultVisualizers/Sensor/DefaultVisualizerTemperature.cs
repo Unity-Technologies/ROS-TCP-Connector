@@ -10,6 +10,6 @@ public class DefaultVisualizerTemperature : BasicVisualizer<MTemperature>
     public override Action CreateGUI(MTemperature message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
     };
 }

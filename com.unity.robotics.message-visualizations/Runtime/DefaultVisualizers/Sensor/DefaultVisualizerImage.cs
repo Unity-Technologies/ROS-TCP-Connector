@@ -30,7 +30,11 @@ public class DefaultVisualizerImage : BasicVisualizer<MImage>
             if (convertBgr != prevConvert || flipY != prevFlip)
                 m_Tex = message.ToTexture2D(convertBgr, flipY);
             
-            message.GUI(m_Tex);
+            // TODO: Rescale/recenter image based on window height/width
+            var origRatio = (float)m_Tex.width / (float)m_Tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
+            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
+
             prevConvert = convertBgr;
             prevFlip = flipY;
 		};

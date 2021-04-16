@@ -10,6 +10,6 @@ public class DefaultVisualizerFluidPressure : BasicVisualizer<MFluidPressure>
     public override Action CreateGUI(MFluidPressure message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        message.GUI();
+        GUILayout.Label($"Fluid Pressure: {message.fluid_pressure} (Pascals)\nVariance: {message.variance}");
     };
 }
