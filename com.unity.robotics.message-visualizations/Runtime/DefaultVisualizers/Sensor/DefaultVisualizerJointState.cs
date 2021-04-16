@@ -8,11 +8,6 @@ using UnityEngine;
 
 public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
 {
-    public override void Draw(BasicDrawing drawing, MJointState message, MessageMetadata meta, Color color, string label)
-    {
-        // message.Draw<FLU>(drawing, color);
-    }
-
     public override Action CreateGUI(MJointState message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();

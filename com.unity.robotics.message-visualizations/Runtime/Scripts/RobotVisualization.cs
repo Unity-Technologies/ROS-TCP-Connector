@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -75,6 +76,34 @@ namespace Unity.Robotics.MessageVisualizers
                 Quaternion jointRotation = body.anchorRotation * Quaternion.Euler(rotationDegrees, 0, 0) * Quaternion.Inverse(body.anchorRotation);
                 Quaternion localRotation = jointData.Rotation * jointRotation;
                 Vector3 localPosition = lastJoint.transform.InverseTransformPoint(body.transform.position);
+                Vector3 worldPosition = lastWorldPosition + lastWorldRotation * localPosition;
+                Quaternion worldRotation = lastWorldRotation * localRotation;
+
+                result[i] = new JointPlacement { Joint = jointData.Joint, Position = worldPosition, Rotation = worldRotation };
+
+                lastWorldPosition = worldPosition;
+                lastWorldRotation = worldRotation;
+                lastJoint = body.gameObject;
+            }
+
+            return result;
+        }
+
+        public JointPlacement[] GetJointPlacements(MMultiDOFJointState jointState)
+        {
+            Quaternion lastWorldRotation = m_Robot.transform.rotation;
+            Vector3 lastWorldPosition = m_Robot.transform.position;
+            GameObject lastJoint = m_Robot.gameObject;
+            JointPlacement[] result = new JointPlacement[jointState.joint_names.Length];
+
+            for (int i = 0; i < jointState.joint_names.Length; ++i)
+            {
+                JointPlacement jointData = m_JointsByName[jointState.joint_names[i]];
+
+                ArticulationBody body = jointData.Joint.GetComponent<ArticulationBody>();
+                Quaternion jointRotation = jointState.transforms[i].rotation.From<FLU>();
+                Quaternion localRotation = jointData.Rotation * jointRotation;
+                Vector3 localPosition = jointState.transforms[i].translation.From<FLU>();
                 Vector3 worldPosition = lastWorldPosition + lastWorldRotation * localPosition;
                 Quaternion worldRotation = lastWorldRotation * localRotation;
 
@@ -163,6 +192,16 @@ namespace Unity.Robotics.MessageVisualizers
         public void DrawGhost(BasicDrawing drawing, MJointTrajectoryPoint message, string[] jointNames, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message, jointNames), color);
+        }
+
+        public void DrawGhost(BasicDrawing drawing, MJointState message, Color color)
+        {
+            DrawGhost(drawing, GetJointPlacements(message), color);
+        }
+
+        public void DrawGhost(BasicDrawing drawing, MMultiDOFJointState message, Color color)
+        {
+            DrawGhost(drawing, GetJointPlacements(message), color);
         }
 
         public void DrawJointPath(BasicDrawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)

@@ -830,6 +830,12 @@ namespace Unity.Robotics.MessageVisualizers
             message.rotation.GUI("Rotation");
         }
 
+        public static void GUI(this MTwist message)
+        {
+            message.linear.GUI("Linear");
+            message.angular.GUI("Angular");
+        }
+
         public static void GUI(this MVector3 message, string name)
         {
             string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
@@ -842,6 +848,12 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MVector3 message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
+        }
+
+        public static void GUI(this MWrench message)
+        {
+            message.force.GUI("Force");
+            message.torque.GUI("Torque");
         }
 
         public static void GUIGrid<T>(T[] data, int width)
