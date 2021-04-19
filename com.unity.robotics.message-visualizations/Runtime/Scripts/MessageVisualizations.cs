@@ -89,29 +89,48 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             DrawPointCloud<C>(message.points, drawing, color);
         }
 
-        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, string[] xyzC, string rgbC, float[] rgbRange, string sizeC, float[] sizeRange, float size = 0.01f) where C : ICoordinateSpace, new()
         {
-            message.Draw<C>(drawing.AddPointCloud((int)(message.data.Length / message.point_step)), color, radius);
+            message.Draw<C>(drawing.AddPointCloud((int)(message.data.Length / message.point_step)), color, xyzC, rgbC, rgbRange, sizeC, sizeRange, size);
         }
 
-        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, string[] xyzC, string rgbC, float[] rgbRange, string sizeC, float[] sizeRange, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
+            Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
+            for (int i = 0; i < message.fields.Length; i++)
+            {
+                channelToIdx.Add(message.fields[i].name, i);
+            }
+
             pointCloud.SetCapacity((int)(message.data.Length / message.point_step));
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
 
             for (int i = 0; i < message.data.Length / message.point_step; i++) 
             {
-                var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[0].offset);
-                var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[1].offset);
-                var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[2].offset);
+                var x = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[xyzC[0]]].offset);
+                var y = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[xyzC[1]]].offset);
+                var z = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[xyzC[2]]].offset);
                 MPoint localPoint = new MPoint(x, y, z);
                 Vector3 worldPoint = frame.TransformPoint(localPoint.From<FLU>());
-                // TODO: intensity, ring?
+
+                // TODO: Parse type based on PointField
+                if (rgbRange != null)
+                {
+                    int colC = BitConverter.ToInt16(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[rgbC]].offset);
+                    color = Color.HSVToRGB(Mathf.InverseLerp(rgbRange[0], rgbRange[1], colC), 1, 1);
+                }
+
+                if (sizeRange != null)
+                {
+                    var size = BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[sizeC]].offset);
+                    radius = Mathf.InverseLerp(sizeRange[0], sizeRange[1], size);
+                }
+
                 pointCloud.AddPoint(worldPoint, color, radius);
             }
             pointCloud.Bake();
