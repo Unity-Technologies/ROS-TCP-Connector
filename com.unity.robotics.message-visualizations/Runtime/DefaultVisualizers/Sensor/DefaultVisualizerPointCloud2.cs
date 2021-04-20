@@ -21,6 +21,9 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
     
     public override void Draw(BasicDrawing drawing, MPointCloud2 message, MessageMetadata meta, Color color, string label)
     {
+        if (m_ChannelConfigs.channels == null)
+            m_ChannelConfigs.channels = message.fields;
+        
         message.Draw<FLU>(drawing, color, m_ChannelConfigs);
     }
 
@@ -56,6 +59,7 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
 public class Pcl2Channels
 {
     public ColorMode colorMode;
+    public MPointField[] channels;
 
     public string m_XChannel = "x";
     public string m_YChannel = "y";
@@ -83,6 +87,7 @@ public class Pcl2Channels
 [CustomEditor(typeof(DefaultVisualizerPointCloud2))]
 public class PointCloud2Editor : Editor
 {
+    Pcl2Channels pcl2Config;
     string colorMin = "0";
     string colorMax = "1000";
     float colorMinVal = 0;
@@ -92,75 +97,91 @@ public class PointCloud2Editor : Editor
     float sizeMinVal = 0;
     float sizeMaxVal = 1000;
 
-    public override void OnInspectorGUI()
+    void OnEnable()
     {
-        DefaultVisualizerPointCloud2 pcl2Script = (DefaultVisualizerPointCloud2)target;
+        pcl2Config = ((DefaultVisualizerPointCloud2)target).m_ChannelConfigs;
+    }
 
-        pcl2Script.m_ChannelConfigs.m_XChannel = EditorGUILayout.TextField("X channel name:", pcl2Script.m_ChannelConfigs.m_XChannel);
-        pcl2Script.m_ChannelConfigs.m_YChannel = EditorGUILayout.TextField("Y channel name:", pcl2Script.m_ChannelConfigs.m_YChannel);
-        pcl2Script.m_ChannelConfigs.m_ZChannel = EditorGUILayout.TextField("Z channel name:", pcl2Script.m_ChannelConfigs.m_ZChannel);
-
-        pcl2Script.m_ChannelConfigs.m_UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", pcl2Script.m_ChannelConfigs.m_UseSizeChannel);
-
-        if (pcl2Script.m_ChannelConfigs.m_UseSizeChannel)
+    void CreateNewDropdown(string label, string channel, Action<string> action)
+    {
+        if (pcl2Config.channels == null)
         {
-            sizeMin = EditorGUILayout.TextField("Min color range:", sizeMin);
-            sizeMinVal = float.Parse(sizeMin);
-
-            sizeMax = EditorGUILayout.TextField("Max color range:", sizeMax);
-            sizeMaxVal = float.Parse(sizeMax);
-
-            pcl2Script.m_ChannelConfigs.m_SizeChannel = EditorGUILayout.TextField("Size channel name:", pcl2Script.m_ChannelConfigs.m_SizeChannel);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(pcl2Script.m_ChannelConfigs.m_SizeRange[0].ToString());
-            EditorGUILayout.MinMaxSlider(ref pcl2Script.m_ChannelConfigs.m_SizeRange[0], ref pcl2Script.m_ChannelConfigs.m_SizeRange[1], sizeMinVal, sizeMaxVal);
-            GUILayout.Label(pcl2Script.m_ChannelConfigs.m_SizeRange[1].ToString());
-            GUILayout.EndHorizontal();
+            Debug.LogWarning("Channels were null!");
+            return;
         }
 
-        pcl2Script.m_ChannelConfigs.m_UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", pcl2Script.m_ChannelConfigs.m_UseRgbChannel);
-
-        if (pcl2Script.m_ChannelConfigs.m_UseRgbChannel)
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label);
+        if (EditorGUILayout.DropdownButton(new GUIContent(channel), FocusType.Keyboard))
         {
-            pcl2Script.m_ChannelConfigs.colorMode = (ColorMode)EditorGUILayout.EnumPopup("Color mode", pcl2Script.m_ChannelConfigs.colorMode);
+            GenericMenu menu = new GenericMenu();
+            foreach (var c in pcl2Config.channels)
+            {
+                menu.AddItem(new GUIContent(c.name), c.name == channel, () => { 
+                    action(c.name);
+                });
+            }
+            menu.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
+        }
+        GUILayout.EndHorizontal();
+    }
 
-            colorMin = EditorGUILayout.TextField("Min color range:", colorMin);
-            colorMinVal = float.Parse(colorMin);
+    void CreateMinMaxSlider(ref float[] range, float min, float max)
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(range[0].ToString());
+        EditorGUILayout.MinMaxSlider(ref range[0], ref range[1], min, max);
+        GUILayout.Label(range[1].ToString());
+        GUILayout.EndHorizontal();
+    }
 
-            colorMax = EditorGUILayout.TextField("Max color range:", colorMax);
-            colorMaxVal = float.Parse(colorMax);
+    void MinMaxText(string label, ref float minVal, ref string minS, ref float maxVal, ref string maxS)
+    {
+        minVal = float.Parse(EditorGUILayout.TextField($"Min {label} range:", minS));
+        minS = minVal.ToString();
 
-            switch (pcl2Script.m_ChannelConfigs.colorMode)
+        maxVal = float.Parse(EditorGUILayout.TextField($"Max {label} range:", maxS));
+        maxS = maxVal.ToString();
+    }
+
+    public override void OnInspectorGUI()
+    {
+        pcl2Config.m_XChannel = EditorGUILayout.TextField("X channel name:", pcl2Config.m_XChannel);
+        pcl2Config.m_YChannel = EditorGUILayout.TextField("Y channel name:", pcl2Config.m_YChannel);
+        pcl2Config.m_ZChannel = EditorGUILayout.TextField("Z channel name:", pcl2Config.m_ZChannel);
+
+        pcl2Config.m_UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", pcl2Config.m_UseSizeChannel);
+
+        if (pcl2Config.m_UseSizeChannel)
+        {
+            MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
+            CreateNewDropdown("Size channel name:", pcl2Config.m_SizeChannel, (newChannel) => { pcl2Config.m_SizeChannel = newChannel; });
+            CreateMinMaxSlider(ref pcl2Config.m_SizeRange, sizeMinVal, sizeMaxVal);
+        }
+
+        pcl2Config.m_UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", pcl2Config.m_UseRgbChannel);
+
+        if (pcl2Config.m_UseRgbChannel)
+        {
+            pcl2Config.colorMode = (ColorMode)EditorGUILayout.EnumPopup("Color mode", pcl2Config.colorMode);
+
+            MinMaxText("color", ref colorMinVal, ref colorMin, ref colorMaxVal, ref colorMax);
+
+            switch (pcl2Config.colorMode)
             {
                 case ColorMode.HSV:
-                    pcl2Script.m_ChannelConfigs.m_RgbChannel = EditorGUILayout.TextField("RGB channel name:", pcl2Script.m_ChannelConfigs.m_RgbChannel);
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_RgbRange[0].ToString());
-                    EditorGUILayout.MinMaxSlider(ref pcl2Script.m_ChannelConfigs.m_RgbRange[0], ref pcl2Script.m_ChannelConfigs.m_RgbRange[1], colorMinVal, colorMaxVal);
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_RgbRange[1].ToString());
-                    GUILayout.EndHorizontal();
+                    CreateNewDropdown("RGB channel name:", pcl2Config.m_RgbChannel, (newChannel) => { pcl2Config.m_RgbChannel = newChannel; });
+                    CreateMinMaxSlider(ref pcl2Config.m_RgbRange, colorMinVal, colorMaxVal);
                     break;
                 case ColorMode.RGB:
-                    pcl2Script.m_ChannelConfigs.m_RChannel = EditorGUILayout.TextField("R channel name:", pcl2Script.m_ChannelConfigs.m_RChannel);
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_RRange[0].ToString());
-                    EditorGUILayout.MinMaxSlider(ref pcl2Script.m_ChannelConfigs.m_RRange[0], ref pcl2Script.m_ChannelConfigs.m_RRange[1], colorMinVal, colorMaxVal);
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_RRange[1].ToString());
-                    GUILayout.EndHorizontal();
+                    CreateNewDropdown("R channel name:", pcl2Config.m_RChannel, (newChannel) => { pcl2Config.m_RChannel = newChannel; });
+                    CreateMinMaxSlider(ref pcl2Config.m_RRange, colorMinVal, colorMaxVal);
 
-                    pcl2Script.m_ChannelConfigs.m_GChannel = EditorGUILayout.TextField("G channel name:", pcl2Script.m_ChannelConfigs.m_GChannel);
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_GRange[0].ToString());
-                    EditorGUILayout.MinMaxSlider(ref pcl2Script.m_ChannelConfigs.m_GRange[0], ref pcl2Script.m_ChannelConfigs.m_GRange[1], colorMinVal, colorMaxVal);
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_GRange[1].ToString());
-                    GUILayout.EndHorizontal();
+                    CreateNewDropdown("G channel name:", pcl2Config.m_GChannel, (newChannel) => { pcl2Config.m_GChannel = newChannel; });
+                    CreateMinMaxSlider(ref pcl2Config.m_GRange, colorMinVal, colorMaxVal);
 
-                    pcl2Script.m_ChannelConfigs.m_BChannel = EditorGUILayout.TextField("B channel name:", pcl2Script.m_ChannelConfigs.m_BChannel);
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_BRange[0].ToString());
-                    EditorGUILayout.MinMaxSlider(ref pcl2Script.m_ChannelConfigs.m_BRange[0], ref pcl2Script.m_ChannelConfigs.m_BRange[1], colorMinVal, colorMaxVal);
-                    GUILayout.Label(pcl2Script.m_ChannelConfigs.m_BRange[1].ToString());
-                    GUILayout.EndHorizontal();
+                    CreateNewDropdown("B channel name:", pcl2Config.m_BChannel, (newChannel) => { pcl2Config.m_BChannel = newChannel; });
+                    CreateMinMaxSlider(ref pcl2Config.m_BRange, colorMinVal, colorMaxVal);
                     break;
             }
         }
