@@ -294,7 +294,6 @@ Transform:
   - {fileID: 2698794921975546253}
   - {fileID: 8625932825378670584}
   - {fileID: 8632442061405313714}
-  - {fileID: 5804406787533598071}
   - {fileID: 2742884835330475003}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -882,49 +881,6 @@ MonoBehaviour:
   m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
---- !u!1 &8614125609282503765
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5804406787533598071}
-  - component: {fileID: 1372983234759842913}
-  m_Layer: 0
-  m_Name: Sensor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5804406787533598071
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8614125609282503765}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1372983234759842913
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8614125609282503765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16302429be2008e47bd0a636c03d05f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0
