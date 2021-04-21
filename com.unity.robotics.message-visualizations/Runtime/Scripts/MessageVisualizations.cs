@@ -94,12 +94,12 @@ namespace Unity.Robotics.MessageVisualizers
             DrawPointCloud<C>(message.points, drawing, color);
         }
 
-        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, Pcl2Channels cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud((int)(message.data.Length / message.point_step)), color, cConfs);
         }
 
-        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, Pcl2Channels cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
             for (int i = 0; i < message.fields.Length; i++)
