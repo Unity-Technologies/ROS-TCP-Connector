@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -38,6 +39,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         [Tooltip("While waiting to read a full message, check this many times before giving up.")]
         public int awaitDataReadRetry = 10;
+
+        [Tooltip("Close connection if nothing has been sent for this long (seconds).")]
+        public float timeoutOnIdle = 10;
 
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
@@ -165,6 +169,20 @@ namespace Unity.Robotics.ROSTCPConnector
                 client.Close();
         }
 
+        public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
+        {
+            var t = new TaskCompletionSource<RESPONSE>();
+
+            SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest, s => t.TrySetResult(s));
+
+            return await t.Task;
+        }
+
+        public void GetTopicList(Action<string[]> callback)
+        {
+            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
+        }
+
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(SYSCOMMAND_SUBSCRIBE,
@@ -177,7 +195,6 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         private static ROSConnection _instance;
-
         public static ROSConnection instance
         {
             get
@@ -210,16 +227,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
+            if(!IPFormatIsCorrect(rosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
-            Subscribe<RosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+            Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
             if (overrideUnityIP != "")
             {
+                if(!IPFormatIsCorrect(overrideUnityIP))
+                    Debug.LogError("Override Unity IP address is not correct");
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
-            SendServiceMessage<UnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
-                new UnityHandshakeRequest(overrideUnityIP, (ushort) unityPort), RosUnityHandshakeCallback);
+            SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
+                new MUnityHandshakeRequest(overrideUnityIP, (ushort) unityPort), RosUnityHandshakeCallback);
         }
 
         void OnValidate()
@@ -241,12 +262,12 @@ namespace Unity.Robotics.ROSTCPConnector
             hudPanel.isEnabled = showHUD;
         }
 
-        void RosUnityHandshakeCallback(UnityHandshakeResponse response)
+        void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
         {
             StartMessageServer(response.ip, unityPort);
         }
 
-        void RosUnityErrorCallback(RosUnityError error)
+        void RosUnityErrorCallback(MRosUnityError error)
         {
             Debug.LogError("ROS-Unity error: " + error.message);
         }
@@ -257,43 +278,63 @@ namespace Unity.Robotics.ROSTCPConnector
             await Task.Yield();
 
             // continue asynchronously on another thread
-            await ReadMessage(tcpClient.GetStream());
+            await ReadFromStream(tcpClient.GetStream());
         }
 
-        async Task ReadMessage(NetworkStream networkStream)
+        async Task ReadFromStream(NetworkStream networkStream)
         {
             if (!networkStream.CanRead)
                 return;
 
             SubscriberCallback subs;
 
-            (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-
-            if (!subscribers.TryGetValue(topicName, out subs))
-                return; // not interested in this topic
-
-            Message msg = (Message) subs.messageConstructor.Invoke(new object[0]);
-            msg.Deserialize(content, 0);
-
-            if (hudPanel != null)
-                hudPanel.SetLastMessageReceived(topicName, msg);
-
-            foreach (Func<Message, Message> callback in subs.callbacks)
+            float lastDataReceivedRealTimestamp = 0;
+            do
             {
-                try
+                // try to keep reading messages as long as the networkstream has data.
+                // But if it's taking too long, don't freeze forever.
+                float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
+                while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
-                    Message response = callback(msg);
-                    if (response != null)
+                    if (!Application.isPlaying)
                     {
-                        // if the callback has a response, it's implementing a service
-                        WriteDataStaggered(networkStream, topicName, response);
+                        networkStream.Close();
+                        return;
+                    }
+
+                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
+
+                    if (!subscribers.TryGetValue(topicName, out subs))
+                        continue; // not interested in this topic
+
+                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
+                    msg.Deserialize(content, 0);
+
+                    if (hudPanel != null)
+                        hudPanel.SetLastMessageReceived(topicName, msg);
+
+                    foreach (Func<Message, Message> callback in subs.callbacks)
+                    {
+                        try
+                        {
+                            Message response = callback(msg);
+                            if (response != null)
+                            {
+                                // if the callback has a response, it's implementing a service
+                                WriteDataStaggered(networkStream, topicName, response);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Subscriber callback problem: " + e);
+                        }
                     }
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError("Subscriber callback problem: " + e);
-                }
-            }
+                await Task.Yield();
+            } 
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeoutOnIdle); // time out if idle too long.
+            networkStream.Close();
         }
 
         async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
@@ -506,7 +547,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param)
         {
-            Send(SYSCOMMAND_TOPIC_NAME, new RosUnitySysCommand(command, JsonUtility.ToJson(param)));
+            Send(SYSCOMMAND_TOPIC_NAME, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
         }
 
         public async void Send(string rosTopicName, Message message)
@@ -573,6 +614,34 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 networkStream.Write(segmentData, 0, segmentData.Length);
             }
+        }
+
+        public static bool IPFormatIsCorrect(string ipAddress)
+        {
+            if(ipAddress == null || ipAddress == "")
+                return false;
+            
+            // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
+            if(Char.IsLetter(ipAddress[0]))
+            {
+                foreach(Char subChar in ipAddress)
+                {
+                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                        return false;
+                }
+
+                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
+                    return false;
+                return true;
+            }
+
+            string[] subAdds = ipAddress.Split('.');
+            if(subAdds.Length != 4)
+            {
+                return false;
+            }
+            IPAddress parsedipAddress;
+            return IPAddress.TryParse(ipAddress, out parsedipAddress);
         }
     }
 }
