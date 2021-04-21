@@ -147,7 +147,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             try
             {
-                string serviceName;
                 (string topicName, byte[] content) = await ReadMessageContents(networkStream);
                 serviceResponse.Deserialize(content, 0);
             }
@@ -353,41 +352,40 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        void ReadToByteArray(NetworkStream networkStream, byte[] array)
+        {
+            int read = 0;
+            while (read < array.Length && networkStream.CanRead)
+            {
+                if (!networkStream.DataAvailable)
+                    Thread.Yield();
+
+                read += networkStream.Read(array, 0, array.Length - read);
+            }
+
+            if (read < array.Length)
+                throw new SocketException(); // the connection has closed
+        }
+
         async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
         {
             // Get first bytes to determine length of topic name
             byte[] rawTopicBytes = new byte[4];
-            networkStream.Read(rawTopicBytes, 0, rawTopicBytes.Length);
+            ReadToByteArray(networkStream, rawTopicBytes);
             int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
 
             // Read and convert topic name
             byte[] topicNameBytes = new byte[topicLength];
-            networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
+            ReadToByteArray(networkStream, topicNameBytes);
             string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
 
             byte[] full_message_size_bytes = new byte[4];
-            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
+            ReadToByteArray(networkStream, full_message_size_bytes);
             int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
 
             byte[] readBuffer = new byte[full_message_size];
-            int bytesRemaining = full_message_size;
-            int totalBytesRead = 0;
+            ReadToByteArray(networkStream, readBuffer);
 
-            // Read in message contents until completion
-            while (bytesRemaining > 0)
-            {
-                // Read the minimum of the bytes remaining, or the designated readChunkSize in segments until none remain
-                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(readChunkSize, bytesRemaining));
-                totalBytesRead += bytesRead;
-                bytesRemaining -= bytesRead;
-
-                if (!networkStream.DataAvailable) 
-                {
-                    await Task.Yield();
-                }
-                if (!networkStream.CanRead)
-                    return null;
-            }
             return Tuple.Create(topicName, readBuffer);
         }
 

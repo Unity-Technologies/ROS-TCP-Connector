@@ -43,14 +43,6 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             prefab.rosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.rosIPAddress);
             prefab.rosPort = EditorGUILayout.IntField("ROS Port", prefab.rosPort);
             EditorGUILayout.Space();
-            prefab.overrideUnityIP = EditorGUILayout.TextField(
-                new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."),
-                prefab.overrideUnityIP);
-            prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
-            if ((prefab.overrideUnityIP != "" && !ROSConnection.IPFormatIsCorrect(prefab.overrideUnityIP)))
-            {   
-                EditorGUILayout.HelpBox("Unity Override IP invalid", MessageType.Warning);
-            }
 
             if(!ROSConnection.IPFormatIsCorrect(prefab.rosIPAddress))
             {
@@ -70,14 +62,6 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 new GUIContent("Read chunk size",
                     "While reading received messages, read this many bytes at a time."),
                 prefab.readChunkSize);
-            prefab.awaitDataReadRetry = EditorGUILayout.IntField(
-                new GUIContent("Max Read retries",
-                    "While waiting to read a full message, check this many times before giving up."),
-                prefab.awaitDataReadRetry);
-            prefab.timeoutOnIdle = EditorGUILayout.FloatField(
-                new GUIContent("Timeout on idle (seconds)",
-                    "If no messages have been sent for this long, close the connection."),
-                prefab.timeoutOnIdle);
 
             if (GUI.changed)
             {
