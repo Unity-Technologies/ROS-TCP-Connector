@@ -147,7 +147,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             try
             {
-                (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                (string topicName, byte[] content) = await ReadMessageContents(networkStream, new CancellationToken());
                 serviceResponse.Deserialize(content, 0);
             }
             catch (Exception e)
@@ -218,8 +218,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 _instance = this;
         }
 
-        Thread connectionThread;
-        Thread readerThread;
         ConcurrentQueue<Tuple<string, Message>> outgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> incomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
 
@@ -230,8 +228,8 @@ namespace Unity.Robotics.ROSTCPConnector
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
-            connectionThread = new Thread(ConnectionThread);
-            connectionThread.Start();
+            connectionThreadCancellation = new CancellationTokenSource();
+            Task.Run(() => ConnectionThread(rosIPAddress, rosPort, networkTimeout, keepaliveTime, outgoingMessages, incomingMessages, connectionThreadCancellation.Token));
 
             // Phase 2: send handshakes again
             //SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
@@ -270,7 +268,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Update()
         {
-            m_RealTimeSinceStartup = Time.realtimeSinceStartup;
+            s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
             Tuple<string, byte[]> data;
             while(incomingMessages.TryDequeue(out data))
@@ -287,14 +285,34 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        float m_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
+        CancellationTokenSource connectionThreadCancellation;
+        static bool m_ShouldConnect;
+        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
-        void ConnectionThread()
+        static void SendKeepalive(NetworkStream stream)
         {
-            TcpClient client = null;
+            // 8 zeroes = a ros message with topic "" and no message data.
+            stream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
+        }
 
-            while (true)
+        static async Task ConnectionThread(
+            string rosIPAddress,
+            int rosPort,
+            int networkTimeout,
+            float keepaliveTime,
+            ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
+            ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
+            CancellationToken token)
+        {
+            Debug.Log("ConnectionThread begins");
+            int nextReaderIdx = 101;
+            int nextReconnectionDelay = 1000;
+
+            while (!token.IsCancellationRequested)
             {
+                TcpClient client = null;
+                CancellationTokenSource readerCancellation = null;
+
                 try
                 {
                     client = new TcpClient();
@@ -303,98 +321,128 @@ namespace Unity.Robotics.ROSTCPConnector
                     NetworkStream networkStream = client.GetStream();
                     networkStream.ReadTimeout = networkTimeout;
 
-                    readerThread = new Thread(ReaderThread);
-                    readerThread.Start(networkStream);
+                    SendKeepalive(networkStream);
 
-                    // connected ok, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
-                    while(networkStream.CanWrite)
+                    readerCancellation = new CancellationTokenSource();
+                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, readerCancellation.Token));
+                    nextReaderIdx++;
+
+                    // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
+                    while (true)
                     {
                         Tuple<string, Message> data;
-                        float waitingSinceRealTime = m_RealTimeSinceStartup;
-                        while (!outgoingMessages.TryDequeue(out data))
+                        float waitingSinceRealTime = s_RealTimeSinceStartup;
+                        token.ThrowIfCancellationRequested();
+                        while (!outgoingQueue.TryDequeue(out data))
                         {
                             Thread.Yield();
-                            if (m_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
+                            if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
                             {
-                                // send a keepalive message (8 zeroes = a ros message with topic "" and no message data.)
-                                networkStream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
-                                waitingSinceRealTime = m_RealTimeSinceStartup;
+                                // send a keepalive message
+                                SendKeepalive(networkStream);
+                                waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
+                            token.ThrowIfCancellationRequested();
                         }
 
+                        //Debug.Log("Sending " + data.Item1);
                         WriteDataStaggered(networkStream, data.Item1, data.Item2);
                     }
                 }
+                catch (OperationCanceledException e)
+                {
+                }
                 catch (Exception e)
                 {
-                    if (readerThread != null)
-                        readerThread.Abort();
+                    Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                    await Task.Delay(nextReconnectionDelay);
+                }
+                finally
+                {
+                    if (readerCancellation != null)
+                        readerCancellation.Cancel();
 
                     if (client != null)
                         client.Close();
+
+                    // clear the message queue
+                    Tuple<string, Message> unused;
+                    while (outgoingQueue.TryDequeue(out unused))
+                    {
+                    }
                 }
+                await Task.Yield();
             }
         }
 
-        async void ReaderThread(object param)
+        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, CancellationToken token)
         {
-            NetworkStream networkStream = (NetworkStream)param;
-            while (networkStream.CanRead)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream);
-                    incomingMessages.Enqueue(content);
+                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, token);
+                    Debug.Log($"Message {content.Item1} received");
+                    queue.Enqueue(content);
                 }
-                catch(Exception e)
+                catch (OperationCanceledException e)
                 {
+                }
+                /*catch (System.IO.IOException e)
+                {
+                }*/
+                catch (Exception e)
+                {
+                    Debug.Log("Reader "+readerIdx+" exception! " + e);
                 }
             }
         }
 
-        void ReadToByteArray(NetworkStream networkStream, byte[] array)
+        static async Task ReadToByteArray(NetworkStream networkStream, byte[] array, int length, CancellationToken token)
         {
             int read = 0;
-            while (read < array.Length && networkStream.CanRead)
+            while (read < length && networkStream.CanRead)
             {
-                if (!networkStream.DataAvailable)
-                    Thread.Yield();
+                while (!token.IsCancellationRequested && !networkStream.DataAvailable)
+                    await Task.Yield();
 
-                read += networkStream.Read(array, 0, array.Length - read);
+                token.ThrowIfCancellationRequested();
+                read += await networkStream.ReadAsync(array, read, length - read, token);
             }
 
-            if (read < array.Length)
+            if (read < length)
                 throw new SocketException(); // the connection has closed
         }
 
-        async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
+        static byte[] fourBytes = new byte[4];
+        static byte[] topicScratchSpace = new byte[64];
+
+        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, CancellationToken token)
         {
             // Get first bytes to determine length of topic name
-            byte[] rawTopicBytes = new byte[4];
-            ReadToByteArray(networkStream, rawTopicBytes);
-            int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
+            await ReadToByteArray(networkStream, fourBytes, 4, token);
+            int topicLength = BitConverter.ToInt32(fourBytes, 0);
+
+            // If our topic buffer isn't large enough, make a larger one (and keep it that size; assume that's the new standard)
+            if (topicLength > topicScratchSpace.Length)
+                topicScratchSpace = new byte[topicLength];
 
             // Read and convert topic name
-            byte[] topicNameBytes = new byte[topicLength];
-            ReadToByteArray(networkStream, topicNameBytes);
-            string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
+            await ReadToByteArray(networkStream, topicScratchSpace, topicLength, token);
+            string topicName = Encoding.ASCII.GetString(topicScratchSpace, 0, topicLength);
 
-            byte[] full_message_size_bytes = new byte[4];
-            ReadToByteArray(networkStream, full_message_size_bytes);
-            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
+            await ReadToByteArray(networkStream, fourBytes, 4, token);
+            int full_message_size = BitConverter.ToInt32(fourBytes, 0);
 
             byte[] readBuffer = new byte[full_message_size];
-            ReadToByteArray(networkStream, readBuffer);
+            await ReadToByteArray(networkStream, readBuffer, full_message_size, token);
 
             return Tuple.Create(topicName, readBuffer);
         }
 
         void OnApplicationQuit()
         {
-            if (connectionThread != null)
-                connectionThread.Abort();
-            if (readerThread != null)
-                readerThread.Abort();
+            connectionThreadCancellation.Cancel();
         }
 
         /// <summary>
@@ -488,7 +536,7 @@ namespace Unity.Robotics.ROSTCPConnector
         /// <param name="networkStream"></param> The network stream that is transmitting the messsage
         /// <param name="rosTopicName"></param> The ROS topic or service name that is receiving the messsage
         /// <param name="message"></param> The ROS message to send to a ROS publisher or service
-        private void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
+        static void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
         {
             byte[] topicName = message.SerializeString(rosTopicName);
             List<byte[]> segments = message.SerializationStatements();
