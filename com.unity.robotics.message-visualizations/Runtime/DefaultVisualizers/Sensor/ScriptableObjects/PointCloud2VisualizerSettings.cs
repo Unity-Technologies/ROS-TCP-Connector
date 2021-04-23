@@ -15,11 +15,11 @@ public class PointCloud2VisualizerSettings : ScriptableObject
     public string m_XChannel = "x";
     public string m_YChannel = "y";
     public string m_ZChannel = "z";
-    public string m_RgbChannel = "ring";
+    public string m_RgbChannel = "x";
     public string m_RChannel = "x";
     public string m_GChannel = "y";
     public string m_BChannel = "z";
-    public string m_SizeChannel = "intensity";
+    public string m_SizeChannel = "x";
 
     public float[] m_RgbRange = new float[] { 0, 31 };
     public float[] m_RRange = new float[] { -100, 100 };

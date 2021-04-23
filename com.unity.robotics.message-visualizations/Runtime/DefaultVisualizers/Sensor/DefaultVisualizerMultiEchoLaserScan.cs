@@ -8,19 +8,18 @@ using UnityEngine;
 
 public class DefaultVisualizerMultiEchoLaserScan : BasicVisualizer<MMultiEchoLaserScan>
 {
-    public float pointRadius = 0.05f;
+    public MultiEchoLaserScanVisualizerSettings m_Settings;
 
     public override void Draw(BasicDrawing drawing, MMultiEchoLaserScan message, MessageMetadata meta, Color color, string label)
     {
-        message.Draw<FLU>(drawing, pointRadius);
+        message.Draw<FLU>(drawing, m_Settings);
     }
 
     public override Action CreateGUI(MMultiEchoLaserScan message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        GUILayout.Label($"Angle min {message.angle_min}, max {message.angle_max}, increment {message.angle_increment}");
-        GUILayout.Label($"Time between measurements {message.time_increment}; time between scans {message.scan_time}");
-        GUILayout.Label($"Range min {message.range_min}, max {message.range_max}");
-        GUILayout.Label(message.intensities.Length == 0 ? $"{message.ranges.Length} range entries (no intensity data)" : $"{message.ranges.Length} range and intensity entries");
+        GUILayout.Label($"Angle min, max: [{message.angle_min}, {message.angle_max}] (rad)\nIncrement: {message.angle_increment} (rad)");
+        GUILayout.Label($"Time between measurements: {message.time_increment} (s)\nTime between scans: {message.scan_time} (s)");
+        GUILayout.Label($"Range min, max: [{message.range_min}, {message.range_max}] (m)");
     };
 }

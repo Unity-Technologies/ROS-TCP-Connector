@@ -575,6 +575,8 @@ MonoBehaviour:
   m_Topic: 
   m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Settings: {fileID: 11400000, guid: 1b7359921b91a4830ae57b1c5b22caeb, type: 2}
+  m_Radius: 0.05
 --- !u!114 &1444013218372867680
 MonoBehaviour:
   m_ObjectHideFlags: 0

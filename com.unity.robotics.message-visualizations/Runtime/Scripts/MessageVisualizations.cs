@@ -89,9 +89,69 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
-            DrawPointCloud<C>(message.points, drawing, color);
+            message.Draw<C>(drawing.AddPointCloud(message.points.Length), color, cConfs);
+        }
+
+        public static void Draw<C>(this MPointCloud message, PointCloudDrawing pointCloud, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        {
+            pointCloud.SetCapacity(message.points.Length);
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+
+            Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
+            for (int i = 0; i < message.channels.Length; i++)
+            {
+                channelToIdx.Add(message.channels[i].name, i);
+            }
+
+            for (int i = 0; i < message.points.Length; i++)
+            {
+                Vector3 worldPoint = frame.TransformPoint(message.points[i].From<FLU>());
+
+                // TODO: Channel names: "rgb" - For point clouds produced by color stereo cameras. uint8
+                // (R,G,B) values packed into the least significant 24 bits,
+                // in order.
+
+                if (cConfs.m_UseRgbChannel)
+                {
+                    switch (cConfs.colorMode)
+                    {
+                        case ColorMode.HSV:
+                            if (cConfs.m_RgbChannel.Length > 0)
+                            {
+                                float colC = message.channels[channelToIdx[cConfs.m_RgbChannel]].values[i];
+                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.m_RgbRange[0], cConfs.m_RgbRange[1], colC), 1, 1);
+                            }
+                            break;
+                        case ColorMode.RGB:
+                            if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                            {
+                                var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], message.channels[channelToIdx[cConfs.m_RChannel]].values[i]);
+                                var r = Mathf.InverseLerp(0, 1, colR);
+
+                                var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], message.channels[channelToIdx[cConfs.m_GChannel]].values[i]);
+                                var g = Mathf.InverseLerp(0, 1, colG);
+                                
+                                var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], message.channels[channelToIdx[cConfs.m_BChannel]].values[i]);
+                                var b = Mathf.InverseLerp(0, 1, colB);
+                                color = new Color(r, g, b, 1);
+                            }
+                            break;
+                    }
+                }
+
+                var radius = cConfs.m_Size;
+
+                if (cConfs.m_UseSizeChannel && cConfs.m_SizeChannel.Length > 0)
+                {
+                    var size = message.channels[channelToIdx[cConfs.m_SizeChannel]].values[i];
+                    radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], size);
+                }
+
+                pointCloud.AddPoint(worldPoint, color, radius);
+            }
+            pointCloud.Bake();
         }
 
         public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
@@ -124,19 +184,25 @@ namespace Unity.Robotics.MessageVisualizers
                     switch (cConfs.colorMode)
                     {
                         case ColorMode.HSV:
-                            int colC = BitConverter.ToInt16(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_RgbChannel]].offset);
-                            color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.m_RgbRange[0], cConfs.m_RgbRange[1], colC), 1, 1);
+                            if (cConfs.m_RgbChannel.Length > 0)
+                            {
+                                int colC = BitConverter.ToInt16(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_RgbChannel]].offset);
+                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.m_RgbRange[0], cConfs.m_RgbRange[1], colC), 1, 1);
+                            }
                             break;
                         case ColorMode.RGB:
-                            var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_RChannel]].offset));
-                            var r = Mathf.InverseLerp(0, 1, colR);
+                            if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                            {
+                                var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_RChannel]].offset));
+                                var r = Mathf.InverseLerp(0, 1, colR);
 
-                            var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_GChannel]].offset));
-                            var g = Mathf.InverseLerp(0, 1, colG);
-                            
-                            var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_BChannel]].offset));
-                            var b = Mathf.InverseLerp(0, 1, colB);
-                            color = new Color(r, g, b, 1);
+                                var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_GChannel]].offset));
+                                var g = Mathf.InverseLerp(0, 1, colG);
+                                
+                                var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], BitConverter.ToSingle(message.data, (i * (int)message.point_step) + (int)message.fields[channelToIdx[cConfs.m_BChannel]].offset));
+                                var b = Mathf.InverseLerp(0, 1, colB);
+                                color = new Color(r, g, b, 1);
+                            }
                             break;
                     }
                 }
@@ -362,25 +428,36 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
         }
 
-        public static void Draw<C>(this MMultiEchoLaserScan message, BasicDrawing drawing, float pointRadius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MMultiEchoLaserScan message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
-            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), pointRadius);
+            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MMultiEchoLaserScan message, PointCloudDrawing pointCloud, float pointRadius = 0.01f) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this MMultiEchoLaserScan message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
         {
-            pointCloud.SetCapacity(message.ranges.Length);
+            pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
             // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
             float angle = -message.angle_min;
-            foreach(MLaserEcho echo in message.ranges)
+            // foreach(MLaserEcho echo in message.ranges)
+            for (int i = 0; i < message.ranges.Length; i++)
             {
-                foreach (float range in echo.echoes)
+                var echoes = message.ranges[i].echoes;
+                // foreach (float range in echo.echoes)
+                for (int j = 0; j < echoes.Length; j++)
                 {
-                    Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
+                    Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
                     Vector3 worldPoint = frame.TransformPoint(localPoint);
-                    Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
-                    pointCloud.AddPoint(worldPoint, c, pointRadius);
+                    Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
+
+                    var radius = cConfs.m_PointRadius;
+
+                    if (message.intensities.Length > 0 && cConfs.m_UseIntensitySize)
+                    {
+                        radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], message.intensities[i].echoes[j]);
+                    }
+                    
+                    pointCloud.AddPoint(worldPoint, c, radius);
                 }
                 angle -= message.angle_increment;
             }
@@ -630,11 +707,6 @@ namespace Unity.Robotics.MessageVisualizers
         {
             message.linear.GUI("Linear");
             message.angular.GUI("Angular");
-        }
-        
-        public static void GUI(this MChannelFloat32 message)
-        {
-            GUILayout.Label($"Name: {message.name}\nValues length: {message.values.Length}");
         }
 
         public static void GUI(this MColorRGBA message, bool withText = true)

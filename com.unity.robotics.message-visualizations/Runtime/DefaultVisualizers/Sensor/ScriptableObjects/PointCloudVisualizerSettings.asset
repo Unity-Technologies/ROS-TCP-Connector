@@ -9,13 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9869b969f021440789a37afecf3ffca4, type: 3}
-  m_Name: PointCloud2VisualizerSettings
+  m_Script: {fileID: 11500000, guid: 5116417a614f44321b9dd939cff73583, type: 3}
+  m_Name: PointCloudVisualizerSettings
   m_EditorClassIdentifier: 
   colorMode: 0
-  m_XChannel: x
-  m_YChannel: y
-  m_ZChannel: z
   m_RgbChannel: x
   m_RChannel: x
   m_GChannel: y
@@ -36,6 +33,6 @@ MonoBehaviour:
   m_SizeRange:
   - 0
   - 100
-  m_Size: 0.01
+  m_Size: 0.05
   m_UseRgbChannel: 0
   m_UseSizeChannel: 0

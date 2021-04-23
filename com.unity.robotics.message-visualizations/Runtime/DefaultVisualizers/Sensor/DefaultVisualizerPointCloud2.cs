@@ -20,7 +20,7 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
     {
         if (m_Settings == null)
         {
-            Debug.LogError("Visualizer settings were null!");
+            Debug.Log($"Visualizer settings were null!");
         }
         base.Start();
     }

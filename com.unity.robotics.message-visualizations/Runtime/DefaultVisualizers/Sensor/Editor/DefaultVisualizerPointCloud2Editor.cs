@@ -21,14 +21,6 @@ public class PointCloud2Editor : Editor
     float sizeMinVal = 0;
     float sizeMaxVal = 1000;
 
-    void OnEnable()
-    {
-        if (((DefaultVisualizerPointCloud2)target).m_Settings != null)
-        {
-            pcl2Config = ((DefaultVisualizerPointCloud2)target).m_Settings;
-        }
-    }
-
     void CreateNewDropdown(string label, string channel, Action<string> action)
     {
         if (pcl2Config.channels == null)
@@ -70,17 +62,15 @@ public class PointCloud2Editor : Editor
         maxS = maxVal.ToString();
     }
 
+    
     public override void OnInspectorGUI()
     {
-        pcl2Config = EditorGUILayout.ObjectField(pcl2Config, typeof(PointCloud2VisualizerSettings), false) as PointCloud2VisualizerSettings;
-        if (pcl2Config != null)
+        pcl2Config = (PointCloud2VisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", pcl2Config, typeof(PointCloud2VisualizerSettings), false);
+        if (pcl2Config == null)
         {
-            ((DefaultVisualizerPointCloud2)target).m_Settings = pcl2Config;
+            pcl2Config = (PointCloud2VisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloud2VisualizerSettings.asset", typeof(PointCloud2VisualizerSettings));
         }
-        else
-        {
-            return;
-        }
+        ((DefaultVisualizerPointCloud2)target).m_Settings = pcl2Config;
 
         CreateNewDropdown("X channel name:", pcl2Config.m_XChannel, (newChannel) => { pcl2Config.m_XChannel = newChannel; });
         CreateNewDropdown("Y channel name:", pcl2Config.m_YChannel, (newChannel) => { pcl2Config.m_YChannel = newChannel; });
