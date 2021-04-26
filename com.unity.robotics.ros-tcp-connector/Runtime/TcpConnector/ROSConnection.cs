@@ -41,9 +41,12 @@ namespace Unity.Robotics.ROSTCPConnector
         const string ERROR_TOPIC_NAME = "__error";
         const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
         const string HANDSHAKE_TOPIC_NAME = "__handshake";
+        const string SERVICE_TOPIC_NAME = "__srv";
 
         const string SYSCOMMAND_SUBSCRIBE = "subscribe";
         const string SYSCOMMAND_PUBLISH = "publish";
+        const string SYSCOMMAND_ROSSERVICE = "ros_service";
+        const string SYSCOMMAND_UNITYSERVICE = "unity_service";
 
         // GUI window variables
         internal HUDPanel hudPanel = null;
@@ -53,122 +56,88 @@ namespace Unity.Robotics.ROSTCPConnector
         struct SubscriberCallback
         {
             public ConstructorInfo messageConstructor;
-            public List<Func<Message, Message>> callbacks;
+            public List<Action<Message>> callbacks;
         }
 
-        Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
+        struct UnityServiceCallback
+        {
+            public ConstructorInfo messageConstructor;
+            public Func<Message, Message> callback;
+        }
+
+        Dictionary<string, SubscriberCallback> m_Subscribers = new Dictionary<string, SubscriberCallback>();
+        Dictionary<string, UnityServiceCallback> m_UnityServices = new Dictionary<string, UnityServiceCallback>();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
         {
             SubscriberCallback subCallbacks;
-            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
             {
                 subCallbacks = new SubscriberCallback
                 {
                     messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                    callbacks = new List<Func<Message, Message>> { }
+                    callbacks = new List<Action<Message>> { }
                 };
-                subscribers.Add(topic, subCallbacks);
+                m_Subscribers.Add(topic, subCallbacks);
             }
 
             subCallbacks.callbacks.Add((Message msg) =>
             {
-                callback((T) msg);
-                return null;
+                callback((T)msg);
             });
         }
 
         public void ImplementService<T>(string topic, Func<T, Message> callback)
             where T : Message, new()
         {
-            SubscriberCallback subCallbacks;
-            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            UnityServiceCallback srvCallbacks;
+            if (!m_UnityServices.TryGetValue(topic, out srvCallbacks))
             {
-                subCallbacks = new SubscriberCallback
+                srvCallbacks = new UnityServiceCallback
                 {
                     messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                    callbacks = new List<Func<Message, Message>> { }
+                    callback = (Message msg) => callback((T)msg)
                 };
-                subscribers.Add(topic, subCallbacks);
+                m_UnityServices.Add(topic, srvCallbacks);
             }
-
-            subCallbacks.callbacks.Add((Message msg) => { return callback((T) msg); });
         }
 
-        public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest,
-            Action<RESPONSE> callback) where RESPONSE : Message, new()
+        readonly object m_ServiceRequestLock = new object();
+        int m_NextSrvID = 101;
+        Dictionary<int, TaskPauser> m_ServiceCallbacks = new Dictionary<int, TaskPauser>();
+
+        public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
         {
-            // For phase 2, gut this and rewrite 
-
-            // Serialize the message in service name, message size, and message bytes format
-            byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
-
-            TcpClient client = new TcpClient();
-            await client.ConnectAsync(rosIPAddress, rosPort);
-
-            NetworkStream networkStream = client.GetStream();
-            networkStream.ReadTimeout = networkTimeout;
-
-            RESPONSE serviceResponse = new RESPONSE();
-
-            int serviceID = 0;
-
-            // Send the message
+            RESPONSE response = await SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest);
             try
             {
-                if (hudPanel != null) serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
-                networkStream.Write(messageBytes, 0, messageBytes.Length);
+                callback(response);
             }
             catch (Exception e)
             {
-                Debug.LogError("SocketException: " + e);
-                goto finish;
+                Debug.LogError("Exception in service callback: " + e);
             }
-
-            if (!networkStream.CanRead)
-            {
-                Debug.LogError("Sorry, you cannot read from this NetworkStream.");
-                goto finish;
-            }
-
-            // Poll every 1 second(s) for available data on the stream
-            int attempts = 0;
-            while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
-            {
-                if (attempts == this.awaitDataMaxRetries)
-                {
-                    Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
-                    goto finish;
-                }
-
-                attempts++;
-                await Task.Delay((int) (awaitDataSleepSeconds * 1000));
-            }
-
-            try
-            {
-                (string topicName, byte[] content) = await ReadMessageContents(networkStream, new CancellationToken());
-                serviceResponse.Deserialize(content, 0);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Exception raised!! " + e);
-            }
-
-            finish:
-            callback(serviceResponse);
-            if (hudPanel != null) hudPanel.AddServiceResponse(serviceID, serviceResponse);
-            if (client.Connected)
-                client.Close();
         }
 
         public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
         {
-            var t = new TaskCompletionSource<RESPONSE>();
+            byte[] requestBytes = serviceRequest.Serialize();
+            TaskPauser pauser = new TaskPauser();
 
-            SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest, s => t.TrySetResult(s));
+            int srvID;
+            lock (m_ServiceRequestLock)
+            {
+                srvID = m_NextSrvID++;
+                m_ServiceCallbacks.Add(srvID, pauser);
+            }
 
-            return await t.Task;
+            MRosUnitySrvMessage srvMessage = new MRosUnitySrvMessage(srvID, true, rosServiceName, requestBytes);
+            Send(SERVICE_TOPIC_NAME, srvMessage);
+
+            byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
+            RESPONSE result = new RESPONSE();
+            result.Deserialize(rawResponse, 0);
+            return result;
         }
 
         public void GetTopicList(Action<string[]> callback)
@@ -178,13 +147,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_SUBSCRIBE,
-                new SysCommand_Subscribe {topic = topic, message_name = rosMessageName});
+            SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish {topic = topic, message_name = rosMessageName});
+            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
+        public void RegisterRosService(string topic, string rosMessageName)
+        {
+            SendSysCommand(SYSCOMMAND_ROSSERVICE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
+        public void RegisterUnityService(string topic, string rosMessageName)
+        {
+            SendSysCommand(SYSCOMMAND_UNITYSERVICE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         private static ROSConnection _instance;
@@ -223,17 +201,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
-            if(!IPFormatIsCorrect(rosIPAddress))
+            if (!IPFormatIsCorrect(rosIPAddress))
                 Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+            Subscribe<MRosUnitySrvMessage>(SERVICE_TOPIC_NAME, ProcessServiceMessage);
 
             connectionThreadCancellation = new CancellationTokenSource();
             Task.Run(() => ConnectionThread(rosIPAddress, rosPort, networkTimeout, keepaliveTime, outgoingMessages, incomingMessages, connectionThreadCancellation.Token));
-
-            // Phase 2: send handshakes again
-            //SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
-            //    new MUnityHandshakeRequest(overrideUnityIP, (ushort) unityPort), RosUnityHandshakeCallback);
         }
 
         void OnValidate()
@@ -255,12 +230,6 @@ namespace Unity.Robotics.ROSTCPConnector
             hudPanel.isEnabled = showHUD;
         }
 
-        /* Phase 2
-        void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
-        {
-            StartMessageServer(response.ip, unityPort);
-        }*/
-
         void RosUnityErrorCallback(MRosUnityError error)
         {
             Debug.LogError("ROS-Unity error: " + error.message);
@@ -271,17 +240,49 @@ namespace Unity.Robotics.ROSTCPConnector
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
             Tuple<string, byte[]> data;
-            while(incomingMessages.TryDequeue(out data))
+            while (incomingMessages.TryDequeue(out data))
             {
                 (string topic, byte[] contents) = data;
+
                 // notify whatever is interested in this incoming message
                 SubscriberCallback callback;
-                if(subscribers.TryGetValue(topic, out callback))
+                if (m_Subscribers.TryGetValue(topic, out callback))
                 {
-                    Message message = (Message)callback.messageConstructor.Invoke(new object[]{ });
+                    Message message = (Message)callback.messageConstructor.Invoke(new object[] { });
                     message.Deserialize(contents, 0);
-                    callback.callbacks.ForEach(item=>item.Invoke(message));
+                    callback.callbacks.ForEach(item => item.Invoke(message));
                 }
+            }
+        }
+
+        void ProcessServiceMessage(MRosUnitySrvMessage message)
+        {
+            if (message.is_request)
+            {
+                UnityServiceCallback callback;
+                if(m_UnityServices.TryGetValue(message.topic, out callback))
+                {
+                    Message requestMessage = (Message)callback.messageConstructor.Invoke(new object[] { });
+                    requestMessage.Deserialize(message.payload, 0);
+                    Message responseMessage = callback.callback(requestMessage);
+                    byte[] responseBytes = responseMessage.Serialize();
+                    Send(SERVICE_TOPIC_NAME, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
+                }
+            }
+            else
+            {
+                TaskPauser resumer;
+                lock (m_ServiceRequestLock)
+                {
+                    if (!m_ServiceCallbacks.TryGetValue(message.srv_id, out resumer))
+                    {
+                        Debug.LogError($"Unable to route service response on \"{message.topic}\"! SrvID {message.srv_id} does not exist.");
+                        return;
+                    }
+
+                    m_ServiceCallbacks.Remove(message.srv_id);
+                }
+                resumer.Resume(message.payload);
             }
         }
 
@@ -338,18 +339,16 @@ namespace Unity.Robotics.ROSTCPConnector
                             Thread.Yield();
                             if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
                             {
-                                // send a keepalive message
                                 SendKeepalive(networkStream);
                                 waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
                             token.ThrowIfCancellationRequested();
                         }
 
-                        //Debug.Log("Sending " + data.Item1);
                         WriteDataStaggered(networkStream, data.Item1, data.Item2);
                     }
                 }
-                catch (OperationCanceledException e)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (Exception e)
@@ -382,15 +381,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, token);
-                    Debug.Log($"Message {content.Item1} received");
+                    //Debug.Log($"Message {content.Item1} received");
                     queue.Enqueue(content);
                 }
-                catch (OperationCanceledException e)
+                catch (OperationCanceledException)
                 {
                 }
-                /*catch (System.IO.IOException e)
-                {
-                }*/
                 catch (Exception e)
                 {
                     Debug.Log("Reader "+readerIdx+" exception! " + e);
@@ -501,13 +497,7 @@ namespace Unity.Robotics.ROSTCPConnector
             return messageBuffer;
         }
 
-        struct SysCommand_Subscribe
-        {
-            public string topic;
-            public string message_name;
-        }
-
-        struct SysCommand_Publish
+        struct SysCommand_TopicAndType
         {
             public string topic;
             public string message_name;
