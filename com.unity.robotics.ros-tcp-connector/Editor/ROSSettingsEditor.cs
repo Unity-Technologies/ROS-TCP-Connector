@@ -49,19 +49,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);
-            prefab.awaitDataMaxRetries = EditorGUILayout.IntField(
-                new GUIContent("Max Service Retries",
-                    "While waiting for a service to respond, check this many times before giving up."),
-                prefab.awaitDataMaxRetries);
-            prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField(
-                new GUIContent("Sleep (seconds)",
-                    "While waiting for a service to respond, wait this many seconds between checks."),
-                prefab.awaitDataSleepSeconds);
-            prefab.readChunkSize = EditorGUILayout.IntField(
-                new GUIContent("Read chunk size",
-                    "While reading received messages, read this many bytes at a time."),
-                prefab.readChunkSize);
+
+            prefab.keepaliveTime = EditorGUILayout.FloatField(
+                new GUIContent("KeepAlive time (seconds)",
+                    "Send a keepalive message this often. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
+                prefab.keepaliveTime);
 
             if (GUI.changed)
             {

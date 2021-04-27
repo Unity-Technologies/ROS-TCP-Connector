@@ -24,19 +24,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private int networkTimeout = 2000;
 
-        [Tooltip("While reading received messages, read this many bytes at a time.")]
-        public int readChunkSize = 2048;
-
         [Tooltip("Send keepalive message if nothing has been sent for this long (seconds).")]
         public float keepaliveTime = 10;
-
-        // Remove?
-        [Tooltip("While waiting for a service to respond, check this many times before giving up.")]
-        public int awaitDataMaxRetries = 10;
-
-        // Remove?
-        [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
-        public float awaitDataSleepSeconds = 1.0f;
 
         const string ERROR_TOPIC_NAME = "__error";
         const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
@@ -55,18 +44,19 @@ namespace Unity.Robotics.ROSTCPConnector
 
         struct SubscriberCallback
         {
-            public ConstructorInfo messageConstructor;
+            public Func<Message> messageConstructor;
             public List<Action<Message>> callbacks;
         }
 
-        struct UnityServiceCallback
+        Dictionary<string, SubscriberCallback> m_Subscribers = new Dictionary<string, SubscriberCallback>();
+
+        struct UnityServiceImplementation
         {
-            public ConstructorInfo messageConstructor;
+            public Func<Message> messageConstructor;
             public Func<Message, Message> callback;
         }
 
-        Dictionary<string, SubscriberCallback> m_Subscribers = new Dictionary<string, SubscriberCallback>();
-        Dictionary<string, UnityServiceCallback> m_UnityServices = new Dictionary<string, UnityServiceCallback>();
+        Dictionary<string, UnityServiceImplementation> m_UnityServices = new Dictionary<string, UnityServiceImplementation>();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
         {
@@ -75,7 +65,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = typeof(T).GetConstructor(new Type[0]),
+                    messageConstructor = ()=> new T(),
                     callbacks = new List<Action<Message>> { }
                 };
                 m_Subscribers.Add(topic, subCallbacks);
@@ -90,16 +80,11 @@ namespace Unity.Robotics.ROSTCPConnector
         public void ImplementService<T>(string topic, Func<T, Message> callback)
             where T : Message, new()
         {
-            UnityServiceCallback srvCallbacks;
-            if (!m_UnityServices.TryGetValue(topic, out srvCallbacks))
+            m_UnityServices[topic] = new UnityServiceImplementation
             {
-                srvCallbacks = new UnityServiceCallback
-                {
-                    messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                    callback = (Message msg) => callback((T)msg)
-                };
-                m_UnityServices.Add(topic, srvCallbacks);
-            }
+                messageConstructor = ()=> new T(),
+                callback = (Message msg) => callback((T)msg)
+            };
         }
 
         readonly object m_ServiceRequestLock = new object();
@@ -248,9 +233,9 @@ namespace Unity.Robotics.ROSTCPConnector
                 SubscriberCallback callback;
                 if (m_Subscribers.TryGetValue(topic, out callback))
                 {
-                    Message message = (Message)callback.messageConstructor.Invoke(new object[] { });
+                    Message message = callback.messageConstructor();
                     message.Deserialize(contents, 0);
-                    callback.callbacks.ForEach(item => item.Invoke(message));
+                    callback.callbacks.ForEach(item => item(message));
                 }
             }
         }
@@ -259,12 +244,12 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (message.is_request)
             {
-                UnityServiceCallback callback;
-                if(m_UnityServices.TryGetValue(message.topic, out callback))
+                UnityServiceImplementation service;
+                if(m_UnityServices.TryGetValue(message.topic, out service))
                 {
-                    Message requestMessage = (Message)callback.messageConstructor.Invoke(new object[] { });
+                    Message requestMessage = service.messageConstructor();
                     requestMessage.Deserialize(message.payload, 0);
-                    Message responseMessage = callback.callback(requestMessage);
+                    Message responseMessage = service.callback(requestMessage);
                     byte[] responseBytes = responseMessage.Serialize();
                     Send(SERVICE_TOPIC_NAME, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
                 }
