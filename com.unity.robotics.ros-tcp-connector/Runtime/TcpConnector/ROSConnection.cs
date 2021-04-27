@@ -59,7 +59,7 @@ namespace Unity.Robotics.ROSTCPConnector
         const string SYSCOMMAND_UNITYSERVICE = "unity_service";
 
         // GUI window variables
-        internal HUDPanel hudPanel = null;
+        internal HUDPanel m_HudPanel = null;
 
         ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
@@ -222,8 +222,8 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_RosIPAddress = ipAddress;
             m_RosPort = port;
-            if (hudPanel != null)
-                hudPanel.host = $"{ipAddress}:{port}";
+            if (m_HudPanel != null)
+                m_HudPanel.host = $"{ipAddress}:{port}";
             Connect();
         }
 
@@ -249,16 +249,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void InitializeHUD()
         {
-            if (!Application.isPlaying || (!m_ShowHUD && hudPanel == null))
+            if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
                 return;
 
-            if (hudPanel == null)
+            if (m_HudPanel == null)
             {
-                hudPanel = gameObject.AddComponent<HUDPanel>();
-                hudPanel.host = $"{RosIPAddress}:{RosPort}";
+                m_HudPanel = gameObject.AddComponent<HUDPanel>();
+                m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
             }
 
-            hudPanel.isEnabled = m_ShowHUD;
+            m_HudPanel.isEnabled = m_ShowHUD;
         }
 
         void RosUnityErrorCallback(MRosUnityError error)
@@ -281,6 +281,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     Message message = callback.messageConstructor();
                     message.Deserialize(contents, 0);
+
+                    if (m_HudPanel != null)
+                        m_HudPanel.SetLastMessageReceived(topic, message);
+
                     callback.callbacks.ForEach(item => item(message));
                 }
             }
@@ -538,6 +542,9 @@ namespace Unity.Robotics.ROSTCPConnector
         public void Send(string rosTopicName, Message message)
         {
             m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
+
+            if (m_HudPanel != null)
+                m_HudPanel.SetLastMessageSent(rosTopicName, message);
         }
 
         /// <summary>
