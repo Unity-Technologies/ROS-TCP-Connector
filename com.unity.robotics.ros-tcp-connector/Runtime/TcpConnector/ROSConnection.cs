@@ -49,14 +49,14 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
-        const string ERROR_TOPIC_NAME = "__error";
-        const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
-        const string SERVICE_TOPIC_NAME = "__srv";
+        const string k_Topic_Error = "__error";
+        const string k_Topic_SysCommand = "__syscommand";
+        const string k_Topic_Services = "__srv";
 
-        const string SYSCOMMAND_SUBSCRIBE = "subscribe";
-        const string SYSCOMMAND_PUBLISH = "publish";
-        const string SYSCOMMAND_ROSSERVICE = "ros_service";
-        const string SYSCOMMAND_UNITYSERVICE = "unity_service";
+        const string k_SysCommand_Subscribe = "subscribe";
+        const string k_SysCommand_Publish = "publish";
+        const string k_SysCommand_RosService = "ros_service";
+        const string k_SysCommand_UnityService = "unity_service";
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
@@ -142,7 +142,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             MRosUnitySrvMessage srvMessage = new MRosUnitySrvMessage(srvID, true, rosServiceName, requestBytes);
-            Send(SERVICE_TOPIC_NAME, srvMessage);
+            Send(k_Topic_Services, srvMessage);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
             RESPONSE result = new RESPONSE();
@@ -157,22 +157,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_SUBSCRIBE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         public void RegisterRosService(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_ROSSERVICE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         public void RegisterUnityService(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_UNITYSERVICE, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         private static ROSConnection _instance;
@@ -209,8 +209,8 @@ namespace Unity.Robotics.ROSTCPConnector
         private void Start()
         {
             InitializeHUD();
-            Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
-            Subscribe<MRosUnitySrvMessage>(SERVICE_TOPIC_NAME, ProcessServiceMessage);
+            Subscribe<MRosUnityError>(k_Topic_Error, RosUnityErrorCallback);
+            Subscribe<MRosUnitySrvMessage>(k_Topic_Services, ProcessServiceMessage);
 
             if (ConnectOnStart)
             {
@@ -301,7 +301,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     requestMessage.Deserialize(message.payload, 0);
                     Message responseMessage = service.callback(requestMessage);
                     byte[] responseBytes = responseMessage.Serialize();
-                    Send(SERVICE_TOPIC_NAME, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
+                    Send(k_Topic_Services, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
                 }
             }
             else
@@ -536,7 +536,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param)
         {
-            Send(SYSCOMMAND_TOPIC_NAME, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
+            Send(k_Topic_SysCommand, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
         }
 
         public void Send(string rosTopicName, Message message)
