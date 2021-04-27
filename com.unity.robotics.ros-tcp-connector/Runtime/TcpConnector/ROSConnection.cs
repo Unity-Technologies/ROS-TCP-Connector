@@ -29,7 +29,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         const string ERROR_TOPIC_NAME = "__error";
         const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
-        const string HANDSHAKE_TOPIC_NAME = "__handshake";
         const string SERVICE_TOPIC_NAME = "__srv";
 
         const string SYSCOMMAND_SUBSCRIBE = "subscribe";
@@ -41,6 +40,15 @@ namespace Unity.Robotics.ROSTCPConnector
         internal HUDPanel hudPanel = null;
 
         public bool showHUD = true;
+
+        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
+        ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
+        CancellationTokenSource m_ConnectionThreadCancellation;
+        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
+
+        readonly object m_ServiceRequestLock = new object();
+        int m_NextSrvID = 101;
+        Dictionary<int, TaskPauser> m_ServicesWaiting = new Dictionary<int, TaskPauser>();
 
         struct SubscriberCallback
         {
@@ -87,10 +95,6 @@ namespace Unity.Robotics.ROSTCPConnector
             };
         }
 
-        readonly object m_ServiceRequestLock = new object();
-        int m_NextSrvID = 101;
-        Dictionary<int, TaskPauser> m_ServiceCallbacks = new Dictionary<int, TaskPauser>();
-
         public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
         {
             RESPONSE response = await SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest);
@@ -113,7 +117,7 @@ namespace Unity.Robotics.ROSTCPConnector
             lock (m_ServiceRequestLock)
             {
                 srvID = m_NextSrvID++;
-                m_ServiceCallbacks.Add(srvID, pauser);
+                m_ServicesWaiting.Add(srvID, pauser);
             }
 
             MRosUnitySrvMessage srvMessage = new MRosUnitySrvMessage(srvID, true, rosServiceName, requestBytes);
@@ -181,9 +185,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 _instance = this;
         }
 
-        ConcurrentQueue<Tuple<string, Message>> outgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
-        ConcurrentQueue<Tuple<string, byte[]>> incomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
-
         private void Start()
         {
             if (!IPFormatIsCorrect(rosIPAddress))
@@ -192,8 +193,8 @@ namespace Unity.Robotics.ROSTCPConnector
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
             Subscribe<MRosUnitySrvMessage>(SERVICE_TOPIC_NAME, ProcessServiceMessage);
 
-            connectionThreadCancellation = new CancellationTokenSource();
-            Task.Run(() => ConnectionThread(rosIPAddress, rosPort, networkTimeout, keepaliveTime, outgoingMessages, incomingMessages, connectionThreadCancellation.Token));
+            m_ConnectionThreadCancellation = new CancellationTokenSource();
+            Task.Run(() => ConnectionThread(rosIPAddress, rosPort, networkTimeout, keepaliveTime, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
         }
 
         void OnValidate()
@@ -225,7 +226,7 @@ namespace Unity.Robotics.ROSTCPConnector
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
             Tuple<string, byte[]> data;
-            while (incomingMessages.TryDequeue(out data))
+            while (m_IncomingMessages.TryDequeue(out data))
             {
                 (string topic, byte[] contents) = data;
 
@@ -259,21 +260,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 TaskPauser resumer;
                 lock (m_ServiceRequestLock)
                 {
-                    if (!m_ServiceCallbacks.TryGetValue(message.srv_id, out resumer))
+                    if (!m_ServicesWaiting.TryGetValue(message.srv_id, out resumer))
                     {
                         Debug.LogError($"Unable to route service response on \"{message.topic}\"! SrvID {message.srv_id} does not exist.");
                         return;
                     }
 
-                    m_ServiceCallbacks.Remove(message.srv_id);
+                    m_ServicesWaiting.Remove(message.srv_id);
                 }
                 resumer.Resume(message.payload);
             }
         }
-
-        CancellationTokenSource connectionThreadCancellation;
-        static bool m_ShouldConnect;
-        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
         static void SendKeepalive(NetworkStream stream)
         {
@@ -290,7 +287,7 @@ namespace Unity.Robotics.ROSTCPConnector
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
         {
-            Debug.Log("ConnectionThread begins");
+            //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
 
@@ -395,25 +392,25 @@ namespace Unity.Robotics.ROSTCPConnector
                 throw new SocketException(); // the connection has closed
         }
 
-        static byte[] fourBytes = new byte[4];
-        static byte[] topicScratchSpace = new byte[64];
+        static byte[] s_FourBytes = new byte[4];
+        static byte[] s_TopicScratchSpace = new byte[64];
 
         static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, CancellationToken token)
         {
             // Get first bytes to determine length of topic name
-            await ReadToByteArray(networkStream, fourBytes, 4, token);
-            int topicLength = BitConverter.ToInt32(fourBytes, 0);
+            await ReadToByteArray(networkStream, s_FourBytes, 4, token);
+            int topicLength = BitConverter.ToInt32(s_FourBytes, 0);
 
             // If our topic buffer isn't large enough, make a larger one (and keep it that size; assume that's the new standard)
-            if (topicLength > topicScratchSpace.Length)
-                topicScratchSpace = new byte[topicLength];
+            if (topicLength > s_TopicScratchSpace.Length)
+                s_TopicScratchSpace = new byte[topicLength];
 
             // Read and convert topic name
-            await ReadToByteArray(networkStream, topicScratchSpace, topicLength, token);
-            string topicName = Encoding.ASCII.GetString(topicScratchSpace, 0, topicLength);
+            await ReadToByteArray(networkStream, s_TopicScratchSpace, topicLength, token);
+            string topicName = Encoding.ASCII.GetString(s_TopicScratchSpace, 0, topicLength);
 
-            await ReadToByteArray(networkStream, fourBytes, 4, token);
-            int full_message_size = BitConverter.ToInt32(fourBytes, 0);
+            await ReadToByteArray(networkStream, s_FourBytes, 4, token);
+            int full_message_size = BitConverter.ToInt32(s_FourBytes, 0);
 
             byte[] readBuffer = new byte[full_message_size];
             await ReadToByteArray(networkStream, readBuffer, full_message_size, token);
@@ -423,7 +420,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnApplicationQuit()
         {
-            connectionThreadCancellation.Cancel();
+            m_ConnectionThreadCancellation.Cancel();
         }
 
         /// <summary>
@@ -495,7 +492,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Send(string rosTopicName, Message message)
         {
-            outgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
+            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
         }
 
         /// <summary>
