@@ -4,31 +4,33 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class TaskPauser
+namespace Unity.Robotics.ROSTCPConnector
 {
-    CancellationTokenSource m_Source = new CancellationTokenSource();
-    object m_Result;
-    public object Result => m_Result;
-
-    public async Task<object> PauseUntilResumed()
+    public class TaskPauser
     {
-        try
+        CancellationTokenSource m_Source = new CancellationTokenSource();
+        public object Result { get; private set; }
+
+        public async Task<object> PauseUntilResumed()
         {
-            while (!m_Source.Token.IsCancellationRequested)
+            try
             {
-                await Task.Delay(10000, m_Source.Token);
+                while (!m_Source.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(10000, m_Source.Token);
+                }
             }
+            catch (TaskCanceledException)
+            {
+
+            }
+            return Result;
         }
-        catch(TaskCanceledException)
+
+        public void Resume(object result)
         {
-
+            Result = result;
+            m_Source.Cancel();
         }
-        return m_Result;
-    }
-
-    public void Resume(object result)
-    {
-        m_Result = result;
-        m_Source.Cancel();
     }
 }

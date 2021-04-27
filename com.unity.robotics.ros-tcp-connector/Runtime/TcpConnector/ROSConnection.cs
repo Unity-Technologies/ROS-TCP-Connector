@@ -19,13 +19,35 @@ namespace Unity.Robotics.ROSTCPConnector
     public class ROSConnection : MonoBehaviour
     {
         // Variables required for ROS communication
-        [FormerlySerializedAs("hostName")] public string rosIPAddress = "127.0.0.1";
-        [FormerlySerializedAs("hostPort")] public int rosPort = 10000;
+        [SerializeField]
+        [FormerlySerializedAs("hostName")]
+        [FormerlySerializedAs("rosIPAddress")]
+        string m_RosIPAddress = "127.0.0.1";
+        public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
 
-        private int networkTimeout = 2000;
+        [SerializeField]
+        [FormerlySerializedAs("hostPort")]
+        [FormerlySerializedAs("rosPort")]
+        int m_RosPort = 10000;
+        public int RosPort { get => m_RosPort; set => m_RosPort = value; }
 
+        [SerializeField]
+        bool m_ConnectOnStart = true;
+        public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
+
+        [SerializeField]
         [Tooltip("Send keepalive message if nothing has been sent for this long (seconds).")]
-        public float keepaliveTime = 10;
+        float m_KeepaliveTime = 10;
+        public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
+
+        [SerializeField]
+        float m_NetworkTimeoutSeconds = 2;
+        public float NetworkTimeoutSeconds { get => m_NetworkTimeoutSeconds; set => m_NetworkTimeoutSeconds = value; }
+
+        [SerializeField]
+        [FormerlySerializedAs("showHUD")]
+        bool m_ShowHUD = true;
+        public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
         const string ERROR_TOPIC_NAME = "__error";
         const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
@@ -39,11 +61,10 @@ namespace Unity.Robotics.ROSTCPConnector
         // GUI window variables
         internal HUDPanel hudPanel = null;
 
-        public bool showHUD = true;
-
         ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
+
         static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
         readonly object m_ServiceRequestLock = new object();
@@ -73,7 +94,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = ()=> new T(),
+                    messageConstructor = () => new T(),
                     callbacks = new List<Action<Message>> { }
                 };
                 m_Subscribers.Add(topic, subCallbacks);
@@ -90,7 +111,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_UnityServices[topic] = new UnityServiceImplementation
             {
-                messageConstructor = ()=> new T(),
+                messageConstructor = () => new T(),
                 callback = (Message msg) => callback((T)msg)
             };
         }
@@ -187,14 +208,38 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
-            if (!IPFormatIsCorrect(rosIPAddress))
-                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
             Subscribe<MRosUnitySrvMessage>(SERVICE_TOPIC_NAME, ProcessServiceMessage);
 
+            if (ConnectOnStart)
+            {
+                Connect();
+            }
+        }
+
+        public void Connect(string ipAddress, int port)
+        {
+            m_RosIPAddress = ipAddress;
+            m_RosPort = port;
+            if (hudPanel != null)
+                hudPanel.host = $"{ipAddress}:{port}";
+            Connect();
+        }
+
+        public void Connect()
+        {
+            if (!IPFormatIsCorrect(m_RosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
+
             m_ConnectionThreadCancellation = new CancellationTokenSource();
-            Task.Run(() => ConnectionThread(rosIPAddress, rosPort, networkTimeout, keepaliveTime, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+        }
+
+        public void Disconnect()
+        {
+            m_ConnectionThreadCancellation.Cancel();
+            m_ConnectionThreadCancellation = null;
         }
 
         void OnValidate()
@@ -204,16 +249,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void InitializeHUD()
         {
-            if (!Application.isPlaying || (!showHUD && hudPanel == null))
+            if (!Application.isPlaying || (!m_ShowHUD && hudPanel == null))
                 return;
 
             if (hudPanel == null)
             {
                 hudPanel = gameObject.AddComponent<HUDPanel>();
-                hudPanel.host = $"{rosIPAddress}:{rosPort}";
+                hudPanel.host = $"{RosIPAddress}:{RosPort}";
             }
 
-            hudPanel.isEnabled = showHUD;
+            hudPanel.isEnabled = m_ShowHUD;
         }
 
         void RosUnityErrorCallback(MRosUnityError error)
@@ -246,7 +291,7 @@ namespace Unity.Robotics.ROSTCPConnector
             if (message.is_request)
             {
                 UnityServiceImplementation service;
-                if(m_UnityServices.TryGetValue(message.topic, out service))
+                if (m_UnityServices.TryGetValue(message.topic, out service))
                 {
                     Message requestMessage = service.messageConstructor();
                     requestMessage.Deserialize(message.payload, 0);
@@ -281,7 +326,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
-            int networkTimeout,
+            float networkTimeoutSeconds,
             float keepaliveTime,
             ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
@@ -302,7 +347,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     client.Connect(rosIPAddress, rosPort);
 
                     NetworkStream networkStream = client.GetStream();
-                    networkStream.ReadTimeout = networkTimeout;
+                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
                     SendKeepalive(networkStream);
 
@@ -371,7 +416,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("Reader "+readerIdx+" exception! " + e);
+                    Debug.Log("Reader " + readerIdx + " exception! " + e);
                 }
             }
         }
@@ -420,7 +465,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnApplicationQuit()
         {
-            m_ConnectionThreadCancellation.Cancel();
+            Disconnect();
         }
 
         /// <summary>
@@ -525,25 +570,25 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public static bool IPFormatIsCorrect(string ipAddress)
         {
-            if(ipAddress == null || ipAddress == "")
+            if (ipAddress == null || ipAddress == "")
                 return false;
-            
+
             // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
-            if(Char.IsLetter(ipAddress[0]))
+            if (Char.IsLetter(ipAddress[0]))
             {
-                foreach(Char subChar in ipAddress)
+                foreach (Char subChar in ipAddress)
                 {
-                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                    if (!(Char.IsLetterOrDigit(subChar) || subChar == '-' || subChar == '.'))
                         return false;
                 }
 
-                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
+                if (!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
                     return false;
                 return true;
             }
 
             string[] subAdds = ipAddress.Split('.');
-            if(subAdds.Length != 4)
+            if (subAdds.Length != 4)
             {
                 return false;
             }

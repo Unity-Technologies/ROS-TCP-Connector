@@ -26,7 +26,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageSent(string topic, Message message)
         {
-            lastMessageSent = new MessageViewState() {label = "Last Message Sent:", message = message};
+            lastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
             lastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
             redrawGUI = true;
         }
@@ -36,7 +36,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageReceived(string topic, Message message)
         {
-            lastMessageReceived = new MessageViewState() {label = "Last Message Received:", message = message};
+            lastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message };
             lastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
             redrawGUI = true;
         }
@@ -84,7 +84,7 @@ namespace Unity.Robotics.ROSTCPConnector
             labelStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
-                normal = {textColor = Color.white},
+                normal = { textColor = Color.white },
                 fontStyle = FontStyle.Bold,
                 fixedWidth = 250
             };
@@ -93,7 +93,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 0, 5),
-                normal = {textColor = Color.white},
+                normal = { textColor = Color.white },
                 fixedWidth = 300
             };
 
@@ -101,7 +101,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 5, 5),
-                normal = {textColor = Color.white},
+                normal = { textColor = Color.white },
                 fixedWidth = 300,
                 wordWrap = true
             };
@@ -136,7 +136,7 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label($"{activeServices.Count} Active Service Requests:", labelStyle);
             if (activeServices.Count > 0)
             {
-                var dots = new String('.', (int) Time.time % 4);
+                var dots = new String('.', (int)Time.time % 4);
                 GUILayout.Label($"Waiting for service response{dots}", contentStyle);
             }
 
