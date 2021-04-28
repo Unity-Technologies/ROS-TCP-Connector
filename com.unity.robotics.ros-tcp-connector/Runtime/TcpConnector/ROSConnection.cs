@@ -45,6 +45,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public float NetworkTimeoutSeconds { get => m_NetworkTimeoutSeconds; set => m_NetworkTimeoutSeconds = value; }
 
         [SerializeField]
+        float m_SleepTimeSeconds = 0.01f;
+        public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
+
+        [SerializeField]
         [FormerlySerializedAs("showHUD")]
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
@@ -233,7 +237,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 Debug.LogError("ROS IP address is not correct");
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
-            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds*1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
         }
 
         public void Disconnect()
@@ -332,6 +336,7 @@ namespace Unity.Robotics.ROSTCPConnector
             int rosPort,
             float networkTimeoutSeconds,
             float keepaliveTime,
+            int sleepMilliseconds,
             ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
@@ -356,7 +361,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     SendKeepalive(networkStream);
 
                     readerCancellation = new CancellationTokenSource();
-                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, readerCancellation.Token));
+                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
                     nextReaderIdx++;
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
@@ -367,7 +372,7 @@ namespace Unity.Robotics.ROSTCPConnector
                         token.ThrowIfCancellationRequested();
                         while (!outgoingQueue.TryDequeue(out data))
                         {
-                            Thread.Yield();
+                            Thread.Sleep(sleepMilliseconds);
                             if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
                             {
                                 SendKeepalive(networkStream);
@@ -405,13 +410,13 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, CancellationToken token)
+        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, token);
+                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
                     //Debug.Log($"Message {content.Item1} received");
                     queue.Enqueue(content);
                 }
@@ -425,13 +430,13 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ReadToByteArray(NetworkStream networkStream, byte[] array, int length, CancellationToken token)
+        static async Task ReadToByteArray(NetworkStream networkStream, byte[] array, int length, int sleepMilliseconds, CancellationToken token)
         {
             int read = 0;
             while (read < length && networkStream.CanRead)
             {
                 while (!token.IsCancellationRequested && !networkStream.DataAvailable)
-                    await Task.Yield();
+                    await Task.Delay(sleepMilliseconds);
 
                 token.ThrowIfCancellationRequested();
                 read += await networkStream.ReadAsync(array, read, length - read, token);
@@ -444,10 +449,10 @@ namespace Unity.Robotics.ROSTCPConnector
         static byte[] s_FourBytes = new byte[4];
         static byte[] s_TopicScratchSpace = new byte[64];
 
-        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, CancellationToken token)
+        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, int sleepMilliseconds, CancellationToken token)
         {
             // Get first bytes to determine length of topic name
-            await ReadToByteArray(networkStream, s_FourBytes, 4, token);
+            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
             int topicLength = BitConverter.ToInt32(s_FourBytes, 0);
 
             // If our topic buffer isn't large enough, make a larger one (and keep it that size; assume that's the new standard)
@@ -455,14 +460,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 s_TopicScratchSpace = new byte[topicLength];
 
             // Read and convert topic name
-            await ReadToByteArray(networkStream, s_TopicScratchSpace, topicLength, token);
+            await ReadToByteArray(networkStream, s_TopicScratchSpace, topicLength, sleepMilliseconds, token);
             string topicName = Encoding.ASCII.GetString(s_TopicScratchSpace, 0, topicLength);
 
-            await ReadToByteArray(networkStream, s_FourBytes, 4, token);
+            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
             int full_message_size = BitConverter.ToInt32(s_FourBytes, 0);
 
             byte[] readBuffer = new byte[full_message_size];
-            await ReadToByteArray(networkStream, readBuffer, full_message_size, token);
+            await ReadToByteArray(networkStream, readBuffer, full_message_size, sleepMilliseconds, token);
 
             return Tuple.Create(topicName, readBuffer);
         }
