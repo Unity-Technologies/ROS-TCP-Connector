@@ -8,11 +8,11 @@ using UnityEngine;
 
 public class DefaultVisualizerLaserScan : BasicVisualizer<MLaserScan>
 {
-    public float pointRadius = 0.05f;
+    public LaserScanVisualizerSettings m_Settings;
 
     public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta, Color color, string label)
     {
-        message.Draw<FLU>(drawing, pointRadius);
+        message.Draw<FLU>(drawing, m_Settings);
     }
 
     public override Action CreateGUI(MLaserScan message, MessageMetadata meta, BasicDrawing drawing) => () =>

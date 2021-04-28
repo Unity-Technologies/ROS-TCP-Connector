@@ -101,10 +101,10 @@ namespace Unity.Robotics.MessageVisualizers
                 JointPlacement jointData = m_JointsByName[jointState.joint_names[i]];
 
                 ArticulationBody body = jointData.Joint.GetComponent<ArticulationBody>();
-                Quaternion jointRotation = jointState.transforms[i].rotation.From<FLU>();
+                Quaternion jointRotation = body.anchorRotation * jointState.transforms[i].rotation.From<FLU>() * Quaternion.Inverse(body.anchorRotation);
                 Quaternion localRotation = jointData.Rotation * jointRotation;
-                Vector3 localPosition = jointState.transforms[i].translation.From<FLU>();
-                Vector3 worldPosition = lastWorldPosition + lastWorldRotation * localPosition;
+                Vector3 localPosition = Vector3.Scale(lastJoint.transform.InverseTransformPoint(body.transform.position), jointState.transforms[i].translation.From<FLU>());
+                Vector3 worldPosition = lastWorldPosition + lastWorldRotation * (lastJoint.transform.InverseTransformPoint(body.transform.position) + localPosition);
                 Quaternion worldRotation = lastWorldRotation * localRotation;
 
                 result[i] = new JointPlacement { Joint = jointData.Joint, Position = worldPosition, Rotation = worldRotation };
@@ -182,6 +182,27 @@ namespace Unity.Robotics.MessageVisualizers
         public void DrawJointPath(BasicDrawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
         {
             DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
+        }
+
+        public void DrawEffort(BasicDrawing drawing, MJointState message, Color color) 
+        {
+            if (message.effort.Length > 0)
+            {
+                DrawEffort(drawing, GetJointPlacements(message), color, message.effort);
+            }
+            else 
+            {
+                Debug.Log("This JointState message contains no Effort data!");
+                return;
+            }
+        }
+
+        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, double[] radii) 
+        {
+            for (int i = 0; i < placements.Length; i++)
+            {
+                MessageVisualizations.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
+            }
         }
 
         public void DrawGhost(BasicDrawing drawing, MJointTrajectory message, int pointIndex, Color color)

@@ -25,5 +25,6 @@ public class PointCloudVisualizerSettings : ScriptableObject
     public float m_Size = 0.05f;
 
     public bool m_UseRgbChannel = false;
+    public bool m_UseSeparateRgb = true;
     public bool m_UseSizeChannel = false;
 }

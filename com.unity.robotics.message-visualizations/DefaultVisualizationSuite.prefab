@@ -329,7 +329,6 @@ GameObject:
   - component: {fileID: 181668576215387058}
   - component: {fileID: 2968495175466474870}
   - component: {fileID: 8077769733314959295}
-  - component: {fileID: 6078584077156814660}
   m_Layer: 0
   m_Name: Sensor
   m_TagString: Untagged
@@ -576,7 +575,6 @@ MonoBehaviour:
   m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Settings: {fileID: 11400000, guid: 1b7359921b91a4830ae57b1c5b22caeb, type: 2}
-  m_Radius: 0.05
 --- !u!114 &1444013218372867680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -607,7 +605,7 @@ MonoBehaviour:
   m_Topic: 
   m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
-  pointRadius: 0.05
+  m_Settings: {fileID: 11400000, guid: f53165fb8c4d340e3ad973ec7784242e, type: 2}
 --- !u!114 &7312465512114061202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -685,22 +683,6 @@ MonoBehaviour:
   m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Settings: {fileID: 0}
---- !u!114 &6078584077156814660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4696894301703477914}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16302429be2008e47bd0a636c03d05f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
-  pointRadius: 0.05
 --- !u!1 &8079308096200974559
 GameObject:
   m_ObjectHideFlags: 0

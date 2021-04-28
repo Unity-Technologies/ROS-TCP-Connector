@@ -96,14 +96,23 @@ public class PointCloudEditor : Editor
                     CreateMinMaxSlider(ref pclConfig.m_RgbRange, colorMinVal, colorMaxVal);
                     break;
                 case ColorMode.RGB:
-                    CreateNewDropdown("R channel name:", pclConfig.m_RChannel, (newChannel) => { pclConfig.m_RChannel = newChannel; });
-                    CreateMinMaxSlider(ref pclConfig.m_RRange, colorMinVal, colorMaxVal);
+                    pclConfig.m_UseSeparateRgb = EditorGUILayout.ToggleLeft("Separate R, G, B channels?", pclConfig.m_UseSeparateRgb);
 
-                    CreateNewDropdown("G channel name:", pclConfig.m_GChannel, (newChannel) => { pclConfig.m_GChannel = newChannel; });
-                    CreateMinMaxSlider(ref pclConfig.m_GRange, colorMinVal, colorMaxVal);
+                    if (pclConfig.m_UseSeparateRgb)
+                    {
+                        CreateNewDropdown("R channel name:", pclConfig.m_RChannel, (newChannel) => { pclConfig.m_RChannel = newChannel; });
+                        CreateMinMaxSlider(ref pclConfig.m_RRange, colorMinVal, colorMaxVal);
 
-                    CreateNewDropdown("B channel name:", pclConfig.m_BChannel, (newChannel) => { pclConfig.m_BChannel = newChannel; });
-                    CreateMinMaxSlider(ref pclConfig.m_BRange, colorMinVal, colorMaxVal);
+                        CreateNewDropdown("G channel name:", pclConfig.m_GChannel, (newChannel) => { pclConfig.m_GChannel = newChannel; });
+                        CreateMinMaxSlider(ref pclConfig.m_GRange, colorMinVal, colorMaxVal);
+
+                        CreateNewDropdown("B channel name:", pclConfig.m_BChannel, (newChannel) => { pclConfig.m_BChannel = newChannel; });
+                        CreateMinMaxSlider(ref pclConfig.m_BRange, colorMinVal, colorMaxVal);
+                    }
+                    else
+                    {
+                        CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, (newChannel) => { pclConfig.m_RgbChannel = newChannel; });
+                    }
                     break;
             }
         }

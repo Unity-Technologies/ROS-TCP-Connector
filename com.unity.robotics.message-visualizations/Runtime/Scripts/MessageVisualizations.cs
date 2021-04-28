@@ -68,7 +68,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this MImu message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            message.orientation.Draw<FLU>(drawing);
+            message.orientation.Draw<C>(drawing);
             drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
             DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
         }
@@ -125,16 +125,34 @@ namespace Unity.Robotics.MessageVisualizers
                             }
                             break;
                         case ColorMode.RGB:
-                            if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                            if (cConfs.m_UseSeparateRgb)
                             {
-                                var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], message.channels[channelToIdx[cConfs.m_RChannel]].values[i]);
+                                if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                                {
+                                    var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], message.channels[channelToIdx[cConfs.m_RChannel]].values[i]);
+                                    var r = Mathf.InverseLerp(0, 1, colR);
+
+                                    var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], message.channels[channelToIdx[cConfs.m_GChannel]].values[i]);
+                                    var g = Mathf.InverseLerp(0, 1, colG);
+                                    
+                                    var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], message.channels[channelToIdx[cConfs.m_BChannel]].values[i]);
+                                    var b = Mathf.InverseLerp(0, 1, colB);
+                                    color = new Color(r, g, b, 1);
+                                }
+                            }
+                            else
+                            {
+                                byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[cConfs.m_RgbChannel]].values[i]);
+
+                                var colR = BitConverter.ToSingle(rgb, 0);
                                 var r = Mathf.InverseLerp(0, 1, colR);
 
-                                var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], message.channels[channelToIdx[cConfs.m_GChannel]].values[i]);
+                                var colG = BitConverter.ToSingle(rgb, 8);
                                 var g = Mathf.InverseLerp(0, 1, colG);
-                                
-                                var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], message.channels[channelToIdx[cConfs.m_BChannel]].values[i]);
+
+                                var colB = BitConverter.ToSingle(rgb, 16);
                                 var b = Mathf.InverseLerp(0, 1, colB);
+
                                 color = new Color(r, g, b, 1);
                             }
                             break;
@@ -220,27 +238,33 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
         {
-            drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>(), color);
+            drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
         }
-        public static void Draw<C>(this MLaserScan message, BasicDrawing drawing, float pointRadius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MLaserScan message, BasicDrawing drawing, LaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
-            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), pointRadius);
+            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MLaserScan message, PointCloudDrawing pointCloud, float pointRadius = 0.01f) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this MLaserScan message, PointCloudDrawing pointCloud, LaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
             // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
             float angle = -message.angle_min;
-            foreach(float range in message.ranges)
+            for (int i = 0; i < message.ranges.Length; i++)
             {
-                Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
+                var radius = cConfs.m_PointRadius;
+                Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
                 Vector3 worldPoint = frame.TransformPoint(localPoint);
-                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
-                pointCloud.AddPoint(worldPoint, c, pointRadius);
+                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, message.ranges[i]), 1, 1);
+
+                if (cConfs.m_UseIntensitySize && message.intensities.Length > 0)
+                {
+                    radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], message.intensities[i]);
+                }
+                pointCloud.AddPoint(worldPoint, c, radius);
                 angle -= message.angle_increment;
             }
             pointCloud.Bake();
