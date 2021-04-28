@@ -64,6 +64,7 @@ namespace Unity.Robotics.ROSTCPConnector
         ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
+        public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
         static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
@@ -79,6 +80,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool listenForTFMessages = true;
         Dictionary<string, SubscriberCallback> m_Subscribers = new Dictionary<string, SubscriberCallback>();
+
+        public bool HasSubscriber(string topic)
+        {
+            return m_Subscribers.ContainsKey(topic);
+        }
 
         struct UnityServiceImplementation
         {
@@ -102,17 +108,25 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Subscribers.Add(topic, subCallbacks);
             }
 
-            subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); return null; });
+            subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
         }
         
         // System.Type version for when the message type is unknown at compile time
         public void ReflectionSubscribe(string topic, Type messageType, Action<Message> callback)
         {
             SubscriberCallback subCallbacks;
-            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
             {
-                callback((T)msg);
-            });
+                ConstructorInfo constructor = messageType.GetConstructor(new Type[0]);
+                subCallbacks = new SubscriberCallback
+                {
+                    messageConstructor = () => (Message)constructor.Invoke(null, new object[0]),
+                    callbacks = new List<Action<Message>> { }
+                };
+                m_Subscribers.Add(topic, subCallbacks);
+            };
+
+            subCallbacks.callbacks.Add(callback);
         }
 
         public void ImplementService<T>(string topic, Func<T, Message> callback)
@@ -232,7 +246,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_RosIPAddress = ipAddress;
             m_RosPort = port;
             if (m_HudPanel != null)
-                m_HudPanel.host = $"{ipAddress}:{port}";
+                m_HudPanel.SetRosIP(ipAddress, port);
             Connect();
         }
 
@@ -247,7 +261,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Disconnect()
         {
-            m_ConnectionThreadCancellation.Cancel();
+            if(m_ConnectionThreadCancellation != null)
+                m_ConnectionThreadCancellation.Cancel();
             m_ConnectionThreadCancellation = null;
         }
 
@@ -264,10 +279,10 @@ namespace Unity.Robotics.ROSTCPConnector
             if (m_HudPanel == null)
             {
                 m_HudPanel = gameObject.AddComponent<HUDPanel>();
-                m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
+                m_HudPanel.SetRosIP(RosIPAddress, RosPort);
             }
 
-            m_HudPanel.isEnabled = m_ShowHUD;
+            m_HudPanel.IsEnabled = m_ShowHUD;
         }
 
         void RosUnityErrorCallback(MRosUnityError error)
@@ -440,7 +455,7 @@ namespace Unity.Robotics.ROSTCPConnector
             while (read < length && networkStream.CanRead)
             {
                 while (!token.IsCancellationRequested && !networkStream.DataAvailable)
-                    await Task.Yield();
+                    await Task.Delay(30);
 
                 token.ThrowIfCancellationRequested();
                 read += await networkStream.ReadAsync(array, read, length - read, token);

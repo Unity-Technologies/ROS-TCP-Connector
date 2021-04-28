@@ -9,7 +9,8 @@ namespace RosMessageTypes.RosTcpEndpoint
 {
     public class MRosUnitySrvMessage : Message
     {
-        public const string RosMessageName = "ros_tcp_endpoint/RosUnitySrvMessage";
+        public const string k_RosMessageName = "ros_tcp_endpoint/RosUnitySrvMessage";
+        public override string RosMessageName => k_RosMessageName;
 
         public int srv_id;
         public bool is_request;

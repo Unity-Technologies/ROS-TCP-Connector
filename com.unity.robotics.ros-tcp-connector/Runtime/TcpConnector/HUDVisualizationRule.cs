@@ -53,7 +53,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 Type messageType = HUDPanel.GetMessageClassByName(saveState.RosMessageName);
                 if (messageType == null)
-                    Debug.LogError($"Failed to subscribe to {saveState.RosMessageName} - no class for this message type!");
+                    Debug.LogError($"Failed to subscribe to topic {Topic} - no class has RosMessageName \"{saveState.RosMessageName}\"!");
                 else
                     ROSConnection.instance.ReflectionSubscribe(Topic, messageType, (Message m) => { });
 

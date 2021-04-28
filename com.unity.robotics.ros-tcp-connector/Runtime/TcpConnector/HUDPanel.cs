@@ -56,7 +56,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         // ROS Message variables
         string m_RosConnectAddress = "";
-        string m_UnityListenAddress = "Not listening";
 
         int m_NextServiceID = 101;
         int m_NextWindowID = 101;
@@ -201,11 +200,6 @@ namespace Unity.Robotics.ROSTCPConnector
             m_RosConnectAddress = $"{ip}:{port}";
         }
 
-        public void OnStartMessageServer(string ip, int port)
-        {
-            m_UnityListenAddress = $"{ip}:{port}";
-        }
-
         void OnGUI()
         {
             if (!IsEnabled)
@@ -220,10 +214,12 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label(m_RosConnectAddress, s_IPStyle);
             GUILayout.EndHorizontal();
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Unity IP: ", s_BoldStyle, GUILayout.Width(100));
-            GUILayout.Label(m_UnityListenAddress, s_IPStyle);
-            GUILayout.EndHorizontal();
+            if (!ROSConnection.instance.HasConnectionThread)
+            {
+                GUILayout.Label("(Not connected)");
+                if (GUILayout.Button("Connect"))
+                    ROSConnection.instance.Connect();
+            }
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Topics"))
