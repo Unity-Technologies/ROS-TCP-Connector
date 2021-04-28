@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -38,6 +39,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         [Tooltip("While waiting to read a full message, check this many times before giving up.")]
         public int awaitDataReadRetry = 10;
+
+        [Tooltip("Close connection if nothing has been sent for this long (seconds).")]
+        public float timeoutOnIdle = 10;
 
         static object _lock = new object(); // sync lock 
         static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
@@ -238,6 +242,8 @@ namespace Unity.Robotics.ROSTCPConnector
         }
         void Start()
         {
+            if(!IPFormatIsCorrect(rosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
 
@@ -246,6 +252,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (overrideUnityIP != "")
             {
+                if(!IPFormatIsCorrect(overrideUnityIP))
+                    Debug.LogError("Override Unity IP address is not correct");
                 StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
             }
 
@@ -308,14 +316,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
                 while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
                 {
-                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
-
                     if (!Application.isPlaying)
                     {
                         networkStream.Close();
                         return;
                     }
+
+                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
+                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
 
                     if (!subscribers.TryGetValue(topicName, out subs))
                         continue; // not interested in this topic
@@ -350,8 +358,8 @@ namespace Unity.Robotics.ROSTCPConnector
                     networkStream.Close();
                     return;
                 }
-            }
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + 15); // time out if idle too long.
+            } 
+            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeoutOnIdle); // time out if idle too long.
             networkStream.Close();
         }
 
@@ -644,6 +652,34 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 networkStream.Write(segmentData, 0, segmentData.Length);
             }
+        }
+
+        public static bool IPFormatIsCorrect(string ipAddress)
+        {
+            if(ipAddress == null || ipAddress == "")
+                return false;
+            
+            // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
+            if(Char.IsLetter(ipAddress[0]))
+            {
+                foreach(Char subChar in ipAddress)
+                {
+                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                        return false;
+                }
+
+                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
+                    return false;
+                return true;
+            }
+
+            string[] subAdds = ipAddress.Split('.');
+            if(subAdds.Length != 4)
+            {
+                return false;
+            }
+            IPAddress parsedipAddress;
+            return IPAddress.TryParse(ipAddress, out parsedipAddress);
         }
     }
 }
