@@ -62,5 +62,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\nposes: " + System.String.Join(", ", poses.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPoseArray>(k_RosMessageName);
+        }
     }
 }

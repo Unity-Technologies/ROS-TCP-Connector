@@ -119,5 +119,11 @@ namespace RosMessageTypes.Sensor
             "\nstep: " + step.ToString() +
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MImage>(k_RosMessageName);
+        }
     }
 }

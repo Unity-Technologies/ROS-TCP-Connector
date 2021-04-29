@@ -136,5 +136,11 @@ namespace RosMessageTypes.Sensor
             "\ndata: " + System.String.Join(", ", data.ToList()) +
             "\nis_dense: " + is_dense.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPointCloud2>(k_RosMessageName);
+        }
     }
 }

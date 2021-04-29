@@ -82,5 +82,11 @@ namespace RosMessageTypes.Sensor
             "\nmagnetic_field: " + magnetic_field.ToString() +
             "\nmagnetic_field_covariance: " + System.String.Join(", ", magnetic_field_covariance.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMagneticField>(k_RosMessageName);
+        }
     }
 }

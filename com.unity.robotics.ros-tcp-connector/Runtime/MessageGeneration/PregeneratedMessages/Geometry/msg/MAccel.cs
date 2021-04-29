@@ -50,5 +50,11 @@ namespace RosMessageTypes.Geometry
             "\nlinear: " + linear.ToString() +
             "\nangular: " + angular.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MAccel>(k_RosMessageName);
+        }
     }
 }

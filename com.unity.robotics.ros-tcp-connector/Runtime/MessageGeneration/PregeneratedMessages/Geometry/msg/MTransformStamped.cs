@@ -66,5 +66,11 @@ namespace RosMessageTypes.Geometry
             "\nchild_frame_id: " + child_frame_id.ToString() +
             "\ntransform: " + transform.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTransformStamped>(k_RosMessageName);
+        }
     }
 }

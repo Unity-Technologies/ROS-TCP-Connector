@@ -76,5 +76,11 @@ namespace RosMessageTypes.Nav
             "\ncell_height: " + cell_height.ToString() +
             "\ncells: " + System.String.Join(", ", cells.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MGridCells>(k_RosMessageName);
+        }
     }
 }

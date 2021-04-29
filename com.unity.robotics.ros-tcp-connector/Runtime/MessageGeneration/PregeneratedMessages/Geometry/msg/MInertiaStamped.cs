@@ -50,5 +50,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\ninertia: " + inertia.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInertiaStamped>(k_RosMessageName);
+        }
     }
 }

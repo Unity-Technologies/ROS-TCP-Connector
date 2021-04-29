@@ -46,5 +46,11 @@ namespace RosMessageTypes.RosTcpEndpoint
             return "MRosUnityError: " +
             "\nmessage: " + message.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRosUnityError>(k_RosMessageName);
+        }
     }
 }

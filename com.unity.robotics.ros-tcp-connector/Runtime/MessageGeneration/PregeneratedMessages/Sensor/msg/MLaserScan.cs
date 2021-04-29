@@ -151,5 +151,11 @@ namespace RosMessageTypes.Sensor
             "\nranges: " + System.String.Join(", ", ranges.ToList()) +
             "\nintensities: " + System.String.Join(", ", intensities.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MLaserScan>(k_RosMessageName);
+        }
     }
 }

@@ -74,5 +74,11 @@ namespace RosMessageTypes.Shape
             "\ntriangles: " + System.String.Join(", ", triangles.ToList()) +
             "\nvertices: " + System.String.Join(", ", vertices.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMesh>(k_RosMessageName);
+        }
     }
 }

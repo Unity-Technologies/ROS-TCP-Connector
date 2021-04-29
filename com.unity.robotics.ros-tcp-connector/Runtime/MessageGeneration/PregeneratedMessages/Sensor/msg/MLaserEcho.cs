@@ -58,5 +58,11 @@ namespace RosMessageTypes.Sensor
             return "MLaserEcho: " +
             "\nechoes: " + System.String.Join(", ", echoes.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MLaserEcho>(k_RosMessageName);
+        }
     }
 }

@@ -78,5 +78,11 @@ namespace RosMessageTypes.Nav
             "\nheight: " + height.ToString() +
             "\norigin: " + origin.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMapMetaData>(k_RosMessageName);
+        }
     }
 }

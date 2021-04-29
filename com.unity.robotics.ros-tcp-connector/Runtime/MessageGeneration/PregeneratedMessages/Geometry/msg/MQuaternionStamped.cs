@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\nquaternion: " + quaternion.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MQuaternionStamped>(k_RosMessageName);
+        }
     }
 }

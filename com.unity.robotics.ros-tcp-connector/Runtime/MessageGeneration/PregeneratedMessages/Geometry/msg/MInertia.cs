@@ -98,5 +98,11 @@ namespace RosMessageTypes.Geometry
             "\niyz: " + iyz.ToString() +
             "\nizz: " + izz.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInertia>(k_RosMessageName);
+        }
     }
 }

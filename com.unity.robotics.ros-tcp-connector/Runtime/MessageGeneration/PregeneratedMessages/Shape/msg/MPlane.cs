@@ -57,5 +57,11 @@ namespace RosMessageTypes.Shape
             return "MPlane: " +
             "\ncoef: " + System.String.Join(", ", coef.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPlane>(k_RosMessageName);
+        }
     }
 }

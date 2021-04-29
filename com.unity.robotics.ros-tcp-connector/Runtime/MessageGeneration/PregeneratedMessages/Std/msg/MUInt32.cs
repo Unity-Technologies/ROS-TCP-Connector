@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MUInt32: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MUInt32>(k_RosMessageName);
+        }
     }
 }

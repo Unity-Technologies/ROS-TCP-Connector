@@ -80,5 +80,11 @@ namespace RosMessageTypes.Trajectory
             "\njoint_names: " + System.String.Join(", ", joint_names.ToList()) +
             "\npoints: " + System.String.Join(", ", points.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJointTrajectory>(k_RosMessageName);
+        }
     }
 }

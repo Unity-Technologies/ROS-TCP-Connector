@@ -115,5 +115,11 @@ namespace RosMessageTypes.Trajectory
             "\neffort: " + System.String.Join(", ", effort.ToList()) +
             "\ntime_from_start: " + time_from_start.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJointTrajectoryPoint>(k_RosMessageName);
+        }
     }
 }

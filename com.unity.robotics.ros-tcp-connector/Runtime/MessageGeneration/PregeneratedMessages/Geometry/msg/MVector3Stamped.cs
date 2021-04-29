@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\nvector: " + vector.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MVector3Stamped>(k_RosMessageName);
+        }
     }
 }

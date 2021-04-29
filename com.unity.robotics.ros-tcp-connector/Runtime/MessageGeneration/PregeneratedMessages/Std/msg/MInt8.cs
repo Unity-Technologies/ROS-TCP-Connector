@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MInt8: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInt8>(k_RosMessageName);
+        }
     }
 }

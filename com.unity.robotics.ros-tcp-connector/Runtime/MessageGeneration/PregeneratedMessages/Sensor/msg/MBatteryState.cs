@@ -218,5 +218,11 @@ namespace RosMessageTypes.Sensor
             "\nlocation: " + location.ToString() +
             "\nserial_number: " + serial_number.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MBatteryState>(k_RosMessageName);
+        }
     }
 }

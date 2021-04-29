@@ -65,5 +65,11 @@ namespace RosMessageTypes.Sensor
             "\nstatus: " + status.ToString() +
             "\nservice: " + service.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MNavSatStatus>(k_RosMessageName);
+        }
     }
 }

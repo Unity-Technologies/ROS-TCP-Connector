@@ -86,5 +86,11 @@ namespace RosMessageTypes.Sensor
             "\npoints: " + System.String.Join(", ", points.ToList()) +
             "\nchannels: " + System.String.Join(", ", channels.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPointCloud>(k_RosMessageName);
+        }
     }
 }

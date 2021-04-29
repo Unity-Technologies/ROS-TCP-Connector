@@ -60,5 +60,11 @@ namespace RosMessageTypes.Tf2
             "\nerror: " + error.ToString() +
             "\nerror_string: " + error_string.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTF2Error>(k_RosMessageName);
+        }
     }
 }

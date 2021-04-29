@@ -79,5 +79,11 @@ namespace RosMessageTypes.Visualization
             "\nseq_num: " + seq_num.ToString() +
             "\nmarkers: " + System.String.Join(", ", markers.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarkerInit>(k_RosMessageName);
+        }
     }
 }

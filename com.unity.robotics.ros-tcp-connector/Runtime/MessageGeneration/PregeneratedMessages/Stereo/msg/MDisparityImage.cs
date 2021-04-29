@@ -109,5 +109,11 @@ namespace RosMessageTypes.Stereo
             "\nmax_disparity: " + max_disparity.ToString() +
             "\ndelta_d: " + delta_d.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MDisparityImage>(k_RosMessageName);
+        }
     }
 }

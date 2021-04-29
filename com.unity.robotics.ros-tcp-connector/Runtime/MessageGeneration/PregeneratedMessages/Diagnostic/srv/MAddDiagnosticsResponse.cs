@@ -60,3 +60,10 @@ namespace RosMessageTypes.Diagnostic
         }
     }
 }
+namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
+{
+    partial class MessageRegistrar
+    {
+        static bool MAddDiagnosticsResponse = MessageRegistry.Register<RosMessageTypes.Diagnostic.MAddDiagnosticsResponse>("diagnostic_msgs/AddDiagnostics");
+    }
+}

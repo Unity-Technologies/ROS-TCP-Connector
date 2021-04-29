@@ -66,5 +66,11 @@ namespace RosMessageTypes.Sensor
             "\nid: " + id.ToString() +
             "\nintensity: " + intensity.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJoyFeedback>(k_RosMessageName);
+        }
     }
 }

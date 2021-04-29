@@ -59,5 +59,11 @@ namespace RosMessageTypes.Octomap
             "\norigin: " + origin.ToString() +
             "\noctomap: " + octomap.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MOctomapWithPose>(k_RosMessageName);
+        }
     }
 }

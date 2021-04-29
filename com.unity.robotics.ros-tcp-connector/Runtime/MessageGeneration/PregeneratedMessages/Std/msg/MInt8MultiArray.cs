@@ -63,5 +63,11 @@ namespace RosMessageTypes.Std
             "\nlayout: " + layout.ToString() +
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInt8MultiArray>(k_RosMessageName);
+        }
     }
 }

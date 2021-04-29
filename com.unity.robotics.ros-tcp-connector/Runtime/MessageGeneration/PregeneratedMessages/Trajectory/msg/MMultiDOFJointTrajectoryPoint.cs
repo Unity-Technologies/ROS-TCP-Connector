@@ -98,5 +98,11 @@ namespace RosMessageTypes.Trajectory
             "\naccelerations: " + System.String.Join(", ", accelerations.ToList()) +
             "\ntime_from_start: " + time_from_start.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMultiDOFJointTrajectoryPoint>(k_RosMessageName);
+        }
     }
 }

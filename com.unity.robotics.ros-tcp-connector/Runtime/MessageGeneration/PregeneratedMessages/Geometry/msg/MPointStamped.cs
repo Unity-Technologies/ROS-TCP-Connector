@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\npoint: " + point.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPointStamped>(k_RosMessageName);
+        }
     }
 }

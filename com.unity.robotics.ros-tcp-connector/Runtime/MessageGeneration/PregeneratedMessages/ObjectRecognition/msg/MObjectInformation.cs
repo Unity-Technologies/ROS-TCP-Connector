@@ -65,5 +65,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\nground_truth_mesh: " + ground_truth_mesh.ToString() +
             "\nground_truth_point_cloud: " + ground_truth_point_cloud.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MObjectInformation>(k_RosMessageName);
+        }
     }
 }

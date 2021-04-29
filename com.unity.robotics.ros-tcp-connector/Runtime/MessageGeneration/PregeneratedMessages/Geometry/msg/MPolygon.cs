@@ -55,5 +55,11 @@ namespace RosMessageTypes.Geometry
             return "MPolygon: " +
             "\npoints: " + System.String.Join(", ", points.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPolygon>(k_RosMessageName);
+        }
     }
 }

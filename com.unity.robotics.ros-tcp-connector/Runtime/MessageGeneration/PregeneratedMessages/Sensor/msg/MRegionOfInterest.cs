@@ -88,5 +88,11 @@ namespace RosMessageTypes.Sensor
             "\nwidth: " + width.ToString() +
             "\ndo_rectify: " + do_rectify.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRegionOfInterest>(k_RosMessageName);
+        }
     }
 }

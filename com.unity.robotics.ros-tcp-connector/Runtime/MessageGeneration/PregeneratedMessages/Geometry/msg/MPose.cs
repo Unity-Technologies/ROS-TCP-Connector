@@ -50,5 +50,11 @@ namespace RosMessageTypes.Geometry
             "\nposition: " + position.ToString() +
             "\norientation: " + orientation.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPose>(k_RosMessageName);
+        }
     }
 }

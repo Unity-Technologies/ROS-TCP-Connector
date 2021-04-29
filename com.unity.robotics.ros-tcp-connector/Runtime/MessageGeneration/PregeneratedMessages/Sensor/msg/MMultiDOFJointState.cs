@@ -133,5 +133,11 @@ namespace RosMessageTypes.Sensor
             "\ntwist: " + System.String.Join(", ", twist.ToList()) +
             "\nwrench: " + System.String.Join(", ", wrench.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMultiDOFJointState>(k_RosMessageName);
+        }
     }
 }

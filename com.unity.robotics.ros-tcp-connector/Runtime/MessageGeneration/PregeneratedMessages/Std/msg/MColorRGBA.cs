@@ -65,5 +65,11 @@ namespace RosMessageTypes.Std
             "\nb: " + b.ToString() +
             "\na: " + a.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MColorRGBA>(k_RosMessageName);
+        }
     }
 }

@@ -70,5 +70,11 @@ namespace RosMessageTypes.Std
             "\nstamp: " + stamp.ToString() +
             "\nframe_id: " + frame_id.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MHeader>(k_RosMessageName);
+        }
     }
 }

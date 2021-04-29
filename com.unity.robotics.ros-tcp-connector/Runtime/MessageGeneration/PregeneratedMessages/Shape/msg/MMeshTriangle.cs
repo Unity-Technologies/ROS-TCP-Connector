@@ -53,5 +53,11 @@ namespace RosMessageTypes.Shape
             return "MMeshTriangle: " +
             "\nvertex_indices: " + System.String.Join(", ", vertex_indices.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMeshTriangle>(k_RosMessageName);
+        }
     }
 }

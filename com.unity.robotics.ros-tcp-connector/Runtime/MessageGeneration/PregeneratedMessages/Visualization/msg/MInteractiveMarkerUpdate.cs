@@ -131,5 +131,11 @@ namespace RosMessageTypes.Visualization
             "\nposes: " + System.String.Join(", ", poses.ToList()) +
             "\nerases: " + System.String.Join(", ", erases.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarkerUpdate>(k_RosMessageName);
+        }
     }
 }

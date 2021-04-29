@@ -54,5 +54,11 @@ namespace RosMessageTypes.Tf2
             return "MTFMessage: " +
             "\ntransforms: " + System.String.Join(", ", transforms.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTFMessage>(k_RosMessageName);
+        }
     }
 }

@@ -66,5 +66,11 @@ namespace RosMessageTypes.Sensor
             "\nfluid_pressure: " + fluid_pressure.ToString() +
             "\nvariance: " + variance.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MFluidPressure>(k_RosMessageName);
+        }
     }
 }

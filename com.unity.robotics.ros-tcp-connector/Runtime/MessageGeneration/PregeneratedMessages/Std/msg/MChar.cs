@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MChar: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MChar>(k_RosMessageName);
+        }
     }
 }

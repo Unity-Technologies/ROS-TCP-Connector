@@ -132,5 +132,11 @@ namespace RosMessageTypes.Sensor
             "\nvelocity: " + System.String.Join(", ", velocity.ToList()) +
             "\neffort: " + System.String.Join(", ", effort.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJointState>(k_RosMessageName);
+        }
     }
 }

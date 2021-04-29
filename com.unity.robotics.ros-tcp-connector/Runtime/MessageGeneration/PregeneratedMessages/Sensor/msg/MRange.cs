@@ -112,5 +112,11 @@ namespace RosMessageTypes.Sensor
             "\nmax_range: " + max_range.ToString() +
             "\nrange: " + range.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRange>(k_RosMessageName);
+        }
     }
 }

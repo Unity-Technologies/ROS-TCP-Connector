@@ -122,5 +122,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\nbounding_contours: " + System.String.Join(", ", bounding_contours.ToList()) +
             "\npose: " + pose.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRecognizedObject>(k_RosMessageName);
+        }
     }
 }

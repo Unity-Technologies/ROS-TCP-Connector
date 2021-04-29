@@ -63,5 +63,11 @@ namespace RosMessageTypes.Visualization
             "\npose: " + pose.ToString() +
             "\nname: " + name.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarkerPose>(k_RosMessageName);
+        }
     }
 }

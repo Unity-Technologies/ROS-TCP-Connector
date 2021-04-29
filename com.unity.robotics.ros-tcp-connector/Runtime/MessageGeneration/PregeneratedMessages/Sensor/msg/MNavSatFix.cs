@@ -122,5 +122,11 @@ namespace RosMessageTypes.Sensor
             "\nposition_covariance: " + System.String.Join(", ", position_covariance.ToList()) +
             "\nposition_covariance_type: " + position_covariance_type.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MNavSatFix>(k_RosMessageName);
+        }
     }
 }

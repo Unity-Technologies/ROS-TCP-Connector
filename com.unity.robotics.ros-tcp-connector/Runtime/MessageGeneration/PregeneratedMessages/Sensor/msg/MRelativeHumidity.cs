@@ -67,5 +67,11 @@ namespace RosMessageTypes.Sensor
             "\nrelative_humidity: " + relative_humidity.ToString() +
             "\nvariance: " + variance.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRelativeHumidity>(k_RosMessageName);
+        }
     }
 }

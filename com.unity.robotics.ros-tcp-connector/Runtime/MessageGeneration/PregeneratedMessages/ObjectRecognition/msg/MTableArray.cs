@@ -62,5 +62,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\nheader: " + header.ToString() +
             "\ntables: " + System.String.Join(", ", tables.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTableArray>(k_RosMessageName);
+        }
     }
 }

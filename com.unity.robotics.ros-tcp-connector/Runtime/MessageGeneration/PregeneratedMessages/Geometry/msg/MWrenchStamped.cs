@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\nwrench: " + wrench.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MWrenchStamped>(k_RosMessageName);
+        }
     }
 }

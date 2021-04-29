@@ -164,5 +164,11 @@ namespace RosMessageTypes.Visualization
             "\npoints: " + System.String.Join(", ", points.ToList()) +
             "\noutline_colors: " + System.String.Join(", ", outline_colors.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MImageMarker>(k_RosMessageName);
+        }
     }
 }

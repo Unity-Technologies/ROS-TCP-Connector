@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MFloat32: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MFloat32>(k_RosMessageName);
+        }
     }
 }

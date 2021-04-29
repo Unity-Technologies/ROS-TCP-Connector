@@ -128,5 +128,11 @@ namespace RosMessageTypes.Visualization
             "\nmouse_point: " + mouse_point.ToString() +
             "\nmouse_point_valid: " + mouse_point_valid.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarkerFeedback>(k_RosMessageName);
+        }
     }
 }

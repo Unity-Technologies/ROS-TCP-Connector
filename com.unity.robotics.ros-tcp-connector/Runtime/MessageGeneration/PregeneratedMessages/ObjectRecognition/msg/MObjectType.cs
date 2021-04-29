@@ -76,5 +76,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\nkey: " + key.ToString() +
             "\ndb: " + db.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MObjectType>(k_RosMessageName);
+        }
     }
 }

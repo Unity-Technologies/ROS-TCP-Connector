@@ -81,5 +81,11 @@ namespace RosMessageTypes.Sensor
             "\ndatatype: " + datatype.ToString() +
             "\ncount: " + count.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPointField>(k_RosMessageName);
+        }
     }
 }

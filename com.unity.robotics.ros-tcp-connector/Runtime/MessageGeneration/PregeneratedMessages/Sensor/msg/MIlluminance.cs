@@ -74,5 +74,11 @@ namespace RosMessageTypes.Sensor
             "\nilluminance: " + illuminance.ToString() +
             "\nvariance: " + variance.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MIlluminance>(k_RosMessageName);
+        }
     }
 }

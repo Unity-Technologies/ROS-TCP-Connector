@@ -122,5 +122,11 @@ namespace RosMessageTypes.Visualization
             "\nmenu_entries: " + System.String.Join(", ", menu_entries.ToList()) +
             "\ncontrols: " + System.String.Join(", ", controls.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarker>(k_RosMessageName);
+        }
     }
 }

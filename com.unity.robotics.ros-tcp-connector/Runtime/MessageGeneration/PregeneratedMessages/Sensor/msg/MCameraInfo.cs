@@ -259,5 +259,11 @@ namespace RosMessageTypes.Sensor
             "\nbinning_y: " + binning_y.ToString() +
             "\nroi: " + roi.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MCameraInfo>(k_RosMessageName);
+        }
     }
 }

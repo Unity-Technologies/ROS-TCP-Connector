@@ -118,5 +118,11 @@ namespace RosMessageTypes.Visualization
             "\ncommand: " + command.ToString() +
             "\ncommand_type: " + command_type.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMenuEntry>(k_RosMessageName);
+        }
     }
 }

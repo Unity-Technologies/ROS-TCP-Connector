@@ -55,5 +55,11 @@ namespace RosMessageTypes.Sensor
             return "MJoyFeedbackArray: " +
             "\narray: " + System.String.Join(", ", array.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJoyFeedbackArray>(k_RosMessageName);
+        }
     }
 }

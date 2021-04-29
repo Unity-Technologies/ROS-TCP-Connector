@@ -54,5 +54,11 @@ namespace RosMessageTypes.Visualization
             return "MMarkerArray: " +
             "\nmarkers: " + System.String.Join(", ", markers.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMarkerArray>(k_RosMessageName);
+        }
     }
 }

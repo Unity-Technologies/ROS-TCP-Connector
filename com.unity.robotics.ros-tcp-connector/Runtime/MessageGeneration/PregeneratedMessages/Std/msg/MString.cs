@@ -46,5 +46,11 @@ namespace RosMessageTypes.Std
             return "MString: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MString>(k_RosMessageName);
+        }
     }
 }

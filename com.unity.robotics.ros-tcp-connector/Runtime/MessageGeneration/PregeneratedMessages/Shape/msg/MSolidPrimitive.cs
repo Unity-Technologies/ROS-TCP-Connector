@@ -89,5 +89,11 @@ namespace RosMessageTypes.Shape
             "\ntype: " + type.ToString() +
             "\ndimensions: " + System.String.Join(", ", dimensions.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MSolidPrimitive>(k_RosMessageName);
+        }
     }
 }

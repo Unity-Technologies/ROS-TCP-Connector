@@ -63,5 +63,11 @@ namespace RosMessageTypes.Geometry
             "\ny: " + y.ToString() +
             "\ntheta: " + theta.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPose2D>(k_RosMessageName);
+        }
     }
 }

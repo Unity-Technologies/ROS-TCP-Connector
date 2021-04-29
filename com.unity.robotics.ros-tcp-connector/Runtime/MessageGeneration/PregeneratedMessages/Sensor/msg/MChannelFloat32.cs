@@ -82,5 +82,11 @@ namespace RosMessageTypes.Sensor
             "\nname: " + name.ToString() +
             "\nvalues: " + System.String.Join(", ", values.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MChannelFloat32>(k_RosMessageName);
+        }
     }
 }

@@ -50,5 +50,11 @@ namespace RosMessageTypes.Geometry
             "\ntranslation: " + translation.ToString() +
             "\nrotation: " + rotation.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTransform>(k_RosMessageName);
+        }
     }
 }

@@ -82,5 +82,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\nobjects: " + System.String.Join(", ", objects.ToList()) +
             "\ncooccurrence: " + System.String.Join(", ", cooccurrence.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRecognizedObjectArray>(k_RosMessageName);
+        }
     }
 }

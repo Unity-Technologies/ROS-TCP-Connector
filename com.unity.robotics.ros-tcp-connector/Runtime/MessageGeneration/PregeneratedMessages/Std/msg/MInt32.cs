@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MInt32: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInt32>(k_RosMessageName);
+        }
     }
 }

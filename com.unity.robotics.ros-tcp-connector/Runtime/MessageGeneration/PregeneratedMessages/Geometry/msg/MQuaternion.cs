@@ -66,5 +66,11 @@ namespace RosMessageTypes.Geometry
             "\nz: " + z.ToString() +
             "\nw: " + w.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MQuaternion>(k_RosMessageName);
+        }
     }
 }

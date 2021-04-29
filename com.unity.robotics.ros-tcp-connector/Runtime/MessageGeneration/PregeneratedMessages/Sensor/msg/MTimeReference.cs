@@ -64,5 +64,11 @@ namespace RosMessageTypes.Sensor
             "\ntime_ref: " + time_ref.ToString() +
             "\nsource: " + source.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTimeReference>(k_RosMessageName);
+        }
     }
 }

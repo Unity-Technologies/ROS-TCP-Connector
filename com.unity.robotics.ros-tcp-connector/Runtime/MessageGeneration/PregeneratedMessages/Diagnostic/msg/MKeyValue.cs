@@ -57,5 +57,11 @@ namespace RosMessageTypes.Diagnostic
             "\nkey: " + key.ToString() +
             "\nvalue: " + value.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MKeyValue>(k_RosMessageName);
+        }
     }
 }

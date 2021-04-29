@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nheader: " + header.ToString() +
             "\ntwist: " + twist.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTwistStamped>(k_RosMessageName);
+        }
     }
 }

@@ -82,5 +82,11 @@ namespace RosMessageTypes.Sensor
             "\naxes: " + System.String.Join(", ", axes.ToList()) +
             "\nbuttons: " + System.String.Join(", ", buttons.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MJoy>(k_RosMessageName);
+        }
     }
 }

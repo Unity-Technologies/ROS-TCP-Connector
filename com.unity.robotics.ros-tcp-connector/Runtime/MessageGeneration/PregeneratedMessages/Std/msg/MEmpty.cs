@@ -33,5 +33,11 @@ namespace RosMessageTypes.Std
         {
             return "MEmpty: ";
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MEmpty>(k_RosMessageName);
+        }
     }
 }

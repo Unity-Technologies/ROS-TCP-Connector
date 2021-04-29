@@ -63,5 +63,11 @@ namespace RosMessageTypes.Geometry
             "\npose: " + pose.ToString() +
             "\ncovariance: " + System.String.Join(", ", covariance.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPoseWithCovariance>(k_RosMessageName);
+        }
     }
 }

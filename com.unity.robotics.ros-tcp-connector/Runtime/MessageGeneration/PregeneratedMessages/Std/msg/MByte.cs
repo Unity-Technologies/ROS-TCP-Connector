@@ -44,5 +44,11 @@ namespace RosMessageTypes.Std
             return "MByte: " +
             "\ndata: " + data.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MByte>(k_RosMessageName);
+        }
     }
 }

@@ -63,5 +63,11 @@ namespace RosMessageTypes.Sensor
             "\ntemperature: " + temperature.ToString() +
             "\nvariance: " + variance.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTemperature>(k_RosMessageName);
+        }
     }
 }

@@ -64,5 +64,11 @@ namespace RosMessageTypes.Diagnostic
             "\nheader: " + header.ToString() +
             "\nstatus: " + System.String.Join(", ", status.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MDiagnosticArray>(k_RosMessageName);
+        }
     }
 }

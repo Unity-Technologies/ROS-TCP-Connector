@@ -123,5 +123,11 @@ namespace RosMessageTypes.Sensor
             "\nlinear_acceleration: " + linear_acceleration.ToString() +
             "\nlinear_acceleration_covariance: " + System.String.Join(", ", linear_acceleration_covariance.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MImu>(k_RosMessageName);
+        }
     }
 }

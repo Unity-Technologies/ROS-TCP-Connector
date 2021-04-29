@@ -85,5 +85,11 @@ namespace RosMessageTypes.Std
             "\ndim: " + System.String.Join(", ", dim.ToList()) +
             "\ndata_offset: " + data_offset.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMultiArrayLayout>(k_RosMessageName);
+        }
     }
 }

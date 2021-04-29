@@ -80,5 +80,11 @@ namespace RosMessageTypes.Sensor
             "\nformat: " + format.ToString() +
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MCompressedImage>(k_RosMessageName);
+        }
     }
 }

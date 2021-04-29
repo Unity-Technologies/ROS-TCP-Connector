@@ -68,5 +68,11 @@ namespace RosMessageTypes.Nav
             "\npose: " + pose.ToString() +
             "\ntwist: " + twist.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MOdometry>(k_RosMessageName);
+        }
     }
 }

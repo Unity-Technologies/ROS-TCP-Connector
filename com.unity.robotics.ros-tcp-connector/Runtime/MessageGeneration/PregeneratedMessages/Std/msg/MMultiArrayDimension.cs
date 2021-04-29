@@ -63,5 +63,11 @@ namespace RosMessageTypes.Std
             "\nsize: " + size.ToString() +
             "\nstride: " + stride.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMultiArrayDimension>(k_RosMessageName);
+        }
     }
 }

@@ -63,5 +63,11 @@ namespace RosMessageTypes.Geometry
             "\naccel: " + accel.ToString() +
             "\ncovariance: " + System.String.Join(", ", covariance.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MAccelWithCovariance>(k_RosMessageName);
+        }
     }
 }

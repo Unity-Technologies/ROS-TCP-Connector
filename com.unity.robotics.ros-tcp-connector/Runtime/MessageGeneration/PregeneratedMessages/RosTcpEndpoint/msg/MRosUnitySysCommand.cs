@@ -55,5 +55,11 @@ namespace RosMessageTypes.RosTcpEndpoint
             "\ncommand: " + command.ToString() +
             "\nparams_json: " + params_json.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MRosUnitySysCommand>(k_RosMessageName);
+        }
     }
 }

@@ -159,5 +159,11 @@ namespace RosMessageTypes.Visualization
             "\nindependent_marker_orientation: " + independent_marker_orientation.ToString() +
             "\ndescription: " + description.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MInteractiveMarkerControl>(k_RosMessageName);
+        }
     }
 }

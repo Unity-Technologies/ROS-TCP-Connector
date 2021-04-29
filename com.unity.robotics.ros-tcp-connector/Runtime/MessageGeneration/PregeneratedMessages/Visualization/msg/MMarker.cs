@@ -197,5 +197,11 @@ namespace RosMessageTypes.Visualization
             "\nmesh_resource: " + mesh_resource.ToString() +
             "\nmesh_use_embedded_materials: " + mesh_use_embedded_materials.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MMarker>(k_RosMessageName);
+        }
     }
 }

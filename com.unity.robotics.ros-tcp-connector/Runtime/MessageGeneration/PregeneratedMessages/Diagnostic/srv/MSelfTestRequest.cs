@@ -35,3 +35,10 @@ namespace RosMessageTypes.Diagnostic
         }
     }
 }
+namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
+{
+    partial class MessageRegistrar
+    {
+        static bool MSelfTestRequest = MessageRegistry.Register<RosMessageTypes.Diagnostic.MSelfTestRequest>("diagnostic_msgs/SelfTest");
+    }
+}

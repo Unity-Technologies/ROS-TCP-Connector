@@ -75,5 +75,11 @@ namespace RosMessageTypes.ObjectRecognition
             "\npose: " + pose.ToString() +
             "\nconvex_hull: " + System.String.Join(", ", convex_hull.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MTable>(k_RosMessageName);
+        }
     }
 }

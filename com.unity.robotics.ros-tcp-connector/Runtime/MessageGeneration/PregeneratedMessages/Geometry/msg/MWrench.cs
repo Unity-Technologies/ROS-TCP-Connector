@@ -51,5 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nforce: " + force.ToString() +
             "\ntorque: " + torque.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MWrench>(k_RosMessageName);
+        }
     }
 }

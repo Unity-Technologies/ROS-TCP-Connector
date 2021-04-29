@@ -63,5 +63,11 @@ namespace RosMessageTypes.Actionlib
             "\nheader: " + header.ToString() +
             "\nstatus_list: " + System.String.Join(", ", status_list.ToList());
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MGoalStatusArray>(k_RosMessageName);
+        }
     }
 }

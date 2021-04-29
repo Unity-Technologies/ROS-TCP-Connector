@@ -59,5 +59,11 @@ namespace RosMessageTypes.Geometry
             "\ny: " + y.ToString() +
             "\nz: " + z.ToString();
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MPoint>(k_RosMessageName);
+        }
     }
 }
