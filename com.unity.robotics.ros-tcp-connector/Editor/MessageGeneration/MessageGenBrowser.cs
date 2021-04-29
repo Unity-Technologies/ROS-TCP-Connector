@@ -68,11 +68,6 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
 
         protected virtual void OnGUI()
         {
-            if(GUILayout.Button("Build Registry"))
-            {
-                MessageRegistry.Build();
-            }
-
             EditorGUILayout.BeginHorizontal();
             MessageGenBrowserSettings settings = MessageGenBrowserSettings.Get();
             string inPath = settings.inputPath;

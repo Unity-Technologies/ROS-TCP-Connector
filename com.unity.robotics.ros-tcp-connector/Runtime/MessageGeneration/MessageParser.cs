@@ -151,12 +151,17 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Write ToString override
                 writer.Write(GenerateToString());
 
+                writer.Write("\n");
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + "[UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]\n");
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + "static void OnLoad()\n");
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + "{\n");
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "MessageRegistry.Register<"+className+">(k_RosMessageName);\n");
+                writer.Write(MsgAutoGenUtilities.TWO_TABS + "}\n");
+
                 // Close class
                 writer.Write(MsgAutoGenUtilities.ONE_TAB + "}\n");
                 // Close namespace
                 writer.Write("}\n");
-
-                writer.Write("namespace Unity.Robotics.ROSTCPConnector.MessageGeneration");
 
                 writer.Flush();
                 writer.Close();
