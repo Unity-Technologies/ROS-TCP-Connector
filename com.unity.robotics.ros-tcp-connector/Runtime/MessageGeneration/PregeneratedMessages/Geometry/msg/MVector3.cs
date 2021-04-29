@@ -66,3 +66,11 @@ namespace RosMessageTypes.Geometry
         }
     }
 }
+
+namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
+{
+    public partial class AssemblyMessagesTable
+    {
+        public static bool MUnityColor = MessageRegistry.Register<RosMessageTypes.Geometry.MVector3>("geometry_msgs/Vector3");
+    }
+}

@@ -41,12 +41,12 @@ namespace Unity.Robotics.ROSTCPConnector
         public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
 
         [SerializeField]
-        float m_NetworkTimeoutSeconds = 2;
-        public float NetworkTimeoutSeconds { get => m_NetworkTimeoutSeconds; set => m_NetworkTimeoutSeconds = value; }
+        int m_NetworkTimeoutMilliseconds = 2000;
+        public int NetworkTimeoutMilliseconds { get => m_NetworkTimeoutMilliseconds; set => m_NetworkTimeoutMilliseconds = value; }
 
         [SerializeField]
-        float m_SleepTimeSeconds = 0.01f;
-        public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
+        int m_SleepTimeMilliseconds = 10;
+        public int SleepTimeMilliseconds { get => m_SleepTimeMilliseconds; set => m_SleepTimeMilliseconds = value; }
 
         [SerializeField]
         [FormerlySerializedAs("showHUD")]
@@ -115,16 +115,22 @@ namespace Unity.Robotics.ROSTCPConnector
             subCallbacks.callbacks.Add((Message msg) => { callback((T)msg); });
         }
         
-        // System.Type version for when the message type is unknown at compile time
-        public void ReflectionSubscribe(string topic, Type messageType, Action<Message> callback)
+        // Version for when the message type is unknown at compile time
+        public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback)
         {
+            Func<Message> constructor = MessageRegistry.GetConstructor(rosMessageName);
+            if (constructor == null)
+            {
+                Debug.LogError($"Failed to subscribe to topic {topic} - no class has RosMessageName \"{rosMessageName}\"!");
+                return;
+            }
+
             SubscriberCallback subCallbacks;
             if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
             {
-                ConstructorInfo constructor = messageType.GetConstructor(new Type[0]);
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = () => (Message)constructor.Invoke(null, new object[0]),
+                    messageConstructor = constructor,
                     callbacks = new List<Action<Message>> { }
                 };
                 m_Subscribers.Add(topic, subCallbacks);
@@ -260,7 +266,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 Debug.LogError("ROS IP address is not correct");
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
-            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds*1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutMilliseconds, m_KeepaliveTime, m_SleepTimeMilliseconds, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
         }
 
         public void Disconnect()
@@ -358,7 +364,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
-            float networkTimeoutSeconds,
+            int networkTimeoutMilliseconds,
             float keepaliveTime,
             int sleepMilliseconds,
             ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
@@ -380,7 +386,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     client.Connect(rosIPAddress, rosPort);
 
                     NetworkStream networkStream = client.GetStream();
-                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
+                    networkStream.ReadTimeout = networkTimeoutMilliseconds;
 
                     SendKeepalive(networkStream);
 

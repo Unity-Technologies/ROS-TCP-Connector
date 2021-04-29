@@ -61,15 +61,15 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     "If no other messages are being sent, test the connection this often. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
                 prefab.KeepaliveTime);
 
-            prefab.NetworkTimeoutSeconds = EditorGUILayout.FloatField(
-                new GUIContent("Network timeout (secs)",
+            prefab.NetworkTimeoutMilliseconds = EditorGUILayout.IntSlider(
+                new GUIContent("Network timeout (ms)",
                     "If a network message takes this long to send, assume the connection has failed. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
-                prefab.NetworkTimeoutSeconds);
+                prefab.NetworkTimeoutMilliseconds, 0, 30000);
 
-            prefab.SleepTimeSeconds = EditorGUILayout.FloatField(
-                new GUIContent("Sleep time (secs)",
+            prefab.SleepTimeMilliseconds = EditorGUILayout.IntSlider(
+                new GUIContent("Sleep time (ms)",
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
-                prefab.SleepTimeSeconds);
+                prefab.SleepTimeMilliseconds, 0, 1000);
 
             if (GUI.changed)
             {

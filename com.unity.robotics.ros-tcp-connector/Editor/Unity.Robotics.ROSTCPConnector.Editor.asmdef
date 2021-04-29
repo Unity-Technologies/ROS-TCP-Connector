@@ -1,8 +1,8 @@
 {
     "name": "Unity.Robotics.ROSTCPConnector.Editor",
-    "rootNamespace": "Unity.Robotics.ROSTCPConnector.Editor",
     "references": [
-        "GUID:625bfc588fb96c74696858f2c467e978"
+        "GUID:625bfc588fb96c74696858f2c467e978",
+        "GUID:26b8bfe93a25c064896ac2f99720f6d5"
     ],
     "includePlatforms": [
         "Editor"

@@ -156,6 +156,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Close namespace
                 writer.Write("}\n");
 
+                writer.Write("namespace Unity.Robotics.ROSTCPConnector.MessageGeneration");
+
                 writer.Flush();
                 writer.Close();
             }

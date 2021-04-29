@@ -51,12 +51,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_Contents = new MessageWindowContents(this, Topic);
             if (!ROSConnection.instance.HasSubscriber(Topic))
             {
-                Type messageType = HUDPanel.GetMessageClassByName(saveState.RosMessageName);
-                if (messageType == null)
-                    Debug.LogError($"Failed to subscribe to topic {Topic} - no class has RosMessageName \"{saveState.RosMessageName}\"!");
-                else
-                    ROSConnection.instance.ReflectionSubscribe(Topic, messageType, (Message m) => { });
-
+                ROSConnection.instance.SubscribeByMessageName(Topic, saveState.RosMessageName, (Message) => { });
                 ROSConnection.instance.RegisterSubscriber(Topic, saveState.RosMessageName);
             }
             SetShowWindow(saveState.ShowWindow);
@@ -173,7 +168,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         ROSConnection.instance.RegisterSubscriber(Topic, rosMessageName);
                         // TODO: this should not be necessary
-                        ROSConnection.instance.ReflectionSubscribe(Topic, messageClass, (Message m) => { });
+                        ROSConnection.instance.SubscribeByMessageName(Topic, rosMessageName, (Message m) => { });
                         m_Contents = new MessageWindowContents(this, Topic);
                     }
                 }
