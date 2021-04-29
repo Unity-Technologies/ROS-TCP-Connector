@@ -272,6 +272,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3885009520023495739}
+  - component: {fileID: 8652144247881302430}
   m_Layer: 0
   m_Name: DefaultVisualizationSuite
   m_TagString: Untagged
@@ -298,6 +299,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8652144247881302430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89775f84ec1b05048997be0d603cca35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  axesScale: 0.1
+  lineThickness: 0.01
+  color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &8079308096200974559
 GameObject:
   m_ObjectHideFlags: 0
@@ -784,6 +800,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16302429be2008e47bd0a636c03d05f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Topic: 
+  m_Label: 
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  pointRadius: 0.05
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0

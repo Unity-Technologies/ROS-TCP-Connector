@@ -246,9 +246,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 TFSystem.Init();
 
             if (ConnectOnStart)
-            {
                 Connect();
-            }
         }
 
         public void Connect(string ipAddress, int port)
