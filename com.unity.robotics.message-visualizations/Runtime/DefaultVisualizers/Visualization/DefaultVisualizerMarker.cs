@@ -12,6 +12,7 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualizer, IPriority
 {
     public int Priority { get; set; }
     Dictionary<string, Dictionary<int, BasicDrawing>> m_Drawings = new Dictionary<string, Dictionary<int, BasicDrawing>>();
+    public bool HasDrawing => true;
 
     public virtual void Awake()
     {

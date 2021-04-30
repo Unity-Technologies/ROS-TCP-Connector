@@ -11,10 +11,14 @@ namespace Unity.Robotics.MessageVisualizers
     {
         [SerializeField]
         float m_Radius = 0.01f;
+        [SerializeField]
+        Color m_Color;
+        [SerializeField]
+        string m_Label;
 
-        public override void Draw(BasicDrawing drawing, MVector3Stamped message, MessageMetadata meta, Color color, string label)
+        public override void Draw(BasicDrawing drawing, MVector3Stamped message, MessageMetadata meta)
         {
-            message.vector.Draw<FLU>(drawing, color, label, m_Radius);
+            message.vector.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
         public override System.Action CreateGUI(MVector3Stamped message, MessageMetadata meta, BasicDrawing drawing) => () =>

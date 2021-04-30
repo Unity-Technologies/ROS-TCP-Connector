@@ -7,6 +7,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public interface IVisualizer
     {
+        bool HasDrawing { get; }
         object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing);
         void DeleteDrawing(object drawing);
         Action CreateGUI(Message message, MessageMetadata meta, object drawing);
@@ -80,6 +81,8 @@ namespace Unity.Robotics.MessageVisualizers
                 string text = message.ToString();
                 return () => { GUILayout.Label(text); };
             }
+
+            public bool HasDrawing => false;
         }
 
         static DefaultVisualizer s_DefaultVisualizer = new DefaultVisualizer();

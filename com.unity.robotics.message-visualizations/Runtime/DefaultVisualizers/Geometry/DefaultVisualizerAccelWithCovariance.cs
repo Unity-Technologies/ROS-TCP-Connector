@@ -12,10 +12,12 @@ public class DefaultVisualizerAccelWithCovariance : BasicVisualizer<MAccelWithCo
     public float m_LengthScale = 1.0f;
     public float m_SphereRadius = 1.0f;
     public GameObject m_Origin;
+    [SerializeField]
+    Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MAccelWithCovariance message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MAccelWithCovariance message, MessageMetadata meta)
     {
-        message.accel.Draw<FLU>(drawing, color, m_Origin, m_LengthScale, m_SphereRadius, m_Thickness );
+        message.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness );
     }
 
     public override Action CreateGUI(MAccelWithCovariance message, MessageMetadata meta, BasicDrawing drawing) => () =>

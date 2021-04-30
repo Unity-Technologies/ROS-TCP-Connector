@@ -12,10 +12,12 @@ namespace Unity.Robotics.MessageVisualizers
     {
         [SerializeField]
         float m_Thickness = 0.1f;
+        [SerializeField]
+        Color m_Color;
 
-        public override void Draw(BasicDrawing drawing, MPolygon message, MessageMetadata meta, Color color, string label)
+        public override void Draw(BasicDrawing drawing, MPolygon message, MessageMetadata meta)
         {
-            message.Draw<FLU>(drawing, color, m_Thickness);
+            message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
         }
 
         public override System.Action CreateGUI(MPolygon message, MessageMetadata meta, BasicDrawing drawing) => () =>

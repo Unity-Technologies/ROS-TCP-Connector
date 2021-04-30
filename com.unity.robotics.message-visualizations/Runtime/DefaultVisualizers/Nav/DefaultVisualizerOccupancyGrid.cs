@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class DefaultVisualizerOccupancyGrid : BasicVisualizer<MOccupancyGrid>
 {
-    public override void Draw(BasicDrawing drawing, MOccupancyGrid message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MOccupancyGrid message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing);
     }

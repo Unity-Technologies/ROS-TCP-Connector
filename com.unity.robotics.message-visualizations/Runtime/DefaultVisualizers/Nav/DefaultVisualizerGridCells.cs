@@ -10,10 +10,12 @@ public class DefaultVisualizerGridCells : BasicVisualizer<MGridCells>
 {
     [SerializeField]
     float m_Radius = 0.1f;
+    [SerializeField]
+    Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MGridCells message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MGridCells message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, color, m_Radius);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Radius);
     }
 
     public override Action CreateGUI(MGridCells message, MessageMetadata meta, BasicDrawing drawing) => () =>

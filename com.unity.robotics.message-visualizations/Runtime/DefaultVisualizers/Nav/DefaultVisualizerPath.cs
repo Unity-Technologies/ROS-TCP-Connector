@@ -11,10 +11,12 @@ public class DefaultVisualizerPath : BasicVisualizer<MPath>
 {
     [SerializeField]
     float m_Thickness;
+    [SerializeField]
+    Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MPath message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPath message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, color, m_Thickness);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 
     public override Action CreateGUI(MPath message, MessageMetadata meta, BasicDrawing drawing) => () =>

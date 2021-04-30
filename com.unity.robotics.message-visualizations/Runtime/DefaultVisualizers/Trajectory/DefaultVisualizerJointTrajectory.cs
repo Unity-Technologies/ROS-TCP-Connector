@@ -13,6 +13,9 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
     UrdfRobot m_UrdfRobot;
     [SerializeField]
     float m_PathThickness = 0.01f;
+    [SerializeField]
+    Color m_Color;
+
     RobotVisualization m_RobotData;
 
     public override void Start()
@@ -22,9 +25,9 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
             m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
-    public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta)
     {
-        m_RobotData.DrawJointPaths(drawing, message, color, m_PathThickness);
+        m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
     }
 
     public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, BasicDrawing drawing)

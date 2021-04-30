@@ -10,10 +10,12 @@ public class DefaultVisualizerInertia : BasicVisualizer<MInertia>
 {
     public GameObject m_Origin;
     public float m_Radius;
+    [SerializeField]
+    Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MInertia message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MInertia message, MessageMetadata meta)
     {
-        message.com.Draw<FLU>(drawing, m_Origin, color, "Center of mass", m_Radius);
+        message.com.Draw<FLU>(drawing, m_Origin, SelectColor(m_Color, meta), "Center of mass", m_Radius);
     }
 
     public override Action CreateGUI(MInertia message, MessageMetadata meta, BasicDrawing drawing) => () =>

@@ -10,7 +10,7 @@ public class DefaultVisualizerLaserScan : BasicVisualizer<MLaserScan>
 {
     public float pointRadius = 0.05f;
 
-    public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing, pointRadius);
     }

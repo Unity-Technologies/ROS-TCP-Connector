@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerInt8MultiArray : BasicVisualizer<MInt8MultiArray>
+public class DefaultVisualizerInt8MultiArray : BasicHudOnlyVisualizer<MInt8MultiArray>
 {
     [SerializeField]
     bool m_Tabulate = true;

@@ -14,7 +14,7 @@ public class DefaultVisualizerPoseWithCovarianceStamped : BasicVisualizer<MPoseW
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
 
-    public override void Draw(BasicDrawing drawing, MPoseWithCovarianceStamped message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPoseWithCovarianceStamped message, MessageMetadata meta)
     {
         message.pose.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
