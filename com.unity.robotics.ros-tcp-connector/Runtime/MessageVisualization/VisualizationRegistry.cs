@@ -65,9 +65,12 @@ namespace Unity.Robotics.MessageVisualizers
                 s_TypeVisualizers.TryGetValue(rosMessageName, out result);
                 if (result != null)
                     return result.Item1;
+
+                if (MessageRegistry.GetConstructor(rosMessageName) != null)
+                    return s_DefaultVisualizer;
             }
 
-            return s_DefaultVisualizer;
+            return null;
         }
 
         public static IVisualizer GetVisualizer(Message message, MessageMetadata meta)

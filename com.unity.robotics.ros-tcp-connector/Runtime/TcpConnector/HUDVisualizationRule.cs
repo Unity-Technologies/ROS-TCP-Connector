@@ -20,6 +20,8 @@ namespace Unity.Robotics.ROSTCPConnector
         IWindowContents m_Contents;
 
         Rect m_WindowRect;
+        public Rect WindowRect => m_WindowRect;
+        bool m_HasWindowRect;
         int m_WindowID;
         int m_ServiceID;
 
@@ -44,6 +46,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_Hud = hud;
             m_WindowRect = saveState.Rect;
+            m_HasWindowRect = saveState.ShowWindow;
             m_WindowID = hud.GetNextWindowID();
             Topic = saveState.Topic;
             RosMessageName = saveState.RosMessageName;
@@ -60,7 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public HUDVisualizationRule(string topic, string rosMessageName, HUDPanel hud)
         {
             m_Hud = hud;
-            m_WindowRect = new Rect(50, 70, 200, 100);
+            m_WindowRect = HUDPanel.GetDefaultWindowRect();
             m_WindowID = hud.GetNextWindowID();
             Topic = topic;
             RosMessageName = rosMessageName;
@@ -174,6 +177,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             this.ShowWindow = true;
+            if (!m_HasWindowRect || !m_Hud.IsFreeWindowRect(m_WindowRect))
+            {
+                m_WindowRect = m_Hud.GetFreeWindowRect();
+                m_HasWindowRect = true;
+            }
             m_Hud.AddWindow(this);
         }
 

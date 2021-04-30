@@ -12,7 +12,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static Func<Message> GetConstructor(string rosMessageName)
         {
-            Func<Message> constructorFunc;
+            Func<Message> constructorFunc = null;
             s_Constructors.TryGetValue(rosMessageName, out constructorFunc);
 
             return constructorFunc;

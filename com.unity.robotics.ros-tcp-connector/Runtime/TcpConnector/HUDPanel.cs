@@ -310,6 +310,61 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_TopicMenuRect.yMax = Screen.height;
         }
 
+        public static Rect GetDefaultWindowRect()
+        {
+            return new Rect(300, 0, 300, 200);
+        }
+
+        public Rect GetFreeWindowRect()
+        {
+            Queue<Rect> xQueue = new Queue<Rect>();
+            Queue<Rect> yQueue = new Queue<Rect>();
+            yQueue.Enqueue(GetDefaultWindowRect());
+
+            while(yQueue.Count > 0 || xQueue.Count > 0)
+            {
+                Rect testRect = xQueue.Count > 0? xQueue.Dequeue(): yQueue.Dequeue();
+                if (testRect.xMax > Screen.width || testRect.yMax > Screen.height)
+                    continue;
+
+                float maxX, maxY;
+                if (IsFreeWindowRect(testRect, out maxX, out maxY))
+                    return testRect;
+
+                xQueue.Enqueue(new Rect(maxX, testRect.y, testRect.width, testRect.height));
+                yQueue.Enqueue(new Rect(testRect.x, maxY, testRect.width, testRect.height));
+            }
+
+            return GetDefaultWindowRect();
+        }
+
+        public bool IsFreeWindowRect(Rect rect)
+        {
+            foreach(HUDVisualizationRule window in m_ActiveWindows)
+            {
+                if (window.WindowRect.Overlaps(rect))
+                    return false;
+            }
+            return true;
+        }
+
+        public bool IsFreeWindowRect(Rect rect, out float maxX, out float maxY)
+        {
+            maxX = 0;
+            maxY = 0;
+            bool result = true;
+            foreach (HUDVisualizationRule window in m_ActiveWindows)
+            {
+                if (window.WindowRect.Overlaps(rect))
+                {
+                    maxX = Mathf.Max(maxX, window.WindowRect.xMax);
+                    maxY = Mathf.Max(maxY, window.WindowRect.yMax);
+                    result = false;
+                }
+            }
+            return result;
+        }
+
         void DrawTopicMenuContents(int id)
         {
             GUILayout.BeginHorizontal();
@@ -337,6 +392,7 @@ namespace Unity.Robotics.ROSTCPConnector
             foreach (KeyValuePair<string, HUDVisualizationRule> kv in m_AllTopics)
             {
                 bool showWindow = false;
+                bool canShowWindow = false;
                 bool showDrawing = false;
                 bool canShowDrawing = false;
                 string title = kv.Key;
@@ -344,6 +400,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     continue;
                 }
+                string rosMessageName = GetMessageNameByTopic(title);
 
                 numTopicsShown++;
                 HUDVisualizationRule rule = kv.Value;
@@ -355,24 +412,44 @@ namespace Unity.Robotics.ROSTCPConnector
                     title = rule.Topic;
                 }
 
-                canShowDrawing = GetVisualizer(kv.Key).CanShowDrawing;
+                IVisualizer visualizer = GetVisualizer(kv.Key);
+                canShowWindow = visualizer != null;
+                canShowDrawing = visualizer != null? visualizer.CanShowDrawing: false;
 
                 bool hasWindow = showWindow;
                 bool hasDrawing = showDrawing;
 
                 GUILayout.BeginHorizontal();
-                showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
+                if(hasWindow || canShowWindow)
+                    showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
+                else
+                    GUILayout.Label("", GUILayout.Width(15));
+
                 if (hasDrawing || canShowDrawing)
                     showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
                 else
                     GUILayout.Label("", GUILayout.Width(15));
 
-                if (GUILayout.Button(title, GUI.skin.label, GUILayout.Width(170)))
+                Color baseColor = GUI.color;
+                GUI.color = canShowWindow ? baseColor : Color.grey;
+                if (GUILayout.Button(new GUIContent(title, rosMessageName), GUI.skin.label, GUILayout.Width(240)))
                 {
-                    bool toggleOn = (!showWindow || !showDrawing);
-                    showWindow = toggleOn;
-                    showDrawing = toggleOn;
+                    if (!canShowWindow)
+                    {
+                        Debug.LogError($"No message class registered for type {rosMessageName}");
+                    }
+                    else if(!canShowDrawing)
+                    {
+                        showWindow = !showWindow;
+                    }
+                    else
+                    {
+                        bool toggleOn = (!showWindow || !showDrawing);
+                        showWindow = toggleOn;
+                        showDrawing = toggleOn;
+                    }
                 }
+                GUI.color = baseColor;
                 GUILayout.EndHorizontal();
 
                 if (showWindow != hasWindow || showDrawing != hasDrawing)
