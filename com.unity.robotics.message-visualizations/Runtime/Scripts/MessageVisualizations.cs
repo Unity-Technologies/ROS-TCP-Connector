@@ -66,6 +66,11 @@ namespace Unity.Robotics.MessageVisualizers
             DrawPointCloud<C>(message.cells, drawing, color, radius);
         }
 
+        public static void Draw<C>(this MImage message, BasicDrawing drawing, Color color, MPoint[] points, float radius = 0.01f) where C : ICoordinateSpace, new()
+        {
+            DrawPointCloud<C>(points, drawing, color, radius);
+        }
+
         public static void Draw<C>(this MImu message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             message.orientation.Draw<C>(drawing);
@@ -109,10 +114,6 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 Vector3 worldPoint = frame.TransformPoint(message.points[i].From<FLU>());
 
-                // TODO: Channel names: "rgb" - For point clouds produced by color stereo cameras. uint8
-                // (R,G,B) values packed into the least significant 24 bits,
-                // in order.
-
                 if (cConfs.m_UseRgbChannel)
                 {
                     switch (cConfs.colorMode)
@@ -142,17 +143,12 @@ namespace Unity.Robotics.MessageVisualizers
                             }
                             else
                             {
+                                // uint8 (R,G,B) values packed into the least significant 24 bits, in order.
                                 byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[cConfs.m_RgbChannel]].values[i]);
 
-                                var colR = BitConverter.ToSingle(rgb, 0);
-                                var r = Mathf.InverseLerp(0, 1, colR);
-
-                                var colG = BitConverter.ToSingle(rgb, 8);
-                                var g = Mathf.InverseLerp(0, 1, colG);
-
-                                var colB = BitConverter.ToSingle(rgb, 16);
-                                var b = Mathf.InverseLerp(0, 1, colB);
-
+                                var r = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 0));
+                                var g = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 8));
+                                var b = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 16));
                                 color = new Color(r, g, b, 1);
                             }
                             break;
@@ -160,7 +156,6 @@ namespace Unity.Robotics.MessageVisualizers
                 }
 
                 var radius = cConfs.m_Size;
-
                 if (cConfs.m_UseSizeChannel && cConfs.m_SizeChannel.Length > 0)
                 {
                     var size = message.channels[channelToIdx[cConfs.m_SizeChannel]].values[i];

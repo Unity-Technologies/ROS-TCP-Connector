@@ -18,6 +18,7 @@ public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
         MessageVisualizations.GUIGrid(message.R, 3, "R");
         MessageVisualizations.GUIGrid(message.P, 3, "P");
         GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
-        message.roi.GUI(m_BaseImg);
+        if (m_BaseImg != null)
+            message.roi.GUI(m_BaseImg);
     };
 }
