@@ -45,12 +45,17 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowingTopics;
         bool m_DidRequestTopics;
         Vector2 m_TopicMenuScrollPosition;
-        Rect m_TopicMenuRect = new Rect(20, 70, 250, 200);
+        Rect m_TopicMenuRect = new Rect(0, 70, 300, 200);
         string m_TopicFilter = "";
 
         bool m_ShowingTransforms;
         Vector2 m_TransformMenuScrollPosition;
-        Rect m_TransformMenuRect = new Rect(20, 70, 270, 200);
+        Rect m_TransformMenuRect = new Rect(0, 70, 300, 200);
+
+        float m_MessageOutLastRealtime;
+        float m_MessageInLastRealtime;
+        float m_LastTopicsRequestRealtime = -1;
+        const float k_TimeBetweenTopicsUpdates = 5.0f;
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
@@ -102,6 +107,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             if (rule != null)
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
+            m_MessageOutLastRealtime = Time.realtimeSinceStartup;
         }
 
         public void SetLastMessageReceived(string topic, Message message)
@@ -113,6 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             if (rule != null)
                 rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
+            m_MessageInLastRealtime = Time.realtimeSinceStartup;
         }
 
         public int AddServiceRequest(string topic, Message request)
@@ -187,6 +194,12 @@ namespace Unity.Robotics.ROSTCPConnector
 
             // ROS IP Setup
             GUILayout.BeginHorizontal();
+            Color baseColor = GUI.color;
+            GUI.color = ROSConnection.instance.HasConnectionThread? (Time.realtimeSinceStartup - m_MessageOutLastRealtime) > 0.03f? Color.red: Color.green: Color.gray;
+            GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
+            GUI.color = ROSConnection.instance.HasConnectionThread ? (Time.realtimeSinceStartup - m_MessageInLastRealtime) > 0.03f ? Color.red : Color.green: Color.gray;
+            GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
+            GUI.color = baseColor;
             GUILayout.Label("ROS IP: ", s_BoldStyle, GUILayout.Width(100));
             GUILayout.Label(m_RosConnectAddress, s_IPStyle);
             GUILayout.EndHorizontal();
@@ -199,27 +212,19 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Topics"))
+            m_ShowingTopics = GUILayout.Toggle(m_ShowingTopics, "Topics", GUI.skin.button);
+            if(m_ShowingTopics)
             {
-                m_ShowingTopics = !m_ShowingTopics;
                 m_ShowingTransforms = false;
-                if (m_ShowingTopics)
-                {
-                    ResizeTopicsWindow();
-                    if (true)//!m_DidRequestTopics)
-                    {
-                        RequestTopics();
-                    }
-                }
+                ResizeTopicsWindow();
+                RequestTopics();
             }
-            if (GUILayout.Button("Transforms"))
+            m_ShowingTransforms = GUILayout.Toggle(m_ShowingTransforms, "Transforms", GUI.skin.button);
+            if(m_ShowingTransforms)
             {
-                m_ShowingTransforms = !m_ShowingTransforms;
                 m_ShowingTopics = false;
             }
             GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
 
             // Draggable windows
             Event current = Event.current;
@@ -265,26 +270,24 @@ namespace Unity.Robotics.ROSTCPConnector
             // Topics menu
             if (m_ShowingTopics)
             {
-                GUI.Window(0, m_TopicMenuRect, DrawTopicMenuContents, "", s_TopicMenuStyle);
-
-                if (Event.current.type == EventType.MouseDown)
-                    m_ShowingTopics = ShouldKeepMenuOpen();
+                DrawTopicMenuContents(0);
             }
 
             // Transforms menu
             if(m_ShowingTransforms)
             {
-                GUI.Window(0, m_TransformMenuRect, DrawTransformMenuContents, "", s_TopicMenuStyle);
-
-                if (Event.current.type == EventType.MouseDown)
-                    m_ShowingTransforms = ShouldKeepMenuOpen();
+                DrawTransformMenuContents(0);
             }
+            GUILayout.EndVertical();
         }
 
         void RequestTopics()
         {
-            m_DidRequestTopics = true;
-            ROSConnection.instance.GetTopicList(RegisterTopics);
+            if (m_LastTopicsRequestRealtime == -1 || (Time.realtimeSinceStartup - m_LastTopicsRequestRealtime) > k_TimeBetweenTopicsUpdates)
+            {
+                ROSConnection.instance.GetTopicList(RegisterTopics);
+                m_LastTopicsRequestRealtime = Time.realtimeSinceStartup;
+            }
         }
 
         void RegisterTopics(string[] topics, string[] messageNames)
@@ -297,6 +300,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 s_MessageNamesByTopic[topic] = messageNames[Idx];
             }
             ResizeTopicsWindow();
+            m_TopicVisualizers.Clear(); // update to the newest message types
         }
 
         void ResizeTopicsWindow()
@@ -354,11 +358,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 canShowDrawing = GetVisualizer(kv.Key).CanShowDrawing;
 
                 bool hasWindow = showWindow;
-                bool hasDrawing = showDrawing && canShowDrawing;
+                bool hasDrawing = showDrawing;
 
                 GUILayout.BeginHorizontal();
                 showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
-                if (canShowDrawing)
+                if (hasDrawing || canShowDrawing)
                     showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
                 else
                     GUILayout.Label("", GUILayout.Width(15));
@@ -380,7 +384,6 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                     rule.SetShowWindow(showWindow);
                     rule.SetShowDrawing(showDrawing);
-                    m_ShowingTopics = ShouldKeepMenuOpen();
                     break;
                 }
             }
@@ -472,12 +475,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
             }
             return result;
-        }
-
-        public bool ShouldKeepMenuOpen()
-        {
-            // If the user is holding shift, don't close the topic menu on selecting a topic
-            return (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
         }
 
         class HUDLayoutSave
