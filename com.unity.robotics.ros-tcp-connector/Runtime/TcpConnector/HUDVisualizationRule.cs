@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -158,10 +157,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
-                    Type messageClass = rosMessageName != null ? HUDPanel.GetMessageClassByName(rosMessageName): null;
-                    if (messageClass == null)
+                    Func<Message> messageConstructor = MessageRegistry.GetConstructor(rosMessageName);
+                    if (messageConstructor == null)
                     {
-                        Debug.LogError("No defined message class for " + rosMessageName);
+                        Debug.LogError("No known message class for " + rosMessageName);
                         return;
                     }
                     else

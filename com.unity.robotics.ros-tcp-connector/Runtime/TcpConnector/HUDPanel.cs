@@ -3,7 +3,6 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.MessageVisualizers;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using System.Linq;
 using System.IO;
@@ -19,7 +18,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public static GUIStyle s_BoldStyle;
         public static GUIStyle s_TopicMenuStyle;
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
-        static Dictionary<string, Type> s_MessageTypesByName;
 
         public static string GetMessageNameByTopic(string topic)
         {
@@ -30,28 +28,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             return rosMessageName;
-        }
-
-        public static Type GetMessageClassByName(string rosMessageName)
-        {
-            if(s_MessageTypesByName == null)
-            {
-                s_MessageTypesByName = new Dictionary<string, Type>();
-                Type baseMessageType = typeof(Message);
-                foreach (Type classType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()))
-                {
-                    if(baseMessageType.IsAssignableFrom(classType))
-                    {
-                        FieldInfo messageNameField = classType.GetField("k_RosMessageName");
-                        if(messageNameField != null)
-                            s_MessageTypesByName[(string)messageNameField.GetValue(null)] = classType;
-                    }
-                }
-            }
-
-            Type result;
-            s_MessageTypesByName.TryGetValue(rosMessageName, out result);
-            return result;
         }
 
         // ROS Message variables
