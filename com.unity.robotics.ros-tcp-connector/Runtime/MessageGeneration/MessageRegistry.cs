@@ -18,10 +18,21 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return constructorFunc;
         }
 
+        public static string GetMessageName<T>() where T : Message
+        {
+            return RegistryEntry<T>.typeName;
+        }
+
         public static bool Register<T>(string typeName) where T:Message, new()
         {
             s_Constructors[typeName] = () => new T();
+            RegistryEntry<T>.typeName = typeName;
             return true;
+        }
+
+        class RegistryEntry<T>
+        {
+            public static string typeName = null;
         }
     }
 }

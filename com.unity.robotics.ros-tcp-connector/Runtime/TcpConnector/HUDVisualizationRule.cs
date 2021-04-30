@@ -259,7 +259,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (show)
                 {
                     if (m_VisualizerConfig == null && m_Message != null)
-                        m_VisualizerConfig = VisualizationRegister.GetVisualizer(m_Message, m_Meta);
+                        m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
 
                     if (m_VisualizerConfig != null)
                     {
@@ -292,7 +292,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_VisualizerConfig == null)
-                        m_VisualizerConfig = VisualizationRegister.GetVisualizer(m_Message, m_Meta);
+                        m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
 
                     if (m_VisualizerGUI == null)
                         m_VisualizerGUI = m_VisualizerConfig.CreateGUI(m_Message, m_Meta, m_VisualizerDrawing);
@@ -347,10 +347,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (show)
                 {
                     if (m_RequestVisualizer == null && m_Request != null)
-                        m_RequestVisualizer = VisualizationRegister.GetVisualizer(m_Request, m_RequestMeta);
+                        m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
 
                     if (m_ResponseVisualizer == null && m_Response != null)
-                        m_ResponseVisualizer = VisualizationRegister.GetVisualizer(m_Response, m_ResponseMeta);
+                        m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
 
                     if (m_RequestVisualizer != null && m_RequestDrawing == null)
                         m_RequestDrawing = m_RequestVisualizer.CreateDrawing(m_Request, m_RequestMeta, m_RequestDrawing);
@@ -386,7 +386,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_RequestVisualizer == null)
-                        m_RequestVisualizer = VisualizationRegister.GetVisualizer(m_Request, m_RequestMeta);
+                        m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
 
                     if (m_RequestGUI == null)
                         m_RequestGUI = m_RequestVisualizer.CreateGUI(m_Request, m_RequestMeta, m_RequestDrawing);
@@ -404,7 +404,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_ResponseVisualizer == null)
-                        m_ResponseVisualizer = VisualizationRegister.GetVisualizer(m_Response, m_ResponseMeta);
+                        m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
 
                     if (m_ResponseGUI == null)
                         m_ResponseGUI = m_ResponseVisualizer.CreateGUI(m_Response, m_ResponseMeta, m_ResponseDrawing);

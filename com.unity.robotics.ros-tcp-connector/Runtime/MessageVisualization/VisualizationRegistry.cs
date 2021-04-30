@@ -7,7 +7,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public interface IVisualizer
     {
-        bool HasDrawing { get; }
+        bool CanShowDrawing { get; }
         object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing);
         void DeleteDrawing(object drawing);
         Action CreateGUI(Message message, MessageMetadata meta, object drawing);
@@ -25,32 +25,49 @@ namespace Unity.Robotics.MessageVisualizers
         }
     }
 
-    public static class VisualizationRegister
+    public static class VisualizationRegistry
     {
         private static Dictionary<string, Tuple<IVisualizer, int>> s_TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
-        private static Dictionary<Type, Tuple<IVisualizer, int>> s_TypeVisualizers = new Dictionary<Type, Tuple<IVisualizer, int>>();
+        private static Dictionary<string, Tuple<IVisualizer, int>> s_TypeVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
 
-        public static void RegisterVisualizer<MsgType>(IVisualizer config, int priority = 0)
+        public static void RegisterTypeVisualizer<MsgType>(IVisualizer visualizer, int priority = 0) where MsgType:Message
         {
-            RegisterVisualizer(typeof(MsgType), config, priority);
+            RegisterTypeVisualizer(MessageRegistry.GetMessageName<MsgType>(), visualizer, priority);
         }
 
-        public static void RegisterVisualizer(Type MsgType, IVisualizer config, int priority = 0)
+        public static void RegisterTypeVisualizer(string rosMessageName, IVisualizer visualizer, int priority = 0)
         {
             Tuple<IVisualizer, int> currentEntry;
-            if (!s_TypeVisualizers.TryGetValue(MsgType, out currentEntry) || currentEntry.Item2 <= priority)
+            if (!s_TypeVisualizers.TryGetValue(rosMessageName, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                s_TypeVisualizers[MsgType] = new Tuple<IVisualizer, int>(config, priority);
+                s_TypeVisualizers[rosMessageName] = new Tuple<IVisualizer, int>(visualizer, priority);
             }
         }
 
-        public static void RegisterVisualizer(string topic, IVisualizer config, int priority = 0)
+        public static void RegisterTopicVisualizer(string topic, IVisualizer visualizer, int priority = 0)
         {
             Tuple<IVisualizer, int> currentEntry;
             if (!s_TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
             {
-                s_TopicVisualizers[topic] = new Tuple<IVisualizer, int>(config, priority);
+                s_TopicVisualizers[topic] = new Tuple<IVisualizer, int>(visualizer, priority);
             }
+        }
+
+        public static IVisualizer GetVisualizer(string topic, string rosMessageName)
+        {
+            Tuple<IVisualizer, int> result;
+            s_TopicVisualizers.TryGetValue(topic, out result);
+            if (result != null)
+                return result.Item1;
+
+            if (rosMessageName != null)
+            {
+                s_TypeVisualizers.TryGetValue(rosMessageName, out result);
+                if (result != null)
+                    return result.Item1;
+            }
+
+            return s_DefaultVisualizer;
         }
 
         public static IVisualizer GetVisualizer(Message message, MessageMetadata meta)
@@ -60,7 +77,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (result != null)
                 return result.Item1;
 
-            s_TypeVisualizers.TryGetValue(message.GetType(), out result);
+            s_TypeVisualizers.TryGetValue(message.RosMessageName, out result);
             if (result != null)
                 return result.Item1;
 
@@ -82,7 +99,7 @@ namespace Unity.Robotics.MessageVisualizers
                 return () => { GUILayout.Label(text); };
             }
 
-            public bool HasDrawing => false;
+            public bool CanShowDrawing => false;
         }
 
         static DefaultVisualizer s_DefaultVisualizer = new DefaultVisualizer();

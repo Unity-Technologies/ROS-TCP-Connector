@@ -45,5 +45,11 @@ namespace RosMessageTypes.Std
 
             return offset;
         }
+
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void OnLoad()
+        {
+            MessageRegistry.Register<MDuration>(k_RosMessageName);
+        }
     }
 }

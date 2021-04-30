@@ -12,12 +12,12 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualizer, IPriority
 {
     public int Priority { get; set; }
     Dictionary<string, Dictionary<int, BasicDrawing>> m_Drawings = new Dictionary<string, Dictionary<int, BasicDrawing>>();
-    public bool HasDrawing => true;
+    public bool CanShowDrawing => true;
 
     public virtual void Awake()
     {
-        VisualizationRegister.RegisterVisualizer<MMarker>(this, Priority);
-        VisualizationRegister.RegisterVisualizer<MMarkerArray>(this, Priority);
+        VisualizationRegistry.RegisterTypeVisualizer<MMarker>(this, Priority);
+        VisualizationRegistry.RegisterTypeVisualizer<MMarkerArray>(this, Priority);
     }
 
     public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)

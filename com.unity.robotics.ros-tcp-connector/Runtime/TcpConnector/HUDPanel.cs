@@ -38,6 +38,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         List<HUDVisualizationRule> m_ActiveWindows = new List<HUDVisualizationRule>();
         SortedList<string, HUDVisualizationRule> m_AllTopics = new SortedList<string, HUDVisualizationRule>();
+        Dictionary<string, IVisualizer> m_TopicVisualizers = new Dictionary<string, IVisualizer>();
         Dictionary<int, HUDVisualizationRule> m_PendingServiceRequests = new Dictionary<int, HUDVisualizationRule>();
         HUDVisualizationRule m_DraggingWindow;
 
@@ -324,7 +325,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("UI", s_BoldStyle, GUILayout.Width(20));
-            GUILayout.Label("Scene", s_BoldStyle);
+            GUILayout.Label("Viz", s_BoldStyle);
             GUILayout.EndHorizontal();
 
             m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
@@ -333,6 +334,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 bool showWindow = false;
                 bool showDrawing = false;
+                bool canShowDrawing = false;
                 string title = kv.Key;
                 if (!title.Contains(m_TopicFilter))
                 {
@@ -348,12 +350,19 @@ namespace Unity.Robotics.ROSTCPConnector
                     showDrawing = rule.ShowDrawing;
                     title = rule.Topic;
                 }
+
+                canShowDrawing = GetVisualizer(kv.Key).CanShowDrawing;
+
                 bool hasWindow = showWindow;
-                bool hasDrawing = showDrawing;
+                bool hasDrawing = showDrawing && canShowDrawing;
 
                 GUILayout.BeginHorizontal();
                 showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
-                showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
+                if (canShowDrawing)
+                    showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
+                else
+                    GUILayout.Label("", GUILayout.Width(15));
+
                 if (GUILayout.Button(title, GUI.skin.label, GUILayout.Width(170)))
                 {
                     bool toggleOn = (!showWindow || !showDrawing);
@@ -384,6 +393,18 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                     GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");
             }
+        }
+
+        IVisualizer GetVisualizer(string topic)
+        {
+            IVisualizer result;
+            if (m_TopicVisualizers.TryGetValue(topic, out result))
+                return result;
+
+            string rosMessageName = GetMessageNameByTopic(topic);
+            result = VisualizationRegistry.GetVisualizer(topic, rosMessageName);
+            m_TopicVisualizers[topic] = result;
+            return result;
         }
 
         const float k_IndentWidth = 10;

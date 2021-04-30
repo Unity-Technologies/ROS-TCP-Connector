@@ -15,14 +15,14 @@ namespace Unity.Robotics.MessageVisualizers
 
         public int Priority { get; set; }
 
-        public bool HasDrawing => true;
+        public bool CanShowDrawing => true;
 
         public virtual void Start()
         {
             if (m_Topic == "")
-                VisualizationRegister.RegisterVisualizer<TargetMessageType>(this, Priority);
+                VisualizationRegistry.RegisterTypeVisualizer<TargetMessageType>(this, Priority);
             else
-                VisualizationRegister.RegisterVisualizer(m_Topic, this, Priority);
+                VisualizationRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
         }
 
         public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
