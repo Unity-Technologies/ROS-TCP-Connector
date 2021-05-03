@@ -184,6 +184,22 @@ namespace Unity.Robotics.ROSTCPConnector
             m_RosConnectAddress = $"{ip}:{port}";
         }
 
+        Color GetConnectionColor(float elapsedTime)
+        {
+            Color bright = new Color(1, 1, 0.5f);
+            Color mid = new Color(0, 1, 0.5f);
+            Color dark = new Color(0, 0.5f, 1);
+
+            if (!ROSConnection.instance.HasConnectionThread)
+                return Color.gray;
+            if (ROSConnection.instance.HasConnectionError)
+                return Color.red;
+            if (elapsedTime > 0.03f)
+                return Color.Lerp(mid, dark, elapsedTime);
+            else
+                return bright;
+        }
+
         void OnGUI()
         {
             if (!IsEnabled)
@@ -195,9 +211,9 @@ namespace Unity.Robotics.ROSTCPConnector
             // ROS IP Setup
             GUILayout.BeginHorizontal();
             Color baseColor = GUI.color;
-            GUI.color = ROSConnection.instance.HasConnectionThread? (Time.realtimeSinceStartup - m_MessageOutLastRealtime) > 0.03f? Color.red: Color.green: Color.gray;
+            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageOutLastRealtime);
             GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
-            GUI.color = ROSConnection.instance.HasConnectionThread ? (Time.realtimeSinceStartup - m_MessageInLastRealtime) > 0.03f ? Color.red : Color.green: Color.gray;
+            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageInLastRealtime);
             GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
             GUI.color = baseColor;
             GUILayout.Label("ROS IP: ", s_BoldStyle, GUILayout.Width(100));

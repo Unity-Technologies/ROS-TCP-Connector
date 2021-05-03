@@ -69,6 +69,9 @@ namespace Unity.Robotics.ROSTCPConnector
         CancellationTokenSource m_ConnectionThreadCancellation;
         public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
+        static bool m_HasConnectionError = false;
+        public bool HasConnectionError => m_HasConnectionError;
+
         static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
         readonly object m_ServiceRequestLock = new object();
@@ -379,6 +382,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 try
                 {
+                    ROSConnection.m_HasConnectionError = false;
+
                     client = new TcpClient();
                     client.Connect(rosIPAddress, rosPort);
 
@@ -416,6 +421,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
+                    ROSConnection.m_HasConnectionError = true;
                     Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
                     await Task.Delay(nextReconnectionDelay);
                 }
@@ -452,6 +458,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
+                    ROSConnection.m_HasConnectionError = true;
                     Debug.Log("Reader " + readerIdx + " exception! " + e);
                 }
             }
