@@ -8,6 +8,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(DefaultVisualizerLaserScan))]
 public class LaserScanEditor : Editor
 {
@@ -54,3 +56,5 @@ public class LaserScanEditor : Editor
         }
    }
 }
+
+#endif //UNITY_EDITOR

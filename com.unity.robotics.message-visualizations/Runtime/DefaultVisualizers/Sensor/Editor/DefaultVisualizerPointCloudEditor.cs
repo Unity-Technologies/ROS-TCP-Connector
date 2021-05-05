@@ -8,6 +8,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(DefaultVisualizerPointCloud))]
 public class PointCloudEditor : Editor
 {
@@ -118,3 +120,5 @@ public class PointCloudEditor : Editor
         }
    }
 }
+
+#endif //UNITY_EDITOR

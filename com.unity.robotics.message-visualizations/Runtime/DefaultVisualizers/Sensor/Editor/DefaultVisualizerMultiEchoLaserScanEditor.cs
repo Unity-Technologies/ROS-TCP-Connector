@@ -8,6 +8,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(DefaultVisualizerMultiEchoLaserScan))]
 public class MultiEchoLaserScanEditor : Editor
 {
@@ -54,3 +56,5 @@ public class MultiEchoLaserScanEditor : Editor
         }
    }
 }
+
+#endif //UNITY_EDITOR
