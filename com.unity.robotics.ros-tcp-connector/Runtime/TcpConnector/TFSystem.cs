@@ -19,11 +19,6 @@ public class TFSystem
     Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
     public static TFSystem instance { get; private set; }
 
-    // Default visualization settings
-    public bool ShowTFAxesDefault { get; set; }
-    public bool ShowTFLinksDefault { get; set; }
-    public bool ShowTFNamesDefault { get; set; }
-
     public static void Init()
     {
         if (instance == null)
@@ -101,9 +96,6 @@ public class TFSystem
                 TFStream parent = GetOrCreateTFStream(frame_id.Substring(0, slash));
                 tf = new TFStream(parent, singleName);
             }
-            tf.ShowAxes = ShowTFAxesDefault;
-            tf.ShowLink = ShowTFLinksDefault;
-            tf.ShowName = ShowTFNamesDefault;
             m_TransformTable[singleName] = tf;
             UpdateVisualization(tf);
         }

@@ -55,11 +55,6 @@ public class TFStream
     List<TFStream> m_Children = new List<TFStream>();
     GameObject m_GameObject;
 
-    // Visualization settings
-    public bool ShowAxes { get; set; }
-    public bool ShowLink { get; set; }
-    public bool ShowName { get; set; }
-
     public TFStream(TFStream parent, string name)
     {
         Parent = parent;

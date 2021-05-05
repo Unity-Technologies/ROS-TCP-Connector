@@ -9,14 +9,21 @@ using System.IO;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
+    public interface IHudTab
+    {
+        string Label { get; }
+        void OnGUI(HUDPanel hud);
+        void OnSelected();
+        void OnDeselected();
+    }
+
     public class HUDPanel : MonoBehaviour
     {
         public bool IsEnabled { get; set; }
 
         // GUI variables
-        public static GUIStyle s_IPStyle;
-        public static GUIStyle s_BoldStyle;
-        public static GUIStyle s_TopicMenuStyle;
+        public static readonly GUIStyle s_IPStyle;
+        public static readonly GUIStyle s_BoldStyle;
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
 
         public static string GetMessageNameByTopic(string topic)
@@ -42,20 +49,19 @@ namespace Unity.Robotics.ROSTCPConnector
         Dictionary<int, HUDVisualizationRule> m_PendingServiceRequests = new Dictionary<int, HUDVisualizationRule>();
         HUDVisualizationRule m_DraggingWindow;
 
-        bool m_ShowingTopics;
-        bool m_DidRequestTopics;
-        Vector2 m_TopicMenuScrollPosition;
-        Rect m_TopicMenuRect = new Rect(0, 70, 300, 200);
-        string m_TopicFilter = "";
+        public SortedList<string, HUDVisualizationRule> AllTopics => m_AllTopics;
 
-        bool m_ShowingTransforms;
-        Vector2 m_TransformMenuScrollPosition;
-        Rect m_TransformMenuRect = new Rect(0, 70, 300, 200);
+        static List<IHudTab> s_HUDTabs = new List<IHudTab> { new TopicsHudTab() };
+
+        public static void RegisterTab(IHudTab tab)
+        {
+            s_HUDTabs.Add(tab);
+        }
+
+        IHudTab m_SelectedTab;
 
         float m_MessageOutLastRealtime;
         float m_MessageInLastRealtime;
-        float m_LastTopicsRequestRealtime = -1;
-        const float k_TimeBetweenTopicsUpdates = 5.0f;
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
@@ -100,6 +106,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageSent(string topic, Message message)
         {
+            if (topic.StartsWith("__"))
+                return;
+
             HUDVisualizationRule rule;
             if (!m_AllTopics.TryGetValue(topic, out rule))
             {
@@ -112,6 +121,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageReceived(string topic, Message message)
         {
+            if (topic.StartsWith("__"))
+                return;
+
             HUDVisualizationRule rule;
             if (!m_AllTopics.TryGetValue(topic, out rule))
             {
@@ -156,7 +168,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void Awake()
+        static HUDPanel()
         {
             s_IPStyle = new GUIStyle
             {
@@ -170,7 +182,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 normal = { textColor = Color.white },
                 fontStyle = FontStyle.Bold,
             };
+        }
 
+        void Awake()
+        {
             LoadLayout();
         }
 
@@ -187,7 +202,7 @@ namespace Unity.Robotics.ROSTCPConnector
         Color GetConnectionColor(float elapsedTime)
         {
             Color bright = new Color(1, 1, 0.5f);
-            Color mid = new Color(0, 1, 0.5f);
+            Color mid = new Color(0, 1, 1);
             Color dark = new Color(0, 0.5f, 1);
 
             if (!ROSConnection.instance.HasConnectionThread)
@@ -211,10 +226,10 @@ namespace Unity.Robotics.ROSTCPConnector
             // ROS IP Setup
             GUILayout.BeginHorizontal();
             Color baseColor = GUI.color;
-            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageOutLastRealtime);
-            GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageInLastRealtime);
-            GUILayout.Label("*", s_BoldStyle, GUILayout.Width(10));
+            GUILayout.Label("<", s_BoldStyle, GUILayout.Width(10));
+            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageOutLastRealtime);
+            GUILayout.Label(">", s_BoldStyle, GUILayout.Width(10));
             GUI.color = baseColor;
             GUILayout.Label("ROS IP: ", s_BoldStyle, GUILayout.Width(100));
             GUILayout.Label(m_RosConnectAddress, s_IPStyle);
@@ -228,19 +243,27 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             GUILayout.BeginHorizontal();
-            m_ShowingTopics = GUILayout.Toggle(m_ShowingTopics, "Topics", GUI.skin.button);
-            if(m_ShowingTopics)
+            foreach(IHudTab tab in s_HUDTabs)
             {
-                m_ShowingTransforms = false;
-                ResizeTopicsWindow();
-                RequestTopics();
-            }
-            m_ShowingTransforms = GUILayout.Toggle(m_ShowingTransforms, "Transforms", GUI.skin.button);
-            if(m_ShowingTransforms)
-            {
-                m_ShowingTopics = false;
+                bool wasSelected = tab == m_SelectedTab;
+                bool selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
+                if(selected != wasSelected)
+                {
+                    if(m_SelectedTab != null)
+                        m_SelectedTab.OnDeselected();
+
+                    m_SelectedTab = selected? tab: null;
+
+                    if(m_SelectedTab != null)
+                        m_SelectedTab.OnSelected();
+                }
             }
             GUILayout.EndHorizontal();
+
+            if (m_SelectedTab != null)
+                m_SelectedTab.OnGUI(this);
+
+            GUILayout.EndVertical();
 
             // Draggable windows
             Event current = Event.current;
@@ -270,60 +293,6 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 window.DrawWindow();
             }
-
-            if (s_TopicMenuStyle == null)
-            {
-                s_TopicMenuStyle = new GUIStyle
-                {
-                    stretchHeight = GUI.skin.box.stretchHeight,
-                    stretchWidth = GUI.skin.box.stretchWidth,
-                    padding = GUI.skin.box.padding,
-                    border = GUI.skin.box.border,
-                    normal = { background = GUI.skin.box.normal.background },
-                };
-            }
-
-            // Topics menu
-            if (m_ShowingTopics)
-            {
-                DrawTopicMenuContents(0);
-            }
-
-            // Transforms menu
-            if(m_ShowingTransforms)
-            {
-                DrawTransformMenuContents(0);
-            }
-            GUILayout.EndVertical();
-        }
-
-        void RequestTopics()
-        {
-            if (m_LastTopicsRequestRealtime == -1 || (Time.realtimeSinceStartup - m_LastTopicsRequestRealtime) > k_TimeBetweenTopicsUpdates)
-            {
-                ROSConnection.instance.GetTopicList(RegisterTopics);
-                m_LastTopicsRequestRealtime = Time.realtimeSinceStartup;
-            }
-        }
-
-        void RegisterTopics(string[] topics, string[] messageNames)
-        {
-            for(int Idx = 0; Idx < topics.Length; ++Idx)
-            {
-                string topic = topics[Idx];
-                if (!m_AllTopics.ContainsKey(topic))
-                    m_AllTopics.Add(topic, null);
-                s_MessageNamesByTopic[topic] = messageNames[Idx];
-            }
-            ResizeTopicsWindow();
-            m_TopicVisualizers.Clear(); // update to the newest message types
-        }
-
-        void ResizeTopicsWindow()
-        {
-            m_TopicMenuRect.height = (m_AllTopics.Count + 2) * 25 + 5;
-            if (m_TopicMenuRect.yMax > Screen.height)
-                m_TopicMenuRect.yMax = Screen.height;
         }
 
         public static Rect GetDefaultWindowRect()
@@ -381,115 +350,6 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        void DrawTopicMenuContents(int id)
-        {
-            GUILayout.BeginHorizontal();
-            m_TopicFilter = GUILayout.TextField(m_TopicFilter);
-
-            if (m_TopicFilter != "" && !m_AllTopics.ContainsKey(m_TopicFilter))
-            {
-                if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
-                {
-                    HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), this);
-                    rule.SetShowWindow(true);
-                    rule.SetShowDrawing(true);
-                    m_AllTopics.Add(m_TopicFilter, rule);
-                }
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("UI", s_BoldStyle, GUILayout.Width(20));
-            GUILayout.Label("Viz", s_BoldStyle);
-            GUILayout.EndHorizontal();
-
-            m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
-            int numTopicsShown = 0;
-            foreach (KeyValuePair<string, HUDVisualizationRule> kv in m_AllTopics)
-            {
-                bool showWindow = false;
-                bool canShowWindow = false;
-                bool showDrawing = false;
-                bool canShowDrawing = false;
-                string title = kv.Key;
-                if (!title.Contains(m_TopicFilter))
-                {
-                    continue;
-                }
-                string rosMessageName = GetMessageNameByTopic(title);
-
-                numTopicsShown++;
-                HUDVisualizationRule rule = kv.Value;
-
-                if (rule != null)
-                {
-                    showWindow = rule.ShowWindow;
-                    showDrawing = rule.ShowDrawing;
-                    title = rule.Topic;
-                }
-
-                IVisualizer visualizer = GetVisualizer(kv.Key);
-                canShowWindow = visualizer != null;
-                canShowDrawing = visualizer != null? visualizer.CanShowDrawing: false;
-
-                bool hasWindow = showWindow;
-                bool hasDrawing = showDrawing;
-
-                GUILayout.BeginHorizontal();
-                if(hasWindow || canShowWindow)
-                    showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
-                else
-                    GUILayout.Label("", GUILayout.Width(15));
-
-                if (hasDrawing || canShowDrawing)
-                    showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
-                else
-                    GUILayout.Label("", GUILayout.Width(15));
-
-                Color baseColor = GUI.color;
-                GUI.color = canShowWindow ? baseColor : Color.grey;
-                if (GUILayout.Button(new GUIContent(title, rosMessageName), GUI.skin.label, GUILayout.Width(240)))
-                {
-                    if (!canShowWindow)
-                    {
-                        Debug.LogError($"No message class registered for type {rosMessageName}");
-                    }
-                    else if(!canShowDrawing)
-                    {
-                        showWindow = !showWindow;
-                    }
-                    else
-                    {
-                        bool toggleOn = (!showWindow || !showDrawing);
-                        showWindow = toggleOn;
-                        showDrawing = toggleOn;
-                    }
-                }
-                GUI.color = baseColor;
-                GUILayout.EndHorizontal();
-
-                if (showWindow != hasWindow || showDrawing != hasDrawing)
-                {
-                    if (rule == null)
-                    {
-                        rule = new HUDVisualizationRule(kv.Key, GetMessageNameByTopic(kv.Key), this);
-                        m_AllTopics[kv.Key] = rule;
-                    }
-                    rule.SetShowWindow(showWindow);
-                    rule.SetShowDrawing(showDrawing);
-                    break;
-                }
-            }
-            GUILayout.EndScrollView();
-
-            if (numTopicsShown == 0)
-            {
-                if (m_AllTopics.Count == 0)
-                    GUILayout.Label("No topics registered");
-                else
-                    GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");
-            }
-        }
 
         IVisualizer GetVisualizer(string topic)
         {
@@ -503,72 +363,31 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        const float k_IndentWidth = 10;
-        const float k_TFNameWidth = 136;
-        const float k_CheckboxWidth = 35;
-        void DrawTransformMenuContents(int id)
+        float m_LastTopicsRequestRealtime = -1;
+        const float k_TimeBetweenTopicsUpdates = 5.0f;
+
+        public void RequestTopics()
         {
-            m_TransformMenuScrollPosition = GUILayout.BeginScrollView(m_TransformMenuScrollPosition);
-
-            GUI.changed = false;
-            GUILayout.BeginHorizontal(GUILayout.Height(20));
-            GUILayout.Label("", GUILayout.Width(k_TFNameWidth));
-            TFSystem.instance.ShowTFAxesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFAxesDefault, "Axes",
-                (stream, check) => stream.ShowAxes = check);
-            TFSystem.instance.ShowTFLinksDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFLinksDefault, "Link",
-                (stream, check) => stream.ShowLink = check);
-            TFSystem.instance.ShowTFNamesDefault = DrawTFHeaderCheckbox(TFSystem.instance.ShowTFNamesDefault, "Lbl",
-                (stream, check) => stream.ShowName = check);
-            GUILayout.EndHorizontal();
-            bool globalChange = GUI.changed;
-
-            // draw the root objects
-            foreach (TFStream stream in TFSystem.instance.GetTransforms())
+            if (m_LastTopicsRequestRealtime == -1 || (Time.realtimeSinceStartup - m_LastTopicsRequestRealtime) > k_TimeBetweenTopicsUpdates)
             {
-                if(stream.Parent == null)
-                    DrawTFStreamHierarchy(stream, 0, globalChange);
+                ROSConnection.instance.GetTopicList(RegisterTopics);
+                m_LastTopicsRequestRealtime = Time.realtimeSinceStartup;
             }
-
-            GUILayout.EndScrollView();
         }
 
-        void DrawTFStreamHierarchy(TFStream stream, int indent, bool globalChange)
+        void RegisterTopics(string[] topics, string[] messageNames)
         {
-            GUI.changed = false;
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(indent * k_IndentWidth);
-            GUILayout.Label(stream.Name, GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth));
-            stream.ShowAxes = GUILayout.Toggle(stream.ShowAxes, "", GUILayout.Width(k_CheckboxWidth));
-            stream.ShowLink = GUILayout.Toggle(stream.ShowLink, "", GUILayout.Width(k_CheckboxWidth));
-            stream.ShowName = GUILayout.Toggle(stream.ShowName, "", GUILayout.Width(k_CheckboxWidth));
-            GUILayout.EndHorizontal();
-            if (GUI.changed || globalChange)
+            for (int Idx = 0; Idx < topics.Length; ++Idx)
             {
-                TFSystem.UpdateVisualization(stream);
+                string topic = topics[Idx];
+                if (!m_AllTopics.ContainsKey(topic))
+                    m_AllTopics.Add(topic, null);
+                s_MessageNamesByTopic[topic] = messageNames[Idx];
             }
-
-            foreach (TFStream child in stream.Children)
-                DrawTFStreamHierarchy(child, indent+1, globalChange);
+            //ResizeTopicsWindow();
+            m_TopicVisualizers.Clear(); // update to the newest message types
         }
 
-        bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TFStream, bool> setter)
-        {
-            bool result = GUILayout.Toggle(wasChecked, "", GUILayout.Width(k_CheckboxWidth));
-            
-            Rect checkbox = GUILayoutUtility.GetLastRect();
-            Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(label));
-            Rect labelRect = new Rect(checkbox.xMin - textSize.x, checkbox.yMin, textSize.x, checkbox.height);
-            GUI.Label(labelRect, label);
-
-            if (wasChecked != result)
-            {
-                foreach(TFStream stream in TFSystem.instance.GetTransforms())
-                {
-                    setter(stream, result);
-                }
-            }
-            return result;
-        }
 
         class HUDLayoutSave
         {
@@ -586,6 +405,129 @@ namespace Unity.Robotics.ROSTCPConnector
                         topicRuleSaves.Add(save);
                 }
                 this.Rules = topicRuleSaves.ToArray();
+            }
+        }
+
+        class TopicsHudTab : IHudTab
+        {
+            string IHudTab.Label => "Topics";
+
+            Vector2 m_TopicMenuScrollPosition;
+            string m_TopicFilter = "";
+
+            public void OnSelected() { }
+            public void OnDeselected() { }
+
+            public void OnGUI(HUDPanel hud)
+            {
+                hud.RequestTopics();
+
+                GUILayout.BeginHorizontal();
+                m_TopicFilter = GUILayout.TextField(m_TopicFilter);
+
+                if (m_TopicFilter != "" && !hud.AllTopics.ContainsKey(m_TopicFilter))
+                {
+                    if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
+                    {
+                        HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), hud);
+                        rule.SetShowWindow(true);
+                        rule.SetShowDrawing(true);
+                        hud.AllTopics.Add(m_TopicFilter, rule);
+                    }
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("UI", HUDPanel.s_BoldStyle, GUILayout.Width(20));
+                GUILayout.Label("Viz", HUDPanel.s_BoldStyle);
+                GUILayout.EndHorizontal();
+
+                m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
+                int numTopicsShown = 0;
+                foreach (KeyValuePair<string, HUDVisualizationRule> kv in hud.AllTopics)
+                {
+                    bool showWindow = false;
+                    bool canShowWindow = false;
+                    bool showDrawing = false;
+                    bool canShowDrawing = false;
+                    string title = kv.Key;
+                    if (!title.Contains(m_TopicFilter))
+                    {
+                        continue;
+                    }
+                    string rosMessageName = GetMessageNameByTopic(title);
+
+                    numTopicsShown++;
+                    HUDVisualizationRule rule = kv.Value;
+
+                    if (rule != null)
+                    {
+                        showWindow = rule.ShowWindow;
+                        showDrawing = rule.ShowDrawing;
+                        title = rule.Topic;
+                    }
+
+                    IVisualizer visualizer = hud.GetVisualizer(kv.Key);
+                    canShowWindow = visualizer != null;
+                    canShowDrawing = visualizer != null ? visualizer.CanShowDrawing : false;
+
+                    bool hasWindow = showWindow;
+                    bool hasDrawing = showDrawing;
+
+                    GUILayout.BeginHorizontal();
+                    if (hasWindow || canShowWindow)
+                        showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
+                    else
+                        GUILayout.Label("", GUILayout.Width(15));
+
+                    if (hasDrawing || canShowDrawing)
+                        showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
+                    else
+                        GUILayout.Label("", GUILayout.Width(15));
+
+                    Color baseColor = GUI.color;
+                    GUI.color = canShowWindow ? baseColor : Color.grey;
+                    if (GUILayout.Button(new GUIContent(title, rosMessageName), GUI.skin.label, GUILayout.Width(240)))
+                    {
+                        if (!canShowWindow)
+                        {
+                            Debug.LogError($"No message class registered for type {rosMessageName}");
+                        }
+                        else if (!canShowDrawing)
+                        {
+                            showWindow = !showWindow;
+                        }
+                        else
+                        {
+                            bool toggleOn = (!showWindow || !showDrawing);
+                            showWindow = toggleOn;
+                            showDrawing = toggleOn;
+                        }
+                    }
+                    GUI.color = baseColor;
+                    GUILayout.EndHorizontal();
+
+                    if (showWindow != hasWindow || showDrawing != hasDrawing)
+                    {
+                        if (rule == null)
+                        {
+                            rule = new HUDVisualizationRule(kv.Key, GetMessageNameByTopic(kv.Key), hud);
+                            hud.AllTopics[kv.Key] = rule;
+                        }
+                        rule.SetShowWindow(showWindow);
+                        rule.SetShowDrawing(showDrawing);
+                        break;
+                    }
+                }
+                GUILayout.EndScrollView();
+
+                if (numTopicsShown == 0)
+                {
+                    if (hud.AllTopics.Count == 0)
+                        GUILayout.Label("No topics registered");
+                    else
+                        GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");
+                }
             }
         }
     }
