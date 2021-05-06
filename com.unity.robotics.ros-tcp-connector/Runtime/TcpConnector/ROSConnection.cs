@@ -248,7 +248,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Disconnect()
         {
-            m_ConnectionThreadCancellation.Cancel();
+            if(m_ConnectionThreadCancellation != null)
+                m_ConnectionThreadCancellation.Cancel();
             m_ConnectionThreadCancellation = null;
         }
 
