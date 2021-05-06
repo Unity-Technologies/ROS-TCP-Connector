@@ -357,6 +357,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 try
                 {
+                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
+
                     client = new TcpClient();
                     client.Connect(rosIPAddress, rosPort);
 
@@ -394,6 +396,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
+                    ROSConnection.m_HasConnectionError = true;
                     Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
                     await Task.Delay(nextReconnectionDelay);
                 }
@@ -423,13 +426,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
                     //Debug.Log($"Message {content.Item1} received");
-                    queue.Enqueue(content);
+                    ROSConnection.m_HasConnectionError = false;
+
+                    if(content.Item1 != "") // ignore keepalive messages
+                        queue.Enqueue(content);
                 }
                 catch (OperationCanceledException)
                 {
                 }
                 catch (Exception e)
                 {
+                    ROSConnection.m_HasConnectionError = true;
                     Debug.Log("Reader " + readerIdx + " exception! " + e);
                 }
             }
