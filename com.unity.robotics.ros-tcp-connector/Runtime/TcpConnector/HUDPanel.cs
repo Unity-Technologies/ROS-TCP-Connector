@@ -22,20 +22,24 @@ namespace Unity.Robotics.ROSTCPConnector
 
         MessageViewState m_LastMessageSent;
         string m_LastMessageSentMeta = "None";
+        float m_LastMessageSentRealtime;
 
         public void SetLastMessageSent(string topic, Message message)
         {
             m_LastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
             m_LastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
         }
 
         MessageViewState m_LastMessageReceived;
         string m_LastMessageReceivedMeta = "None";
+        float m_LastMessageReceivedRealtime;
 
         public void SetLastMessageReceived(string topic, Message message)
         {
             m_LastMessageReceived = new MessageViewState() { label = "Last Message Received:", message = message };
             m_LastMessageReceivedMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
+            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
         }
 
         List<MessageViewState> activeServices = new List<MessageViewState>();
@@ -106,17 +110,53 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ScrollRect = new Rect();
         }
 
+        Color GetConnectionColor(float elapsedTime)
+        {
+            Color bright = new Color(1, 1, 0.5f);
+            Color mid = new Color(0, 1, 1);
+            Color dark = new Color(0, 0.5f, 1);
+
+            if (!ROSConnection.instance.HasConnectionThread)
+                return Color.gray;
+            if (ROSConnection.instance.HasConnectionError)
+                return Color.red;
+            if (elapsedTime > 0.03f)
+                return Color.Lerp(mid, dark, elapsedTime);
+            else
+                return bright;
+        }
+
         void OnGUI()
         {
             if (!isEnabled)
                 return;
 
             // Initialize main HUD
-            GUILayout.BeginVertical("box");
+            GUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(300));
 
             // ROS IP Setup
-            GUILayout.Label("ROS IP:", m_LabelStyle);
-            GUILayout.Label(host, m_ContentStyle);
+            GUILayout.BeginHorizontal();
+            Color baseColor = GUI.color;
+            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageReceivedRealtime);
+            GUILayout.Label("<", m_LabelStyle, GUILayout.Width(10));
+            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageSentRealtime);
+            GUILayout.Label(">", m_LabelStyle, GUILayout.Width(10));
+            GUI.color = baseColor;
+            GUILayout.Label("ROS IP: ", m_LabelStyle, GUILayout.Width(100));
+
+            if (!ROSConnection.instance.HasConnectionThread)
+            {
+                host = GUILayout.TextField(host, m_ContentStyle);
+                GUILayout.EndHorizontal();
+                GUILayout.Label("(Not connected)");
+                if (GUILayout.Button("Connect"))
+                    ROSConnection.instance.Connect();
+            }
+            else
+            {
+                GUILayout.Label(host, m_ContentStyle);
+                GUILayout.EndHorizontal();
+            }
 
             // Last message sent
             GUILayout.Label("Last Message Sent:", m_LabelStyle);
