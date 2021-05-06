@@ -138,9 +138,9 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.BeginHorizontal();
             Color baseColor = GUI.color;
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageReceivedRealtime);
-            GUILayout.Label("<", m_LabelStyle, GUILayout.Width(10));
+            GUILayout.Label("\u25C0", m_LabelStyle, GUILayout.Width(10));
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageSentRealtime);
-            GUILayout.Label(">", m_LabelStyle, GUILayout.Width(10));
+            GUILayout.Label("\u25B6", m_LabelStyle, GUILayout.Width(15));
             GUI.color = baseColor;
             GUILayout.Label("ROS IP: ", m_LabelStyle, GUILayout.Width(100));
 

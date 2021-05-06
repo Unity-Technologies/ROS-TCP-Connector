@@ -231,8 +231,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_RosIPAddress = ipAddress;
             m_RosPort = port;
-            if (m_HudPanel != null)
-                m_HudPanel.host = $"{ipAddress}:{port}";
             Connect();
         }
 
@@ -240,6 +238,9 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (!IPFormatIsCorrect(m_RosIPAddress))
                 Debug.LogError("ROS IP address is not correct");
+
+            if (m_HudPanel != null)
+                m_HudPanel.host = $"{m_RosIPAddress}:{m_RosPort}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
             Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds*1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
