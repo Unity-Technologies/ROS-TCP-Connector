@@ -11,171 +11,147 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
         // Variables required for ROS communication
-        [FormerlySerializedAs("hostName")] public string rosIPAddress = "127.0.0.1";
-        [FormerlySerializedAs("hostPort")] public int rosPort = 10000;
+        [SerializeField]
+        [FormerlySerializedAs("hostName")]
+        [FormerlySerializedAs("rosIPAddress")]
+        string m_RosIPAddress = "127.0.0.1";
+        public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
 
-        [Tooltip("If blank, determine IP automatically.")]
-        public string overrideUnityIP = "";
+        [SerializeField]
+        [FormerlySerializedAs("hostPort")]
+        [FormerlySerializedAs("rosPort")]
+        int m_RosPort = 10000;
+        public int RosPort { get => m_RosPort; set => m_RosPort = value; }
 
-        public int unityPort = 5005;
-        bool alreadyStartedServer = false;
+        [SerializeField]
+        bool m_ConnectOnStart = true;
+        public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
 
-        private int networkTimeout = 2000;
+        [SerializeField]
+        [Tooltip("Send keepalive message if nothing has been sent for this long (seconds).")]
+        float m_KeepaliveTime = 10;
+        public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
 
-        [Tooltip("While waiting for a service to respond, check this many times before giving up.")]
-        public int awaitDataMaxRetries = 10;
+        [SerializeField]
+        float m_NetworkTimeoutSeconds = 2;
+        public float NetworkTimeoutSeconds { get => m_NetworkTimeoutSeconds; set => m_NetworkTimeoutSeconds = value; }
 
-        [Tooltip("While waiting for a service to respond, wait this many seconds between checks.")]
-        public float awaitDataSleepSeconds = 1.0f;
+        [SerializeField]
+        float m_SleepTimeSeconds = 0.01f;
+        public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
 
-        [Tooltip("While reading received messages, read this many bytes at a time.")]
-        public int readChunkSize = 2048;
+        [SerializeField]
+        [FormerlySerializedAs("showHUD")]
+        bool m_ShowHUD = true;
+        public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
-        [Tooltip("While waiting to read a full message, check this many times before giving up.")]
-        public int awaitDataReadRetry = 10;
+        const string k_Topic_Error = "__error";
+        const string k_Topic_SysCommand = "__syscommand";
+        const string k_Topic_Services = "__srv";
 
-        [Tooltip("Close connection if nothing has been sent for this long (seconds).")]
-        public float timeoutOnIdle = 10;
-
-        static object _lock = new object(); // sync lock 
-        static List<Task> activeConnectionTasks = new List<Task>(); // pending connections
-
-        const string ERROR_TOPIC_NAME = "__error";
-        const string SYSCOMMAND_TOPIC_NAME = "__syscommand";
-        const string HANDSHAKE_TOPIC_NAME = "__handshake";
-
-        const string SYSCOMMAND_SUBSCRIBE = "subscribe";
-        const string SYSCOMMAND_PUBLISH = "publish";
+        const string k_SysCommand_Subscribe = "subscribe";
+        const string k_SysCommand_Publish = "publish";
+        const string k_SysCommand_RosService = "ros_service";
+        const string k_SysCommand_UnityService = "unity_service";
 
         // GUI window variables
-        internal HUDPanel hudPanel = null;
+        internal HUDPanel m_HudPanel = null;
 
-        public bool showHUD = true;
+        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
+        ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
+        CancellationTokenSource m_ConnectionThreadCancellation;
+
+        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
+
+        readonly object m_ServiceRequestLock = new object();
+        int m_NextSrvID = 101;
+        Dictionary<int, TaskPauser> m_ServicesWaiting = new Dictionary<int, TaskPauser>();
 
         struct SubscriberCallback
         {
-            public ConstructorInfo messageConstructor;
-            public List<Func<Message, Message>> callbacks;
+            public Func<Message> messageConstructor;
+            public List<Action<Message>> callbacks;
         }
 
-        Dictionary<string, SubscriberCallback> subscribers = new Dictionary<string, SubscriberCallback>();
+        Dictionary<string, SubscriberCallback> m_Subscribers = new Dictionary<string, SubscriberCallback>();
+
+        struct UnityServiceImplementation
+        {
+            public Func<Message> messageConstructor;
+            public Func<Message, Message> callback;
+        }
+
+        Dictionary<string, UnityServiceImplementation> m_UnityServices = new Dictionary<string, UnityServiceImplementation>();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
         {
             SubscriberCallback subCallbacks;
-            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
             {
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                    callbacks = new List<Func<Message, Message>> { }
+                    messageConstructor = () => new T(),
+                    callbacks = new List<Action<Message>> { }
                 };
-                subscribers.Add(topic, subCallbacks);
+                m_Subscribers.Add(topic, subCallbacks);
             }
 
             subCallbacks.callbacks.Add((Message msg) =>
             {
-                callback((T) msg);
-                return null;
+                callback((T)msg);
             });
         }
 
         public void ImplementService<T>(string topic, Func<T, Message> callback)
             where T : Message, new()
         {
-            SubscriberCallback subCallbacks;
-            if (!subscribers.TryGetValue(topic, out subCallbacks))
+            m_UnityServices[topic] = new UnityServiceImplementation
             {
-                subCallbacks = new SubscriberCallback
-                {
-                    messageConstructor = typeof(T).GetConstructor(new Type[0]),
-                    callbacks = new List<Func<Message, Message>> { }
-                };
-                subscribers.Add(topic, subCallbacks);
-            }
-
-            subCallbacks.callbacks.Add((Message msg) => { return callback((T) msg); });
+                messageConstructor = () => new T(),
+                callback = (Message msg) => callback((T)msg)
+            };
         }
 
-        public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest,
-            Action<RESPONSE> callback) where RESPONSE : Message, new()
+        public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
         {
-            // Serialize the message in service name, message size, and message bytes format
-            byte[] messageBytes = GetMessageBytes(rosServiceName, serviceRequest);
-
-            TcpClient client = new TcpClient();
-            await client.ConnectAsync(rosIPAddress, rosPort);
-
-            NetworkStream networkStream = client.GetStream();
-            networkStream.ReadTimeout = networkTimeout;
-
-            RESPONSE serviceResponse = new RESPONSE();
-
-            int serviceID = 0;
-
-            // Send the message
+            RESPONSE response = await SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest);
             try
             {
-                if (hudPanel != null) serviceID = hudPanel.AddServiceRequest(rosServiceName, serviceRequest);
-                networkStream.Write(messageBytes, 0, messageBytes.Length);
+                callback(response);
             }
             catch (Exception e)
             {
-                Debug.LogError("SocketException: " + e);
-                goto finish;
+                Debug.LogError("Exception in service callback: " + e);
             }
-
-            if (!networkStream.CanRead)
-            {
-                Debug.LogError("Sorry, you cannot read from this NetworkStream.");
-                goto finish;
-            }
-
-            // Poll every 1 second(s) for available data on the stream
-            int attempts = 0;
-            while (!networkStream.DataAvailable && attempts <= this.awaitDataMaxRetries)
-            {
-                if (attempts == this.awaitDataMaxRetries)
-                {
-                    Debug.LogError("No data available on network stream after " + awaitDataMaxRetries + " attempts.");
-                    goto finish;
-                }
-
-                attempts++;
-                await Task.Delay((int) (awaitDataSleepSeconds * 1000));
-            }
-
-            try
-            {
-                string serviceName;
-                (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-                serviceResponse.Deserialize(content, 0);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Exception raised!! " + e);
-            }
-
-            finish:
-            callback(serviceResponse);
-            if (hudPanel != null) hudPanel.AddServiceResponse(serviceID, serviceResponse);
-            if (client.Connected)
-                client.Close();
         }
 
         public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
         {
-            var t = new TaskCompletionSource<RESPONSE>();
+            byte[] requestBytes = serviceRequest.Serialize();
+            TaskPauser pauser = new TaskPauser();
 
-            SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest, s => t.TrySetResult(s));
+            int srvID;
+            lock (m_ServiceRequestLock)
+            {
+                srvID = m_NextSrvID++;
+                m_ServicesWaiting.Add(srvID, pauser);
+            }
 
-            return await t.Task;
+            MRosUnitySrvMessage srvMessage = new MRosUnitySrvMessage(srvID, true, rosServiceName, requestBytes);
+            Send(k_Topic_Services, srvMessage);
+
+            byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
+            RESPONSE result = new RESPONSE();
+            result.Deserialize(rawResponse, 0);
+            return result;
         }
 
         public void GetTopicList(Action<string[]> callback)
@@ -185,13 +161,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_SUBSCRIBE,
-                new SysCommand_Subscribe {topic = topic, message_name = rosMessageName});
+            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
         {
-            SendSysCommand(SYSCOMMAND_PUBLISH, new SysCommand_Publish {topic = topic, message_name = rosMessageName});
+            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
+        public void RegisterRosService(string topic, string rosMessageName)
+        {
+            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
+        public void RegisterUnityService(string topic, string rosMessageName)
+        {
+            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
         private static ROSConnection _instance;
@@ -227,20 +212,38 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
-            if(!IPFormatIsCorrect(rosIPAddress))
-                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
-            Subscribe<MRosUnityError>(ERROR_TOPIC_NAME, RosUnityErrorCallback);
+            Subscribe<MRosUnityError>(k_Topic_Error, RosUnityErrorCallback);
+            Subscribe<MRosUnitySrvMessage>(k_Topic_Services, ProcessServiceMessage);
 
-            if (overrideUnityIP != "")
+            if (ConnectOnStart)
             {
-                if(!IPFormatIsCorrect(overrideUnityIP))
-                    Debug.LogError("Override Unity IP address is not correct");
-                StartMessageServer(overrideUnityIP, unityPort); // no reason to wait, if we already know the IP
+                Connect();
             }
+        }
 
-            SendServiceMessage<MUnityHandshakeResponse>(HANDSHAKE_TOPIC_NAME,
-                new MUnityHandshakeRequest(overrideUnityIP, (ushort) unityPort), RosUnityHandshakeCallback);
+        public void Connect(string ipAddress, int port)
+        {
+            m_RosIPAddress = ipAddress;
+            m_RosPort = port;
+            if (m_HudPanel != null)
+                m_HudPanel.host = $"{ipAddress}:{port}";
+            Connect();
+        }
+
+        public void Connect()
+        {
+            if (!IPFormatIsCorrect(m_RosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
+
+            m_ConnectionThreadCancellation = new CancellationTokenSource();
+            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds*1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+        }
+
+        public void Disconnect()
+        {
+            m_ConnectionThreadCancellation.Cancel();
+            m_ConnectionThreadCancellation = null;
         }
 
         void OnValidate()
@@ -250,21 +253,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void InitializeHUD()
         {
-            if (!Application.isPlaying || (!showHUD && hudPanel == null))
+            if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
                 return;
 
-            if (hudPanel == null)
+            if (m_HudPanel == null)
             {
-                hudPanel = gameObject.AddComponent<HUDPanel>();
-                hudPanel.host = $"{rosIPAddress}:{rosPort}";
+                m_HudPanel = gameObject.AddComponent<HUDPanel>();
+                m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
             }
 
-            hudPanel.isEnabled = showHUD;
-        }
-
-        void RosUnityHandshakeCallback(MUnityHandshakeResponse response)
-        {
-            StartMessageServer(response.ip, unityPort);
+            m_HudPanel.isEnabled = m_ShowHUD;
         }
 
         void RosUnityErrorCallback(MRosUnityError error)
@@ -272,210 +270,212 @@ namespace Unity.Robotics.ROSTCPConnector
             Debug.LogError("ROS-Unity error: " + error.message);
         }
 
-        /// <param name="tcpClient"></param> TcpClient to read byte stream from.
-        protected async Task HandleConnectionAsync(TcpClient tcpClient)
+        private void Update()
         {
-            await Task.Yield();
+            s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
-            // continue asynchronously on another thread
-            await ReadFromStream(tcpClient.GetStream());
+            Tuple<string, byte[]> data;
+            while (m_IncomingMessages.TryDequeue(out data))
+            {
+                (string topic, byte[] contents) = data;
+
+                // notify whatever is interested in this incoming message
+                SubscriberCallback callback;
+                if (m_Subscribers.TryGetValue(topic, out callback))
+                {
+                    Message message = callback.messageConstructor();
+                    message.Deserialize(contents, 0);
+
+                    if (m_HudPanel != null)
+                        m_HudPanel.SetLastMessageReceived(topic, message);
+
+                    callback.callbacks.ForEach(item => item(message));
+                }
+            }
         }
 
-        async Task ReadFromStream(NetworkStream networkStream)
+        void ProcessServiceMessage(MRosUnitySrvMessage message)
         {
-            if (!networkStream.CanRead)
-                return;
-
-            SubscriberCallback subs;
-
-            float lastDataReceivedRealTimestamp = 0;
-            do
+            if (message.is_request)
             {
-                // try to keep reading messages as long as the networkstream has data.
-                // But if it's taking too long, don't freeze forever.
-                float frameLimitRealTimestamp = Time.realtimeSinceStartup + 0.1f;
-                while (networkStream.DataAvailable && Time.realtimeSinceStartup < frameLimitRealTimestamp)
+                UnityServiceImplementation service;
+                if (m_UnityServices.TryGetValue(message.topic, out service))
                 {
-                    if (!Application.isPlaying)
+                    Message requestMessage = service.messageConstructor();
+                    requestMessage.Deserialize(message.payload, 0);
+                    Message responseMessage = service.callback(requestMessage);
+                    byte[] responseBytes = responseMessage.Serialize();
+                    Send(k_Topic_Services, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
+                }
+            }
+            else
+            {
+                TaskPauser resumer;
+                lock (m_ServiceRequestLock)
+                {
+                    if (!m_ServicesWaiting.TryGetValue(message.srv_id, out resumer))
                     {
-                        networkStream.Close();
+                        Debug.LogError($"Unable to route service response on \"{message.topic}\"! SrvID {message.srv_id} does not exist.");
                         return;
                     }
 
-                    (string topicName, byte[] content) = await ReadMessageContents(networkStream);
-                    lastDataReceivedRealTimestamp = Time.realtimeSinceStartup;
-
-                    if (!subscribers.TryGetValue(topicName, out subs))
-                        continue; // not interested in this topic
-
-                    Message msg = (Message)subs.messageConstructor.Invoke(new object[0]);
-                    msg.Deserialize(content, 0);
-
-                    if (hudPanel != null)
-                        hudPanel.SetLastMessageReceived(topicName, msg);
-
-                    foreach (Func<Message, Message> callback in subs.callbacks)
-                    {
-                        try
-                        {
-                            Message response = callback(msg);
-                            if (response != null)
-                            {
-                                // if the callback has a response, it's implementing a service
-                                WriteDataStaggered(networkStream, topicName, response);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError("Subscriber callback problem: " + e);
-                        }
-                    }
+                    m_ServicesWaiting.Remove(message.srv_id);
                 }
-                await Task.Yield();
-            } 
-            while (Time.realtimeSinceStartup < lastDataReceivedRealTimestamp + timeoutOnIdle); // time out if idle too long.
-            networkStream.Close();
-        }
-
-        async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream)
-        {
-            // Get first bytes to determine length of topic name
-            byte[] rawTopicBytes = new byte[4];
-            networkStream.Read(rawTopicBytes, 0, rawTopicBytes.Length);
-            int topicLength = BitConverter.ToInt32(rawTopicBytes, 0);
-
-            // Read and convert topic name
-            byte[] topicNameBytes = new byte[topicLength];
-            networkStream.Read(topicNameBytes, 0, topicNameBytes.Length);
-            string topicName = Encoding.ASCII.GetString(topicNameBytes, 0, topicLength);
-
-            byte[] full_message_size_bytes = new byte[4];
-            networkStream.Read(full_message_size_bytes, 0, full_message_size_bytes.Length);
-            int full_message_size = BitConverter.ToInt32(full_message_size_bytes, 0);
-
-            byte[] readBuffer = new byte[full_message_size];
-            int bytesRemaining = full_message_size;
-            int totalBytesRead = 0;
-
-            int attempts = 0;
-            // Read in message contents until completion, or until attempts are maxed out
-            while (bytesRemaining > 0 && attempts <= this.awaitDataReadRetry)
-            {
-                if (attempts == this.awaitDataReadRetry)
-                {
-                    Debug.LogError("No more data to read network stream after " + awaitDataReadRetry + " attempts.");
-                    return Tuple.Create(topicName, readBuffer);
-                }
-
-                // Read the minimum of the bytes remaining, or the designated readChunkSize in segments until none remain
-                int bytesRead = networkStream.Read(readBuffer, totalBytesRead, Math.Min(readChunkSize, bytesRemaining));
-                totalBytesRead += bytesRead;
-                bytesRemaining -= bytesRead;
-
-                if (!networkStream.DataAvailable) 
-                {
-                    attempts++;
-                    await Task.Yield();
-                }
-            }
-            return Tuple.Create(topicName, readBuffer);
-        }
-
-        /// <summary>
-        /// 	Handles multiple connections and locks.
-        /// </summary>
-        /// <param name="tcpClient"></param> TcpClient to read byte stream from.
-        private async Task StartHandleConnectionAsync(TcpClient tcpClient)
-        {
-            var connectionTask = HandleConnectionAsync(tcpClient);
-
-            lock (_lock)
-                activeConnectionTasks.Add(connectionTask);
-
-            try
-            {
-                await connectionTask;
-                // we may be on another thread after "await"
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.ToString());
-            }
-            finally
-            {
-                lock (_lock)
-                    activeConnectionTasks.Remove(connectionTask);
+                resumer.Resume(message.payload);
             }
         }
 
-        TcpListener tcpListener;
-
-        protected async void StartMessageServer(string ip, int port)
+        static void SendKeepalive(NetworkStream stream)
         {
-            if (alreadyStartedServer)
-                return;
+            // 8 zeroes = a ros message with topic "" and no message data.
+            stream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
+        }
 
-            alreadyStartedServer = true;
-            while (true)
+        static async Task ConnectionThread(
+            string rosIPAddress,
+            int rosPort,
+            float networkTimeoutSeconds,
+            float keepaliveTime,
+            int sleepMilliseconds,
+            ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
+            ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
+            CancellationToken token)
+        {
+            //Debug.Log("ConnectionThread begins");
+            int nextReaderIdx = 101;
+            int nextReconnectionDelay = 1000;
+
+            while (!token.IsCancellationRequested)
             {
+                TcpClient client = null;
+                CancellationTokenSource readerCancellation = null;
+
                 try
                 {
-                    if (!Application.isPlaying)
-                        break;
-                    tcpListener = new TcpListener(IPAddress.Parse(ip), port);
-                    tcpListener.Start();
+                    client = new TcpClient();
+                    client.Connect(rosIPAddress, rosPort);
 
-                    Debug.Log("ROS-Unity server listening on " + ip + ":" + port);
+                    NetworkStream networkStream = client.GetStream();
+                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
-                    while (true) //we wait for a connection
+                    SendKeepalive(networkStream);
+
+                    readerCancellation = new CancellationTokenSource();
+                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
+                    nextReaderIdx++;
+
+                    // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
+                    while (true)
                     {
-                        var tcpClient = await tcpListener.AcceptTcpClientAsync();
-
-                        var task = StartHandleConnectionAsync(tcpClient);
-                        // if already faulted, re-throw any error on the calling context
-                        if (task.IsFaulted)
-                            await task;
-
-                        // try to get through the message queue before doing another await
-                        // but if messages are arriving faster than we can process them, don't freeze up
-                        float abortAtRealtime = Time.realtimeSinceStartup + 0.1f;
-                        while (tcpListener.Pending() && Time.realtimeSinceStartup < abortAtRealtime)
+                        Tuple<string, Message> data;
+                        float waitingSinceRealTime = s_RealTimeSinceStartup;
+                        token.ThrowIfCancellationRequested();
+                        while (!outgoingQueue.TryDequeue(out data))
                         {
-                            tcpClient = tcpListener.AcceptTcpClient();
-                            task = StartHandleConnectionAsync(tcpClient);
-                            if (task.IsFaulted)
-                                await task;
+                            Thread.Sleep(sleepMilliseconds);
+                            if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
+                            {
+                                SendKeepalive(networkStream);
+                                waitingSinceRealTime = s_RealTimeSinceStartup;
+                            }
+                            token.ThrowIfCancellationRequested();
                         }
+
+                        WriteDataStaggered(networkStream, data.Item1, data.Item2);
                     }
                 }
-                catch (ObjectDisposedException e)
+                catch (OperationCanceledException)
                 {
-                    if (!Application.isPlaying)
-                    {
-                        // This only happened because we're shutting down. Not a problem.
-                    }
-                    else
-                    {
-                        Debug.LogError("Exception raised!! " + e);
-                    }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError("Exception raised!! " + e);
+                    Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                    await Task.Delay(nextReconnectionDelay);
                 }
+                finally
+                {
+                    if (readerCancellation != null)
+                        readerCancellation.Cancel();
 
-                // to avoid infinite loops, wait a frame before trying to restart the server
+                    if (client != null)
+                        client.Close();
+
+                    // clear the message queue
+                    Tuple<string, Message> unused;
+                    while (outgoingQueue.TryDequeue(out unused))
+                    {
+                    }
+                }
                 await Task.Yield();
             }
         }
 
-        private void OnApplicationQuit()
+        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
-            if (tcpListener != null)
-                tcpListener.Stop();
-            tcpListener = null;
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
+                    //Debug.Log($"Message {content.Item1} received");
+                    queue.Enqueue(content);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("Reader " + readerIdx + " exception! " + e);
+                }
+            }
         }
 
+        static async Task ReadToByteArray(NetworkStream networkStream, byte[] array, int length, int sleepMilliseconds, CancellationToken token)
+        {
+            int read = 0;
+            while (read < length && networkStream.CanRead)
+            {
+                while (!token.IsCancellationRequested && !networkStream.DataAvailable)
+                    await Task.Delay(sleepMilliseconds);
+
+                token.ThrowIfCancellationRequested();
+                read += await networkStream.ReadAsync(array, read, length - read, token);
+            }
+
+            if (read < length)
+                throw new SocketException(); // the connection has closed
+        }
+
+        static byte[] s_FourBytes = new byte[4];
+        static byte[] s_TopicScratchSpace = new byte[64];
+
+        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, int sleepMilliseconds, CancellationToken token)
+        {
+            // Get first bytes to determine length of topic name
+            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
+            int topicLength = BitConverter.ToInt32(s_FourBytes, 0);
+
+            // If our topic buffer isn't large enough, make a larger one (and keep it that size; assume that's the new standard)
+            if (topicLength > s_TopicScratchSpace.Length)
+                s_TopicScratchSpace = new byte[topicLength];
+
+            // Read and convert topic name
+            await ReadToByteArray(networkStream, s_TopicScratchSpace, topicLength, sleepMilliseconds, token);
+            string topicName = Encoding.ASCII.GetString(s_TopicScratchSpace, 0, topicLength);
+
+            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
+            int full_message_size = BitConverter.ToInt32(s_FourBytes, 0);
+
+            byte[] readBuffer = new byte[full_message_size];
+            await ReadToByteArray(networkStream, readBuffer, full_message_size, sleepMilliseconds, token);
+
+            return Tuple.Create(topicName, readBuffer);
+        }
+
+        void OnApplicationQuit()
+        {
+            Disconnect();
+        }
 
         /// <summary>
         ///    Given some input values, fill a byte array in the desired format to use with
@@ -533,13 +533,7 @@ namespace Unity.Robotics.ROSTCPConnector
             return messageBuffer;
         }
 
-        struct SysCommand_Subscribe
-        {
-            public string topic;
-            public string message_name;
-        }
-
-        struct SysCommand_Publish
+        struct SysCommand_TopicAndType
         {
             public string topic;
             public string message_name;
@@ -547,45 +541,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param)
         {
-            Send(SYSCOMMAND_TOPIC_NAME, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
+            Send(k_Topic_SysCommand, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
         }
 
-        public async void Send(string rosTopicName, Message message)
+        public void Send(string rosTopicName, Message message)
         {
-            TcpClient client = null;
-            try
-            {
-                client = new TcpClient();
-                await client.ConnectAsync(rosIPAddress, rosPort);
+            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
 
-                NetworkStream networkStream = client.GetStream();
-                networkStream.ReadTimeout = networkTimeout;
-
-                WriteDataStaggered(networkStream, rosTopicName, message);
-            }
-            catch (NullReferenceException e)
-            {
-                Debug.LogError("TCPConnector.SendMessage Null Reference Exception: " + e);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("TCPConnector Exception: " + e);
-            }
-            finally
-            {
-                if (client != null && client.Connected)
-                {
-                    try
-                    {
-                        if (hudPanel != null) hudPanel.SetLastMessageSent(rosTopicName, message);
-                        client.Close();
-                    }
-                    catch (Exception)
-                    {
-                        //Ignored.
-                    }
-                }
-            }
+            if (m_HudPanel != null)
+                m_HudPanel.SetLastMessageSent(rosTopicName, message);
         }
 
         /// <summary>
@@ -601,7 +565,7 @@ namespace Unity.Robotics.ROSTCPConnector
         /// <param name="networkStream"></param> The network stream that is transmitting the messsage
         /// <param name="rosTopicName"></param> The ROS topic or service name that is receiving the messsage
         /// <param name="message"></param> The ROS message to send to a ROS publisher or service
-        private void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
+        static void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
         {
             byte[] topicName = message.SerializeString(rosTopicName);
             List<byte[]> segments = message.SerializationStatements();
@@ -618,25 +582,25 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public static bool IPFormatIsCorrect(string ipAddress)
         {
-            if(ipAddress == null || ipAddress == "")
+            if (ipAddress == null || ipAddress == "")
                 return false;
-            
+
             // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
-            if(Char.IsLetter(ipAddress[0]))
+            if (Char.IsLetter(ipAddress[0]))
             {
-                foreach(Char subChar in ipAddress)
+                foreach (Char subChar in ipAddress)
                 {
-                    if(!(Char.IsLetterOrDigit(subChar)  || subChar == '-'|| subChar == '.'))
+                    if (!(Char.IsLetterOrDigit(subChar) || subChar == '-' || subChar == '.'))
                         return false;
                 }
 
-                if(!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
+                if (!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
                     return false;
                 return true;
             }
 
             string[] subAdds = ipAddress.Split('.');
-            if(subAdds.Length != 4)
+            if (subAdds.Length != 4)
             {
                 return false;
             }
