@@ -69,6 +69,11 @@ namespace Unity.Robotics.ROSTCPConnector
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
+        public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
+
+        static bool m_HasConnectionError = false;
+        public bool HasConnectionError => m_HasConnectionError;
+
         static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
 
         readonly object m_ServiceRequestLock = new object();
