@@ -112,18 +112,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Color GetConnectionColor(float elapsedTime)
         {
-            Color bright = new Color(1, 1, 0.5f);
-            Color mid = new Color(0, 1, 1);
-            Color dark = new Color(0, 0.5f, 1);
+            var bright = new Color(1, 1, 0.5f);
+            var mid = new Color(0, 1, 1);
+            var dark = new Color(0, 0.5f, 1);
+            const float brightDuration = 0.03f;
+            const float fadeToDarkDuration = 1.0f;
 
             if (!ROSConnection.instance.HasConnectionThread)
                 return Color.gray;
             if (ROSConnection.instance.HasConnectionError)
                 return Color.red;
-            if (elapsedTime > 0.03f)
-                return Color.Lerp(mid, dark, elapsedTime);
-            else
+            if (elapsedTime <= brightDuration)
                 return bright;
+            else
+                return Color.Lerp(mid, dark, elapsedTime/fadeToDarkDuration);
         }
 
         void OnGUI()
