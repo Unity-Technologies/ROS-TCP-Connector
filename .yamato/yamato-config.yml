@@ -9,7 +9,12 @@ commands:
     - python3 -m pip install unity-downloader-cli --index-url https://artifactory.prd.it.unity3d.com/artifactory/api/pypi/pypi/simple --upgrade
     - unity-downloader-cli -u 2020.2.0b9 -c editor -c StandaloneSupport-IL2CPP -c Linux --wait --published
     - git clone git@github.cds.internal.unity3d.com:unity/utr.git utr
-    - utr/utr --testproject=./TestRosTcpConnector --editor-location=.Editor --reruncount=0 --artifacts_path=test-results --suite=playmode --suite=editor --platform=Editor
+    - utr/utr --testproject=./TestRosTcpConnector --editor-location=.Editor --reruncount=0 --artifacts_path=test-results --suite=playmode --suite=editor --platform=Editor --enable-code-coverage --coverage-results-path=../test-results --coverage-options="assemblyFilters:+Unity.Robotics.ROSTCPConnector,+Unity.Robotics.ROSTCPConnector.Editor;generateHtmlReport;generateBadgeReport;generateAdditionalMetrics"
+    # check test coverage
+    - command: |
+        linecoverage=$(cat test-results/Report/Summary.xml | grep Linecoverage | grep -Eo '[+-]?[0-9]+([.][0-9]+)?')
+        echo "Line coverage: $linecoverage%"
+        if [[ $linecoverage < 0 ]]; then exit 1; fi
 triggers:
     cancel_old_ci: true
     expression: |
