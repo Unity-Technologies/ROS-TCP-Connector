@@ -135,15 +135,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
                     {
                         case CachedEntryStatus.BuiltMsgFile:
                         case CachedEntryStatus.UnbuiltMsgFile:
-                            MessageAutoGen.GenerateSingleMessage(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                            break;
                         case CachedEntryStatus.BuiltSrvFile:
                         case CachedEntryStatus.UnbuiltSrvFile:
-                            ServiceAutoGen.GenerateSingleService(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                            break;
                         case CachedEntryStatus.BuiltActionFile:
                         case CachedEntryStatus.UnbuiltActionFile:
-                            ActionAutoGen.GenerateSingleAction(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                            MessageBuilder.Build(entry.path, MessageGenBrowserSettings.Get().outputPath);
                             break;
                     }
                     AssetDatabase.Refresh();
@@ -160,9 +156,9 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
                 if (entry.hasBuildButton && GUILayout.Button(entry.buildLabel, GUILayout.Width(BUTTON_WIDTH)))
                 {
                     // build this directory
-                    MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                    ServiceAutoGen.GenerateDirectoryServices(entry.path, MessageGenBrowserSettings.Get().outputPath);
-                    ActionAutoGen.GenerateDirectoryActions(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                    //FIXME MessageAutoGen.GenerateDirectoryMessages(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                    //ServiceAutoGen.GenerateDirectoryServices(entry.path, MessageGenBrowserSettings.Get().outputPath);
+                    //ActionAutoGen.GenerateDirectoryActions(entry.path, MessageGenBrowserSettings.Get().outputPath);
                     AssetDatabase.Refresh();
                     m_IsCacheDirty = true;
                 }
@@ -286,14 +282,15 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
             switch (Path.GetExtension(path))
             {
                 case ".msg":
-                    string builtMessagePath = MessageAutoGen.GetMessageClassPath(path, MessageGenBrowserSettings.Get().outputPath);
+                    return CachedEntryStatus.UnbuiltMsgFile;
+                /*    string builtMessagePath = MessageAutoGen.GetMessageClassPath(path, MessageGenBrowserSettings.Get().outputPath);
                     return File.Exists(builtMessagePath) ? CachedEntryStatus.BuiltMsgFile : CachedEntryStatus.UnbuiltMsgFile;
                 case ".srv":
                     string[] builtServicePaths = ServiceAutoGen.GetServiceClassPaths(path, MessageGenBrowserSettings.Get().outputPath);
                     return builtServicePaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltSrvFile : CachedEntryStatus.UnbuiltSrvFile;
                 case ".action":
                     string[] builtActionPaths = ActionAutoGen.GetActionClassPaths(path, MessageGenBrowserSettings.Get().outputPath);
-                    return builtActionPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltActionFile : CachedEntryStatus.UnbuiltActionFile;
+                    return builtActionPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltActionFile : CachedEntryStatus.UnbuiltActionFile;*/
                   }
 
             return CachedEntryStatus.Ignored;
