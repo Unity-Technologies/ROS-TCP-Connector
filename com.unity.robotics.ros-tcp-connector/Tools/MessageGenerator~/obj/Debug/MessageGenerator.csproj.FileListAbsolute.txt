@@ -1,0 +1,7 @@
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\obj\Debug\MessageGenerator.csprojAssemblyReference.cache
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\obj\Debug\MessageGenerator.csproj.CoreCompileInputs.cache
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\bin\Debug\MessageGenerator.exe.config
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\bin\Debug\MessageGenerator.exe
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\bin\Debug\MessageGenerator.pdb
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\obj\Debug\MessageGenerator.exe
+C:\Users\laurie.cheers\source\repos\MessageGenerator\MessageGenerator\obj\Debug\MessageGenerator.pdb
