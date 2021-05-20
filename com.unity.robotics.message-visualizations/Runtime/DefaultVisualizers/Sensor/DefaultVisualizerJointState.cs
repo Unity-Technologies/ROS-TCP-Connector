@@ -14,6 +14,8 @@ public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
     UrdfRobot m_UrdfRobot;
     [SerializeField]
     RobotVisualization m_RobotData;
+    [SerializeField]
+    Color m_Color;
 
     public override void Start()
     {
@@ -22,8 +24,9 @@ public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
             m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
-    public override void Draw(BasicDrawing drawing, MJointState message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MJointState message, MessageMetadata meta)
     {
+        Color color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
         if (m_ShowEffort)
         {

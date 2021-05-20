@@ -8,9 +8,10 @@ using UnityEngine;
 
 public class DefaultVisualizerImu : BasicVisualizer<MImu>
 {
-    public override void Draw(BasicDrawing drawing, MImu message, MessageMetadata meta, Color color, string label)
+    public Color m_Color;
+    public override void Draw(BasicDrawing drawing, MImu message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, color);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
     }
 
     public override Action CreateGUI(MImu message, MessageMetadata meta, BasicDrawing drawing) => () =>

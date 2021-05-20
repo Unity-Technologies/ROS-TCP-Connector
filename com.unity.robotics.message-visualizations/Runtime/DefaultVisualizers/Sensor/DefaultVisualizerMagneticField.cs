@@ -8,9 +8,12 @@ using UnityEngine;
 
 public class DefaultVisualizerMagneticField : BasicVisualizer<MMagneticField>
 {
-    public override void Draw(BasicDrawing drawing, MMagneticField message, MessageMetadata meta, Color color, string label)
+    [SerializeField]
+    Color m_Color;
+
+    public override void Draw(BasicDrawing drawing, MMagneticField message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, color);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
     }
 
     public override Action CreateGUI(MMagneticField message, MessageMetadata meta, BasicDrawing drawing) => () =>

@@ -25,7 +25,7 @@ public class DefaultVisualizerImage : BasicVisualizer<MImage>
     }
 
     // TODO
-    public override void Draw(BasicDrawing drawing, MImage message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MImage message, MessageMetadata meta)
     {
         // if (m_CameraInfoMessage != null && message.data.Length > 0)
         // {

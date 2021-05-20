@@ -10,7 +10,7 @@ public class DefaultVisualizerMultiEchoLaserScan : BasicVisualizer<MMultiEchoLas
 {
     public MultiEchoLaserScanVisualizerSettings m_Settings;
 
-    public override void Draw(BasicDrawing drawing, MMultiEchoLaserScan message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MMultiEchoLaserScan message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing, m_Settings);
     }

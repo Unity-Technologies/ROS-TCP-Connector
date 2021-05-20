@@ -22,8 +22,9 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool IsEnabled { get; set; }
 
         // GUI variables
-        public static readonly GUIStyle s_IPStyle;
-        public static readonly GUIStyle s_BoldStyle;
+        static bool s_Initialized = false; 
+        public static GUIStyle s_IPStyle;
+        public static GUIStyle s_BoldStyle;
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
 
         public static string GetMessageNameByTopic(string topic)
@@ -168,8 +169,12 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static HUDPanel()
+        void InitStyles()
         {
+            if (s_Initialized)
+                return;
+
+            s_Initialized = true;
             s_IPStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
@@ -186,6 +191,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void Awake()
         {
+            InitStyles();
+
             LoadLayout();
         }
 

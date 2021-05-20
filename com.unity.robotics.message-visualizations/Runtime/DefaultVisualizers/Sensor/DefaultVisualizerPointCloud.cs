@@ -10,12 +10,14 @@ using UnityEngine;
 public class DefaultVisualizerPointCloud : BasicVisualizer<MPointCloud>
 {
     public PointCloudVisualizerSettings m_Settings;
+    [SerializeField]
+    Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MPointCloud message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPointCloud message, MessageMetadata meta)
     {
         if (m_Settings.channels == null)
             m_Settings.channels = message.channels;
-        message.Draw<FLU>(drawing, color, m_Settings);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
     }
 
     public override Action CreateGUI(MPointCloud message, MessageMetadata meta, BasicDrawing drawing) 

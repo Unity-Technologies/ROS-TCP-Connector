@@ -70,8 +70,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &8047805054313730080
 MonoBehaviour:
@@ -86,8 +84,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &2383384678607936081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,8 +97,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &3295410404439277723
 MonoBehaviour:
@@ -117,8 +111,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &6160762975729603870
 MonoBehaviour:
@@ -133,8 +125,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &6946897536552733743
 MonoBehaviour:
@@ -149,8 +139,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &8352815775925742287
 MonoBehaviour:
@@ -165,8 +153,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &7303645469756119746
 MonoBehaviour:
@@ -181,8 +167,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &1773035749431174605
 MonoBehaviour:
@@ -197,8 +181,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &8123718758661203652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,8 +194,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &8529573832713912522
 MonoBehaviour:
@@ -228,8 +208,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &4462889497226351521
 MonoBehaviour:
@@ -244,8 +222,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!114 &6182971199690518249
 MonoBehaviour:
@@ -260,8 +236,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Tabulate: 1
 --- !u!1 &3885009520023495737
 GameObject:
@@ -294,8 +268,8 @@ Transform:
   - {fileID: 5960358800852583846}
   - {fileID: 8625932825378670584}
   - {fileID: 8632442061405313714}
-  - {fileID: 5804406787533598071}
   - {fileID: 2742884835330475003}
+  - {fileID: 1464881800879191381}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -314,6 +288,52 @@ MonoBehaviour:
   axesScale: 0.1
   lineThickness: 0.01
   color: {r: 1, g: 1, b: 1, a: 1}
+--- !u!1 &7636441891634033707
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1464881800879191381}
+  - component: {fileID: 8903734632640279220}
+  m_Layer: 0
+  m_Name: Sensor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1464881800879191381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7636441891634033707}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3885009520023495739}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8903734632640279220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7636441891634033707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f71dde58eb4384a648d556f826fd8b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Topic: 
+  m_Settings: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &8079308096200974559
 GameObject:
   m_ObjectHideFlags: 0
@@ -393,12 +413,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &1563818073742243130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,12 +431,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &8450233287046239639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -431,12 +449,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &3495802066392860514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,12 +467,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &1323506741032866252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -469,10 +485,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Origin: {fileID: 0}
   m_Radius: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &8436390243845862107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -486,10 +501,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Origin: {fileID: 0}
   m_Radius: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &2672417681116201770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -503,9 +518,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &7480397601027337117
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -519,9 +534,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &7781967616548791937
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -535,9 +550,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &3645363982075483676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -551,9 +566,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.1
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &3528554124578749351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -567,9 +581,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Thickness: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &5947260051662258799
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -583,8 +596,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &4733426239935653971
@@ -600,8 +611,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &1759114360125940856
@@ -617,8 +626,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &4772047444513335717
@@ -634,8 +641,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &1342705377526844242
@@ -651,8 +656,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &7359414968208872101
@@ -668,11 +671,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &3971045606245367544
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -686,11 +689,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.01
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &4961125574011629212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -704,10 +707,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &4973850307207148825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -721,10 +724,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &8741896852071333036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -738,9 +741,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Label: 
 --- !u!114 &2020808064061167220
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -754,56 +757,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Radius: 0.01
---- !u!1 &8614125609282503765
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5804406787533598071}
-  - component: {fileID: 1372983234759842913}
-  m_Layer: 0
-  m_Name: Sensor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5804406787533598071
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8614125609282503765}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1372983234759842913
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8614125609282503765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16302429be2008e47bd0a636c03d05f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Topic: 
-  m_Label: 
   m_Color: {r: 0, g: 0, b: 0, a: 1}
-  pointRadius: 0.05
+  m_Label: 
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,10 +818,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Label: 
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_UrdfRobot: {fileID: 0}
   m_PathThickness: 0.01
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1001 &1914626938635344595
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -879,7 +834,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_LocalPosition.x

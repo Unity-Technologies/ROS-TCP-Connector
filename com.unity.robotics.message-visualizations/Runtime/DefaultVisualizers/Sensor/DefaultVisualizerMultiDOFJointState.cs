@@ -12,6 +12,8 @@ public class DefaultVisualizerMultiDOFJointState : BasicVisualizer<MMultiDOFJoin
     UrdfRobot m_UrdfRobot;
     [SerializeField]
     RobotVisualization m_RobotData;
+    [SerializeField]
+    Color m_Color;
 
     public override void Start()
     {
@@ -20,9 +22,9 @@ public class DefaultVisualizerMultiDOFJointState : BasicVisualizer<MMultiDOFJoin
             m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
-    public override void Draw(BasicDrawing drawing, MMultiDOFJointState message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MMultiDOFJointState message, MessageMetadata meta)
     {
-        m_RobotData.DrawGhost(drawing, message, color);
+        m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
     }
 
     public override Action CreateGUI(MMultiDOFJointState message, MessageMetadata meta, BasicDrawing drawing)

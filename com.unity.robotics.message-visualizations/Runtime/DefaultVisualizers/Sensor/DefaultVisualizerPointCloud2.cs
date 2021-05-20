@@ -15,6 +15,8 @@ public enum ColorMode
 public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
 {
     public PointCloud2VisualizerSettings m_Settings;
+    [SerializeField]
+    Color m_Color;
 
     public override void Start()
     {
@@ -25,12 +27,12 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
         base.Start();
     }
     
-    public override void Draw(BasicDrawing drawing, MPointCloud2 message, MessageMetadata meta, Color color, string label)
+    public override void Draw(BasicDrawing drawing, MPointCloud2 message, MessageMetadata meta)
     {
         if (m_Settings.channels == null)
             m_Settings.channels = message.fields;
         
-        message.Draw<FLU>(drawing, color, m_Settings);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
     }
 
     public override Action CreateGUI(MPointCloud2 message, MessageMetadata meta, BasicDrawing drawing)
