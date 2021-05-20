@@ -40,7 +40,7 @@ To get you started with visualizers - assuming you have completed at least part 
 
 1. Here's an example visualizer for the MoverServiceResponse message used in part 3 of the Pick and Place tutorial. Create a script called PickAndPlaceVisualizerExample.cs, and paste the following code into it. (Alternatively, you can copy the file from the folder Examples~ next to the document you're reading.).
 
-```
+```csharp
 using RosMessageTypes.Moveit;
 using RosMessageTypes.NiryoMoveit;
 using RosSharp.Urdf;
@@ -91,42 +91,43 @@ public class PickAndPlaceVisualizerExample : BasicVisualizer<MMoverServiceRespon
 
 Although the message visualization system includes default visualizers for many common message types, no doubt you have your own unique messages you want to visualize, or you'll want to change how a message is displayed for your project's specific needs. The simplest way to create a new visualizer is to write a MonoBehaviour script that inherits from BasicVisualizer. Here's a simple example:
 
-	using System.Collections;
-	using System.Collections.Generic;
-	using Unity.Robotics.MessageVisualizers;
-	using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-	using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-	using UnityEngine;
-	using MPoint = RosMessageTypes.Geometry.Point;
-	
-	public class PointVisualizerExample : BasicVisualizer<MPoint>
-	{
-		public float size = 0.1f; // this will appear as a configurable parameter in the Unity editor.
-		
-		public override void Draw(MPoint msg, MessageMetadata meta, Color color, string label,
-				DebugDraw.Drawing drawing)
-		{
-			// The MessageVisualizations class provides convenient exension methods
-			// for drawing many common message types.
-            msg.Draw<FLU>(drawing, color, size);
-			// Or you can directly use the drawing functions provided by the Drawing class
-            drawing.DrawLabel(label, message.From<FLU>(), color, size);
-		}
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using UnityEngine;
+using MPoint = RosMessageTypes.Geometry.Point;
 
-		public override System.Action CreateGUI(MPoint msg, MessageMetadata meta, DebugDraw.Drawing drawing)
-		{
-			// if you want to do any preprocessing or declare any state variables for the GUI to use,
-			// you can do that here.
-			string text = $"[{message.x}, {message.y}, {message.z}]";
-			
-			return () =>
-			{
-				// within the body of this function, it acts like a normal Unity OnGUI function.
-                GUILayout.Label(text);
-			};
-		}
+public class PointVisualizerExample : BasicVisualizer<MPoint>
+{
+	public float size = 0.1f; // this will appear as a configurable parameter in the Unity editor.
+	
+	public override void Draw(MPoint msg, MessageMetadata meta, Color color, string label,
+			DebugDraw.Drawing drawing)
+	{
+		// The MessageVisualizations class provides convenient exension methods
+		// for drawing many common message types.
+		msg.Draw<FLU>(drawing, color, size);
+		// Or you can directly use the drawing functions provided by the Drawing class
+		drawing.DrawLabel(label, message.From<FLU>(), color, size);
 	}
 
+	public override System.Action CreateGUI(MPoint msg, MessageMetadata meta, DebugDraw.Drawing drawing)
+	{
+		// if you want to do any preprocessing or declare any state variables for the GUI to use,
+		// you can do that here.
+		string text = $"[{message.x}, {message.y}, {message.z}]";
+		
+		return () =>
+		{
+			// within the body of this function, it acts like a normal Unity OnGUI function.
+			GUILayout.Label(text);
+		};
+	}
+}
+```
 
 - When the HUD needs to display the graphics for your message, it will call your Draw() function, providing all the information you need about what drawing to create. The last parameter, `drawing`, is a convenient drawing class you can use to draw text, 3d lines, points, and other geometric shapes. Your Draw function should call whatever functions you want to use on this drawing. The BasicVisualizer class automatically provides a suitable color and label for your drawing, but you don't have to use them if you don't want to.
 - When the HUD needs to display the GUI for your message, it will call CreateGUI on your class. CreateGUI should return a function that behaves like a normal Unity OnGUI callback: in other words, it will be invoked once per UI event, for as long as your visualizer is active, and any GUI elements you draw in this function will appear in the HUD. Note this is a runtime GUI, not an editor GUI, so the GUI functions you call should come from GUI or GUILayout, not EditorGUILayout.
@@ -137,67 +138,71 @@ Although the message visualization system includes default visualizers for many 
 
 If you need to create a visualization more complex than the simple DebugDraw class can support, you can write your own MonoBehaviour script that implements the IVisualizer interface.
 
-	public interface IVisualizer
-	{
-		object CreateDrawing(Message msg, MessageMetadata meta);
-		void DeleteDrawing(object drawing);
-		Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
-	}
+```csharp
+public interface IVisualizer
+{
+	object CreateDrawing(Message msg, MessageMetadata meta);
+	void DeleteDrawing(object drawing);
+	Action CreateGUI(Message msg, MessageMetadata meta, object drawing);
+}
+```
 
 Here's a simple example of a visualizer that instantiates a prefab to mark the position and rotation of a Transform message:
 
-	using UnityEngine;
-	using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-	using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-	using MTransform = RosMessageTypes.Geometry.Transform;
-	using Unity.Robotics.MessageVisualizers;
+```csharp
+using UnityEngine;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using MTransform = RosMessageTypes.Geometry.Transform;
+using Unity.Robotics.MessageVisualizers;
 
-	public class PrefabTransformVisualizer : MonoBehaviour, IVisualizer
+public class PrefabTransformVisualizer : MonoBehaviour, IVisualizer
+{
+	public string topic;
+	public GameObject markerPrefab;
+
+	public void Start()
 	{
-		public string topic;
-		public GameObject markerPrefab;
-
-		public void Start()
-		{
-			// For a Visualizer to actually be known to the HUD,
-			// it must call VisualizationRegister.RegisterVisualizer.
-			// There are two versions: either register for messages on a specific topic,
-			// or register for all messages of a specific type.
-			// In this example, we choose between those two options based on whether
-			// a topic has been specified.
-			if (topic != "")
-				VisualizationRegister.RegisterVisualizer(topic, this);
-			else
-				VisualizationRegister.RegisterVisualizer<MTransform>(this);
-		}
-
-		public object CreateDrawing(Message message, MessageMetadata meta)
-		{
-			// Note we have to cast from the generic Message class here.
-			// BasicVisualizer would have done this for us.
-			MTransform transformMessage = (MTransform)message;
-			// instantiate a prefab and put it at the appropriate position and rotation.
-			GameObject marker = Instantiate(markerPrefab);
-			marker.transform.position = transformMessage.translation.From<FLU>();
-			marker.transform.rotation = transformMessage.rotation.From<FLU>();
-			return marker;
-		}
-
-		public void DeleteDrawing(object drawing)
-		{
-			// destroy the instance when we're done
-			GameObject.Destroy((GameObject)drawing);
-		}
-
-		public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
-		{
-			return () =>
-			{
-				// call the standard GUI function for displaying Transform messages
-				((MTransform)message).GUI(meta.topic);
-			};
-		}
+		// For a Visualizer to actually be known to the HUD,
+		// it must call VisualizationRegister.RegisterVisualizer.
+		// There are two versions: either register for messages on a specific topic,
+		// or register for all messages of a specific type.
+		// In this example, we choose between those two options based on whether
+		// a topic has been specified.
+		if (topic != "")
+			VisualizationRegister.RegisterVisualizer(topic, this);
+		else
+			VisualizationRegister.RegisterVisualizer<MTransform>(this);
 	}
+
+	public object CreateDrawing(Message message, MessageMetadata meta)
+	{
+		// Note we have to cast from the generic Message class here.
+		// BasicVisualizer would have done this for us.
+		MTransform transformMessage = (MTransform)message;
+		// instantiate a prefab and put it at the appropriate position and rotation.
+		GameObject marker = Instantiate(markerPrefab);
+		marker.transform.position = transformMessage.translation.From<FLU>();
+		marker.transform.rotation = transformMessage.rotation.From<FLU>();
+		return marker;
+	}
+
+	public void DeleteDrawing(object drawing)
+	{
+		// destroy the instance when we're done
+		GameObject.Destroy((GameObject)drawing);
+	}
+
+	public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
+	{
+		return () =>
+		{
+			// call the standard GUI function for displaying Transform messages
+			((MTransform)message).GUI(meta.topic);
+		};
+	}
+}
+```
 
 - If your visualizer doesn't call VisualizationRegister.RegisterVisualizer, it won't get used.
 - CreateDrawing will be called to display graphics for your message. You can do whatever you need to do in this function to display your visualization. The return value should be any value (a GameObject in this case, but it really can be anything - an index in a list, for example) that you can later use to identify the graphic you just made. If you return null, the system will assume you didn't need to display anything; DeleteDrawing will not get called later.
