@@ -193,6 +193,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
@@ -364,7 +365,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
-            int networkTimeoutMilliseconds,
+            float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
             ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
@@ -382,13 +383,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 try
                 {
-                    ROSConnection.m_HasConnectionError = false;
+                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
 
                     client = new TcpClient();
                     client.Connect(rosIPAddress, rosPort);
 
                     NetworkStream networkStream = client.GetStream();
-                    networkStream.ReadTimeout = networkTimeoutMilliseconds;
+                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
                     SendKeepalive(networkStream);
 
@@ -451,7 +452,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
                     //Debug.Log($"Message {content.Item1} received");
-                    queue.Enqueue(content);
+                    ROSConnection.m_HasConnectionError = false;
+
+                    if(content.Item1 != "") // ignore keepalive messages
+                        queue.Enqueue(content);
                 }
                 catch (OperationCanceledException)
                 {

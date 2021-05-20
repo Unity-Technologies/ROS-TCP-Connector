@@ -208,18 +208,21 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Color GetConnectionColor(float elapsedTime)
         {
-            Color bright = new Color(1, 1, 0.5f);
-            Color mid = new Color(0, 1, 1);
-            Color dark = new Color(0, 0.5f, 1);
+            var bright = new Color(1, 1, 0.5f);
+            var mid = new Color(0, 1, 1);
+            var dark = new Color(0, 0.5f, 1);
+            const float brightDuration = 0.03f;
+            const float fadeToDarkDuration = 1.0f;
 
             if (!ROSConnection.instance.HasConnectionThread)
                 return Color.gray;
             if (ROSConnection.instance.HasConnectionError)
                 return Color.red;
-            if (elapsedTime > 0.03f)
-                return Color.Lerp(mid, dark, elapsedTime);
-            else
+
+            if (elapsedTime <= brightDuration)
                 return bright;
+            else
+                return Color.Lerp(mid, dark, elapsedTime/fadeToDarkDuration);
         }
 
         void OnGUI()
@@ -234,19 +237,24 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.BeginHorizontal();
             Color baseColor = GUI.color;
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageInLastRealtime);
-            GUILayout.Label("<", s_BoldStyle, GUILayout.Width(10));
+            GUILayout.Label("\u25C0", s_BoldStyle, GUILayout.Width(10));
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_MessageOutLastRealtime);
-            GUILayout.Label(">", s_BoldStyle, GUILayout.Width(10));
+            GUILayout.Label("\u25B6", s_BoldStyle, GUILayout.Width(15));
             GUI.color = baseColor;
             GUILayout.Label("ROS IP: ", s_BoldStyle, GUILayout.Width(100));
-            GUILayout.Label(m_RosConnectAddress, s_IPStyle);
-            GUILayout.EndHorizontal();
 
             if (!ROSConnection.instance.HasConnectionThread)
             {
+                ROSConnection.instance.RosIPAddress = GUILayout.TextField(ROSConnection.instance.RosIPAddress);
+                GUILayout.EndHorizontal();
                 GUILayout.Label("(Not connected)");
                 if (GUILayout.Button("Connect"))
                     ROSConnection.instance.Connect();
+            }
+            else
+            {
+                GUILayout.Label(m_RosConnectAddress, m_ContentStyle);
+                GUILayout.EndHorizontal();
             }
 
             GUILayout.BeginHorizontal();
