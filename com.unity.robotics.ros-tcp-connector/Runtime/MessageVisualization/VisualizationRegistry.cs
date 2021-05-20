@@ -16,11 +16,13 @@ namespace Unity.Robotics.MessageVisualizers
     public struct MessageMetadata
     {
         public readonly string Topic;
+        public readonly int FrameIndex;
         public readonly DateTime Timestamp;
 
-        public MessageMetadata(string topic, DateTime timestamp)
+        public MessageMetadata(string topic, int frameIndex, DateTime timestamp)
         {
             Topic = topic;
+            FrameIndex = frameIndex;
             Timestamp = timestamp;
         }
     }

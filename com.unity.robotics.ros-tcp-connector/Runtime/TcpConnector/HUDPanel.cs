@@ -43,6 +43,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         int m_NextServiceID = 101;
         int m_NextWindowID = 101;
+        int m_CurrentFrameIndex;
 
         List<HUDVisualizationRule> m_ActiveWindows = new List<HUDVisualizationRule>();
         SortedList<string, HUDVisualizationRule> m_AllTopics = new SortedList<string, HUDVisualizationRule>();
@@ -116,7 +117,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_AllTopics.Add(topic, null);
             }
             if (rule != null)
-                rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
+                rule.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
             m_MessageOutLastRealtime = Time.realtimeSinceStartup;
         }
 
@@ -131,7 +132,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_AllTopics.Add(topic, null);
             }
             if (rule != null)
-                rule.SetMessage(message, new MessageMetadata(topic, DateTime.Now));
+                rule.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
             m_MessageInLastRealtime = Time.realtimeSinceStartup;
         }
 
@@ -140,7 +141,7 @@ namespace Unity.Robotics.ROSTCPConnector
             int serviceID = m_NextServiceID;
             m_NextServiceID++;
 
-            MessageMetadata meta = new MessageMetadata(topic, DateTime.Now);
+            MessageMetadata meta = new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now);
 
             HUDVisualizationRule rule;
             if (!m_AllTopics.TryGetValue(topic, out rule))
@@ -150,7 +151,7 @@ namespace Unity.Robotics.ROSTCPConnector
             if (rule != null)
             {
                 m_PendingServiceRequests.Add(serviceID, rule);
-                rule.SetServiceRequest(request, new MessageMetadata(topic, DateTime.Now), serviceID);
+                rule.SetServiceRequest(request, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
             }
             return serviceID;
         }
@@ -165,7 +166,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (rule != null)
             {
-                rule.SetServiceResponse(response, new MessageMetadata(rule.Topic, DateTime.Now), serviceID);
+                rule.SetServiceResponse(response, new MessageMetadata(rule.Topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
             }
         }
 
@@ -204,6 +205,12 @@ namespace Unity.Robotics.ROSTCPConnector
         public void SetRosIP(string ip, int port)
         {
             m_RosConnectAddress = $"{ip}:{port}";
+        }
+
+        public void LateUpdate()
+        {
+            // used to track whether a given visualization has already updated this frame
+            m_CurrentFrameIndex = (m_CurrentFrameIndex + 1)%1000000;
         }
 
         Color GetConnectionColor(float elapsedTime)
@@ -253,7 +260,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             else
             {
-                GUILayout.Label(m_RosConnectAddress);
+                GUILayout.Label(m_RosConnectAddress, s_IPStyle);
                 GUILayout.EndHorizontal();
             }
 

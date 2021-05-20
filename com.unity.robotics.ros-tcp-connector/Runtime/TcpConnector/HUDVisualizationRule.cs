@@ -24,6 +24,7 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_HasWindowRect;
         int m_WindowID;
         int m_ServiceID;
+        int m_DrawingUpdatedAtFrameIndex;
 
         const float c_DraggableSize = 8;
         Vector2 m_DragMouseOffset;
@@ -91,8 +92,11 @@ namespace Unity.Robotics.ROSTCPConnector
             else
                 m_Contents = new MessageWindowContents(this, message, meta);
 
-            if (ShowDrawing)
+            if (ShowDrawing && m_DrawingUpdatedAtFrameIndex != meta.FrameIndex)
+            {
                 m_Contents.ShowDrawing(true);
+                m_DrawingUpdatedAtFrameIndex = meta.FrameIndex;
+            }
         }
 
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
@@ -103,8 +107,11 @@ namespace Unity.Robotics.ROSTCPConnector
             else
                 m_Contents = new ServiceWindowContents(this, request, requestMeta);
 
-            if (ShowDrawing)
+            if (ShowDrawing && m_DrawingUpdatedAtFrameIndex != requestMeta.FrameIndex)
+            {
                 m_Contents.ShowDrawing(true);
+                m_DrawingUpdatedAtFrameIndex = requestMeta.FrameIndex;
+            }
         }
 
         public void SetServiceResponse(Message response, MessageMetadata responseMeta, int serviceID)
@@ -117,8 +124,11 @@ namespace Unity.Robotics.ROSTCPConnector
             if (m_Contents is ServiceWindowContents)
             {
                 ((ServiceWindowContents)m_Contents).SetResponse(response, responseMeta);
-                if (ShowDrawing)
+                if (ShowDrawing && m_DrawingUpdatedAtFrameIndex != responseMeta.FrameIndex)
+                {
                     m_Contents.ShowDrawing(true);
+                    m_DrawingUpdatedAtFrameIndex = responseMeta.FrameIndex;
+                }
             }
         }
 
@@ -252,7 +262,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Rule = rule;
                 m_Message = null;
-                m_Meta = new MessageMetadata(topic, DateTime.Now);
+                m_Meta = new MessageMetadata(topic, 0, DateTime.Now);
             }
 
             public void SetMessage(Message message, MessageMetadata meta)

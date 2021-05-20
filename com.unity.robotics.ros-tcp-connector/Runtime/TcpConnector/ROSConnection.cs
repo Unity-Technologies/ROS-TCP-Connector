@@ -279,6 +279,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnValidate()
         {
+            if (_instance == null)
+                _instance = this;
+
             InitializeHUD();
         }
 
