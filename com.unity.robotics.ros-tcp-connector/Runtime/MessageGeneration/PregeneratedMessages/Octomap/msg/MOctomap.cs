@@ -47,9 +47,9 @@ namespace RosMessageTypes.Octomap
             listOfSerializations.Add(BitConverter.GetBytes(this.binary));
             listOfSerializations.Add(SerializeString(this.id));
             listOfSerializations.Add(BitConverter.GetBytes(this.resolution));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
-            listOfSerializations.Add((byte[]) (Array)this.data);
+            listOfSerializations.Add((byte[])(Array)this.data);
 
             return listOfSerializations;
         }
@@ -65,11 +65,11 @@ namespace RosMessageTypes.Octomap
             offset += idStringBytesLength;
             this.resolution = BitConverter.ToDouble(data, offset);
             offset += 8;
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new sbyte[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new sbyte[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = (sbyte)data[offset];
                 offset += 1;

@@ -56,10 +56,10 @@ namespace RosMessageTypes.Shape
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            listOfSerializations.Add(new[]{this.type});
-            
+            listOfSerializations.Add(new[] { this.type });
+
             listOfSerializations.Add(BitConverter.GetBytes(dimensions.Length));
-            foreach(var entry in dimensions)
+            foreach (var entry in dimensions)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -67,13 +67,13 @@ namespace RosMessageTypes.Shape
 
         public override int Deserialize(byte[] data, int offset)
         {
-            this.type = data[offset];;
+            this.type = data[offset]; ;
             offset += 1;
-            
+
             var dimensionsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.dimensions= new double[dimensionsArrayLength];
-            for(var i = 0; i < dimensionsArrayLength; i++)
+            this.dimensions = new double[dimensionsArrayLength];
+            for (var i = 0; i < dimensionsArrayLength; i++)
             {
                 this.dimensions[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

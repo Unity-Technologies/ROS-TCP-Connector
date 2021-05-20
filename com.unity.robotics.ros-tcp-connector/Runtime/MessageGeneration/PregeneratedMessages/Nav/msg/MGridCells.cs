@@ -39,9 +39,9 @@ namespace RosMessageTypes.Nav
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.cell_width));
             listOfSerializations.Add(BitConverter.GetBytes(this.cell_height));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(cells.Length));
-            foreach(var entry in cells)
+            foreach (var entry in cells)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -54,11 +54,11 @@ namespace RosMessageTypes.Nav
             offset += 4;
             this.cell_height = BitConverter.ToSingle(data, offset);
             offset += 4;
-            
+
             var cellsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.cells= new Geometry.MPoint[cellsArrayLength];
-            for(var i = 0; i < cellsArrayLength; i++)
+            this.cells = new Geometry.MPoint[cellsArrayLength];
+            for (var i = 0; i < cellsArrayLength; i++)
             {
                 this.cells[i] = new Geometry.MPoint();
                 offset = this.cells[i].Deserialize(data, offset);

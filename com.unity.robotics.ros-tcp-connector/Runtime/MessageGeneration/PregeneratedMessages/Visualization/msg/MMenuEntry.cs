@@ -83,7 +83,7 @@ namespace RosMessageTypes.Visualization
             listOfSerializations.Add(BitConverter.GetBytes(this.parent_id));
             listOfSerializations.Add(SerializeString(this.title));
             listOfSerializations.Add(SerializeString(this.command));
-            listOfSerializations.Add(new[]{this.command_type});
+            listOfSerializations.Add(new[] { this.command_type });
 
             return listOfSerializations;
         }
@@ -102,7 +102,7 @@ namespace RosMessageTypes.Visualization
             offset += 4;
             this.command = DeserializeString(data, offset, commandStringBytesLength);
             offset += commandStringBytesLength;
-            this.command_type = data[offset];;
+            this.command_type = data[offset]; ;
             offset += 1;
 
             return offset;

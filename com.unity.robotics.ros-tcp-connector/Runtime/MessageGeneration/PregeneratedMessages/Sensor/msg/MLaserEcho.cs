@@ -29,9 +29,9 @@ namespace RosMessageTypes.Sensor
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(echoes.Length));
-            foreach(var entry in echoes)
+            foreach (var entry in echoes)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -39,11 +39,11 @@ namespace RosMessageTypes.Sensor
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var echoesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.echoes= new float[echoesArrayLength];
-            for(var i = 0; i < echoesArrayLength; i++)
+            this.echoes = new float[echoesArrayLength];
+            for (var i = 0; i < echoesArrayLength; i++)
             {
                 this.echoes[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

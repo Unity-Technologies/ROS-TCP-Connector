@@ -51,9 +51,9 @@ namespace RosMessageTypes.Sensor
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.AddRange(magnetic_field.SerializationStatements());
-            
+
             Array.Resize(ref magnetic_field_covariance, 9);
-            foreach(var entry in magnetic_field_covariance)
+            foreach (var entry in magnetic_field_covariance)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -63,9 +63,9 @@ namespace RosMessageTypes.Sensor
         {
             offset = this.header.Deserialize(data, offset);
             offset = this.magnetic_field.Deserialize(data, offset);
-            
-            this.magnetic_field_covariance= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.magnetic_field_covariance = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.magnetic_field_covariance[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

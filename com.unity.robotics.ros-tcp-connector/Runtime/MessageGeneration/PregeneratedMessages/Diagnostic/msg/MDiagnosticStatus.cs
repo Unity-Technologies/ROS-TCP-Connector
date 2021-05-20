@@ -49,13 +49,13 @@ namespace RosMessageTypes.Diagnostic
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            listOfSerializations.Add(new[]{(byte)this.level});
+            listOfSerializations.Add(new[] { (byte)this.level });
             listOfSerializations.Add(SerializeString(this.name));
             listOfSerializations.Add(SerializeString(this.message));
             listOfSerializations.Add(SerializeString(this.hardware_id));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(values.Length));
-            foreach(var entry in values)
+            foreach (var entry in values)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -63,7 +63,7 @@ namespace RosMessageTypes.Diagnostic
 
         public override int Deserialize(byte[] data, int offset)
         {
-            this.level = (sbyte)data[offset];;
+            this.level = (sbyte)data[offset]; ;
             offset += 1;
             var nameStringBytesLength = DeserializeLength(data, offset);
             offset += 4;
@@ -77,11 +77,11 @@ namespace RosMessageTypes.Diagnostic
             offset += 4;
             this.hardware_id = DeserializeString(data, offset, hardware_idStringBytesLength);
             offset += hardware_idStringBytesLength;
-            
+
             var valuesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.values= new MKeyValue[valuesArrayLength];
-            for(var i = 0; i < valuesArrayLength; i++)
+            this.values = new MKeyValue[valuesArrayLength];
+            for (var i = 0; i < valuesArrayLength; i++)
             {
                 this.values[i] = new MKeyValue();
                 offset = this.values[i].Deserialize(data, offset);

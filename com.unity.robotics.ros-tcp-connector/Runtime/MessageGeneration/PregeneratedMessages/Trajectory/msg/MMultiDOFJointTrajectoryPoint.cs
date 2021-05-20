@@ -38,17 +38,17 @@ namespace RosMessageTypes.Trajectory
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(transforms.Length));
-            foreach(var entry in transforms)
+            foreach (var entry in transforms)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(velocities.Length));
-            foreach(var entry in velocities)
+            foreach (var entry in velocities)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(accelerations.Length));
-            foreach(var entry in accelerations)
+            foreach (var entry in accelerations)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.AddRange(time_from_start.SerializationStatements());
 
@@ -57,29 +57,29 @@ namespace RosMessageTypes.Trajectory
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var transformsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.transforms= new Geometry.MTransform[transformsArrayLength];
-            for(var i = 0; i < transformsArrayLength; i++)
+            this.transforms = new Geometry.MTransform[transformsArrayLength];
+            for (var i = 0; i < transformsArrayLength; i++)
             {
                 this.transforms[i] = new Geometry.MTransform();
                 offset = this.transforms[i].Deserialize(data, offset);
             }
-            
+
             var velocitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.velocities= new Geometry.MTwist[velocitiesArrayLength];
-            for(var i = 0; i < velocitiesArrayLength; i++)
+            this.velocities = new Geometry.MTwist[velocitiesArrayLength];
+            for (var i = 0; i < velocitiesArrayLength; i++)
             {
                 this.velocities[i] = new Geometry.MTwist();
                 offset = this.velocities[i].Deserialize(data, offset);
             }
-            
+
             var accelerationsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.accelerations= new Geometry.MTwist[accelerationsArrayLength];
-            for(var i = 0; i < accelerationsArrayLength; i++)
+            this.accelerations = new Geometry.MTwist[accelerationsArrayLength];
+            for (var i = 0; i < accelerationsArrayLength; i++)
             {
                 this.accelerations[i] = new Geometry.MTwist();
                 offset = this.accelerations[i].Deserialize(data, offset);

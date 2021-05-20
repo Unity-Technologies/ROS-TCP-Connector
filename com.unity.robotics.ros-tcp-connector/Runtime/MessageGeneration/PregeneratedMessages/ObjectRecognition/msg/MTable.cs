@@ -42,9 +42,9 @@ namespace RosMessageTypes.ObjectRecognition
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.AddRange(pose.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(convex_hull.Length));
-            foreach(var entry in convex_hull)
+            foreach (var entry in convex_hull)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -54,11 +54,11 @@ namespace RosMessageTypes.ObjectRecognition
         {
             offset = this.header.Deserialize(data, offset);
             offset = this.pose.Deserialize(data, offset);
-            
+
             var convex_hullArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.convex_hull= new Geometry.MPoint[convex_hullArrayLength];
-            for(var i = 0; i < convex_hullArrayLength; i++)
+            this.convex_hull = new Geometry.MPoint[convex_hullArrayLength];
+            for (var i = 0; i < convex_hullArrayLength; i++)
             {
                 this.convex_hull[i] = new Geometry.MPoint();
                 offset = this.convex_hull[i].Deserialize(data, offset);

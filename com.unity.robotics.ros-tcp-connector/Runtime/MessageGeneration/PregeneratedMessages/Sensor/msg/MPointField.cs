@@ -50,7 +50,7 @@ namespace RosMessageTypes.Sensor
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.name));
             listOfSerializations.Add(BitConverter.GetBytes(this.offset));
-            listOfSerializations.Add(new[]{this.datatype});
+            listOfSerializations.Add(new[] { this.datatype });
             listOfSerializations.Add(BitConverter.GetBytes(this.count));
 
             return listOfSerializations;
@@ -64,7 +64,7 @@ namespace RosMessageTypes.Sensor
             offset += nameStringBytesLength;
             this.offset = BitConverter.ToUInt32(data, offset);
             offset += 4;
-            this.datatype = data[offset];;
+            this.datatype = data[offset]; ;
             offset += 1;
             this.count = BitConverter.ToUInt32(data, offset);
             offset += 4;

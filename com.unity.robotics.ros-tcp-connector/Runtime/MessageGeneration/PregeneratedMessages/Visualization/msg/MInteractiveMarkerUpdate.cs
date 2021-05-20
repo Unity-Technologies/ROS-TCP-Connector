@@ -60,18 +60,18 @@ namespace RosMessageTypes.Visualization
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.server_id));
             listOfSerializations.Add(BitConverter.GetBytes(this.seq_num));
-            listOfSerializations.Add(new[]{this.type});
-            
+            listOfSerializations.Add(new[] { this.type });
+
             listOfSerializations.Add(BitConverter.GetBytes(markers.Length));
-            foreach(var entry in markers)
+            foreach (var entry in markers)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(poses.Length));
-            foreach(var entry in poses)
+            foreach (var entry in poses)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(erases.Length));
-            foreach(var entry in erases)
+            foreach (var entry in erases)
                 listOfSerializations.Add(SerializeString(entry));
 
             return listOfSerializations;
@@ -85,31 +85,31 @@ namespace RosMessageTypes.Visualization
             offset += server_idStringBytesLength;
             this.seq_num = BitConverter.ToUInt64(data, offset);
             offset += 8;
-            this.type = data[offset];;
+            this.type = data[offset]; ;
             offset += 1;
-            
+
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.markers= new MInteractiveMarker[markersArrayLength];
-            for(var i = 0; i < markersArrayLength; i++)
+            this.markers = new MInteractiveMarker[markersArrayLength];
+            for (var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new MInteractiveMarker();
                 offset = this.markers[i].Deserialize(data, offset);
             }
-            
+
             var posesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.poses= new MInteractiveMarkerPose[posesArrayLength];
-            for(var i = 0; i < posesArrayLength; i++)
+            this.poses = new MInteractiveMarkerPose[posesArrayLength];
+            for (var i = 0; i < posesArrayLength; i++)
             {
                 this.poses[i] = new MInteractiveMarkerPose();
                 offset = this.poses[i].Deserialize(data, offset);
             }
-            
+
             var erasesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.erases= new string[erasesArrayLength];
-            for(var i = 0; i < erasesArrayLength; i++)
+            this.erases = new string[erasesArrayLength];
+            for (var i = 0; i < erasesArrayLength; i++)
             {
                 var erasesStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;

@@ -39,8 +39,8 @@ namespace RosMessageTypes.Sensor
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            listOfSerializations.Add(new[]{this.type});
-            listOfSerializations.Add(new[]{this.id});
+            listOfSerializations.Add(new[] { this.type });
+            listOfSerializations.Add(new[] { this.id });
             listOfSerializations.Add(BitConverter.GetBytes(this.intensity));
 
             return listOfSerializations;
@@ -48,9 +48,9 @@ namespace RosMessageTypes.Sensor
 
         public override int Deserialize(byte[] data, int offset)
         {
-            this.type = data[offset];;
+            this.type = data[offset]; ;
             offset += 1;
-            this.id = data[offset];;
+            this.id = data[offset]; ;
             offset += 1;
             this.intensity = BitConverter.ToSingle(data, offset);
             offset += 4;

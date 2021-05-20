@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019
 Author: Sifan Ye (sifan.ye@siemens.com)
 
@@ -24,12 +24,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public MGoalID goal_id { get; set; }
         public TGoal goal { get; set; }
 
-        public ActionGoal() {
+        public ActionGoal()
+        {
             header = new MHeader();
             goal_id = new MGoalID();
         }
 
-        public ActionGoal(MHeader header, MGoalID goal_id) {
+        public ActionGoal(MHeader header, MGoalID goal_id)
+        {
             this.header = header;
             this.goal_id = goal_id;
         }

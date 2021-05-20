@@ -32,9 +32,9 @@ namespace RosMessageTypes.Actionlib
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(status_list.Length));
-            foreach(var entry in status_list)
+            foreach (var entry in status_list)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -43,11 +43,11 @@ namespace RosMessageTypes.Actionlib
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var status_listArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.status_list= new MGoalStatus[status_listArrayLength];
-            for(var i = 0; i < status_listArrayLength; i++)
+            this.status_list = new MGoalStatus[status_listArrayLength];
+            for (var i = 0; i < status_listArrayLength; i++)
             {
                 this.status_list[i] = new MGoalStatus();
                 offset = this.status_list[i].Deserialize(data, offset);

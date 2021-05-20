@@ -41,21 +41,21 @@ namespace RosMessageTypes.Trajectory
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(positions.Length));
-            foreach(var entry in positions)
+            foreach (var entry in positions)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(velocities.Length));
-            foreach(var entry in velocities)
+            foreach (var entry in velocities)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(accelerations.Length));
-            foreach(var entry in accelerations)
+            foreach (var entry in accelerations)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(effort.Length));
-            foreach(var entry in effort)
+            foreach (var entry in effort)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
             listOfSerializations.AddRange(time_from_start.SerializationStatements());
 
@@ -64,38 +64,38 @@ namespace RosMessageTypes.Trajectory
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var positionsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.positions= new double[positionsArrayLength];
-            for(var i = 0; i < positionsArrayLength; i++)
+            this.positions = new double[positionsArrayLength];
+            for (var i = 0; i < positionsArrayLength; i++)
             {
                 this.positions[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
+
             var velocitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.velocities= new double[velocitiesArrayLength];
-            for(var i = 0; i < velocitiesArrayLength; i++)
+            this.velocities = new double[velocitiesArrayLength];
+            for (var i = 0; i < velocitiesArrayLength; i++)
             {
                 this.velocities[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
+
             var accelerationsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.accelerations= new double[accelerationsArrayLength];
-            for(var i = 0; i < accelerationsArrayLength; i++)
+            this.accelerations = new double[accelerationsArrayLength];
+            for (var i = 0; i < accelerationsArrayLength; i++)
             {
                 this.accelerations[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
+
             var effortArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.effort= new double[effortArrayLength];
-            for(var i = 0; i < effortArrayLength; i++)
+            this.effort = new double[effortArrayLength];
+            for (var i = 0; i < effortArrayLength; i++)
             {
                 this.effort[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

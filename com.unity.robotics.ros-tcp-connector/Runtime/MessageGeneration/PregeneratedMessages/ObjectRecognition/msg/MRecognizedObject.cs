@@ -66,14 +66,14 @@ namespace RosMessageTypes.ObjectRecognition
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.AddRange(type.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.confidence));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(point_clouds.Length));
-            foreach(var entry in point_clouds)
+            foreach (var entry in point_clouds)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.AddRange(bounding_mesh.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(bounding_contours.Length));
-            foreach(var entry in bounding_contours)
+            foreach (var entry in bounding_contours)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.AddRange(pose.SerializationStatements());
 
@@ -86,21 +86,21 @@ namespace RosMessageTypes.ObjectRecognition
             offset = this.type.Deserialize(data, offset);
             this.confidence = BitConverter.ToSingle(data, offset);
             offset += 4;
-            
+
             var point_cloudsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.point_clouds= new Sensor.MPointCloud2[point_cloudsArrayLength];
-            for(var i = 0; i < point_cloudsArrayLength; i++)
+            this.point_clouds = new Sensor.MPointCloud2[point_cloudsArrayLength];
+            for (var i = 0; i < point_cloudsArrayLength; i++)
             {
                 this.point_clouds[i] = new Sensor.MPointCloud2();
                 offset = this.point_clouds[i].Deserialize(data, offset);
             }
             offset = this.bounding_mesh.Deserialize(data, offset);
-            
+
             var bounding_contoursArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.bounding_contours= new Geometry.MPoint[bounding_contoursArrayLength];
-            for(var i = 0; i < bounding_contoursArrayLength; i++)
+            this.bounding_contours = new Geometry.MPoint[bounding_contoursArrayLength];
+            for (var i = 0; i < bounding_contoursArrayLength; i++)
             {
                 this.bounding_contours[i] = new Geometry.MPoint();
                 offset = this.bounding_contours[i].Deserialize(data, offset);

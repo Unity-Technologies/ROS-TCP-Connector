@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019
 Author: Sifan Ye (sifan.ye@siemens.com)
 
@@ -16,8 +16,8 @@ limitations under the License.
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public abstract class Action<TActionGoal, TActionResult, TActionFeedback, TGoal, TResult, TFeedback> : Message
-        where TActionGoal: ActionGoal<TGoal>
-        where TActionResult: ActionResult<TResult>
+        where TActionGoal : ActionGoal<TGoal>
+        where TActionResult : ActionResult<TResult>
         where TActionFeedback : ActionFeedback<TFeedback>
         where TGoal : Message
         where TResult : Message
@@ -29,7 +29,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public Action() { }
 
-        public Action(TActionGoal action_goal, TActionResult action_result, TActionFeedback action_feedback) {
+        public Action(TActionGoal action_goal, TActionResult action_result, TActionFeedback action_feedback)
+        {
             this.action_goal = action_goal;
             this.action_result = action_result;
             this.action_feedback = action_feedback;

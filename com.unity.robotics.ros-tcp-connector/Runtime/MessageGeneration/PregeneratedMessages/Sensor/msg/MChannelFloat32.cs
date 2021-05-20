@@ -48,9 +48,9 @@ namespace RosMessageTypes.Sensor
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.name));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(values.Length));
-            foreach(var entry in values)
+            foreach (var entry in values)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -62,11 +62,11 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.name = DeserializeString(data, offset, nameStringBytesLength);
             offset += nameStringBytesLength;
-            
+
             var valuesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.values= new float[valuesArrayLength];
-            for(var i = 0; i < valuesArrayLength; i++)
+            this.values = new float[valuesArrayLength];
+            for (var i = 0; i < valuesArrayLength; i++)
             {
                 this.values[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

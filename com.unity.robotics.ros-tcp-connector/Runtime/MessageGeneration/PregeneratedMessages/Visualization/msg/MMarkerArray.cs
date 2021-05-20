@@ -25,9 +25,9 @@ namespace RosMessageTypes.Visualization
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(markers.Length));
-            foreach(var entry in markers)
+            foreach (var entry in markers)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -35,11 +35,11 @@ namespace RosMessageTypes.Visualization
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.markers= new MMarker[markersArrayLength];
-            for(var i = 0; i < markersArrayLength; i++)
+            this.markers = new MMarker[markersArrayLength];
+            for (var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new MMarker();
                 offset = this.markers[i].Deserialize(data, offset);

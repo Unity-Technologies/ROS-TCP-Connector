@@ -42,7 +42,7 @@ namespace RosMessageTypes.Sensor
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            listOfSerializations.Add(new[]{(byte)this.status});
+            listOfSerializations.Add(new[] { (byte)this.status });
             listOfSerializations.Add(BitConverter.GetBytes(this.service));
 
             return listOfSerializations;
@@ -50,7 +50,7 @@ namespace RosMessageTypes.Sensor
 
         public override int Deserialize(byte[] data, int offset)
         {
-            this.status = (sbyte)data[offset];;
+            this.status = (sbyte)data[offset]; ;
             offset += 1;
             this.service = BitConverter.ToUInt16(data, offset);
             offset += 2;

@@ -243,12 +243,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_HudPanel.host = $"{m_RosIPAddress}:{m_RosPort}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
-            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds*1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+            Task.Run(() => ConnectionThread(m_RosIPAddress, m_RosPort, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds * 1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
         }
 
         public void Disconnect()
         {
-            if(m_ConnectionThreadCancellation != null)
+            if (m_ConnectionThreadCancellation != null)
                 m_ConnectionThreadCancellation.Cancel();
             m_ConnectionThreadCancellation = null;
         }
@@ -430,7 +430,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     //Debug.Log($"Message {content.Item1} received");
                     ROSConnection.m_HasConnectionError = false;
 
-                    if(content.Item1 != "") // ignore keepalive messages
+                    if (content.Item1 != "") // ignore keepalive messages
                         queue.Enqueue(content);
                 }
                 catch (OperationCanceledException)
