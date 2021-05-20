@@ -253,7 +253,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             else
             {
-                GUILayout.Label(m_RosConnectAddress, m_ContentStyle);
+                GUILayout.Label(m_RosConnectAddress);
                 GUILayout.EndHorizontal();
             }
 
