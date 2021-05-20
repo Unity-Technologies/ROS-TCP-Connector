@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj": {}
+    "C:\\Users\\laurie.cheers\\Documents\\GitHub\\ROS-TCP-Connector\\com.unity.robotics.ros-tcp-connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj": {}
   },
   "projects": {
-    "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj": {
+    "C:\\Users\\laurie.cheers\\Documents\\GitHub\\ROS-TCP-Connector\\com.unity.robotics.ros-tcp-connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
+        "projectUniqueName": "C:\\Users\\laurie.cheers\\Documents\\GitHub\\ROS-TCP-Connector\\com.unity.robotics.ros-tcp-connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
         "projectName": "MessageGenerator",
-        "projectPath": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
+        "projectPath": "C:\\Users\\laurie.cheers\\Documents\\GitHub\\ROS-TCP-Connector\\com.unity.robotics.ros-tcp-connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
         "packagesPath": "C:\\Users\\laurie.cheers\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\obj\\",
+        "outputPath": "C:\\Users\\laurie.cheers\\Documents\\GitHub\\ROS-TCP-Connector\\com.unity.robotics.ros-tcp-connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\laurie.cheers\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -47,12 +47,31 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.1.9, 3.1.9]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.1.9, 3.1.9]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.1.9, 3.1.9]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

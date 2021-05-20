@@ -8,7 +8,13 @@ public class MessageBuilder: ScriptableObject
 {
     public static void Build(string sourceFile, string targetFolder)
     {
-        string exePath = AssetDatabase.GUIDToAssetPath("816eb56585d65134cb3ca3ed31c9fa9b");
+#if UNITY_EDITOR_OSX
+        string exePath = AssetDatabase.GUIDToAssetPath("20189e360b49da041b86e48c3eb6b6af");
+#elif UNITY_EDITOR_LINUX
+        string exePath = AssetDatabase.GUIDToAssetPath("f6548c1741bccda428981a0a40a6e275");
+#else
+        string exePath = AssetDatabase.GUIDToAssetPath("0c9b6f69171169246bf168b506904b8f");
+#endif
         string exeName = System.IO.Path.GetFileName(exePath);
 
         System.Diagnostics.Process p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
