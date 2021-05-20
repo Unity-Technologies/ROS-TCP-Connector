@@ -8,10 +8,18 @@ using UnityEngine;
 
 public class DefaultVisualizerImu : BasicVisualizer<MImu>
 {
+    [SerializeField]
     public Color m_Color;
+    [SerializeField]
+    public float m_LengthScale = 1;
+    [SerializeField]
+    public float m_SphereRadius = 1;
+    [SerializeField]
+    public float m_Thickness = 0.01f;
+
     public override void Draw(BasicDrawing drawing, MImu message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
     public override Action CreateGUI(MImu message, MessageMetadata meta, BasicDrawing drawing) => () =>

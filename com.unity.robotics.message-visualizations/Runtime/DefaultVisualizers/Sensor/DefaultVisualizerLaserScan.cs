@@ -17,7 +17,7 @@ public class DefaultVisualizerLaserScan : BasicVisualizer<MLaserScan>
 
     public override Action CreateGUI(MLaserScan message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
-        message.header.GUI();
+        message.header.GUI();   
         GUILayout.Label($"Angle min {message.angle_min}, max {message.angle_max}, increment {message.angle_increment}");
         GUILayout.Label($"Time between measurements {message.time_increment}; time between scans {message.scan_time}");
         GUILayout.Label($"Range min {message.range_min}, max {message.range_max}");

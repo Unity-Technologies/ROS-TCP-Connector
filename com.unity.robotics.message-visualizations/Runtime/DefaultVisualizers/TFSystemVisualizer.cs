@@ -132,15 +132,15 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.BeginHorizontal();
             GUILayout.Space(indent * k_IndentWidth);
 
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
             GUIStyle style = new GUIStyle(UnityEditor.EditorStyles.foldout);
             style.fixedWidth = k_TFNameWidth;// - indent * k_IndentWidth;
             style.stretchWidth = false;
             m_ShowExpanded[stream] = UnityEditor.EditorGUILayout.Foldout(m_ShowExpanded[stream], stream.Name, true, style);// GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth));
-#else
+#else*/
             if (GUILayout.Button(stream.Name, GUI.skin.label, GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth)))
                 m_ShowExpanded[stream] = !m_ShowExpanded[stream];
-#endif
+//#endif
 
             m_ShowAxes[stream] = GUILayout.Toggle(m_ShowAxes[stream], "", GUILayout.Width(k_CheckboxWidth));
             m_ShowLinks[stream] = GUILayout.Toggle(m_ShowLinks[stream], "", GUILayout.Width(k_CheckboxWidth));

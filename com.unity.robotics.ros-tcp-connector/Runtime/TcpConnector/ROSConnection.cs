@@ -279,6 +279,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnValidate()
         {
+            // don't validate the prefab!
+            if (gameObject.scene.name == null)
+                return;
+
             if (_instance == null)
                 _instance = this;
 
