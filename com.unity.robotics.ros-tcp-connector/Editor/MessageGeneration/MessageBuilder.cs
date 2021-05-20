@@ -6,15 +6,10 @@ using UnityEditor;
 
 public class MessageBuilder: ScriptableObject
 {
-    [UnityEditor.MenuItem("Robotics/Test Generator")]
-    static void Test()
-    {
-        Build(@"C:\Users\laurie.cheers\Documents\ROS2Messages\common_interfaces-master\geometry_msgs\msg\Vector3.msg", Application.dataPath);
-    }
-
     public static void Build(string sourceFile, string targetFolder)
     {
         string exePath = AssetDatabase.GUIDToAssetPath("816eb56585d65134cb3ca3ed31c9fa9b");
+        string exeName = System.IO.Path.GetFileName(exePath);
 
         System.Diagnostics.Process p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
         {
@@ -27,13 +22,15 @@ public class MessageBuilder: ScriptableObject
         p.WaitForExit();
 
         while (!p.StandardError.EndOfStream)
-            Debug.LogError("Error running MessageGenerator.exe: "+p.StandardError.ReadLine());
+        {
+            Debug.LogError($"Error running {exeName}: " + p.StandardError.ReadLine());
+        }
 
         string stdOut = p.StandardOutput.ReadToEnd();
         if(stdOut != "")
-            Debug.Log("Output from MessageGenerator.exe: "+stdOut);
+            Debug.Log($"Output from {exeName}: "+stdOut);
 
         p.Close();
-        UnityEditor.AssetDatabase.Refresh();
+        AssetDatabase.Refresh();
     }
 }

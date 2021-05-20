@@ -1,7 +1,0 @@
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\bin\Release\MessageGenerator.exe.config
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\bin\Release\MessageGenerator.exe
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\bin\Release\MessageGenerator.pdb
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\obj\Release\MessageGenerator.csproj.CoreCompileInputs.cache
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\obj\Release\MessageGenerator.exe
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\obj\Release\MessageGenerator.pdb
-C:\Users\laurie.cheers\Documents\UnityProjects\ROSConnectionEmbedded\Assets\ROS-TCP-Connector\Tools\MessageGenerator~\MessageGenerator\obj\Release\MessageGenerator.csprojAssemblyReference.cache
