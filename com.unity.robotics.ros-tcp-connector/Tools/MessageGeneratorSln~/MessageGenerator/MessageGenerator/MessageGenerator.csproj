@@ -3,9 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
+    <!--PublishSingleFile>true</PublishSingleFile-->
+    <!--SelfContained>true</SelfContained-->
+    <!--PublishTrimmed>true</PublishTrimmed-->
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
