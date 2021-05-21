@@ -37,13 +37,13 @@ namespace RosMessageTypes.ObjectRecognition
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(objects.Length));
-            foreach(var entry in objects)
+            foreach (var entry in objects)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(cooccurrence.Length));
-            foreach(var entry in cooccurrence)
+            foreach (var entry in cooccurrence)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -52,20 +52,20 @@ namespace RosMessageTypes.ObjectRecognition
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var objectsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.objects= new MRecognizedObject[objectsArrayLength];
-            for(var i = 0; i < objectsArrayLength; i++)
+            this.objects = new MRecognizedObject[objectsArrayLength];
+            for (var i = 0; i < objectsArrayLength; i++)
             {
                 this.objects[i] = new MRecognizedObject();
                 offset = this.objects[i].Deserialize(data, offset);
             }
-            
+
             var cooccurrenceArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.cooccurrence= new float[cooccurrenceArrayLength];
-            for(var i = 0; i < cooccurrenceArrayLength; i++)
+            this.cooccurrence = new float[cooccurrenceArrayLength];
+            for (var i = 0; i < cooccurrenceArrayLength; i++)
             {
                 this.cooccurrence[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

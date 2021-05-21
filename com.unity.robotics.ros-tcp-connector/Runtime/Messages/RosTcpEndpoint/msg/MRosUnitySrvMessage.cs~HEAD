@@ -37,7 +37,7 @@ namespace RosMessageTypes.RosTcpEndpoint
             listOfSerializations.Add(BitConverter.GetBytes(this.srv_id));
             listOfSerializations.Add(BitConverter.GetBytes(this.is_request));
             listOfSerializations.Add(SerializeString(this.topic));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(payload.Length));
             listOfSerializations.Add(this.payload);
 
@@ -54,11 +54,11 @@ namespace RosMessageTypes.RosTcpEndpoint
             offset += 4;
             this.topic = DeserializeString(data, offset, topicStringBytesLength);
             offset += topicStringBytesLength;
-            
+
             var payloadArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.payload= new byte[payloadArrayLength];
-            for(var i = 0; i < payloadArrayLength; i++)
+            this.payload = new byte[payloadArrayLength];
+            for (var i = 0; i < payloadArrayLength; i++)
             {
                 this.payload[i] = data[offset];
                 offset += 1;
