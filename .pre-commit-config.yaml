@@ -1,13 +1,16 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v4.0.1
     hooks:
         -   id: mixed-line-ending
             exclude: >
                 (?x)^(
                     .*cs.meta|
                     .*.css|
-                    .*.meta
+                    .*.meta|
+                    .*.mat|
+                    .*.preset|
+                    .*.lighting
                 )$
             args: [--fix=lf]
 
