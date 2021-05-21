@@ -10,7 +10,8 @@ public class MessageBuilder: ScriptableObject
     public static void Build(string sourceFile, string targetFolder)
     {
 #if UNITY_EDITOR_OSX
-        string exePath = AssetDatabase.GUIDToAssetPath("20189e360b49da041b86e48c3eb6b6af");
+        //string exePath = AssetDatabase.GUIDToAssetPath("20189e360b49da041b86e48c3eb6b6af");
+        string exePath = AssetDatabase.GUIDToAssetPath("5de6ab897ed1ea142a45a21e3b612be4");
 #elif UNITY_EDITOR_LINUX
         string exePath = AssetDatabase.GUIDToAssetPath("f6548c1741bccda428981a0a40a6e275");
 #else

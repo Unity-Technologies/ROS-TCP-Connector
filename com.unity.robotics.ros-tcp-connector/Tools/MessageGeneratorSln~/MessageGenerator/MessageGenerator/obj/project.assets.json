@@ -1,7 +1,8 @@
 {
   "version": 3,
   "targets": {
-    ".NETCoreApp,Version=v3.1": {}
+    ".NETCoreApp,Version=v3.1": {},
+    ".NETCoreApp,Version=v3.1/osx-x64": {}
   },
   "libraries": {},
   "projectFileDependencyGroups": {
@@ -14,7 +15,7 @@
     "version": "1.0.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
-      "projectName": "MessageGenerator",
+      "projectName": "MessageGeneratorOSX",
       "projectPath": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
       "packagesPath": "C:\\Users\\laurie.cheers\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\obj\\",
@@ -53,12 +54,31 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.osx-x64",
+            "version": "[3.1.9, 3.1.9]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.osx-x64",
+            "version": "[3.1.9, 3.1.9]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.osx-x64",
+            "version": "[3.1.9, 3.1.9]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "osx-x64": {
+        "#import": []
       }
     }
   }

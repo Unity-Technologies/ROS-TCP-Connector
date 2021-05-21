@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "BzCb4AGqKArq3g3kFFim2tZhg7fu3G+EwlYQMfXJ8G1rdgk7DsOI9piB7w1mO4SrpP1xm0jzuL8jBoiBg4AFFg==",
+  "dgSpecHash": "LLae63wU424b6KuWke1IKhxvPVV4Uvz6MNzGueaI8rNGTF/Qr1HxJp5ynf0z2m7ij5t2lwlGpWHyAN4cG20TCA==",
   "success": true,
   "projectFilePath": "C:\\Users\\laurie.cheers\\Documents\\UnityProjects\\ROSConnectionEmbedded\\Assets\\ROS-TCP-Connector\\Tools\\MessageGeneratorSln~\\MessageGenerator\\MessageGenerator\\MessageGenerator.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\laurie.cheers\\.nuget\\packages\\microsoft.netcore.app.runtime.osx-x64\\3.1.9\\microsoft.netcore.app.runtime.osx-x64.3.1.9.nupkg.sha512",
+    "C:\\Users\\laurie.cheers\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.osx-x64\\3.1.9\\microsoft.aspnetcore.app.runtime.osx-x64.3.1.9.nupkg.sha512",
+    "C:\\Users\\laurie.cheers\\.nuget\\packages\\microsoft.netcore.app.host.osx-x64\\3.1.9\\microsoft.netcore.app.host.osx-x64.3.1.9.nupkg.sha512"
+  ],
   "logs": []
 }
