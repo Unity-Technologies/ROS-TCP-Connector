@@ -62,19 +62,19 @@ namespace RosMessageTypes.Sensor
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.AddRange(orientation.SerializationStatements());
-            
+
             Array.Resize(ref orientation_covariance, 9);
-            foreach(var entry in orientation_covariance)
+            foreach (var entry in orientation_covariance)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
             listOfSerializations.AddRange(angular_velocity.SerializationStatements());
-            
+
             Array.Resize(ref angular_velocity_covariance, 9);
-            foreach(var entry in angular_velocity_covariance)
+            foreach (var entry in angular_velocity_covariance)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
             listOfSerializations.AddRange(linear_acceleration.SerializationStatements());
-            
+
             Array.Resize(ref linear_acceleration_covariance, 9);
-            foreach(var entry in linear_acceleration_covariance)
+            foreach (var entry in linear_acceleration_covariance)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -84,25 +84,25 @@ namespace RosMessageTypes.Sensor
         {
             offset = this.header.Deserialize(data, offset);
             offset = this.orientation.Deserialize(data, offset);
-            
-            this.orientation_covariance= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.orientation_covariance = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.orientation_covariance[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
             offset = this.angular_velocity.Deserialize(data, offset);
-            
-            this.angular_velocity_covariance= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.angular_velocity_covariance = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.angular_velocity_covariance[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
             offset = this.linear_acceleration.Deserialize(data, offset);
-            
-            this.linear_acceleration_covariance= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.linear_acceleration_covariance = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.linear_acceleration_covariance[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

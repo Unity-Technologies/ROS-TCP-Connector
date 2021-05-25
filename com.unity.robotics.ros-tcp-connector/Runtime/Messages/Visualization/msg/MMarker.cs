@@ -111,13 +111,13 @@ namespace RosMessageTypes.Visualization
             listOfSerializations.AddRange(color.SerializationStatements());
             listOfSerializations.AddRange(lifetime.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.frame_locked));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(points.Length));
-            foreach(var entry in points)
+            foreach (var entry in points)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(colors.Length));
-            foreach(var entry in colors)
+            foreach (var entry in colors)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.Add(SerializeString(this.text));
             listOfSerializations.Add(SerializeString(this.mesh_resource));
@@ -145,20 +145,20 @@ namespace RosMessageTypes.Visualization
             offset = this.lifetime.Deserialize(data, offset);
             this.frame_locked = BitConverter.ToBoolean(data, offset);
             offset += 1;
-            
+
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.points= new Geometry.MPoint[pointsArrayLength];
-            for(var i = 0; i < pointsArrayLength; i++)
+            this.points = new Geometry.MPoint[pointsArrayLength];
+            for (var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Geometry.MPoint();
                 offset = this.points[i].Deserialize(data, offset);
             }
-            
+
             var colorsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.colors= new Std.MColorRGBA[colorsArrayLength];
-            for(var i = 0; i < colorsArrayLength; i++)
+            this.colors = new Std.MColorRGBA[colorsArrayLength];
+            for (var i = 0; i < colorsArrayLength; i++)
             {
                 this.colors[i] = new Std.MColorRGBA();
                 offset = this.colors[i].Deserialize(data, offset);

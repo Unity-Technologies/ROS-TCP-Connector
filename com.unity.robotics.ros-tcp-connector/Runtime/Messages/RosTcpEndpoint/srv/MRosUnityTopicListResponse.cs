@@ -25,9 +25,9 @@ namespace RosMessageTypes.RosTcpEndpoint
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(topics.Length));
-            foreach(var entry in topics)
+            foreach (var entry in topics)
                 listOfSerializations.Add(SerializeString(entry));
 
             return listOfSerializations;
@@ -35,11 +35,11 @@ namespace RosMessageTypes.RosTcpEndpoint
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var topicsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.topics= new string[topicsArrayLength];
-            for(var i = 0; i < topicsArrayLength; i++)
+            this.topics = new string[topicsArrayLength];
+            for (var i = 0; i < topicsArrayLength; i++)
             {
                 var topicsStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;

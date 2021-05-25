@@ -50,7 +50,7 @@ namespace RosMessageTypes.Actionlib
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(goal_id.SerializationStatements());
-            listOfSerializations.Add(new[]{this.status});
+            listOfSerializations.Add(new[] { this.status });
             listOfSerializations.Add(SerializeString(this.text));
 
             return listOfSerializations;
@@ -59,7 +59,7 @@ namespace RosMessageTypes.Actionlib
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.goal_id.Deserialize(data, offset);
-            this.status = data[offset];;
+            this.status = data[offset]; ;
             offset += 1;
             var textStringBytesLength = DeserializeLength(data, offset);
             offset += 4;

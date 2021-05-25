@@ -78,11 +78,11 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.latitude));
             listOfSerializations.Add(BitConverter.GetBytes(this.longitude));
             listOfSerializations.Add(BitConverter.GetBytes(this.altitude));
-            
+
             Array.Resize(ref position_covariance, 9);
-            foreach(var entry in position_covariance)
+            foreach (var entry in position_covariance)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            listOfSerializations.Add(new[]{this.position_covariance_type});
+            listOfSerializations.Add(new[] { this.position_covariance_type });
 
             return listOfSerializations;
         }
@@ -97,14 +97,14 @@ namespace RosMessageTypes.Sensor
             offset += 8;
             this.altitude = BitConverter.ToDouble(data, offset);
             offset += 8;
-            
-            this.position_covariance= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.position_covariance = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.position_covariance[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            this.position_covariance_type = data[offset];;
+            this.position_covariance_type = data[offset]; ;
             offset += 1;
 
             return offset;

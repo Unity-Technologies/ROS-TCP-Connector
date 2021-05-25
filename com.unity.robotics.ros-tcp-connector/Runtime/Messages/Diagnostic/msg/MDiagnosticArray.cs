@@ -33,9 +33,9 @@ namespace RosMessageTypes.Diagnostic
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(status.Length));
-            foreach(var entry in status)
+            foreach (var entry in status)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -44,11 +44,11 @@ namespace RosMessageTypes.Diagnostic
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var statusArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.status= new MDiagnosticStatus[statusArrayLength];
-            for(var i = 0; i < statusArrayLength; i++)
+            this.status = new MDiagnosticStatus[statusArrayLength];
+            for (var i = 0; i < statusArrayLength; i++)
             {
                 this.status[i] = new MDiagnosticStatus();
                 offset = this.status[i].Deserialize(data, offset);

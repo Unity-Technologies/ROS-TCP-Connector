@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -240,12 +240,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Inherited params
             if (msgType.Equals("Goal"))
             {
-                inheritedParams = new[] {"header", "goal_id"};
+                inheritedParams = new[] { "header", "goal_id" };
 
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                inheritedParams = new[] {"header", "status"};
+                inheritedParams = new[] { "header", "status" };
             }
 
             foreach (string paramName in inheritedParams)
@@ -258,7 +258,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 function += TWO_TABS + ONE_TAB + "listOfSerializations.AddRange(this." + identifier + ".SerializationStatements());\n";
             }
 
-            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return listOfSerializations;\n";
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "return listOfSerializations;\n";
             function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
 
             return function;
@@ -275,12 +275,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Inherited params
             if (msgType.Equals("Goal"))
             {
-                inheritedParams = new[] {"header", "goal_id"};
+                inheritedParams = new[] { "header", "goal_id" };
 
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                inheritedParams = new[] {"header", "status"};
+                inheritedParams = new[] { "header", "status" };
             }
 
             foreach (string paramName in inheritedParams)
@@ -293,7 +293,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 function += TWO_TABS + ONE_TAB + "offset = this." + identifier + ".Deserialize(data, offset);\n";
             }
 
-            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB +"return offset;\n";
+            function += "\n" + MsgAutoGenUtilities.TWO_TABS + MsgAutoGenUtilities.ONE_TAB + "return offset;\n";
             function += MsgAutoGenUtilities.TWO_TABS + "}\n\n";
 
             return function;
@@ -307,7 +307,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n"+
+                "using System.Collections.Generic;\n" +
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
@@ -366,7 +366,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string outPath = Path.Combine(this.outPath, className + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n"+
+                "using System.Collections.Generic;\n" +
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "\n\n";
 

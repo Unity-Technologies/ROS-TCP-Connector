@@ -32,10 +32,10 @@ namespace RosMessageTypes.Diagnostic
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.id));
-            listOfSerializations.Add(new[]{(byte)this.passed});
-            
+            listOfSerializations.Add(new[] { (byte)this.passed });
+
             listOfSerializations.Add(BitConverter.GetBytes(status.Length));
-            foreach(var entry in status)
+            foreach (var entry in status)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -47,13 +47,13 @@ namespace RosMessageTypes.Diagnostic
             offset += 4;
             this.id = DeserializeString(data, offset, idStringBytesLength);
             offset += idStringBytesLength;
-            this.passed = (sbyte)data[offset];;
+            this.passed = (sbyte)data[offset]; ;
             offset += 1;
-            
+
             var statusArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.status= new MDiagnosticStatus[statusArrayLength];
-            for(var i = 0; i < statusArrayLength; i++)
+            this.status = new MDiagnosticStatus[statusArrayLength];
+            for (var i = 0; i < statusArrayLength; i++)
             {
                 this.status[i] = new MDiagnosticStatus();
                 offset = this.status[i].Deserialize(data, offset);

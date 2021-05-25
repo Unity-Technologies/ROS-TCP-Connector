@@ -36,7 +36,7 @@ namespace RosMessageTypes.Nav
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(map.SerializationStatements());
-            listOfSerializations.Add(new[]{this.result});
+            listOfSerializations.Add(new[] { this.result });
 
             return listOfSerializations;
         }
@@ -44,7 +44,7 @@ namespace RosMessageTypes.Nav
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.map.Deserialize(data, offset);
-            this.result = data[offset];;
+            this.result = data[offset]; ;
             offset += 1;
 
             return offset;

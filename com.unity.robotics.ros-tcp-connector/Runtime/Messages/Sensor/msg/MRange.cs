@@ -75,7 +75,7 @@ namespace RosMessageTypes.Sensor
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            listOfSerializations.Add(new[]{this.radiation_type});
+            listOfSerializations.Add(new[] { this.radiation_type });
             listOfSerializations.Add(BitConverter.GetBytes(this.field_of_view));
             listOfSerializations.Add(BitConverter.GetBytes(this.min_range));
             listOfSerializations.Add(BitConverter.GetBytes(this.max_range));
@@ -87,7 +87,7 @@ namespace RosMessageTypes.Sensor
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            this.radiation_type = data[offset];;
+            this.radiation_type = data[offset]; ;
             offset += 1;
             this.field_of_view = BitConverter.ToSingle(data, offset);
             offset += 4;

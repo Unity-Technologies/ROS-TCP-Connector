@@ -45,7 +45,7 @@ namespace RosMessageTypes.Sensor
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.Add(SerializeString(this.format));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
             listOfSerializations.Add(this.data);
 
@@ -59,11 +59,11 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.format = DeserializeString(data, offset, formatStringBytesLength);
             offset += formatStringBytesLength;
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new byte[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new byte[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = data[offset];
                 offset += 1;

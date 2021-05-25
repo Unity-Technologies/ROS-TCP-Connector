@@ -170,21 +170,21 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.height));
             listOfSerializations.Add(BitConverter.GetBytes(this.width));
             listOfSerializations.Add(SerializeString(this.distortion_model));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(D.Length));
-            foreach(var entry in D)
+            foreach (var entry in D)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             Array.Resize(ref K, 9);
-            foreach(var entry in K)
+            foreach (var entry in K)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             Array.Resize(ref R, 9);
-            foreach(var entry in R)
+            foreach (var entry in R)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             Array.Resize(ref P, 12);
-            foreach(var entry in P)
+            foreach (var entry in P)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
             listOfSerializations.Add(BitConverter.GetBytes(this.binning_x));
             listOfSerializations.Add(BitConverter.GetBytes(this.binning_y));
@@ -204,32 +204,32 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.distortion_model = DeserializeString(data, offset, distortion_modelStringBytesLength);
             offset += distortion_modelStringBytesLength;
-            
+
             var DArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.D= new double[DArrayLength];
-            for(var i = 0; i < DArrayLength; i++)
+            this.D = new double[DArrayLength];
+            for (var i = 0; i < DArrayLength; i++)
             {
                 this.D[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
-            this.K= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.K = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.K[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
-            this.R= new double[9];
-            for(var i = 0; i < 9; i++)
+
+            this.R = new double[9];
+            for (var i = 0; i < 9; i++)
             {
                 this.R[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
-            this.P= new double[12];
-            for(var i = 0; i < 12; i++)
+
+            this.P = new double[12];
+            for (var i = 0; i < 12; i++)
             {
                 this.P[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

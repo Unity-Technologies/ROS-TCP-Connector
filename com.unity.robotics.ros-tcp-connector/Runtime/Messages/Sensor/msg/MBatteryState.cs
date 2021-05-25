@@ -124,17 +124,17 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.capacity));
             listOfSerializations.Add(BitConverter.GetBytes(this.design_capacity));
             listOfSerializations.Add(BitConverter.GetBytes(this.percentage));
-            listOfSerializations.Add(new[]{this.power_supply_status});
-            listOfSerializations.Add(new[]{this.power_supply_health});
-            listOfSerializations.Add(new[]{this.power_supply_technology});
+            listOfSerializations.Add(new[] { this.power_supply_status });
+            listOfSerializations.Add(new[] { this.power_supply_health });
+            listOfSerializations.Add(new[] { this.power_supply_technology });
             listOfSerializations.Add(BitConverter.GetBytes(this.present));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(cell_voltage.Length));
-            foreach(var entry in cell_voltage)
+            foreach (var entry in cell_voltage)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(cell_temperature.Length));
-            foreach(var entry in cell_temperature)
+            foreach (var entry in cell_temperature)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
             listOfSerializations.Add(SerializeString(this.location));
             listOfSerializations.Add(SerializeString(this.serial_number));
@@ -159,28 +159,28 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.percentage = BitConverter.ToSingle(data, offset);
             offset += 4;
-            this.power_supply_status = data[offset];;
+            this.power_supply_status = data[offset]; ;
             offset += 1;
-            this.power_supply_health = data[offset];;
+            this.power_supply_health = data[offset]; ;
             offset += 1;
-            this.power_supply_technology = data[offset];;
+            this.power_supply_technology = data[offset]; ;
             offset += 1;
             this.present = BitConverter.ToBoolean(data, offset);
             offset += 1;
-            
+
             var cell_voltageArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.cell_voltage= new float[cell_voltageArrayLength];
-            for(var i = 0; i < cell_voltageArrayLength; i++)
+            this.cell_voltage = new float[cell_voltageArrayLength];
+            for (var i = 0; i < cell_voltageArrayLength; i++)
             {
                 this.cell_voltage[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
             }
-            
+
             var cell_temperatureArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.cell_temperature= new float[cell_temperatureArrayLength];
-            for(var i = 0; i < cell_temperatureArrayLength; i++)
+            this.cell_temperature = new float[cell_temperatureArrayLength];
+            for (var i = 0; i < cell_temperatureArrayLength; i++)
             {
                 this.cell_temperature[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

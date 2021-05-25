@@ -31,13 +31,13 @@ namespace RosMessageTypes.Shape
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(triangles.Length));
-            foreach(var entry in triangles)
+            foreach (var entry in triangles)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(vertices.Length));
-            foreach(var entry in vertices)
+            foreach (var entry in vertices)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -45,20 +45,20 @@ namespace RosMessageTypes.Shape
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var trianglesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.triangles= new MMeshTriangle[trianglesArrayLength];
-            for(var i = 0; i < trianglesArrayLength; i++)
+            this.triangles = new MMeshTriangle[trianglesArrayLength];
+            for (var i = 0; i < trianglesArrayLength; i++)
             {
                 this.triangles[i] = new MMeshTriangle();
                 offset = this.triangles[i].Deserialize(data, offset);
             }
-            
+
             var verticesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.vertices= new Geometry.MPoint[verticesArrayLength];
-            for(var i = 0; i < verticesArrayLength; i++)
+            this.vertices = new Geometry.MPoint[verticesArrayLength];
+            for (var i = 0; i < verticesArrayLength; i++)
             {
                 this.vertices[i] = new Geometry.MPoint();
                 offset = this.vertices[i].Deserialize(data, offset);

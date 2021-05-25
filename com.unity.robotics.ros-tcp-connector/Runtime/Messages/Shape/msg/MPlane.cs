@@ -30,9 +30,9 @@ namespace RosMessageTypes.Shape
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             Array.Resize(ref coef, 4);
-            foreach(var entry in coef)
+            foreach (var entry in coef)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -40,9 +40,9 @@ namespace RosMessageTypes.Shape
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
-            this.coef= new double[4];
-            for(var i = 0; i < 4; i++)
+
+            this.coef = new double[4];
+            for (var i = 0; i < 4; i++)
             {
                 this.coef[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;

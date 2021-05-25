@@ -52,9 +52,9 @@ namespace RosMessageTypes.Std
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(dim.Length));
-            foreach(var entry in dim)
+            foreach (var entry in dim)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.Add(BitConverter.GetBytes(this.data_offset));
 
@@ -63,11 +63,11 @@ namespace RosMessageTypes.Std
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var dimArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.dim= new MMultiArrayDimension[dimArrayLength];
-            for(var i = 0; i < dimArrayLength; i++)
+            this.dim = new MMultiArrayDimension[dimArrayLength];
+            for (var i = 0; i < dimArrayLength; i++)
             {
                 this.dim[i] = new MMultiArrayDimension();
                 offset = this.dim[i].Deserialize(data, offset);

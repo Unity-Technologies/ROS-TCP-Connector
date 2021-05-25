@@ -85,13 +85,13 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.scan_time));
             listOfSerializations.Add(BitConverter.GetBytes(this.range_min));
             listOfSerializations.Add(BitConverter.GetBytes(this.range_max));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(ranges.Length));
-            foreach(var entry in ranges)
+            foreach (var entry in ranges)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(intensities.Length));
-            foreach(var entry in intensities)
+            foreach (var entry in intensities)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -114,20 +114,20 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.range_max = BitConverter.ToSingle(data, offset);
             offset += 4;
-            
+
             var rangesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.ranges= new float[rangesArrayLength];
-            for(var i = 0; i < rangesArrayLength; i++)
+            this.ranges = new float[rangesArrayLength];
+            for (var i = 0; i < rangesArrayLength; i++)
             {
                 this.ranges[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
             }
-            
+
             var intensitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.intensities= new float[intensitiesArrayLength];
-            for(var i = 0; i < intensitiesArrayLength; i++)
+            this.intensities = new float[intensitiesArrayLength];
+            for (var i = 0; i < intensitiesArrayLength; i++)
             {
                 this.intensities[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;
