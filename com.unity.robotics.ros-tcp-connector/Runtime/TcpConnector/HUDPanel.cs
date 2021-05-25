@@ -125,7 +125,7 @@ namespace Unity.Robotics.ROSTCPConnector
             if (elapsedTime <= brightDuration)
                 return bright;
             else
-                return Color.Lerp(mid, dark, elapsedTime/fadeToDarkDuration);
+                return Color.Lerp(mid, dark, elapsedTime / fadeToDarkDuration);
         }
 
         void OnGUI()

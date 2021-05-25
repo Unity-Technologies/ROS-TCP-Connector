@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -20,7 +20,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public class ServiceAutoGen
     {
-        private static readonly string[] types = {"Request", "Response"};
+        private static readonly string[] types = { "Request", "Response" };
 
         public static string[] GetServiceClassPaths(string inFilePath, string outPath)
         {
@@ -79,7 +79,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return warnings;
         }
 
-        public static List<string> GeneratePackageServices(string inPath, string outPath, string rosPackageName = "", bool verbose = false) {
+        public static List<string> GeneratePackageServices(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
+        {
             List<string> warnings = new List<string>();
 
             string[] files = Directory.GetFiles(Path.Combine(inPath, "srv"), "*.srv");
@@ -89,7 +90,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 Console.Error.WriteLine("No service files found!");
                 return warnings;
             }
-            else {
+            else
+            {
                 if (verbose)
                 {
                     Console.WriteLine("Found " + files.Length + " service files.");
@@ -103,7 +105,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return warnings;
         }
 
-        public static List<string> GenerateDirectoryServices(string inPath, string outPath, bool verbose = false) {
+        public static List<string> GenerateDirectoryServices(string inPath, string outPath, bool verbose = false)
+        {
             List<string> warnings = new List<string>();
 
             if (inPath.EndsWith("/") || inPath.EndsWith("\\"))

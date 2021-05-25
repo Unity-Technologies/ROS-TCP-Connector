@@ -10,7 +10,7 @@ namespace RosMessageTypes.Std
     public class MTime : Message
     {
         public const string RosMessageName = "std_msgs/Time";
-		
+
         public uint secs;
         public uint nsecs;
 

@@ -70,9 +70,9 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.height));
             listOfSerializations.Add(BitConverter.GetBytes(this.width));
             listOfSerializations.Add(SerializeString(this.encoding));
-            listOfSerializations.Add(new[]{this.is_bigendian});
+            listOfSerializations.Add(new[] { this.is_bigendian });
             listOfSerializations.Add(BitConverter.GetBytes(this.step));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
             listOfSerializations.Add(this.data);
 
@@ -90,15 +90,15 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.encoding = DeserializeString(data, offset, encodingStringBytesLength);
             offset += encodingStringBytesLength;
-            this.is_bigendian = data[offset];;
+            this.is_bigendian = data[offset]; ;
             offset += 1;
             this.step = BitConverter.ToUInt32(data, offset);
             offset += 4;
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new byte[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new byte[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = data[offset];
                 offset += 1;

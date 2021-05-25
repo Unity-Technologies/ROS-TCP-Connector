@@ -87,13 +87,13 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.Add(BitConverter.GetBytes(this.scan_time));
             listOfSerializations.Add(BitConverter.GetBytes(this.range_min));
             listOfSerializations.Add(BitConverter.GetBytes(this.range_max));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(ranges.Length));
-            foreach(var entry in ranges)
+            foreach (var entry in ranges)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(intensities.Length));
-            foreach(var entry in intensities)
+            foreach (var entry in intensities)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -116,20 +116,20 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.range_max = BitConverter.ToSingle(data, offset);
             offset += 4;
-            
+
             var rangesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.ranges= new MLaserEcho[rangesArrayLength];
-            for(var i = 0; i < rangesArrayLength; i++)
+            this.ranges = new MLaserEcho[rangesArrayLength];
+            for (var i = 0; i < rangesArrayLength; i++)
             {
                 this.ranges[i] = new MLaserEcho();
                 offset = this.ranges[i].Deserialize(data, offset);
             }
-            
+
             var intensitiesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.intensities= new MLaserEcho[intensitiesArrayLength];
-            for(var i = 0; i < intensitiesArrayLength; i++)
+            this.intensities = new MLaserEcho[intensitiesArrayLength];
+            for (var i = 0; i < intensitiesArrayLength; i++)
             {
                 this.intensities[i] = new MLaserEcho();
                 offset = this.intensities[i].Deserialize(data, offset);

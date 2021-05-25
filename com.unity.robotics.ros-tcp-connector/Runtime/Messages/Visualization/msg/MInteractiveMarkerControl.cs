@@ -101,12 +101,12 @@ namespace RosMessageTypes.Visualization
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.name));
             listOfSerializations.AddRange(orientation.SerializationStatements());
-            listOfSerializations.Add(new[]{this.orientation_mode});
-            listOfSerializations.Add(new[]{this.interaction_mode});
+            listOfSerializations.Add(new[] { this.orientation_mode });
+            listOfSerializations.Add(new[] { this.interaction_mode });
             listOfSerializations.Add(BitConverter.GetBytes(this.always_visible));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(markers.Length));
-            foreach(var entry in markers)
+            foreach (var entry in markers)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.Add(BitConverter.GetBytes(this.independent_marker_orientation));
             listOfSerializations.Add(SerializeString(this.description));
@@ -121,17 +121,17 @@ namespace RosMessageTypes.Visualization
             this.name = DeserializeString(data, offset, nameStringBytesLength);
             offset += nameStringBytesLength;
             offset = this.orientation.Deserialize(data, offset);
-            this.orientation_mode = data[offset];;
+            this.orientation_mode = data[offset]; ;
             offset += 1;
-            this.interaction_mode = data[offset];;
+            this.interaction_mode = data[offset]; ;
             offset += 1;
             this.always_visible = BitConverter.ToBoolean(data, offset);
             offset += 1;
-            
+
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.markers= new MMarker[markersArrayLength];
-            for(var i = 0; i < markersArrayLength; i++)
+            this.markers = new MMarker[markersArrayLength];
+            for (var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new MMarker();
                 offset = this.markers[i].Deserialize(data, offset);

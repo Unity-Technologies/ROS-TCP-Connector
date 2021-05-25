@@ -41,13 +41,13 @@ namespace RosMessageTypes.Sensor
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(points.Length));
-            foreach(var entry in points)
+            foreach (var entry in points)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(channels.Length));
-            foreach(var entry in channels)
+            foreach (var entry in channels)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -56,20 +56,20 @@ namespace RosMessageTypes.Sensor
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.points= new Geometry.MPoint32[pointsArrayLength];
-            for(var i = 0; i < pointsArrayLength; i++)
+            this.points = new Geometry.MPoint32[pointsArrayLength];
+            for (var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Geometry.MPoint32();
                 offset = this.points[i].Deserialize(data, offset);
             }
-            
+
             var channelsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.channels= new MChannelFloat32[channelsArrayLength];
-            for(var i = 0; i < channelsArrayLength; i++)
+            this.channels = new MChannelFloat32[channelsArrayLength];
+            for (var i = 0; i < channelsArrayLength; i++)
             {
                 this.channels[i] = new MChannelFloat32();
                 offset = this.channels[i].Deserialize(data, offset);

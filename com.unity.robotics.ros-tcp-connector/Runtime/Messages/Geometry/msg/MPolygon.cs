@@ -26,9 +26,9 @@ namespace RosMessageTypes.Geometry
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(points.Length));
-            foreach(var entry in points)
+            foreach (var entry in points)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -36,11 +36,11 @@ namespace RosMessageTypes.Geometry
 
         public override int Deserialize(byte[] data, int offset)
         {
-            
+
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.points= new MPoint32[pointsArrayLength];
-            for(var i = 0; i < pointsArrayLength; i++)
+            this.points = new MPoint32[pointsArrayLength];
+            for (var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new MPoint32();
                 offset = this.points[i].Deserialize(data, offset);

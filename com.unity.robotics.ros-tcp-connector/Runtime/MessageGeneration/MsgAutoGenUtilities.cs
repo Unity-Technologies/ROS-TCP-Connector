@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -63,7 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {"Duration", "new Duration()"}
         };
 
-        public static readonly  Dictionary<string, string> numericTypeDeserializationFunctions = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> numericTypeDeserializationFunctions = new Dictionary<string, string>
         {
             {"sbyte", "(sbyte)data[offset];"},
             {"byte", "data[offset];"},
@@ -79,7 +79,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {"ulong", "BitConverter.ToUInt64(data, offset)"}
         };
 
-        public static readonly  Dictionary<string, int> numericTypeByteSize = new Dictionary<string, int>
+        public static readonly Dictionary<string, int> numericTypeByteSize = new Dictionary<string, int>
         {
             {"sbyte", 1},
             {"byte", 1},
@@ -115,7 +115,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return Char.ToUpper(s[0]) + s.Substring(1);
         }
 
-        public static string LowerFirstLetter(string s) {
+        public static string LowerFirstLetter(string s)
+        {
             return Char.ToLower(s[0]) + s.Substring(1);
         }
 

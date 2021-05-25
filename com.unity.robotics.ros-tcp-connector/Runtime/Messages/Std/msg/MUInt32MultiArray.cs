@@ -33,9 +33,9 @@ namespace RosMessageTypes.Std
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(layout.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
-            foreach(var entry in data)
+            foreach (var entry in data)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -44,11 +44,11 @@ namespace RosMessageTypes.Std
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.layout.Deserialize(data, offset);
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new uint[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new uint[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = BitConverter.ToUInt32(data, offset);
                 offset += 4;

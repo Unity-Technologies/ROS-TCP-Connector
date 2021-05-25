@@ -39,9 +39,9 @@ namespace RosMessageTypes.Nav
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.AddRange(info.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
-            listOfSerializations.Add((byte[]) (Array)this.data);
+            listOfSerializations.Add((byte[])(Array)this.data);
 
             return listOfSerializations;
         }
@@ -50,11 +50,11 @@ namespace RosMessageTypes.Nav
         {
             offset = this.header.Deserialize(data, offset);
             offset = this.info.Deserialize(data, offset);
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new sbyte[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new sbyte[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = (sbyte)data[offset];
                 offset += 1;

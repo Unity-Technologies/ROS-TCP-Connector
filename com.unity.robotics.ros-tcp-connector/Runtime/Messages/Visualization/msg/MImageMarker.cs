@@ -88,16 +88,16 @@ namespace RosMessageTypes.Visualization
             listOfSerializations.AddRange(position.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.scale));
             listOfSerializations.AddRange(outline_color.SerializationStatements());
-            listOfSerializations.Add(new[]{this.filled});
+            listOfSerializations.Add(new[] { this.filled });
             listOfSerializations.AddRange(fill_color.SerializationStatements());
             listOfSerializations.AddRange(lifetime.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(points.Length));
-            foreach(var entry in points)
+            foreach (var entry in points)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(outline_colors.Length));
-            foreach(var entry in outline_colors)
+            foreach (var entry in outline_colors)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -120,24 +120,24 @@ namespace RosMessageTypes.Visualization
             this.scale = BitConverter.ToSingle(data, offset);
             offset += 4;
             offset = this.outline_color.Deserialize(data, offset);
-            this.filled = data[offset];;
+            this.filled = data[offset]; ;
             offset += 1;
             offset = this.fill_color.Deserialize(data, offset);
             offset = this.lifetime.Deserialize(data, offset);
-            
+
             var pointsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.points= new Geometry.MPoint[pointsArrayLength];
-            for(var i = 0; i < pointsArrayLength; i++)
+            this.points = new Geometry.MPoint[pointsArrayLength];
+            for (var i = 0; i < pointsArrayLength; i++)
             {
                 this.points[i] = new Geometry.MPoint();
                 offset = this.points[i].Deserialize(data, offset);
             }
-            
+
             var outline_colorsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.outline_colors= new Std.MColorRGBA[outline_colorsArrayLength];
-            for(var i = 0; i < outline_colorsArrayLength; i++)
+            this.outline_colors = new Std.MColorRGBA[outline_colorsArrayLength];
+            for (var i = 0; i < outline_colorsArrayLength; i++)
             {
                 this.outline_colors[i] = new Std.MColorRGBA();
                 offset = this.outline_colors[i].Deserialize(data, offset);

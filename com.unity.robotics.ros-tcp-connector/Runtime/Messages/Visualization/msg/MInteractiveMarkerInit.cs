@@ -42,9 +42,9 @@ namespace RosMessageTypes.Visualization
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(SerializeString(this.server_id));
             listOfSerializations.Add(BitConverter.GetBytes(this.seq_num));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(markers.Length));
-            foreach(var entry in markers)
+            foreach (var entry in markers)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -58,11 +58,11 @@ namespace RosMessageTypes.Visualization
             offset += server_idStringBytesLength;
             this.seq_num = BitConverter.ToUInt64(data, offset);
             offset += 8;
-            
+
             var markersArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.markers= new MInteractiveMarker[markersArrayLength];
-            for(var i = 0; i < markersArrayLength; i++)
+            this.markers = new MInteractiveMarker[markersArrayLength];
+            for (var i = 0; i < markersArrayLength; i++)
             {
                 this.markers[i] = new MInteractiveMarker();
                 offset = this.markers[i].Deserialize(data, offset);

@@ -25,14 +25,14 @@ namespace RosMessageTypes.Std
         public override List<byte[]> SerializationStatements()
         {
             var listOfSerializations = new List<byte[]>();
-            listOfSerializations.Add(new[]{(byte)this.data});
+            listOfSerializations.Add(new[] { (byte)this.data });
 
             return listOfSerializations;
         }
 
         public override int Deserialize(byte[] data, int offset)
         {
-            this.data = (sbyte)data[offset];;
+            this.data = (sbyte)data[offset]; ;
             offset += 1;
 
             return offset;

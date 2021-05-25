@@ -30,9 +30,9 @@ namespace RosMessageTypes.ObjectRecognition
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.Add(BitConverter.GetBytes(this.use_roi));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(filter_limits.Length));
-            foreach(var entry in filter_limits)
+            foreach (var entry in filter_limits)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -42,11 +42,11 @@ namespace RosMessageTypes.ObjectRecognition
         {
             this.use_roi = BitConverter.ToBoolean(data, offset);
             offset += 1;
-            
+
             var filter_limitsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.filter_limits= new float[filter_limitsArrayLength];
-            for(var i = 0; i < filter_limitsArrayLength; i++)
+            this.filter_limits = new float[filter_limitsArrayLength];
+            for (var i = 0; i < filter_limitsArrayLength; i++)
             {
                 this.filter_limits[i] = BitConverter.ToSingle(data, offset);
                 offset += 4;

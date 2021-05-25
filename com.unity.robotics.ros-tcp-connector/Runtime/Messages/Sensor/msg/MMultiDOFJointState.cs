@@ -58,21 +58,21 @@ namespace RosMessageTypes.Sensor
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(joint_names.Length));
-            foreach(var entry in joint_names)
+            foreach (var entry in joint_names)
                 listOfSerializations.Add(SerializeString(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(transforms.Length));
-            foreach(var entry in transforms)
+            foreach (var entry in transforms)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(twist.Length));
-            foreach(var entry in twist)
+            foreach (var entry in twist)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(wrench.Length));
-            foreach(var entry in wrench)
+            foreach (var entry in wrench)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -81,40 +81,40 @@ namespace RosMessageTypes.Sensor
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var joint_namesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.joint_names= new string[joint_namesArrayLength];
-            for(var i = 0; i < joint_namesArrayLength; i++)
+            this.joint_names = new string[joint_namesArrayLength];
+            for (var i = 0; i < joint_namesArrayLength; i++)
             {
                 var joint_namesStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;
                 this.joint_names[i] = DeserializeString(data, offset, joint_namesStringBytesLength);
                 offset += joint_namesStringBytesLength;
             }
-            
+
             var transformsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.transforms= new Geometry.MTransform[transformsArrayLength];
-            for(var i = 0; i < transformsArrayLength; i++)
+            this.transforms = new Geometry.MTransform[transformsArrayLength];
+            for (var i = 0; i < transformsArrayLength; i++)
             {
                 this.transforms[i] = new Geometry.MTransform();
                 offset = this.transforms[i].Deserialize(data, offset);
             }
-            
+
             var twistArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.twist= new Geometry.MTwist[twistArrayLength];
-            for(var i = 0; i < twistArrayLength; i++)
+            this.twist = new Geometry.MTwist[twistArrayLength];
+            for (var i = 0; i < twistArrayLength; i++)
             {
                 this.twist[i] = new Geometry.MTwist();
                 offset = this.twist[i].Deserialize(data, offset);
             }
-            
+
             var wrenchArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.wrench= new Geometry.MWrench[wrenchArrayLength];
-            for(var i = 0; i < wrenchArrayLength; i++)
+            this.wrench = new Geometry.MWrench[wrenchArrayLength];
+            for (var i = 0; i < wrenchArrayLength; i++)
             {
                 this.wrench[i] = new Geometry.MWrench();
                 offset = this.wrench[i].Deserialize(data, offset);

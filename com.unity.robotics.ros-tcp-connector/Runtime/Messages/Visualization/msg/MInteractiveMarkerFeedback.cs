@@ -78,7 +78,7 @@ namespace RosMessageTypes.Visualization
             listOfSerializations.Add(SerializeString(this.client_id));
             listOfSerializations.Add(SerializeString(this.marker_name));
             listOfSerializations.Add(SerializeString(this.control_name));
-            listOfSerializations.Add(new[]{this.event_type});
+            listOfSerializations.Add(new[] { this.event_type });
             listOfSerializations.AddRange(pose.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.menu_entry_id));
             listOfSerializations.AddRange(mouse_point.SerializationStatements());
@@ -102,7 +102,7 @@ namespace RosMessageTypes.Visualization
             offset += 4;
             this.control_name = DeserializeString(data, offset, control_nameStringBytesLength);
             offset += control_nameStringBytesLength;
-            this.event_type = data[offset];;
+            this.event_type = data[offset]; ;
             offset += 1;
             offset = this.pose.Deserialize(data, offset);
             this.menu_entry_id = BitConverter.ToUInt32(data, offset);

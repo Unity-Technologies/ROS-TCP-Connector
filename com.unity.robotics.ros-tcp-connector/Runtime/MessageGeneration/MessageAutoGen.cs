@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -38,7 +38,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 if (File.Exists(packagePath))
                 {
                     XmlReader reader = XmlReader.Create(File.OpenRead(packagePath));
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         if (reader.NodeType == XmlNodeType.Element && reader.Name == "name")
                         {
@@ -78,7 +78,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
         {
             // If no ROS package name is provided, extract from path
-            if(rosPackageName == "")
+            if (rosPackageName == "")
                 rosPackageName = GetRosPackageName(inPath);
             outPath = GetMessageOutFolder(outPath, rosPackageName);
 

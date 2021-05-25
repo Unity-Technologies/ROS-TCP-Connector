@@ -62,13 +62,13 @@ namespace RosMessageTypes.Visualization
             listOfSerializations.Add(SerializeString(this.name));
             listOfSerializations.Add(SerializeString(this.description));
             listOfSerializations.Add(BitConverter.GetBytes(this.scale));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(menu_entries.Length));
-            foreach(var entry in menu_entries)
+            foreach (var entry in menu_entries)
                 listOfSerializations.Add(entry.Serialize());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(controls.Length));
-            foreach(var entry in controls)
+            foreach (var entry in controls)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -88,20 +88,20 @@ namespace RosMessageTypes.Visualization
             offset += descriptionStringBytesLength;
             this.scale = BitConverter.ToSingle(data, offset);
             offset += 4;
-            
+
             var menu_entriesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.menu_entries= new MMenuEntry[menu_entriesArrayLength];
-            for(var i = 0; i < menu_entriesArrayLength; i++)
+            this.menu_entries = new MMenuEntry[menu_entriesArrayLength];
+            for (var i = 0; i < menu_entriesArrayLength; i++)
             {
                 this.menu_entries[i] = new MMenuEntry();
                 offset = this.menu_entries[i].Deserialize(data, offset);
             }
-            
+
             var controlsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.controls= new MInteractiveMarkerControl[controlsArrayLength];
-            for(var i = 0; i < controlsArrayLength; i++)
+            this.controls = new MInteractiveMarkerControl[controlsArrayLength];
+            for (var i = 0; i < controlsArrayLength; i++)
             {
                 this.controls[i] = new MInteractiveMarkerControl();
                 offset = this.controls[i].Deserialize(data, offset);

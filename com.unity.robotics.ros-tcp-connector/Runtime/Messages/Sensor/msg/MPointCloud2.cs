@@ -70,14 +70,14 @@ namespace RosMessageTypes.Sensor
             listOfSerializations.AddRange(header.SerializationStatements());
             listOfSerializations.Add(BitConverter.GetBytes(this.height));
             listOfSerializations.Add(BitConverter.GetBytes(this.width));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(fields.Length));
-            foreach(var entry in fields)
+            foreach (var entry in fields)
                 listOfSerializations.Add(entry.Serialize());
             listOfSerializations.Add(BitConverter.GetBytes(this.is_bigendian));
             listOfSerializations.Add(BitConverter.GetBytes(this.point_step));
             listOfSerializations.Add(BitConverter.GetBytes(this.row_step));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(data.Length));
             listOfSerializations.Add(this.data);
             listOfSerializations.Add(BitConverter.GetBytes(this.is_dense));
@@ -92,11 +92,11 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.width = BitConverter.ToUInt32(data, offset);
             offset += 4;
-            
+
             var fieldsArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.fields= new MPointField[fieldsArrayLength];
-            for(var i = 0; i < fieldsArrayLength; i++)
+            this.fields = new MPointField[fieldsArrayLength];
+            for (var i = 0; i < fieldsArrayLength; i++)
             {
                 this.fields[i] = new MPointField();
                 offset = this.fields[i].Deserialize(data, offset);
@@ -107,11 +107,11 @@ namespace RosMessageTypes.Sensor
             offset += 4;
             this.row_step = BitConverter.ToUInt32(data, offset);
             offset += 4;
-            
+
             var dataArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.data= new byte[dataArrayLength];
-            for(var i = 0; i < dataArrayLength; i++)
+            this.data = new byte[dataArrayLength];
+            for (var i = 0; i < dataArrayLength; i++)
             {
                 this.data[i] = data[offset];
                 offset += 1;

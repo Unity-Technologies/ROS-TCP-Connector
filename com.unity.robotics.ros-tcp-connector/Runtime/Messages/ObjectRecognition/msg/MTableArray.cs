@@ -31,9 +31,9 @@ namespace RosMessageTypes.ObjectRecognition
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(tables.Length));
-            foreach(var entry in tables)
+            foreach (var entry in tables)
                 listOfSerializations.Add(entry.Serialize());
 
             return listOfSerializations;
@@ -42,11 +42,11 @@ namespace RosMessageTypes.ObjectRecognition
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var tablesArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.tables= new MTable[tablesArrayLength];
-            for(var i = 0; i < tablesArrayLength; i++)
+            this.tables = new MTable[tablesArrayLength];
+            for (var i = 0; i < tablesArrayLength; i++)
             {
                 this.tables[i] = new MTable();
                 offset = this.tables[i].Deserialize(data, offset);

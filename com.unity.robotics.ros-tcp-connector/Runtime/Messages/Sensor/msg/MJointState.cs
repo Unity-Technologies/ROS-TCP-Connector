@@ -57,21 +57,21 @@ namespace RosMessageTypes.Sensor
         {
             var listOfSerializations = new List<byte[]>();
             listOfSerializations.AddRange(header.SerializationStatements());
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(name.Length));
-            foreach(var entry in name)
+            foreach (var entry in name)
                 listOfSerializations.Add(SerializeString(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(position.Length));
-            foreach(var entry in position)
+            foreach (var entry in position)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(velocity.Length));
-            foreach(var entry in velocity)
+            foreach (var entry in velocity)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
-            
+
             listOfSerializations.Add(BitConverter.GetBytes(effort.Length));
-            foreach(var entry in effort)
+            foreach (var entry in effort)
                 listOfSerializations.Add(BitConverter.GetBytes(entry));
 
             return listOfSerializations;
@@ -80,40 +80,40 @@ namespace RosMessageTypes.Sensor
         public override int Deserialize(byte[] data, int offset)
         {
             offset = this.header.Deserialize(data, offset);
-            
+
             var nameArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.name= new string[nameArrayLength];
-            for(var i = 0; i < nameArrayLength; i++)
+            this.name = new string[nameArrayLength];
+            for (var i = 0; i < nameArrayLength; i++)
             {
                 var nameStringBytesLength = DeserializeLength(data, offset);
                 offset += 4;
                 this.name[i] = DeserializeString(data, offset, nameStringBytesLength);
                 offset += nameStringBytesLength;
             }
-            
+
             var positionArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.position= new double[positionArrayLength];
-            for(var i = 0; i < positionArrayLength; i++)
+            this.position = new double[positionArrayLength];
+            for (var i = 0; i < positionArrayLength; i++)
             {
                 this.position[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
+
             var velocityArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.velocity= new double[velocityArrayLength];
-            for(var i = 0; i < velocityArrayLength; i++)
+            this.velocity = new double[velocityArrayLength];
+            for (var i = 0; i < velocityArrayLength; i++)
             {
                 this.velocity[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
             }
-            
+
             var effortArrayLength = DeserializeLength(data, offset);
             offset += 4;
-            this.effort= new double[effortArrayLength];
-            for(var i = 0; i < effortArrayLength; i++)
+            this.effort = new double[effortArrayLength];
+            for (var i = 0; i < effortArrayLength; i++)
             {
                 this.effort[i] = BitConverter.ToDouble(data, offset);
                 offset += 8;
