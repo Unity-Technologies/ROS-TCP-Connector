@@ -25,12 +25,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public GoalStatusMsg status { get; set; }
         public TResult result { get; set; }
 
-        public ActionResult() {
+        public ActionResult()
+        {
             header = new HeaderMsg();
             status = new GoalStatusMsg();
         }
 
-        public ActionResult(HeaderMsg header, GoalStatusMsg status) {
+        public ActionResult(HeaderMsg header, GoalStatusMsg status)
+        {
             this.header = header;
             this.status = status;
         }
