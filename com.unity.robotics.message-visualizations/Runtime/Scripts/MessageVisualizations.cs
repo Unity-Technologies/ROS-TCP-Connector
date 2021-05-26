@@ -819,9 +819,9 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        public static void GUI(this MJoyFeedback message)
+        public static void GUI(this MJoyFeedback message, string type)
         {
-            GUILayout.Label($"Type: {(JoyFeedbackTypes)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
+            GUILayout.Label($"Type: {type}\nID: {message.id}\nIntensity: {message.intensity}");
         }
 
         public static void GUI(this MMapMetaData message)
