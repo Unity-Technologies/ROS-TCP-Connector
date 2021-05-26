@@ -7,53 +7,35 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<MessageDeserializer, Message>> s_Registry = new Dictionary<string, Func<MessageDeserializer, Message>>();
+        static Dictionary<string, Func<MessageDeserializer, Message>> s_ConstructorsByName = new Dictionary<string, Func<MessageDeserializer, Message>>();
         class RegistryEntry<T>
         {
+            public static string s_RosMessageName;
             public static Func<MessageDeserializer, T> s_Constructor;
         }
 
-        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> constructor) where T:Message
+        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> constructor) where T : Message
         {
-            s_Registry[rosMessageName] = constructor;
+            RegistryEntry<T>.s_RosMessageName = rosMessageName;
             RegistryEntry<T>.s_Constructor = constructor;
+            s_ConstructorsByName[rosMessageName] = constructor;
         }
 
         public static Func<MessageDeserializer, Message> GetConstructor(string rosMessageName)
         {
             Func<MessageDeserializer, Message> result;
-            s_Registry.TryGetValue(rosMessageName, out result);
+            s_ConstructorsByName.TryGetValue(rosMessageName, out result);
             return result;
         }
 
-        public static Func<MessageDeserializer, Message> GetConstructor<T>() where T:Message
+        public static Func<MessageDeserializer, Message> GetConstructor<T>() where T : Message
         {
             return RegistryEntry<T>.s_Constructor;
         }
 
-        public static T Deserialize<T>(MessageDeserializer deserializer) where T : Message
+        public static string GetRosMessageName<T>() where T : Message
         {
-            try
-            {
-                return RegistryEntry<T>.s_Constructor(deserializer);
-            }
-            catch(NullReferenceException)
-            {
-                Debug.LogError($"Message class <{typeof(T)}> exists but was not registered, it probably needs to be rebuilt.");
-                return null;
-            }
-        }
-
-#if UNITY_EDITOR
-        [UnityEditor.InitializeOnLoadMethod]
-#else
-        [UnityEngine.RuntimeInitializeOnLoadMethod]
-#endif
-        public static void RegisterPregeneratedMessages()
-        {
-            MessageRegistry.Register(RosMessageTypes.BuiltinInterfaces.TimeMsg.k_RosMessageName, RosMessageTypes.BuiltinInterfaces.TimeMsg.Deserialize);
-            //MessageRegistry.Register(RosMessageTypes.BuiltinInterfaces.DurationMsg.k_RosMessageName, RosMessageTypes.BuiltinInterfaces.DurationMsg.Deserialize);
-            MessageRegistry.Register(RosMessageTypes.Std.HeaderMsg.k_RosMessageName, RosMessageTypes.Std.HeaderMsg.Deserialize);
+            return RegistryEntry<T>.s_RosMessageName;
         }
     }
 }

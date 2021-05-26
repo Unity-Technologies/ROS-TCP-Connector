@@ -187,17 +187,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
         }
 
-        public void Write<T>(T[] values, int dataSize)
-        {
-            byte[] buffer = new byte[values.Length * dataSize];
-            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
-            m_ListOfSerializations.Add(buffer);
-            m_AlignmentOffset += buffer.Length;
-        }
-
         public void Write(bool[] values)
         {
-            m_ListOfSerializations.Add((byte[])(Array)values);
+            byte[] buffer = new byte[values.Length];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
             m_AlignmentOffset += values.Length;
         }
 
@@ -209,89 +203,82 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(sbyte[] values)
         {
-            m_ListOfSerializations.Add((byte[])(Array)values);
-            m_AlignmentOffset += values.Length;
+            byte[] buffer = new byte[values.Length];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(short[] values)
         {
             Align(sizeof(short));
-            foreach (short entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(short) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(short)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(ushort[] values)
         {
             Align(sizeof(ushort));
-            foreach (ushort entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(ushort) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(ushort)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(int[] values)
         {
             Align(sizeof(int));
-            foreach (uint entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(int) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(int)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(uint[] values)
         {
             Align(sizeof(uint));
-            foreach (uint entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-                m_AlignmentOffset += sizeof(uint);
-            }
-            m_AlignmentOffset += sizeof(uint) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(uint)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(float[] values)
         {
             Align(sizeof(float));
-            foreach (float entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(float) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(float)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(double[] values)
         {
             Align(sizeof(double));
-            foreach (double entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(double) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(double)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(long[] values)
         {
             Align(sizeof(long));
-            foreach (long entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(long) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(long)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(ulong[] values)
         {
             Align(sizeof(ulong));
-            foreach (ulong entry in values)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(entry));
-            }
-            m_AlignmentOffset += sizeof(ulong) * values.Length;
+            byte[] buffer = new byte[values.Length * sizeof(ulong)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
         }
 
         public void Write(string inputString)
