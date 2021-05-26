@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Unity.Robotics.ROSTCPConnector.ROSGeometry 
+namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 {
     public interface ICoordinateSpace
     {
