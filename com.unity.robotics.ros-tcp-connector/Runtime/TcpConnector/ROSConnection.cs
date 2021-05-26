@@ -164,6 +164,20 @@ namespace Unity.Robotics.ROSTCPConnector
             SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
         }
 
+        public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
+        {
+            var t = new TaskCompletionSource<RESPONSE>();
+
+            SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest, s => t.TrySetResult(s));
+
+            return await t.Task;
+        }
+
+        public void GetTopicList(Action<string[]> callback)
+        {
+            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
+        }
+
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
@@ -217,6 +231,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
+            if(!IPFormatIsCorrect(rosIPAddress))
+                Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(k_Topic_Error, RosUnityErrorCallback);
             Subscribe<MRosUnitySrvMessage>(k_Topic_Services, ProcessServiceMessage);
