@@ -141,3 +141,19 @@ namespace RosMessageTypes.Trajectory
     public class MMultiDOFJointTrajectory : MultiDOFJointTrajectoryMsg { }
     public class MMultiDOFJointTrajectoryPoint : MultiDOFJointTrajectoryPointMsg { }
 }
+
+namespace RosMessageTypes.ObjectRecognition
+{
+    public class MObjectInformation : ObjectInformationMsg { }
+    public class MObjectType : ObjectTypeMsg { }
+    public class MRecognizedObjectArray : RecognizedObjectArrayMsg { }
+    public class MRecognizedObject : RecognizedObjectMsg { }
+    public class MTableArray : TableArrayMsg { }
+    public class MTable: TableMsg { }
+}
+
+namespace RosMessageTypes.Octomap
+{
+    public class MOctomap : OctomapMsg { }
+    public class MOctomapWithPose : OctomapWithPoseMsg { }
+}

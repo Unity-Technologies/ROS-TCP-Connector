@@ -20,6 +20,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public virtual int Deserialize(byte[] data, int offset) => throw new NotImplementedException();
 
         [Obsolete("Message needs to be regenerated")]
+        public byte[] Serialize() => throw new NotImplementedException();
+
+        [Obsolete("Message needs to be regenerated")]
         public byte[] SerializeString(string s) => throw new NotImplementedException();
 
         [Obsolete("Message needs to be regenerated")]
