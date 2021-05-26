@@ -76,7 +76,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 string className = inFileName + types[i] + MsgAutoGenUtilities.ActionClassSuffix;
 
                 // Parse and generate goal, result, feedback messages
-                MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "action", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, MsgAutoGenUtilities.numericTypeDeserializationFunctions, MsgAutoGenUtilities.numericTypeByteSize, className);
+                MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "action", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, className);
                 parser.Parse();
                 warnings.AddRange(parser.GetWarnings());
 

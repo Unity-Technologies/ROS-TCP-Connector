@@ -84,39 +84,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {"Duration", "new Duration()"}
         };
 
-        public static readonly  Dictionary<string, string> numericTypeDeserializationFunctions = new Dictionary<string, string>
-        {
-            {"sbyte", "(sbyte)data[offset]"},
-            {"byte", "data[offset]"},
-            {"bool", "BitConverter.ToBoolean(data, offset)"},
-            {"char", "BitConverter.ToChar(data, offset)"},
-            {"double", "BitConverter.ToDouble(data, offset)"},
-            {"short", "BitConverter.ToInt16(data, offset)"},
-            {"int", "BitConverter.ToInt32(data, offset)"},
-            {"long", "BitConverter.ToInt64(data, offset)"},
-            {"float", "BitConverter.ToSingle(data, offset)"},
-            {"ushort", "BitConverter.ToUInt16(data, offset)"},
-            {"uint", "BitConverter.ToUInt32(data, offset)"},
-            {"ulong", "BitConverter.ToUInt64(data, offset)"}
-        };
-
-        public static readonly  Dictionary<string, int> numericTypeByteSize = new Dictionary<string, int>
-        {
-            {"sbyte", 1},
-            {"byte", 1},
-            {"bool", 1},
-            {"char", 1},
-            {"double", 8},
-            {"short", 2},
-            {"int", 4},
-            {"long", 8},
-            {"float", 4},
-            {"ushort", 2},
-            {"uint", 4},
-            {"ulong", 8}
-        };
-
-
         public static readonly HashSet<string> k_CSharpKeywords = new HashSet<string>
         {
             "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",

@@ -109,7 +109,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     throw new MessageParserException("Unexpected number of sections. Simple message should have 1 section.");
                 }
 
-                MessageParser parser = new MessageParser(listOfTokens[0], outPath, rosPackageName, "msg", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, MsgAutoGenUtilities.numericTypeDeserializationFunctions, MsgAutoGenUtilities.numericTypeByteSize);
+                MessageParser parser = new MessageParser(listOfTokens[0], outPath, rosPackageName, "msg", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues);
                 parser.Parse();
                 return parser.GetWarnings();
             }

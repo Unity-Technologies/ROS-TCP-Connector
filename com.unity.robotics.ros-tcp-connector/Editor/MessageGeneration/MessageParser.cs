@@ -39,8 +39,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         private readonly Dictionary<string, string> builtInTypeMapping;
         private readonly Dictionary<string, string> builtInTypesDefaultInitialValues;
-        private readonly Dictionary<string, string> numericTypeDeserializationFunctions;
-        private readonly Dictionary<string, int> numericTypeByteSize;
 
         private uint lineNum = 1;
 
@@ -53,7 +51,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         private List<string> warnings = new List<string>();
 
-        public MessageParser(List<MessageToken> tokens, string outPath, string rosPackageName, string type, Dictionary<string, string> builtInTypeMapping, Dictionary<string, string> builtInTypesDefaultInitialValues, Dictionary<string, string> numericTypeDeserializationFunctions, Dictionary<string, int> numericTypeByteSize, string className = "", string rosMsgName = "")
+        public MessageParser(List<MessageToken> tokens, string outPath, string rosPackageName, string type, Dictionary<string, string> builtInTypeMapping, Dictionary<string, string> builtInTypesDefaultInitialValues, string className = "", string rosMsgName = "")
         {
             this.tokens = tokens;
 
@@ -91,8 +89,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             this.builtInTypeMapping = builtInTypeMapping;
             this.builtInTypesDefaultInitialValues = builtInTypesDefaultInitialValues;
-            this.numericTypeDeserializationFunctions = numericTypeDeserializationFunctions;
-            this.numericTypeByteSize = numericTypeByteSize;
         }
 
         public void Parse()

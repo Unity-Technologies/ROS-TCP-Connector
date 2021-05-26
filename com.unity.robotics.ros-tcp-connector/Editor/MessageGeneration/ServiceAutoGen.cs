@@ -72,7 +72,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Service is made up of request and response
                 string className = inFileName + MsgAutoGenUtilities.ServiceClassSuffix + types[i];
 
-                MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "srv", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, MsgAutoGenUtilities.numericTypeDeserializationFunctions, MsgAutoGenUtilities.numericTypeByteSize, className);
+                MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "srv", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, className);
                 parser.Parse();
                 warnings.AddRange(parser.GetWarnings());
             }
