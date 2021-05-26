@@ -35,9 +35,6 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public static explicit operator Quaternion<C>(Quaternion quat) => new Quaternion<C>(quat);
         public static explicit operator Quaternion(Quaternion<C> rquat) => rquat.toUnity;
 
-        [Obsolete("MQuaternion is now named QuaternionMsg")]
-        public static implicit operator MQuaternion(Quaternion<C> quat) => throw new NotImplementedException();
-
         public Quaternion<C2> To<C2>() where C2 : ICoordinateSpace, new()
         {
             return new Quaternion<C2>(this.toUnity);

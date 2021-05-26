@@ -15,7 +15,7 @@ namespace RosMessageTypes.Std
         //  This is generally used to communicate timestamped data
         //  in a particular coordinate frame.
 
-#if ROS1
+#if !ROS2
         //  sequence ID: consecutively increasing ID 
         public uint seq;
 #endif
@@ -25,7 +25,7 @@ namespace RosMessageTypes.Std
         //  Transform frame with which this data is associated.
         public string frame_id;
 
-#if ROS1
+#if !ROS2
         public HeaderMsg()
         {
             this.seq = 0;
@@ -71,7 +71,7 @@ namespace RosMessageTypes.Std
 #endif
         public override void SerializeTo(MessageSerializer serializer)
         {
-#if ROS1
+#if !ROS2
             serializer.Write(seq);
 #endif
             serializer.Write(stamp);
@@ -81,7 +81,7 @@ namespace RosMessageTypes.Std
         public override string ToString()
         {
             return "MHeader: " +
-#if ROS1
+#if !ROS2
             "\nseq: " + seq.ToString() +
 #endif          
             "\nstamp: " + stamp.ToString() +

@@ -8,7 +8,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 {
     public class DurationMsg : Message
     {
-#if ROS1
+#if !ROS2
         public const string k_RosMessageName = "builtin_interfaces/Duration";
 
 

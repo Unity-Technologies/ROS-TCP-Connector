@@ -8,7 +8,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 {
     public class TimeMsg : Message
     {
-#if ROS1
+#if !ROS2
         public const string k_RosMessageName = "std_msgs/Time";
 
 

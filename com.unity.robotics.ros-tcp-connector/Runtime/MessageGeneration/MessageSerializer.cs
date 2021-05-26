@@ -56,7 +56,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void SerializeMessage(Message message)
         {
-#if !ROS1
+#if ROS2
             // insert the ros2 header
             Write(k_Ros2Header);
 #endif
@@ -87,7 +87,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         // https://github.com/eProsima/Fast-CDR/blob/53a0b8cae0b9083db69821be0edb97c944755591/include/fastcdr/Cdr.h#L239
         void Align(int dataSize)
         {
-#if !ROS1
+#if ROS2
             int padding = (dataSize - (m_AlignmentOffset % dataSize)) & (dataSize - 1);
             if (padding > 0)
                 m_ListOfSerializations.Add(k_PaddingBytes[padding]);
@@ -195,6 +195,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(bool[] values)
+        {
+            m_ListOfSerializations.Add((byte[])(Array)values);
+            m_AlignmentOffset += values.Length;
+        }
+
         public void Write(byte[] values)
         {
             m_ListOfSerializations.Add(values);
@@ -292,7 +298,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             byte[] encodedString = Encoding.UTF8.GetBytes(inputString);
 
-#if ROS1
+#if !ROS2
             m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length));
             m_ListOfSerializations.Add(encodedString);
 

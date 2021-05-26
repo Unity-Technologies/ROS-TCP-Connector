@@ -27,12 +27,12 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             ROS2
         }
 
-#if ROS1
-        RosProtocol m_SelectedProtocol = RosProtocol.ROS1;
-        const RosProtocol k_AlternateProtocol = RosProtocol.ROS2;
-#else
+#if ROS2
         RosProtocol m_SelectedProtocol = RosProtocol.ROS2;
         const RosProtocol k_AlternateProtocol = RosProtocol.ROS1;
+#else
+        RosProtocol m_SelectedProtocol = RosProtocol.ROS1;
+        const RosProtocol k_AlternateProtocol = RosProtocol.ROS2;
 #endif
 
         protected virtual void OnGUI()
@@ -73,9 +73,9 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 {
                     List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
                     if(m_SelectedProtocol == RosProtocol.ROS1)
-                        allDefines.Add("ROS1");
+                        allDefines.Remove("ROS2");
                     else
-                        allDefines.Remove("ROS1");
+                        allDefines.Add("ROS2");
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, string.Join(";", allDefines));
                 }
             }

@@ -145,10 +145,10 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Label("\u25B6", m_LabelStyle, GUILayout.Width(15));
             GUI.color = baseColor;
 
-#if ROS1
-            string protocolName = "ROS";
-#else
+#if ROS2
             string protocolName = "ROS2";
+#else
+            string protocolName = "ROS";
 #endif
 
             GUILayout.Label($"{protocolName} IP: ", m_LabelStyle, GUILayout.Width(100));
