@@ -151,16 +151,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 writer.Write(GenerateToString());
 
                 writer.Write(
-                    "\n"+
-                    TWO_TABS+"#if UNITY_EDITOR\n" +
-                    TWO_TABS+"[UnityEditor.InitializeOnLoadMethod]\n" +
-                    TWO_TABS+"#else\n" +
-                    TWO_TABS+"[UnityEngine.RuntimeInitializeOnLoadMethod]\n" +
-                    TWO_TABS+"#endif\n" +
-                    TWO_TABS+"public static void Register()\n" +
-                    TWO_TABS+"{\n" +
-                    THREE_TABS+"MessageRegistry.Register(k_RosMessageName, Deserialize);\n" +
-                    TWO_TABS+"}\n"
+                    "\n" +
+                    TWO_TABS + "#if UNITY_EDITOR\n" +
+                    TWO_TABS + "[UnityEditor.InitializeOnLoadMethod]\n" +
+                    TWO_TABS + "#else\n" +
+                    TWO_TABS + "[UnityEngine.RuntimeInitializeOnLoadMethod]\n" +
+                    TWO_TABS + "#endif\n" +
+                    TWO_TABS + "public static void Register()\n" +
+                    TWO_TABS + "{\n" +
+                    THREE_TABS + "MessageRegistry.Register(k_RosMessageName, Deserialize);\n" +
+                    TWO_TABS + "}\n"
                 );
 
                 // Close class

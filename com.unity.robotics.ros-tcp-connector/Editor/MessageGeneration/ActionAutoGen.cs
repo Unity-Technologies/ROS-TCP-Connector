@@ -249,7 +249,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
 
             constructor += TWO_TABS + $"public static {className} Deserialize(MessageDeserializer deserializer) => new {className}(deserializer);\n\n";
-            constructor += TWO_TABS + $"{className}(MessageDeserializer deserializer){(callBase?" : base(deserializer)":"")}\n";
+            constructor += TWO_TABS + $"{className}(MessageDeserializer deserializer){(callBase ? " : base(deserializer)" : "")}\n";
             constructor += TWO_TABS + "{\n";
             constructor += assignments;
             constructor += TWO_TABS + "}\n";
@@ -268,12 +268,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Inherited params
             if (msgType.Equals("Goal"))
             {
-                inheritedParams = new[] {"header", "goal_id"};
+                inheritedParams = new[] { "header", "goal_id" };
 
             }
             else if (msgType.Equals("Result") || msgType.Equals("Feedback"))
             {
-                inheritedParams = new[] {"header", "status"};
+                inheritedParams = new[] { "header", "status" };
             }
 
             foreach (string paramName in inheritedParams)
@@ -299,7 +299,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string outPath = Path.Combine(this.outPath, wrapperName + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n"+
+                "using System.Collections.Generic;\n" +
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "using RosMessageTypes.Std;\n" +
                 "using RosMessageTypes.Actionlib;\n\n";
@@ -340,7 +340,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 writer.Write(GenerateParameterizedConstructor(wrapperName, type));
 
                 writer.Write(GenerateDeserializerConstructor(wrapperName));
-                
+
                 writer.Write(GenerateSerializationStatements(type));
 
                 // Close class
@@ -359,7 +359,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string outPath = Path.Combine(this.outPath, className + ".cs");
 
             string imports =
-                "using System.Collections.Generic;\n"+
+                "using System.Collections.Generic;\n" +
                 "using Unity.Robotics.ROSTCPConnector.MessageGeneration;\n" +
                 "\n\n";
 

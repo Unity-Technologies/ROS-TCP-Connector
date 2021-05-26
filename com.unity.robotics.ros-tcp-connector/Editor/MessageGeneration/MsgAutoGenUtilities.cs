@@ -111,7 +111,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return Char.ToUpper(s[0]) + s.Substring(1);
         }
 
-        public static string LowerFirstLetter(string s) {
+        public static string LowerFirstLetter(string s)
+        {
             return Char.ToLower(s[0]) + s.Substring(1);
         }
 

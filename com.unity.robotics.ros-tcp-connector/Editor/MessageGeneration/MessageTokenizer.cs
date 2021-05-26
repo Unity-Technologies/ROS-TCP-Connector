@@ -117,7 +117,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                         reader.Read();
                         listsOfTokens[listIndex].Add(NextConstantDeclaration());
                     }
-                    else if((c >= '0' && c <= '9') || c == '-' || c == '"' || c == '[')
+                    else if ((c >= '0' && c <= '9') || c == '-' || c == '"' || c == '[')
                     {
                         // "type declaration literal" without an = is declaring a field with a default value
                         listsOfTokens[listIndex].Add(NextConstantDeclaration(MessageTokenType.DefaultValueDeclaration));
