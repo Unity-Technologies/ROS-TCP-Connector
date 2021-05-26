@@ -231,7 +231,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private void Start()
         {
-            if(!IPFormatIsCorrect(rosIPAddress))
+            if (!IPFormatIsCorrect(rosIPAddress))
                 Debug.LogError("ROS IP address is not correct");
             InitializeHUD();
             Subscribe<MRosUnityError>(k_Topic_Error, RosUnityErrorCallback);
