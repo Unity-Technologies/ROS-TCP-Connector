@@ -5,6 +5,13 @@ using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
+namespace RosMessageTypes.Actionlib
+{
+    public class MGoalID : GoalIDMsg { }
+    public class MGoalStatusArray : GoalStatusArrayMsg { }
+    public class MGoalStatus : GoalStatusMsg { }
+}
+
 namespace RosMessageTypes.Diagnostic
 {
     public class MDiagnosticArray : DiagnosticArrayMsg { }
