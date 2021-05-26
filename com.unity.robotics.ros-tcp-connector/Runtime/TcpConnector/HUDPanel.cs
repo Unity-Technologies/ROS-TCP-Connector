@@ -144,7 +144,14 @@ namespace Unity.Robotics.ROSTCPConnector
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageSentRealtime);
             GUILayout.Label("\u25B6", m_LabelStyle, GUILayout.Width(15));
             GUI.color = baseColor;
-            GUILayout.Label("ROS IP: ", m_LabelStyle, GUILayout.Width(100));
+
+#if ROS1
+            string protocolName = "ROS";
+#else
+            string protocolName = "ROS2";
+#endif
+
+            GUILayout.Label($"{protocolName} IP: ", m_LabelStyle, GUILayout.Width(100));
 
             if (!ROSConnection.instance.HasConnectionThread)
             {

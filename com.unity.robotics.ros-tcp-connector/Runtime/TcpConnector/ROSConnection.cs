@@ -1,4 +1,3 @@
-using RosMessageTypes.RosTcpEndpoint;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +12,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
+using RosMessageTypes.UnityInterfaces;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -82,7 +82,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         struct SubscriberCallback
         {
-            public Func<Message> messageConstructor;
+            public Func<MessageDeserializer, Message> messageConstructor;
             public List<Action<Message>> callbacks;
         }
 
@@ -90,11 +90,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
         struct UnityServiceImplementation
         {
-            public Func<Message> messageConstructor;
+            public Func<MessageDeserializer, Message> messageConstructor;
             public Func<Message, Message> callback;
         }
 
         Dictionary<string, UnityServiceImplementation> m_UnityServices = new Dictionary<string, UnityServiceImplementation>();
+        MessageSerializer m_MessageSerializer = new MessageSerializer();
+        MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message, new()
         {
@@ -103,7 +105,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = () => new T(),
+                    messageConstructor = MessageRegistry.GetConstructor<T>(),
                     callbacks = new List<Action<Message>> { }
                 };
                 m_Subscribers.Add(topic, subCallbacks);
@@ -115,12 +117,11 @@ namespace Unity.Robotics.ROSTCPConnector
             });
         }
 
-        public void ImplementService<T>(string topic, Func<T, Message> callback)
-            where T : Message, new()
+        public void ImplementService<T>(string topic, Func<T, Message> callback) where T : Message
         {
             m_UnityServices[topic] = new UnityServiceImplementation
             {
-                messageConstructor = () => new T(),
+                messageConstructor = MessageRegistry.GetConstructor<T>(),
                 callback = (Message msg) => callback((T)msg)
             };
         }
@@ -140,7 +141,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
         {
-            byte[] requestBytes = serviceRequest.Serialize();
+            m_MessageSerializer.Clear();
+            m_MessageSerializer.SerializeMessage(serviceRequest);
+            byte[] requestBytes = m_MessageSerializer.GetBytes();
             TaskPauser pauser = new TaskPauser();
 
             int srvID;
@@ -150,18 +153,19 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ServicesWaiting.Add(srvID, pauser);
             }
 
-            MRosUnitySrvMessage srvMessage = new MRosUnitySrvMessage(srvID, true, rosServiceName, requestBytes);
+            RosUnitySrvMessageMsg srvMessage = new RosUnitySrvMessageMsg(srvID, true, rosServiceName, requestBytes);
             Send(k_Topic_Services, srvMessage);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
-            RESPONSE result = new RESPONSE();
-            result.Deserialize(rawResponse, 0);
+
+            m_MessageDeserializer.InitWithBuffer(rawResponse);
+            RESPONSE result = MessageRegistry.Deserialize<RESPONSE>(m_MessageDeserializer);
             return result;
         }
 
         public void GetTopicList(Action<string[]> callback)
         {
-            SendServiceMessage<MRosUnityTopicListResponse>("__topic_list", new MRosUnityTopicListRequest(), response => callback(response.topics));
+            SendServiceMessage<RosUnityTopicListResponse>("__topic_list", new RosUnityTopicListRequest(), response => callback(response.topics));
         }
 
         public void RegisterSubscriber(string topic, string rosMessageName)
@@ -218,8 +222,8 @@ namespace Unity.Robotics.ROSTCPConnector
         private void Start()
         {
             InitializeHUD();
-            Subscribe<MRosUnityError>(k_Topic_Error, RosUnityErrorCallback);
-            Subscribe<MRosUnitySrvMessage>(k_Topic_Services, ProcessServiceMessage);
+            Subscribe<RosUnityErrorMsg>(k_Topic_Error, RosUnityErrorCallback);
+            Subscribe<RosUnitySrvMessageMsg>(k_Topic_Services, ProcessIncomingServiceMessage);
 
             if (ConnectOnStart)
             {
@@ -272,7 +276,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_HudPanel.isEnabled = m_ShowHUD;
         }
 
-        void RosUnityErrorCallback(MRosUnityError error)
+        void RosUnityErrorCallback(RosUnityErrorMsg error)
         {
             Debug.LogError("ROS-Unity error: " + error.message);
         }
@@ -290,8 +294,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 SubscriberCallback callback;
                 if (m_Subscribers.TryGetValue(topic, out callback))
                 {
-                    Message message = callback.messageConstructor();
-                    message.Deserialize(contents, 0);
+                    m_MessageDeserializer.InitWithBuffer(contents);
+                    Message message = callback.messageConstructor(m_MessageDeserializer);
 
                     if (m_HudPanel != null)
                         m_HudPanel.SetLastMessageReceived(topic, message);
@@ -301,22 +305,25 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void ProcessServiceMessage(MRosUnitySrvMessage message)
+        void ProcessIncomingServiceMessage(RosUnitySrvMessageMsg message)
         {
             if (message.is_request)
             {
+                // it's a request for a Unity service
                 UnityServiceImplementation service;
                 if (m_UnityServices.TryGetValue(message.topic, out service))
                 {
-                    Message requestMessage = service.messageConstructor();
-                    requestMessage.Deserialize(message.payload, 0);
+                    m_MessageDeserializer.InitWithBuffer(message.payload);
+                    Message requestMessage = service.messageConstructor(m_MessageDeserializer);
                     Message responseMessage = service.callback(requestMessage);
-                    byte[] responseBytes = responseMessage.Serialize();
-                    Send(k_Topic_Services, new MRosUnitySrvMessage(message.srv_id, false, message.topic, responseBytes));
+                    m_MessageSerializer.Clear();
+                    m_MessageSerializer.SerializeMessage(responseMessage);
+                    Send(k_Topic_Services, new RosUnitySrvMessageMsg(message.srv_id, false, message.topic, m_MessageSerializer.GetBytes()));
                 }
             }
             else
             {
+                // it's a response from a Ros service
                 TaskPauser resumer;
                 lock (m_ServiceRequestLock)
                 {
@@ -351,6 +358,7 @@ namespace Unity.Robotics.ROSTCPConnector
             //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
+            MessageSerializer messageSerializer = new MessageSerializer();
 
             while (!token.IsCancellationRequested)
             {
@@ -390,7 +398,15 @@ namespace Unity.Robotics.ROSTCPConnector
                             token.ThrowIfCancellationRequested();
                         }
 
-                        WriteDataStaggered(networkStream, data.Item1, data.Item2);
+                        messageSerializer.Clear();
+                        // messages on our network channel contain:
+                        // 4 byte topic length
+                        // that many bytes of the topic name
+                        // 4-byte message length
+                        // that many bytes of the message
+                        messageSerializer.Write(data.Item1); // topic length + contents
+                        messageSerializer.SerializeMessageWithLength(data.Item2); // message length + contents
+                        messageSerializer.SendTo(networkStream);
                     }
                 }
                 catch (OperationCanceledException)
@@ -491,62 +507,6 @@ namespace Unity.Robotics.ROSTCPConnector
             Disconnect();
         }
 
-        /// <summary>
-        ///    Given some input values, fill a byte array in the desired format to use with
-        ///     https://github.com/Unity-Technologies/Robotics-Tutorials/tree/master/catkin_ws/src/tcp_endpoint
-        ///
-        /// 	All messages are expected to come in the format of:
-        /// 		first four bytes: int32 of the length of following string value
-        /// 		next N bytes determined from previous four bytes: ROS topic name as a string
-        /// 		next four bytes: int32 of the length of the remaining bytes for the ROS Message
-        /// 		last N bytes determined from previous four bytes: ROS Message variables
-        /// </summary>
-        /// <param name="offset"></param> Index of where to start writing output data
-        /// <param name="serviceName"></param> The name of the ROS service or topic that the message data is meant for
-        /// <param name="fullMessageSizeBytes"></param> The full size of the already serialized message in bytes
-        /// <param name="messageToSend"></param> The serialized ROS message to send to ROS network
-        /// <returns></returns>
-        public int GetPrefixBytes(int offset, byte[] serviceName, byte[] fullMessageSizeBytes, byte[] messagBuffer)
-        {
-            // Service Name bytes
-            System.Buffer.BlockCopy(serviceName, 0, messagBuffer, 0, serviceName.Length);
-            offset += serviceName.Length;
-
-            // Full Message size bytes
-            System.Buffer.BlockCopy(fullMessageSizeBytes, 0, messagBuffer, offset, fullMessageSizeBytes.Length);
-            offset += fullMessageSizeBytes.Length;
-
-            return offset;
-        }
-
-        /// <summary>
-        ///    Serialize a ROS message in the expected format of
-        ///     https://github.com/Unity-Technologies/Robotics-Tutorials/tree/master/catkin_ws/src/tcp_endpoint
-        ///
-        /// 	All messages are expected to come in the format of:
-        /// 		first four bytes: int32 of the length of following string value
-        /// 		next N bytes determined from previous four bytes: ROS topic name as a string
-        /// 		next four bytes: int32 of the length of the remaining bytes for the ROS Message
-        /// 		last N bytes determined from previous four bytes: ROS Message variables
-        /// </summary>
-        /// <param name="topicServiceName"></param> The ROS topic or service name that is receiving the messsage
-        /// <param name="message"></param> The ROS message to send to a ROS publisher or service
-        /// <returns> byte array with serialized ROS message in appropriate format</returns>
-        public byte[] GetMessageBytes(string topicServiceName, Message message)
-        {
-            byte[] topicName = message.SerializeString(topicServiceName);
-            byte[] bytesMsg = message.Serialize();
-            byte[] fullMessageSizeBytes = BitConverter.GetBytes(bytesMsg.Length);
-
-            byte[] messageBuffer = new byte[topicName.Length + fullMessageSizeBytes.Length + bytesMsg.Length];
-            // Copy topic name and message size in bytes to message buffer
-            int offset = GetPrefixBytes(0, topicName, fullMessageSizeBytes, messageBuffer);
-            // ROS message bytes
-            System.Buffer.BlockCopy(bytesMsg, 0, messageBuffer, offset, bytesMsg.Length);
-
-            return messageBuffer;
-        }
-
         struct SysCommand_TopicAndType
         {
             public string topic;
@@ -555,7 +515,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param)
         {
-            Send(k_Topic_SysCommand, new MRosUnitySysCommand(command, JsonUtility.ToJson(param)));
+            Send(k_Topic_SysCommand, new RosUnitySysCommandMsg(command, JsonUtility.ToJson(param)));
         }
 
         public void Send(string rosTopicName, Message message)
@@ -564,34 +524,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (m_HudPanel != null)
                 m_HudPanel.SetLastMessageSent(rosTopicName, message);
-        }
-
-        /// <summary>
-        ///    Serialize a ROS message in the expected format of
-        ///     https://github.com/Unity-Technologies/Robotics-Tutorials/tree/master/catkin_ws/src/tcp_endpoint
-        ///
-        /// 	All messages are expected to come in the format of:
-        /// 		first four bytes: int32 of the length of following string value
-        /// 		next N bytes determined from previous four bytes: ROS topic name as a string
-        /// 		next four bytes: int32 of the length of the remaining bytes for the ROS Message
-        /// 		last N bytes determined from previous four bytes: ROS Message variables
-        /// </summary>
-        /// <param name="networkStream"></param> The network stream that is transmitting the messsage
-        /// <param name="rosTopicName"></param> The ROS topic or service name that is receiving the messsage
-        /// <param name="message"></param> The ROS message to send to a ROS publisher or service
-        static void WriteDataStaggered(NetworkStream networkStream, string rosTopicName, Message message)
-        {
-            byte[] topicName = message.SerializeString(rosTopicName);
-            List<byte[]> segments = message.SerializationStatements();
-            int messageLength = segments.Select(s => s.Length).Sum();
-            byte[] fullMessageSizeBytes = BitConverter.GetBytes(messageLength);
-
-            networkStream.Write(topicName, 0, topicName.Length);
-            networkStream.Write(fullMessageSizeBytes, 0, fullMessageSizeBytes.Length);
-            foreach (byte[] segmentData in segments)
-            {
-                networkStream.Write(segmentData, 0, segmentData.Length);
-            }
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)

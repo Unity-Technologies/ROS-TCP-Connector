@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
+namespace Unity.Robotics.ROSTCPConnector.ROSGeometry 
 {
     public interface ICoordinateSpace
     {
@@ -75,70 +75,52 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Quaternion<C>(self);
         }
 
-        public static Vector3<C> As<C>(this MPoint self) where C : ICoordinateSpace, new()
+        public static Vector3<C> As<C>(this PointMsg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>((float)self.x, (float)self.y, (float)self.z);
         }
 
-        public static Vector3 From<C>(this MPoint self) where C : ICoordinateSpace, new()
+        public static Vector3 From<C>(this PointMsg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
         }
 
-        public static Vector3<C> As<C>(this MPoint32 self) where C : ICoordinateSpace, new()
+        public static Vector3<C> As<C>(this Point32Msg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>(self.x, self.y, self.z);
         }
 
-        public static Vector3 From<C>(this MPoint32 self) where C : ICoordinateSpace, new()
+        public static Vector3 From<C>(this Point32Msg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>(self.x, self.y, self.z).toUnity;
         }
 
-        public static Vector3<C> As<C>(this MVector3 self) where C : ICoordinateSpace, new()
+        public static Vector3<C> As<C>(this Vector3Msg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>((float)self.x, (float)self.y, (float)self.z);
         }
 
-        public static Vector3 From<C>(this MVector3 self) where C : ICoordinateSpace, new()
+        public static Vector3 From<C>(this Vector3Msg self) where C : ICoordinateSpace, new()
         {
             return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
         }
 
-        public static Quaternion<C> As<C>(this MQuaternion self) where C : ICoordinateSpace, new()
+        public static Quaternion<C> As<C>(this QuaternionMsg self) where C : ICoordinateSpace, new()
         {
             return new Quaternion<C>((float)self.x, (float)self.y, (float)self.z, (float)self.w);
         }
 
-        public static Quaternion From<C>(this MQuaternion self) where C : ICoordinateSpace, new()
+        public static Quaternion From<C>(this QuaternionMsg self) where C : ICoordinateSpace, new()
         {
             return new Quaternion<C>((float)self.x, (float)self.y, (float)self.z, (float)self.w).toUnity;
         }
 
-        public static MTransform To<C>(this Transform transform) where C : ICoordinateSpace, new()
+        public static TransformMsg To<C>(this Transform transform) where C : ICoordinateSpace, new()
         {
-            return new MTransform(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
+            return new TransformMsg(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
         }
 
-        public static Vector3 From(this MPoint self, CoordinateSpaceSelection selection)
-        {
-            switch (selection)
-            {
-                case CoordinateSpaceSelection.RUF:
-                    return self.From<RUF>();
-                case CoordinateSpaceSelection.FLU:
-                    return self.From<FLU>();
-                case CoordinateSpaceSelection.ENU:
-                    return self.From<ENU>();
-                case CoordinateSpaceSelection.NED:
-                    return self.From<NED>();
-                default:
-                    Debug.LogError("Invalid coordinate space " + selection);
-                    return self.From<RUF>();
-            }
-        }
-
-        public static Vector3 From(this MPoint32 self, CoordinateSpaceSelection selection)
+        public static Vector3 From(this PointMsg self, CoordinateSpaceSelection selection)
         {
             switch (selection)
             {
@@ -156,7 +138,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Vector3 From(this MVector3 self, CoordinateSpaceSelection selection)
+        public static Vector3 From(this Point32Msg self, CoordinateSpaceSelection selection)
         {
             switch (selection)
             {
@@ -174,7 +156,25 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion From(this MQuaternion self, CoordinateSpaceSelection selection)
+        public static Vector3 From(this Vector3Msg self, CoordinateSpaceSelection selection)
+        {
+            switch (selection)
+            {
+                case CoordinateSpaceSelection.RUF:
+                    return self.From<RUF>();
+                case CoordinateSpaceSelection.FLU:
+                    return self.From<FLU>();
+                case CoordinateSpaceSelection.ENU:
+                    return self.From<ENU>();
+                case CoordinateSpaceSelection.NED:
+                    return self.From<NED>();
+                default:
+                    Debug.LogError("Invalid coordinate space " + selection);
+                    return self.From<RUF>();
+            }
+        }
+
+        public static Quaternion From(this QuaternionMsg self, CoordinateSpaceSelection selection)
         {
             switch (selection)
             {
