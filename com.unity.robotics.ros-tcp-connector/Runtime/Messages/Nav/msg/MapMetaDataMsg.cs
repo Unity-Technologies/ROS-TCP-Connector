@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Nav
 {
@@ -13,9 +12,9 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/MapMetaData";
 
-        //  This hold basic information about the characterists of the OccupancyGrid
+        //  This hold basic information about the characteristics of the OccupancyGrid
         //  The time at which the map was loaded
-        public TimeMsg map_load_time;
+        public BuiltinInterfaces.TimeMsg map_load_time;
         //  The map resolution [m/cell]
         public float resolution;
         //  Map width [cells]
@@ -23,19 +22,19 @@ namespace RosMessageTypes.Nav
         //  Map height [cells]
         public uint height;
         //  The origin of the map [m, m, rad].  This is the real-world pose of the
-        //  cell (0,0) in the map.
+        //  bottom left corner of cell (0,0) in the map.
         public Geometry.PoseMsg origin;
 
         public MapMetaDataMsg()
         {
-            this.map_load_time = new TimeMsg();
+            this.map_load_time = new BuiltinInterfaces.TimeMsg();
             this.resolution = 0.0f;
             this.width = 0;
             this.height = 0;
             this.origin = new Geometry.PoseMsg();
         }
 
-        public MapMetaDataMsg(TimeMsg map_load_time, float resolution, uint width, uint height, Geometry.PoseMsg origin)
+        public MapMetaDataMsg(BuiltinInterfaces.TimeMsg map_load_time, float resolution, uint width, uint height, Geometry.PoseMsg origin)
         {
             this.map_load_time = map_load_time;
             this.resolution = resolution;
@@ -48,7 +47,7 @@ namespace RosMessageTypes.Nav
 
         private MapMetaDataMsg(MessageDeserializer deserializer)
         {
-            this.map_load_time = TimeMsg.Deserialize(deserializer);
+            this.map_load_time = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
             deserializer.Read(out this.resolution);
             deserializer.Read(out this.width);
             deserializer.Read(out this.height);
@@ -74,11 +73,11 @@ namespace RosMessageTypes.Nav
             "\norigin: " + origin.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

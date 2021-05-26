@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/PoseWithCovarianceStamped";
 
         //  This expresses an estimated pose with a reference coordinate frame and timestamp
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public PoseWithCovarianceMsg pose;
 
         public PoseWithCovarianceStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.pose = new PoseWithCovarianceMsg();
         }
 
-        public PoseWithCovarianceStampedMsg(HeaderMsg header, PoseWithCovarianceMsg pose)
+        public PoseWithCovarianceStampedMsg(Std.HeaderMsg header, PoseWithCovarianceMsg pose)
         {
             this.header = header;
             this.pose = pose;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private PoseWithCovarianceStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.pose = PoseWithCovarianceMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\npose: " + pose.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

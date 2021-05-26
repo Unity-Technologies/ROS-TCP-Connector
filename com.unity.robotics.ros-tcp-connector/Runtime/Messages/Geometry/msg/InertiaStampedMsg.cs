@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -13,16 +12,17 @@ namespace RosMessageTypes.Geometry
     {
         public const string k_RosMessageName = "geometry_msgs/InertiaStamped";
 
-        public HeaderMsg header;
+        //  An Inertia with a time stamp and reference frame.
+        public Std.HeaderMsg header;
         public InertiaMsg inertia;
 
         public InertiaStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.inertia = new InertiaMsg();
         }
 
-        public InertiaStampedMsg(HeaderMsg header, InertiaMsg inertia)
+        public InertiaStampedMsg(Std.HeaderMsg header, InertiaMsg inertia)
         {
             this.header = header;
             this.inertia = inertia;
@@ -32,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private InertiaStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.inertia = InertiaMsg.Deserialize(deserializer);
         }
 
@@ -49,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\ninertia: " + inertia.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

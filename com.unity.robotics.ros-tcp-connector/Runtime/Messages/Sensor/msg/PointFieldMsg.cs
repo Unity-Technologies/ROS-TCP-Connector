@@ -22,6 +22,7 @@ namespace RosMessageTypes.Sensor
         public const byte UINT32 = 6;
         public const byte FLOAT32 = 7;
         public const byte FLOAT64 = 8;
+        //  Common PointField names are x, y, z, intensity, rgb, rgba
         public string name;
         //  Name of field
         public uint offset;
@@ -74,11 +75,11 @@ namespace RosMessageTypes.Sensor
             "\ncount: " + count.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

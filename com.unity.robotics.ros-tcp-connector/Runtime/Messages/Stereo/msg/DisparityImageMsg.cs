@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Stereo
 {
@@ -15,7 +14,7 @@ namespace RosMessageTypes.Stereo
 
         //  Separate header for compatibility with current TimeSynchronizer.
         //  Likely to be removed in a later release, use image.header instead.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Floating point disparity image. The disparities are pre-adjusted for any
         //  x-offset between the principal points of the two cameras (in the case
         //  that they are verged). That is: d = x_l - x_r - (cx_l - cx_r)
@@ -23,7 +22,7 @@ namespace RosMessageTypes.Stereo
         //  Stereo geometry. For disparity d, the depth from the camera is Z = fT/d.
         public float f;
         //  Focal length, pixels
-        public float T;
+        public float t;
         //  Baseline, world units
         //  Subwindow of (potentially) valid disparity values.
         public Sensor.RegionOfInterestMsg valid_window;
@@ -42,22 +41,22 @@ namespace RosMessageTypes.Stereo
 
         public DisparityImageMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.image = new Sensor.ImageMsg();
             this.f = 0.0f;
-            this.T = 0.0f;
+            this.t = 0.0f;
             this.valid_window = new Sensor.RegionOfInterestMsg();
             this.min_disparity = 0.0f;
             this.max_disparity = 0.0f;
             this.delta_d = 0.0f;
         }
 
-        public DisparityImageMsg(HeaderMsg header, Sensor.ImageMsg image, float f, float T, Sensor.RegionOfInterestMsg valid_window, float min_disparity, float max_disparity, float delta_d)
+        public DisparityImageMsg(Std.HeaderMsg header, Sensor.ImageMsg image, float f, float t, Sensor.RegionOfInterestMsg valid_window, float min_disparity, float max_disparity, float delta_d)
         {
             this.header = header;
             this.image = image;
             this.f = f;
-            this.T = T;
+            this.t = t;
             this.valid_window = valid_window;
             this.min_disparity = min_disparity;
             this.max_disparity = max_disparity;
@@ -68,10 +67,10 @@ namespace RosMessageTypes.Stereo
 
         private DisparityImageMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.image = Sensor.ImageMsg.Deserialize(deserializer);
             deserializer.Read(out this.f);
-            deserializer.Read(out this.T);
+            deserializer.Read(out this.t);
             this.valid_window = Sensor.RegionOfInterestMsg.Deserialize(deserializer);
             deserializer.Read(out this.min_disparity);
             deserializer.Read(out this.max_disparity);
@@ -83,7 +82,7 @@ namespace RosMessageTypes.Stereo
             serializer.Write(this.header);
             serializer.Write(this.image);
             serializer.Write(this.f);
-            serializer.Write(this.T);
+            serializer.Write(this.t);
             serializer.Write(this.valid_window);
             serializer.Write(this.min_disparity);
             serializer.Write(this.max_disparity);
@@ -96,18 +95,18 @@ namespace RosMessageTypes.Stereo
             "\nheader: " + header.ToString() +
             "\nimage: " + image.ToString() +
             "\nf: " + f.ToString() +
-            "\nT: " + T.ToString() +
+            "\nt: " + t.ToString() +
             "\nvalid_window: " + valid_window.ToString() +
             "\nmin_disparity: " + min_disparity.ToString() +
             "\nmax_disparity: " + max_disparity.ToString() +
             "\ndelta_d: " + delta_d.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

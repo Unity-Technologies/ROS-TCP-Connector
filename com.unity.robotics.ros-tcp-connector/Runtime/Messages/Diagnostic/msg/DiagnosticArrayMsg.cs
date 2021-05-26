@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Diagnostic
 {
@@ -13,19 +12,19 @@ namespace RosMessageTypes.Diagnostic
     {
         public const string k_RosMessageName = "diagnostic_msgs/DiagnosticArray";
 
-        //  This message is used to send diagnostic information about the state of the robot
-        public HeaderMsg header;
-        // for timestamp
+        //  This message is used to send diagnostic information about the state of the robot.
+        public Std.HeaderMsg header;
+        //  for timestamp
         public DiagnosticStatusMsg[] status;
         //  an array of components being reported on
 
         public DiagnosticArrayMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.status = new DiagnosticStatusMsg[0];
         }
 
-        public DiagnosticArrayMsg(HeaderMsg header, DiagnosticStatusMsg[] status)
+        public DiagnosticArrayMsg(Std.HeaderMsg header, DiagnosticStatusMsg[] status)
         {
             this.header = header;
             this.status = status;
@@ -35,7 +34,7 @@ namespace RosMessageTypes.Diagnostic
 
         private DiagnosticArrayMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.status, DiagnosticStatusMsg.Deserialize, deserializer.ReadLength());
         }
 
@@ -53,11 +52,11 @@ namespace RosMessageTypes.Diagnostic
             "\nstatus: " + System.String.Join(", ", status.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

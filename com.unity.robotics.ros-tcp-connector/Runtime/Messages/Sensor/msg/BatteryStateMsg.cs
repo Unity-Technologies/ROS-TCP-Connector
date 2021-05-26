@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -41,7 +40,7 @@ namespace RosMessageTypes.Sensor
         public const byte POWER_SUPPLY_TECHNOLOGY_LIFE = 4;
         public const byte POWER_SUPPLY_TECHNOLOGY_NICD = 5;
         public const byte POWER_SUPPLY_TECHNOLOGY_LIMN = 6;
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public float voltage;
         //  Voltage in Volts (Mandatory)
         public float temperature;
@@ -77,7 +76,7 @@ namespace RosMessageTypes.Sensor
 
         public BatteryStateMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.voltage = 0.0f;
             this.temperature = 0.0f;
             this.current = 0.0f;
@@ -95,7 +94,7 @@ namespace RosMessageTypes.Sensor
             this.serial_number = "";
         }
 
-        public BatteryStateMsg(HeaderMsg header, float voltage, float temperature, float current, float charge, float capacity, float design_capacity, float percentage, byte power_supply_status, byte power_supply_health, byte power_supply_technology, bool present, float[] cell_voltage, float[] cell_temperature, string location, string serial_number)
+        public BatteryStateMsg(Std.HeaderMsg header, float voltage, float temperature, float current, float charge, float capacity, float design_capacity, float percentage, byte power_supply_status, byte power_supply_health, byte power_supply_technology, bool present, float[] cell_voltage, float[] cell_temperature, string location, string serial_number)
         {
             this.header = header;
             this.voltage = voltage;
@@ -119,7 +118,7 @@ namespace RosMessageTypes.Sensor
 
         private BatteryStateMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.voltage);
             deserializer.Read(out this.temperature);
             deserializer.Read(out this.current);
@@ -180,11 +179,11 @@ namespace RosMessageTypes.Sensor
             "\nserial_number: " + serial_number.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

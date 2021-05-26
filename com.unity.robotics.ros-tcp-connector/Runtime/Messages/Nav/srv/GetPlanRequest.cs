@@ -12,13 +12,13 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/GetPlan";
 
-        //  Get a plan from the current position to the goal Pose 
+        //  Get a plan from the current position to the goal Pose
         //  The start pose for the plan
         public Geometry.PoseStampedMsg start;
         //  The final pose of the goal position
         public Geometry.PoseStampedMsg goal;
-        //  If the goal is obstructed, how many meters the planner can 
-        //  relax the constraint in x and y before failing. 
+        //  If the goal is obstructed, how many meters the planner can
+        //  relax the constraint in x and y before failing.
         public float tolerance;
 
         public GetPlanRequest()
@@ -59,11 +59,11 @@ namespace RosMessageTypes.Nav
             "\ntolerance: " + tolerance.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

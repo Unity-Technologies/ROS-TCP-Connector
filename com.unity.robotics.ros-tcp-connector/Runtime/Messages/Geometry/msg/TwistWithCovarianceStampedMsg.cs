@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/TwistWithCovarianceStamped";
 
         //  This represents an estimated twist with reference coordinate frame and timestamp.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public TwistWithCovarianceMsg twist;
 
         public TwistWithCovarianceStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.twist = new TwistWithCovarianceMsg();
         }
 
-        public TwistWithCovarianceStampedMsg(HeaderMsg header, TwistWithCovarianceMsg twist)
+        public TwistWithCovarianceStampedMsg(Std.HeaderMsg header, TwistWithCovarianceMsg twist)
         {
             this.header = header;
             this.twist = twist;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private TwistWithCovarianceStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.twist = TwistWithCovarianceMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\ntwist: " + twist.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

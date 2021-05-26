@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,11 +12,11 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/CompressedImage";
 
-        //  This message contains a compressed image
-        public HeaderMsg header;
+        //  This message contains a compressed image.
+        public Std.HeaderMsg header;
         //  Header timestamp should be acquisition time of image
         //  Header frame_id should be optical frame of camera
-        //  origin of frame should be optical center of camera
+        //  origin of frame should be optical center of cameara
         //  +x should point to the right in the image
         //  +y should point down in the image
         //  +z should point into to plane of the image
@@ -30,12 +29,12 @@ namespace RosMessageTypes.Sensor
 
         public CompressedImageMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.format = "";
             this.data = new byte[0];
         }
 
-        public CompressedImageMsg(HeaderMsg header, string format, byte[] data)
+        public CompressedImageMsg(Std.HeaderMsg header, string format, byte[] data)
         {
             this.header = header;
             this.format = format;
@@ -46,7 +45,7 @@ namespace RosMessageTypes.Sensor
 
         private CompressedImageMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.format);
             deserializer.Read(out this.data, sizeof(byte), deserializer.ReadLength());
         }
@@ -67,11 +66,11 @@ namespace RosMessageTypes.Sensor
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

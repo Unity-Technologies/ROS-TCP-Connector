@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -18,11 +17,11 @@ namespace RosMessageTypes.Sensor
         //  If you have another ranging device with different behavior (e.g. a sonar
         //  array), please find or create a different message, since applications
         //  will make fairly laser-specific assumptions about this data
-        public HeaderMsg header;
-        //  timestamp in the header is the acquisition time of 
+        public Std.HeaderMsg header;
+        //  timestamp in the header is the acquisition time of
         //  the first ray in the scan.
         // 
-        //  in frame frame_id, angles are measured around 
+        //  in frame frame_id, angles are measured around
         //  the positive Z axis (counterclockwise, if Z is up)
         //  with zero angle being forward along the x axis
         public float angle_min;
@@ -42,7 +41,8 @@ namespace RosMessageTypes.Sensor
         public float range_max;
         //  maximum range value [m]
         public LaserEchoMsg[] ranges;
-        //  range data [m] (Note: NaNs, values < range_min or > range_max should be discarded)
+        //  range data [m]
+        //  (Note: NaNs, values < range_min or > range_max should be discarded)
         //  +Inf measurements are out of range
         //  -Inf measurements are too close to determine exact distance.
         public LaserEchoMsg[] intensities;
@@ -52,7 +52,7 @@ namespace RosMessageTypes.Sensor
 
         public MultiEchoLaserScanMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.angle_min = 0.0f;
             this.angle_max = 0.0f;
             this.angle_increment = 0.0f;
@@ -64,7 +64,7 @@ namespace RosMessageTypes.Sensor
             this.intensities = new LaserEchoMsg[0];
         }
 
-        public MultiEchoLaserScanMsg(HeaderMsg header, float angle_min, float angle_max, float angle_increment, float time_increment, float scan_time, float range_min, float range_max, LaserEchoMsg[] ranges, LaserEchoMsg[] intensities)
+        public MultiEchoLaserScanMsg(Std.HeaderMsg header, float angle_min, float angle_max, float angle_increment, float time_increment, float scan_time, float range_min, float range_max, LaserEchoMsg[] ranges, LaserEchoMsg[] intensities)
         {
             this.header = header;
             this.angle_min = angle_min;
@@ -82,7 +82,7 @@ namespace RosMessageTypes.Sensor
 
         private MultiEchoLaserScanMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.angle_min);
             deserializer.Read(out this.angle_max);
             deserializer.Read(out this.angle_increment);
@@ -125,11 +125,11 @@ namespace RosMessageTypes.Sensor
             "\nintensities: " + System.String.Join(", ", intensities.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

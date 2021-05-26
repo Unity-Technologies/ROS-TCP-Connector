@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Nav
 {
@@ -13,23 +12,26 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/OccupancyGrid";
 
-        //  This represents a 2-D grid map, in which each cell represents the probability of
-        //  occupancy.
-        public HeaderMsg header;
-        // MetaData for the map
+        //  This represents a 2-D grid map
+        public Std.HeaderMsg header;
+        //  MetaData for the map
         public MapMetaDataMsg info;
-        //  The map data, in row-major order, starting with (0,0).  Occupancy
-        //  probabilities are in the range [0,100].  Unknown is -1.
+        //  The map data, in row-major order, starting with (0,0). 
+        //  Cell (1, 0) will be listed second, representing the next cell in the x direction. 
+        //  Cell (0, 1) will be at the index equal to info.width, followed by (1, 1).
+        //  The values inside are application dependent, but frequently, 
+        //  0 represents unoccupied, 1 represents definitely occupied, and
+        //  -1 represents unknown. 
         public sbyte[] data;
 
         public OccupancyGridMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.info = new MapMetaDataMsg();
             this.data = new sbyte[0];
         }
 
-        public OccupancyGridMsg(HeaderMsg header, MapMetaDataMsg info, sbyte[] data)
+        public OccupancyGridMsg(Std.HeaderMsg header, MapMetaDataMsg info, sbyte[] data)
         {
             this.header = header;
             this.info = info;
@@ -40,7 +42,7 @@ namespace RosMessageTypes.Nav
 
         private OccupancyGridMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.info = MapMetaDataMsg.Deserialize(deserializer);
             deserializer.Read(out this.data, sizeof(sbyte), deserializer.ReadLength());
         }
@@ -61,11 +63,11 @@ namespace RosMessageTypes.Nav
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -24,8 +23,8 @@ namespace RosMessageTypes.Sensor
         //         receiver, usually the location of the antenna.  This is a
         //         Euclidean frame relative to the vehicle, not a reference
         //         ellipsoid.
-        public HeaderMsg header;
-        //  satellite fix status information
+        public Std.HeaderMsg header;
+        //  Satellite fix status information.
         public NavSatStatusMsg status;
         //  Latitude [degrees]. Positive is north of equator; negative is south.
         public double latitude;
@@ -52,7 +51,7 @@ namespace RosMessageTypes.Sensor
 
         public NavSatFixMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.status = new NavSatStatusMsg();
             this.latitude = 0.0;
             this.longitude = 0.0;
@@ -61,7 +60,7 @@ namespace RosMessageTypes.Sensor
             this.position_covariance_type = 0;
         }
 
-        public NavSatFixMsg(HeaderMsg header, NavSatStatusMsg status, double latitude, double longitude, double altitude, double[] position_covariance, byte position_covariance_type)
+        public NavSatFixMsg(Std.HeaderMsg header, NavSatStatusMsg status, double latitude, double longitude, double altitude, double[] position_covariance, byte position_covariance_type)
         {
             this.header = header;
             this.status = status;
@@ -76,7 +75,7 @@ namespace RosMessageTypes.Sensor
 
         private NavSatFixMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.status = NavSatStatusMsg.Deserialize(deserializer);
             deserializer.Read(out this.latitude);
             deserializer.Read(out this.longitude);
@@ -108,11 +107,11 @@ namespace RosMessageTypes.Sensor
             "\nposition_covariance_type: " + position_covariance_type.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

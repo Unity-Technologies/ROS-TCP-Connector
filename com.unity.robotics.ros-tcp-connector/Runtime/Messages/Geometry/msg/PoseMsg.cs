@@ -12,7 +12,7 @@ namespace RosMessageTypes.Geometry
     {
         public const string k_RosMessageName = "geometry_msgs/Pose";
 
-        //  A representation of pose in free space, composed of position and orientation. 
+        //  A representation of pose in free space, composed of position and orientation.
         public PointMsg position;
         public QuaternionMsg orientation;
 
@@ -49,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\norientation: " + orientation.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

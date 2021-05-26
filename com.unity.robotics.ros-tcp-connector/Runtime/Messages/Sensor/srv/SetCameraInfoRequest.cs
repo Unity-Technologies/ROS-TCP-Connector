@@ -12,8 +12,8 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/SetCameraInfo";
 
-        //  This service requests that a camera stores the given CameraInfo 
-        //  as that camera's calibration information.
+        //  This service requests that a camera stores the given CameraInfo as that
+        //  camera's calibration information.
         // 
         //  The width and height in the camera_info field should match what the
         //  camera is currently outputting on its camera_info topic, and the camera
@@ -50,11 +50,11 @@ namespace RosMessageTypes.Sensor
             "\ncamera_info: " + camera_info.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Nav
 {
@@ -13,21 +12,24 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/GridCells";
 
-        // an array of cells in a 2D grid
-        public HeaderMsg header;
+        //  An array of cells in a 2D grid
+        public Std.HeaderMsg header;
+        //  Width of each cell
         public float cell_width;
+        //  Height of each cell
         public float cell_height;
+        //  Each cell is represented by the Point at the center of the cell
         public Geometry.PointMsg[] cells;
 
         public GridCellsMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.cell_width = 0.0f;
             this.cell_height = 0.0f;
             this.cells = new Geometry.PointMsg[0];
         }
 
-        public GridCellsMsg(HeaderMsg header, float cell_width, float cell_height, Geometry.PointMsg[] cells)
+        public GridCellsMsg(Std.HeaderMsg header, float cell_width, float cell_height, Geometry.PointMsg[] cells)
         {
             this.header = header;
             this.cell_width = cell_width;
@@ -39,7 +41,7 @@ namespace RosMessageTypes.Nav
 
         private GridCellsMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.cell_width);
             deserializer.Read(out this.cell_height);
             deserializer.Read(out this.cells, Geometry.PointMsg.Deserialize, deserializer.ReadLength());
@@ -63,11 +65,11 @@ namespace RosMessageTypes.Nav
             "\ncells: " + System.String.Join(", ", cells.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

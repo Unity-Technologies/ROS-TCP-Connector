@@ -19,7 +19,7 @@ namespace RosMessageTypes.Visualization
         //  The client will use this to detect if it has missed an update.
         public ulong seq_num;
         //  Type holds the purpose of this message.  It must be one of UPDATE or KEEP_ALIVE.
-        //  UPDATE: Incremental update to previous state. 
+        //  UPDATE: Incremental update to previous state.
         //          The sequence number must be 1 higher than for
         //          the previous update.
         //  KEEP_ALIVE: Indicates the that the server is still living.
@@ -28,13 +28,13 @@ namespace RosMessageTypes.Visualization
         public const byte KEEP_ALIVE = 0;
         public const byte UPDATE = 1;
         public byte type;
-        // Note: No guarantees on the order of processing.
-        //       Contents must be kept consistent by sender.
-        // Markers to be added or updated
+        //  Note: No guarantees on the order of processing.
+        //        Contents must be kept consistent by sender.
+        //  Markers to be added or updated
         public InteractiveMarkerMsg[] markers;
-        // Poses of markers that should be moved
+        //  Poses of markers that should be moved
         public InteractiveMarkerPoseMsg[] poses;
-        // Names of markers to be erased
+        //  Names of markers to be erased
         public string[] erases;
 
         public InteractiveMarkerUpdateMsg()
@@ -93,11 +93,11 @@ namespace RosMessageTypes.Visualization
             "\nerases: " + System.String.Join(", ", erases.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -13,7 +13,9 @@ namespace RosMessageTypes.Nav
         public const string k_RosMessageName = "nav_msgs/SetMap";
 
         //  Set a new map together with an initial pose
+        //  Requested 2D map to be set.
         public OccupancyGridMsg map;
+        //  Estimated initial pose when setting new map.
         public Geometry.PoseWithCovarianceStampedMsg initial_pose;
 
         public SetMapRequest()
@@ -49,11 +51,11 @@ namespace RosMessageTypes.Nav
             "\ninitial_pose: " + initial_pose.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -12,7 +12,7 @@ namespace RosMessageTypes.Geometry
     {
         public const string k_RosMessageName = "geometry_msgs/Polygon";
 
-        // A specification of a polygon where the first and last points are assumed to be connected
+        //  A specification of a polygon where the first and last points are assumed to be connected
         public Point32Msg[] points;
 
         public PolygonMsg()
@@ -44,11 +44,11 @@ namespace RosMessageTypes.Geometry
             "\npoints: " + System.String.Join(", ", points.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

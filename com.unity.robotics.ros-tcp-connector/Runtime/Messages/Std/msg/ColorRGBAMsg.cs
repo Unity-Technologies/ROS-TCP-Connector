@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/ColorRGBA";
 
-
         public float r;
         public float g;
         public float b;
@@ -34,7 +33,9 @@ namespace RosMessageTypes.Std
             this.a = a;
         }
 
-        public ColorRGBAMsg(MessageDeserializer deserializer)
+        public static ColorRGBAMsg Deserialize(MessageDeserializer deserializer) => new ColorRGBAMsg(deserializer);
+
+        private ColorRGBAMsg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.r);
             deserializer.Read(out this.g);
@@ -59,16 +60,11 @@ namespace RosMessageTypes.Std
             "\na: " + a.ToString();
         }
 
-        public static ColorRGBAMsg Deserialize(MessageDeserializer deserializer)
-        {
-            return new ColorRGBAMsg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

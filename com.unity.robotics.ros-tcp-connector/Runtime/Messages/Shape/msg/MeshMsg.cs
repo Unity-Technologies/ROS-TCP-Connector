@@ -12,10 +12,10 @@ namespace RosMessageTypes.Shape
     {
         public const string k_RosMessageName = "shape_msgs/Mesh";
 
-        //  Definition of a mesh
-        //  list of triangles; the index values refer to positions in vertices[]
+        //  Definition of a mesh.
+        //  List of triangles; the index values refer to positions in vertices[].
         public MeshTriangleMsg[] triangles;
-        //  the actual vertices that make up the mesh
+        //  The actual vertices that make up the mesh.
         public Geometry.PointMsg[] vertices;
 
         public MeshMsg()
@@ -53,11 +53,11 @@ namespace RosMessageTypes.Shape
             "\nvertices: " + System.String.Join(", ", vertices.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/QuaternionStamped";
 
         //  This represents an orientation with reference coordinate frame and timestamp.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public QuaternionMsg quaternion;
 
         public QuaternionStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.quaternion = new QuaternionMsg();
         }
 
-        public QuaternionStampedMsg(HeaderMsg header, QuaternionMsg quaternion)
+        public QuaternionStampedMsg(Std.HeaderMsg header, QuaternionMsg quaternion)
         {
             this.header = header;
             this.quaternion = quaternion;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private QuaternionStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.quaternion = QuaternionMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\nquaternion: " + quaternion.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

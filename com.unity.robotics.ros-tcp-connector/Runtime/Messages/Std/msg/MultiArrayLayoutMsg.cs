@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/MultiArrayLayout";
 
-
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy
         //  It is recommended to create your own semantically meaningful message.
@@ -57,7 +56,9 @@ namespace RosMessageTypes.Std
             this.data_offset = data_offset;
         }
 
-        public MultiArrayLayoutMsg(MessageDeserializer deserializer)
+        public static MultiArrayLayoutMsg Deserialize(MessageDeserializer deserializer) => new MultiArrayLayoutMsg(deserializer);
+
+        private MultiArrayLayoutMsg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.dim, MultiArrayDimensionMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.data_offset);
@@ -77,16 +78,11 @@ namespace RosMessageTypes.Std
             "\ndata_offset: " + data_offset.ToString();
         }
 
-        public static MultiArrayLayoutMsg Deserialize(MessageDeserializer deserializer)
-        {
-            return new MultiArrayLayoutMsg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -13,11 +13,12 @@ namespace RosMessageTypes.Std
         public const string k_RosMessageName = "std_srvs/Trigger";
 
 
-
         public TriggerRequest()
         {
         }
-        public TriggerRequest(MessageDeserializer deserializer)
+        public static TriggerRequest Deserialize(MessageDeserializer deserializer) => new TriggerRequest(deserializer);
+
+        private TriggerRequest(MessageDeserializer deserializer)
         {
         }
 
@@ -30,16 +31,11 @@ namespace RosMessageTypes.Std
             return "TriggerRequest: ";
         }
 
-        public static TriggerRequest Deserialize(MessageDeserializer deserializer)
-        {
-            return new TriggerRequest(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

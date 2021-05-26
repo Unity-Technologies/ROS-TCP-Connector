@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_srvs/SetBool";
 
-
         public bool success;
         //  indicate successful run of triggered service
         public string message;
@@ -30,7 +29,9 @@ namespace RosMessageTypes.Std
             this.message = message;
         }
 
-        public SetBoolResponse(MessageDeserializer deserializer)
+        public static SetBoolResponse Deserialize(MessageDeserializer deserializer) => new SetBoolResponse(deserializer);
+
+        private SetBoolResponse(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.success);
             deserializer.Read(out this.message);
@@ -49,16 +50,11 @@ namespace RosMessageTypes.Std
             "\nmessage: " + message.ToString();
         }
 
-        public static SetBoolResponse Deserialize(MessageDeserializer deserializer)
-        {
-            return new SetBoolResponse(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

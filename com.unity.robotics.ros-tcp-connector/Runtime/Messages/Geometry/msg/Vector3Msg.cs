@@ -12,12 +12,10 @@ namespace RosMessageTypes.Geometry
     {
         public const string k_RosMessageName = "geometry_msgs/Vector3";
 
-        //  This represents a vector in free space. 
-        //  It is only meant to represent a direction. Therefore, it does not
-        //  make sense to apply a translation to it (e.g., when applying a 
-        //  generic rigid transformation to a Vector3, tf2 will only apply the
-        //  rotation). If you want your data to be translatable too, use the
-        //  geometry_msgs/Point message instead.
+        //  This represents a vector in free space.
+        //  This is semantically different than a point.
+        //  A vector is always anchored at the origin.
+        //  When a transform is applied to a vector, only the rotational component is applied.
         public double x;
         public double y;
         public double z;
@@ -60,11 +58,11 @@ namespace RosMessageTypes.Geometry
             "\nz: " + z.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

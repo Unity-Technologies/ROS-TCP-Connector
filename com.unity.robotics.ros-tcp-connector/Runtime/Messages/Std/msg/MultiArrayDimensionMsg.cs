@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/MultiArrayDimension";
 
-
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy
         //  It is recommended to create your own semantically meaningful message.
@@ -38,7 +37,9 @@ namespace RosMessageTypes.Std
             this.stride = stride;
         }
 
-        public MultiArrayDimensionMsg(MessageDeserializer deserializer)
+        public static MultiArrayDimensionMsg Deserialize(MessageDeserializer deserializer) => new MultiArrayDimensionMsg(deserializer);
+
+        private MultiArrayDimensionMsg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.label);
             deserializer.Read(out this.size);
@@ -60,16 +61,11 @@ namespace RosMessageTypes.Std
             "\nstride: " + stride.ToString();
         }
 
-        public static MultiArrayDimensionMsg Deserialize(MessageDeserializer deserializer)
-        {
-            return new MultiArrayDimensionMsg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

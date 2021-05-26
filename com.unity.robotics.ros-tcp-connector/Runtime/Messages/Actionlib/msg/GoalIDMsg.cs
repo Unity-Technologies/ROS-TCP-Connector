@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Actionlib
 {
@@ -16,7 +15,7 @@ namespace RosMessageTypes.Actionlib
         //  The stamp should store the time at which this goal was requested.
         //  It is used by an action server when it tries to preempt all
         //  goals that were requested before a certain time
-        public TimeMsg stamp;
+        public BuiltinInterfaces.TimeMsg stamp;
         //  The id provides a way to associate feedback and
         //  result message with specific goal requests. The id
         //  specified must be unique.
@@ -24,11 +23,11 @@ namespace RosMessageTypes.Actionlib
 
         public GoalIDMsg()
         {
-            this.stamp = new TimeMsg();
+            this.stamp = new BuiltinInterfaces.TimeMsg();
             this.id = "";
         }
 
-        public GoalIDMsg(TimeMsg stamp, string id)
+        public GoalIDMsg(BuiltinInterfaces.TimeMsg stamp, string id)
         {
             this.stamp = stamp;
             this.id = id;
@@ -38,7 +37,7 @@ namespace RosMessageTypes.Actionlib
 
         private GoalIDMsg(MessageDeserializer deserializer)
         {
-            this.stamp = TimeMsg.Deserialize(deserializer);
+            this.stamp = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
             deserializer.Read(out this.id);
         }
 
@@ -55,11 +54,11 @@ namespace RosMessageTypes.Actionlib
             "\nid: " + id.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

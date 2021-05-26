@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/PolygonStamped";
 
         //  This represents a Polygon with reference coordinate frame and timestamp
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public PolygonMsg polygon;
 
         public PolygonStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.polygon = new PolygonMsg();
         }
 
-        public PolygonStampedMsg(HeaderMsg header, PolygonMsg polygon)
+        public PolygonStampedMsg(Std.HeaderMsg header, PolygonMsg polygon)
         {
             this.header = header;
             this.polygon = polygon;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private PolygonStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.polygon = PolygonMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\npolygon: " + polygon.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

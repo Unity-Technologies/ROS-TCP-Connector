@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/PointStamped";
 
         //  This represents a Point with reference coordinate frame and timestamp
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public PointMsg point;
 
         public PointStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.point = new PointMsg();
         }
 
-        public PointStampedMsg(HeaderMsg header, PointMsg point)
+        public PointStampedMsg(Std.HeaderMsg header, PointMsg point)
         {
             this.header = header;
             this.point = point;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private PointStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.point = PointMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\npoint: " + point.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

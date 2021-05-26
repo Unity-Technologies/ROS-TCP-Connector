@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Trajectory
 {
@@ -15,12 +14,25 @@ namespace RosMessageTypes.Trajectory
 
         //  Each trajectory point specifies either positions[, velocities[, accelerations]]
         //  or positions[, effort] for the trajectory to be executed.
-        //  All specified values are in the same order as the joint names in JointTrajectory.msg
+        //  All specified values are in the same order as the joint names in JointTrajectory.msg.
+        //  Single DOF joint positions for each joint relative to their "0" position.
+        //  The units depend on the specific joint type: radians for revolute or
+        //  continuous joints, and meters for prismatic joints.
         public double[] positions;
+        //  The rate of change in position of each joint. Units are joint type dependent.
+        //  Radians/second for revolute or continuous joints, and meters/second for
+        //  prismatic joints.
         public double[] velocities;
+        //  Rate of change in velocity of each joint. Units are joint type dependent.
+        //  Radians/second^2 for revolute or continuous joints, and meters/second^2 for
+        //  prismatic joints.
         public double[] accelerations;
+        //  The torque or the force to be applied at each joint. For revolute/continuous
+        //  joints effort denotes a torque in newton-meters. For prismatic joints, effort
+        //  denotes a force in newtons.
         public double[] effort;
-        public DurationMsg time_from_start;
+        //  Desired time from the trajectory start to arrive at this trajectory point.
+        public BuiltinInterfaces.DurationMsg time_from_start;
 
         public JointTrajectoryPointMsg()
         {
@@ -28,10 +40,10 @@ namespace RosMessageTypes.Trajectory
             this.velocities = new double[0];
             this.accelerations = new double[0];
             this.effort = new double[0];
-            this.time_from_start = new DurationMsg();
+            this.time_from_start = new BuiltinInterfaces.DurationMsg();
         }
 
-        public JointTrajectoryPointMsg(double[] positions, double[] velocities, double[] accelerations, double[] effort, DurationMsg time_from_start)
+        public JointTrajectoryPointMsg(double[] positions, double[] velocities, double[] accelerations, double[] effort, BuiltinInterfaces.DurationMsg time_from_start)
         {
             this.positions = positions;
             this.velocities = velocities;
@@ -48,7 +60,7 @@ namespace RosMessageTypes.Trajectory
             deserializer.Read(out this.velocities, sizeof(double), deserializer.ReadLength());
             deserializer.Read(out this.accelerations, sizeof(double), deserializer.ReadLength());
             deserializer.Read(out this.effort, sizeof(double), deserializer.ReadLength());
-            this.time_from_start = DurationMsg.Deserialize(deserializer);
+            this.time_from_start = BuiltinInterfaces.DurationMsg.Deserialize(deserializer);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
@@ -74,11 +86,11 @@ namespace RosMessageTypes.Trajectory
             "\ntime_from_start: " + time_from_start.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

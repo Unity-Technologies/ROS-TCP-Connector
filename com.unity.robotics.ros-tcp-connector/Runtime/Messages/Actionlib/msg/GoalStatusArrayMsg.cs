@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Actionlib
 {
@@ -15,16 +14,16 @@ namespace RosMessageTypes.Actionlib
 
         //  Stores the statuses for goals that are currently being tracked
         //  by an action server
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public GoalStatusMsg[] status_list;
 
         public GoalStatusArrayMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.status_list = new GoalStatusMsg[0];
         }
 
-        public GoalStatusArrayMsg(HeaderMsg header, GoalStatusMsg[] status_list)
+        public GoalStatusArrayMsg(Std.HeaderMsg header, GoalStatusMsg[] status_list)
         {
             this.header = header;
             this.status_list = status_list;
@@ -34,7 +33,7 @@ namespace RosMessageTypes.Actionlib
 
         private GoalStatusArrayMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.status_list, GoalStatusMsg.Deserialize, deserializer.ReadLength());
         }
 
@@ -52,11 +51,11 @@ namespace RosMessageTypes.Actionlib
             "\nstatus_list: " + System.String.Join(", ", status_list.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

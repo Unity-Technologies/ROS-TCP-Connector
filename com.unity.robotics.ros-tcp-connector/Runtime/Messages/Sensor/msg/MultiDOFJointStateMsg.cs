@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,10 +12,10 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/MultiDOFJointState";
 
-        //  Representation of state for joints with multiple degrees of freedom, 
-        //  following the structure of JointState.
+        //  Representation of state for joints with multiple degrees of freedom,
+        //  following the structure of JointState which can only represent a single degree of freedom.
         // 
-        //  It is assumed that a joint in a system corresponds to a transform that gets applied 
+        //  It is assumed that a joint in a system corresponds to a transform that gets applied
         //  along the kinematic chain. For example, a planar joint (as in URDF) is 3DOF (x, y, yaw)
         //  and those 3DOF can be expressed as a transformation matrix, and that transformation
         //  matrix can be converted back to (x, y, yaw)
@@ -25,14 +24,14 @@ namespace RosMessageTypes.Sensor
         //  The header specifies the time at which the joint states were recorded. All the joint states
         //  in one message have to be recorded at the same time.
         // 
-        //  This message consists of a multiple arrays, one for each part of the joint state. 
+        //  This message consists of a multiple arrays, one for each part of the joint state.
         //  The goal is to make each of the fields optional. When e.g. your joints have no
-        //  wrench associated with them, you can leave the wrench array empty. 
+        //  wrench associated with them, you can leave the wrench array empty.
         // 
         //  All arrays in this message should have the same size, or be empty.
         //  This is the only way to uniquely associate the joint name with the correct
         //  states.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public string[] joint_names;
         public Geometry.TransformMsg[] transforms;
         public Geometry.TwistMsg[] twist;
@@ -40,14 +39,14 @@ namespace RosMessageTypes.Sensor
 
         public MultiDOFJointStateMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.joint_names = new string[0];
             this.transforms = new Geometry.TransformMsg[0];
             this.twist = new Geometry.TwistMsg[0];
             this.wrench = new Geometry.WrenchMsg[0];
         }
 
-        public MultiDOFJointStateMsg(HeaderMsg header, string[] joint_names, Geometry.TransformMsg[] transforms, Geometry.TwistMsg[] twist, Geometry.WrenchMsg[] wrench)
+        public MultiDOFJointStateMsg(Std.HeaderMsg header, string[] joint_names, Geometry.TransformMsg[] transforms, Geometry.TwistMsg[] twist, Geometry.WrenchMsg[] wrench)
         {
             this.header = header;
             this.joint_names = joint_names;
@@ -60,7 +59,7 @@ namespace RosMessageTypes.Sensor
 
         private MultiDOFJointStateMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.joint_names, deserializer.ReadLength());
             deserializer.Read(out this.transforms, Geometry.TransformMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.twist, Geometry.TwistMsg.Deserialize, deserializer.ReadLength());
@@ -90,11 +89,11 @@ namespace RosMessageTypes.Sensor
             "\nwrench: " + System.String.Join(", ", wrench.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

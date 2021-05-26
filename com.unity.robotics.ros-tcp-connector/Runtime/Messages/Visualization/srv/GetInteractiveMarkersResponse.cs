@@ -12,7 +12,6 @@ namespace RosMessageTypes.Visualization
     {
         public const string k_RosMessageName = "visualization_msgs/GetInteractiveMarkers";
 
-
         //  Sequence number.
         //  Set to the sequence number of the latest update message
         //  at the time the server received the request.
@@ -33,7 +32,9 @@ namespace RosMessageTypes.Visualization
             this.markers = markers;
         }
 
-        public GetInteractiveMarkersResponse(MessageDeserializer deserializer)
+        public static GetInteractiveMarkersResponse Deserialize(MessageDeserializer deserializer) => new GetInteractiveMarkersResponse(deserializer);
+
+        private GetInteractiveMarkersResponse(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.sequence_number);
             deserializer.Read(out this.markers, InteractiveMarkerMsg.Deserialize, deserializer.ReadLength());
@@ -53,16 +54,11 @@ namespace RosMessageTypes.Visualization
             "\nmarkers: " + System.String.Join(", ", markers.ToList());
         }
 
-        public static GetInteractiveMarkersResponse Deserialize(MessageDeserializer deserializer)
-        {
-            return new GetInteractiveMarkersResponse(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

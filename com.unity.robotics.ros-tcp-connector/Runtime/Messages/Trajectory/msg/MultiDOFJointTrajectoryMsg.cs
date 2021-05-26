@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Trajectory
 {
@@ -14,7 +13,7 @@ namespace RosMessageTypes.Trajectory
         public const string k_RosMessageName = "trajectory_msgs/MultiDOFJointTrajectory";
 
         //  The header is used to specify the coordinate frame and the reference time for the trajectory durations
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  A representation of a multi-dof joint trajectory (each point is a transformation)
         //  Each point along the trajectory will include an array of positions/velocities/accelerations
         //  that has the same length as the array of joint names, and has the same order of joints as 
@@ -24,12 +23,12 @@ namespace RosMessageTypes.Trajectory
 
         public MultiDOFJointTrajectoryMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.joint_names = new string[0];
             this.points = new MultiDOFJointTrajectoryPointMsg[0];
         }
 
-        public MultiDOFJointTrajectoryMsg(HeaderMsg header, string[] joint_names, MultiDOFJointTrajectoryPointMsg[] points)
+        public MultiDOFJointTrajectoryMsg(Std.HeaderMsg header, string[] joint_names, MultiDOFJointTrajectoryPointMsg[] points)
         {
             this.header = header;
             this.joint_names = joint_names;
@@ -40,7 +39,7 @@ namespace RosMessageTypes.Trajectory
 
         private MultiDOFJointTrajectoryMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.joint_names, deserializer.ReadLength());
             deserializer.Read(out this.points, MultiDOFJointTrajectoryPointMsg.Deserialize, deserializer.ReadLength());
         }
@@ -62,11 +61,11 @@ namespace RosMessageTypes.Trajectory
             "\npoints: " + System.String.Join(", ", points.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

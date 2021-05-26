@@ -12,7 +12,7 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/JoyFeedbackArray";
 
-        //  This message publishes values for multiple feedback at once. 
+        //  This message publishes values for multiple feedback at once.
         public JoyFeedbackMsg[] array;
 
         public JoyFeedbackArrayMsg()
@@ -44,11 +44,11 @@ namespace RosMessageTypes.Sensor
             "\narray: " + System.String.Join(", ", array.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

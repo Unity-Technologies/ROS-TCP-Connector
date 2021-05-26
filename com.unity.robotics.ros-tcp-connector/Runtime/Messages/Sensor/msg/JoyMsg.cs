@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,22 +12,22 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/Joy";
 
-        //  Reports the state of a joysticks axes and buttons.
-        public HeaderMsg header;
-        //  timestamp in the header is the time the data is received from the joystick
+        //  Reports the state of a joystick's axes and buttons.
+        //  The timestamp is the time at which data is received from the joystick.
+        public Std.HeaderMsg header;
+        //  The axes measurements from a joystick.
         public float[] axes;
-        //  the axes measurements from a joystick
+        //  The buttons measurements from a joystick.
         public int[] buttons;
-        //  the buttons measurements from a joystick 
 
         public JoyMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.axes = new float[0];
             this.buttons = new int[0];
         }
 
-        public JoyMsg(HeaderMsg header, float[] axes, int[] buttons)
+        public JoyMsg(Std.HeaderMsg header, float[] axes, int[] buttons)
         {
             this.header = header;
             this.axes = axes;
@@ -39,7 +38,7 @@ namespace RosMessageTypes.Sensor
 
         private JoyMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.axes, sizeof(float), deserializer.ReadLength());
             deserializer.Read(out this.buttons, sizeof(int), deserializer.ReadLength());
         }
@@ -61,11 +60,11 @@ namespace RosMessageTypes.Sensor
             "\nbuttons: " + System.String.Join(", ", buttons.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

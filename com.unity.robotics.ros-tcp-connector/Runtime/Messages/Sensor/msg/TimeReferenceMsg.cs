@@ -4,8 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Sensor
 {
@@ -15,22 +13,22 @@ namespace RosMessageTypes.Sensor
         public const string k_RosMessageName = "sensor_msgs/TimeReference";
 
         //  Measurement from an external time source not actively synchronized with the system clock.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  stamp is system time for which measurement was valid
-        //  frame_id is not used 
-        public TimeMsg time_ref;
+        //  frame_id is not used
+        public BuiltinInterfaces.TimeMsg time_ref;
         //  corresponding time from this external source
         public string source;
         //  (optional) name of time source
 
         public TimeReferenceMsg()
         {
-            this.header = new HeaderMsg();
-            this.time_ref = new TimeMsg();
+            this.header = new Std.HeaderMsg();
+            this.time_ref = new BuiltinInterfaces.TimeMsg();
             this.source = "";
         }
 
-        public TimeReferenceMsg(HeaderMsg header, TimeMsg time_ref, string source)
+        public TimeReferenceMsg(Std.HeaderMsg header, BuiltinInterfaces.TimeMsg time_ref, string source)
         {
             this.header = header;
             this.time_ref = time_ref;
@@ -41,8 +39,8 @@ namespace RosMessageTypes.Sensor
 
         private TimeReferenceMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
-            this.time_ref = TimeMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
+            this.time_ref = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
             deserializer.Read(out this.source);
         }
 
@@ -61,11 +59,11 @@ namespace RosMessageTypes.Sensor
             "\nsource: " + source.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

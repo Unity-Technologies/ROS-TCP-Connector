@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Trajectory
 {
@@ -13,23 +12,24 @@ namespace RosMessageTypes.Trajectory
     {
         public const string k_RosMessageName = "trajectory_msgs/MultiDOFJointTrajectoryPoint";
 
-        //  Each multi-dof joint can specify a transform (up to 6 DOF)
+        //  Each multi-dof joint can specify a transform (up to 6 DOF).
         public Geometry.TransformMsg[] transforms;
-        //  There can be a velocity specified for the origin of the joint 
+        //  There can be a velocity specified for the origin of the joint.
         public Geometry.TwistMsg[] velocities;
-        //  There can be an acceleration specified for the origin of the joint 
+        //  There can be an acceleration specified for the origin of the joint.
         public Geometry.TwistMsg[] accelerations;
-        public DurationMsg time_from_start;
+        //  Desired time from the trajectory start to arrive at this trajectory point.
+        public BuiltinInterfaces.DurationMsg time_from_start;
 
         public MultiDOFJointTrajectoryPointMsg()
         {
             this.transforms = new Geometry.TransformMsg[0];
             this.velocities = new Geometry.TwistMsg[0];
             this.accelerations = new Geometry.TwistMsg[0];
-            this.time_from_start = new DurationMsg();
+            this.time_from_start = new BuiltinInterfaces.DurationMsg();
         }
 
-        public MultiDOFJointTrajectoryPointMsg(Geometry.TransformMsg[] transforms, Geometry.TwistMsg[] velocities, Geometry.TwistMsg[] accelerations, DurationMsg time_from_start)
+        public MultiDOFJointTrajectoryPointMsg(Geometry.TransformMsg[] transforms, Geometry.TwistMsg[] velocities, Geometry.TwistMsg[] accelerations, BuiltinInterfaces.DurationMsg time_from_start)
         {
             this.transforms = transforms;
             this.velocities = velocities;
@@ -44,7 +44,7 @@ namespace RosMessageTypes.Trajectory
             deserializer.Read(out this.transforms, Geometry.TransformMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.velocities, Geometry.TwistMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.accelerations, Geometry.TwistMsg.Deserialize, deserializer.ReadLength());
-            this.time_from_start = DurationMsg.Deserialize(deserializer);
+            this.time_from_start = BuiltinInterfaces.DurationMsg.Deserialize(deserializer);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
@@ -67,11 +67,11 @@ namespace RosMessageTypes.Trajectory
             "\ntime_from_start: " + time_from_start.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

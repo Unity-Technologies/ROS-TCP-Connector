@@ -13,6 +13,7 @@ namespace RosMessageTypes.Visualization
         public const string k_RosMessageName = "visualization_msgs/MenuEntry";
 
         //  MenuEntry message.
+        // 
         //  Each InteractiveMarker message has an array of MenuEntry messages.
         //  A collection of MenuEntries together describe a
         //  menu/submenu/subsubmenu/etc tree, though they are stored in a flat
@@ -21,6 +22,7 @@ namespace RosMessageTypes.Visualization
         //  ones with parent_id = 0.  Menu entries are ordered within their
         //  level the same way they are ordered in the containing array.  Parent
         //  entries must appear before their children.
+        // 
         //  Example:
         //  - id = 3
         //    parent_id = 0
@@ -108,11 +110,11 @@ namespace RosMessageTypes.Visualization
             "\ncommand_type: " + command_type.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

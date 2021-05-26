@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -14,22 +13,22 @@ namespace RosMessageTypes.Sensor
         public const string k_RosMessageName = "sensor_msgs/Temperature";
 
         //  Single temperature reading.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  timestamp is the time the temperature was measured
         //  frame_id is the location of the temperature reading
         public double temperature;
-        //  Measurement of the Temperature in Degrees Celsius
+        //  Measurement of the Temperature in Degrees Celsius.
         public double variance;
-        //  0 is interpreted as variance unknown
+        //  0 is interpreted as variance unknown.
 
         public TemperatureMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.temperature = 0.0;
             this.variance = 0.0;
         }
 
-        public TemperatureMsg(HeaderMsg header, double temperature, double variance)
+        public TemperatureMsg(Std.HeaderMsg header, double temperature, double variance)
         {
             this.header = header;
             this.temperature = temperature;
@@ -40,7 +39,7 @@ namespace RosMessageTypes.Sensor
 
         private TemperatureMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.temperature);
             deserializer.Read(out this.variance);
         }
@@ -60,11 +59,11 @@ namespace RosMessageTypes.Sensor
             "\nvariance: " + variance.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

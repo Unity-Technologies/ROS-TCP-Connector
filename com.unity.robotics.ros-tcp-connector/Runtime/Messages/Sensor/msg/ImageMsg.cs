@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -15,11 +14,10 @@ namespace RosMessageTypes.Sensor
 
         //  This message contains an uncompressed image
         //  (0, 0) is at top-left corner of image
-        // 
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Header timestamp should be acquisition time of image
         //  Header frame_id should be optical frame of camera
-        //  origin of frame should be optical center of camera
+        //  origin of frame should be optical center of cameara
         //  +x should point to the right in the image
         //  +y should point down in the image
         //  +z should point into to plane of the image
@@ -32,10 +30,10 @@ namespace RosMessageTypes.Sensor
         //  image width, that is, number of columns
         //  The legal values for encoding are in file src/image_encodings.cpp
         //  If you want to standardize a new string format, join
-        //  ros-users@lists.sourceforge.net and send an email proposing a new encoding.
+        //  ros-users@lists.ros.org and send an email proposing a new encoding.
         public string encoding;
         //  Encoding of pixels -- channel meaning, ordering, size
-        //  taken from the list of strings in include/sensor_msgs/image_encodings.h
+        //  taken from the list of strings in include/sensor_msgs/image_encodings.hpp
         public byte is_bigendian;
         //  is this data bigendian?
         public uint step;
@@ -45,7 +43,7 @@ namespace RosMessageTypes.Sensor
 
         public ImageMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.height = 0;
             this.width = 0;
             this.encoding = "";
@@ -54,7 +52,7 @@ namespace RosMessageTypes.Sensor
             this.data = new byte[0];
         }
 
-        public ImageMsg(HeaderMsg header, uint height, uint width, string encoding, byte is_bigendian, uint step, byte[] data)
+        public ImageMsg(Std.HeaderMsg header, uint height, uint width, string encoding, byte is_bigendian, uint step, byte[] data)
         {
             this.header = header;
             this.height = height;
@@ -69,7 +67,7 @@ namespace RosMessageTypes.Sensor
 
         private ImageMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.encoding);
@@ -102,11 +100,11 @@ namespace RosMessageTypes.Sensor
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

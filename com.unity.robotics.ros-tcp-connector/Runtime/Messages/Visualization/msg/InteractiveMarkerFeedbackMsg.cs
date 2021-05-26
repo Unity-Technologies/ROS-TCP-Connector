@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Visualization
 {
@@ -14,7 +13,7 @@ namespace RosMessageTypes.Visualization
         public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerFeedback";
 
         //  Time/frame info.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Identifying string. Must be unique in the topic namespace.
         public string client_id;
         //  Feedback message sent back from the GUI, e.g.
@@ -49,7 +48,7 @@ namespace RosMessageTypes.Visualization
 
         public InteractiveMarkerFeedbackMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.client_id = "";
             this.marker_name = "";
             this.control_name = "";
@@ -60,7 +59,7 @@ namespace RosMessageTypes.Visualization
             this.mouse_point_valid = false;
         }
 
-        public InteractiveMarkerFeedbackMsg(HeaderMsg header, string client_id, string marker_name, string control_name, byte event_type, Geometry.PoseMsg pose, uint menu_entry_id, Geometry.PointMsg mouse_point, bool mouse_point_valid)
+        public InteractiveMarkerFeedbackMsg(Std.HeaderMsg header, string client_id, string marker_name, string control_name, byte event_type, Geometry.PoseMsg pose, uint menu_entry_id, Geometry.PointMsg mouse_point, bool mouse_point_valid)
         {
             this.header = header;
             this.client_id = client_id;
@@ -77,7 +76,7 @@ namespace RosMessageTypes.Visualization
 
         private InteractiveMarkerFeedbackMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.client_id);
             deserializer.Read(out this.marker_name);
             deserializer.Read(out this.control_name);
@@ -115,11 +114,11 @@ namespace RosMessageTypes.Visualization
             "\nmouse_point_valid: " + mouse_point_valid.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Visualization
 {
@@ -14,7 +13,7 @@ namespace RosMessageTypes.Visualization
         public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerPose";
 
         //  Time/frame info.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Initial pose. Also, defines the pivot point for rotations.
         public Geometry.PoseMsg pose;
         //  Identifying string. Must be globally unique in
@@ -23,12 +22,12 @@ namespace RosMessageTypes.Visualization
 
         public InteractiveMarkerPoseMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.pose = new Geometry.PoseMsg();
             this.name = "";
         }
 
-        public InteractiveMarkerPoseMsg(HeaderMsg header, Geometry.PoseMsg pose, string name)
+        public InteractiveMarkerPoseMsg(Std.HeaderMsg header, Geometry.PoseMsg pose, string name)
         {
             this.header = header;
             this.pose = pose;
@@ -39,7 +38,7 @@ namespace RosMessageTypes.Visualization
 
         private InteractiveMarkerPoseMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.pose = Geometry.PoseMsg.Deserialize(deserializer);
             deserializer.Read(out this.name);
         }
@@ -59,11 +58,11 @@ namespace RosMessageTypes.Visualization
             "\nname: " + name.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

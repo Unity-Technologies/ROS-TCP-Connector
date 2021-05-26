@@ -12,10 +12,10 @@ namespace RosMessageTypes.Diagnostic
     {
         public const string k_RosMessageName = "diagnostic_msgs/KeyValue";
 
+        //  What to label this value when viewing.
         public string key;
-        //  what to label this value when viewing
+        //  A value to track over time.
         public string value;
-        //  a value to track over time
 
         public KeyValueMsg()
         {
@@ -50,11 +50,11 @@ namespace RosMessageTypes.Diagnostic
             "\nvalue: " + value.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

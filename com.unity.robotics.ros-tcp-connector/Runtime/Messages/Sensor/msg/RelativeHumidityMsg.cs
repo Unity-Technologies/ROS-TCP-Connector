@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,9 +12,10 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/RelativeHumidity";
 
-        //  Single reading from a relative humidity sensor.  Defines the ratio of partial
-        //  pressure of water vapor to the saturated vapor pressure at a temperature.
-        public HeaderMsg header;
+        //  Single reading from a relative humidity sensor.
+        //  Defines the ratio of partial pressure of water vapor to the saturated vapor
+        //  pressure at a temperature.
+        public Std.HeaderMsg header;
         //  timestamp of the measurement
         //  frame_id is the location of the humidity sensor
         public double relative_humidity;
@@ -28,12 +28,12 @@ namespace RosMessageTypes.Sensor
 
         public RelativeHumidityMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.relative_humidity = 0.0;
             this.variance = 0.0;
         }
 
-        public RelativeHumidityMsg(HeaderMsg header, double relative_humidity, double variance)
+        public RelativeHumidityMsg(Std.HeaderMsg header, double relative_humidity, double variance)
         {
             this.header = header;
             this.relative_humidity = relative_humidity;
@@ -44,7 +44,7 @@ namespace RosMessageTypes.Sensor
 
         private RelativeHumidityMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.relative_humidity);
             deserializer.Read(out this.variance);
         }
@@ -64,11 +64,11 @@ namespace RosMessageTypes.Sensor
             "\nvariance: " + variance.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

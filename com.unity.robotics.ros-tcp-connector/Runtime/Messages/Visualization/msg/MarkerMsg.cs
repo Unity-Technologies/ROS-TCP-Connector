@@ -4,8 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Visualization
 {
@@ -14,58 +12,68 @@ namespace RosMessageTypes.Visualization
     {
         public const string k_RosMessageName = "visualization_msgs/Marker";
 
-        //  See http://www.ros.org/wiki/rviz/DisplayTypes/Marker and http://www.ros.org/wiki/rviz/Tutorials/Markers%3A%20Basic%20Shapes for more information on using this message with rviz
-        public const byte ARROW = 0;
-        public const byte CUBE = 1;
-        public const byte SPHERE = 2;
-        public const byte CYLINDER = 3;
-        public const byte LINE_STRIP = 4;
-        public const byte LINE_LIST = 5;
-        public const byte CUBE_LIST = 6;
-        public const byte SPHERE_LIST = 7;
-        public const byte POINTS = 8;
-        public const byte TEXT_VIEW_FACING = 9;
-        public const byte MESH_RESOURCE = 10;
-        public const byte TRIANGLE_LIST = 11;
-        public const byte ADD = 0;
-        public const byte MODIFY = 0;
-        public const byte DELETE = 2;
-        public const byte DELETEALL = 3;
-        public HeaderMsg header;
-        //  header for time/frame information
+        //  See:
+        //   - http://www.ros.org/wiki/rviz/DisplayTypes/Marker
+        //   - http://www.ros.org/wiki/rviz/Tutorials/Markers%3A%20Basic%20Shapes
+        // 
+        //  for more information on using this message with rviz.
+        public const int ARROW = 0;
+        public const int CUBE = 1;
+        public const int SPHERE = 2;
+        public const int CYLINDER = 3;
+        public const int LINE_STRIP = 4;
+        public const int LINE_LIST = 5;
+        public const int CUBE_LIST = 6;
+        public const int SPHERE_LIST = 7;
+        public const int POINTS = 8;
+        public const int TEXT_VIEW_FACING = 9;
+        public const int MESH_RESOURCE = 10;
+        public const int TRIANGLE_LIST = 11;
+        public const int ADD = 0;
+        public const int MODIFY = 0;
+        public const int DELETE = 2;
+        public const int DELETEALL = 3;
+        //  Header for timestamp and frame id.
+        public Std.HeaderMsg header;
+        //  Namespace in which to place the object.
+        //  Used in conjunction with id to create a unique name for the object.
         public string ns;
-        //  Namespace to place this object in... used in conjunction with id to create a unique name for the object
+        //  Object ID used in conjunction with the namespace for manipulating and deleting the object later.
         public int id;
-        //  object ID useful in conjunction with the namespace for manipulating and deleting the object later
+        //  Type of object.
         public int type;
-        //  Type of object
+        //  Action to take; one of:
+        //   - 0 add/modify an object
+        //   - 1 (deprecated)
+        //   - 2 deletes an object
+        //   - 3 deletes all objects
         public int action;
-        //  0 add/modify an object, 1 (deprecated), 2 deletes an object, 3 deletes all objects
+        //  Pose of the object with respect the frame_id specified in the header.
         public Geometry.PoseMsg pose;
-        //  Pose of the object
+        //  Scale of the object; 1,1,1 means default (usually 1 meter square).
         public Geometry.Vector3Msg scale;
-        //  Scale of the object 1,1,1 means default (usually 1 meter square)
+        //  Color of the object; in the range: [0.0-1.0]
         public Std.ColorRGBAMsg color;
-        //  Color [0.0-1.0]
-        public DurationMsg lifetime;
-        //  How long the object should last before being automatically deleted.  0 means forever
+        //  How long the object should last before being automatically deleted.
+        //  0 indicates forever.
+        public BuiltinInterfaces.DurationMsg lifetime;
+        //  If this marker should be frame-locked, i.e. retransformed into its frame every timestep.
         public bool frame_locked;
-        //  If this marker should be frame-locked, i.e. retransformed into its frame every timestep
-        // Only used if the type specified has some use for them (eg. POINTS, LINE_STRIP, ...)
+        //  Only used if the type specified has some use for them (eg. POINTS, LINE_STRIP, etc.)
         public Geometry.PointMsg[] points;
-        // Only used if the type specified has some use for them (eg. POINTS, LINE_STRIP, ...)
-        // number of colors must either be 0 or equal to the number of points
-        // NOTE: alpha is not yet used
+        //  Only used if the type specified has some use for them (eg. POINTS, LINE_STRIP, etc.)
+        //  The number of colors provided must either be 0 or equal to the number of points provided.
+        //  NOTE: alpha is not yet used
         public Std.ColorRGBAMsg[] colors;
-        //  NOTE: only used for text markers
+        //  Only used for text markers
         public string text;
-        //  NOTE: only used for MESH_RESOURCE markers
+        //  Only used for MESH_RESOURCE markers.
         public string mesh_resource;
         public bool mesh_use_embedded_materials;
 
         public MarkerMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.ns = "";
             this.id = 0;
             this.type = 0;
@@ -73,7 +81,7 @@ namespace RosMessageTypes.Visualization
             this.pose = new Geometry.PoseMsg();
             this.scale = new Geometry.Vector3Msg();
             this.color = new Std.ColorRGBAMsg();
-            this.lifetime = new DurationMsg();
+            this.lifetime = new BuiltinInterfaces.DurationMsg();
             this.frame_locked = false;
             this.points = new Geometry.PointMsg[0];
             this.colors = new Std.ColorRGBAMsg[0];
@@ -82,7 +90,7 @@ namespace RosMessageTypes.Visualization
             this.mesh_use_embedded_materials = false;
         }
 
-        public MarkerMsg(HeaderMsg header, string ns, int id, int type, int action, Geometry.PoseMsg pose, Geometry.Vector3Msg scale, Std.ColorRGBAMsg color, DurationMsg lifetime, bool frame_locked, Geometry.PointMsg[] points, Std.ColorRGBAMsg[] colors, string text, string mesh_resource, bool mesh_use_embedded_materials)
+        public MarkerMsg(Std.HeaderMsg header, string ns, int id, int type, int action, Geometry.PoseMsg pose, Geometry.Vector3Msg scale, Std.ColorRGBAMsg color, BuiltinInterfaces.DurationMsg lifetime, bool frame_locked, Geometry.PointMsg[] points, Std.ColorRGBAMsg[] colors, string text, string mesh_resource, bool mesh_use_embedded_materials)
         {
             this.header = header;
             this.ns = ns;
@@ -105,7 +113,7 @@ namespace RosMessageTypes.Visualization
 
         private MarkerMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.ns);
             deserializer.Read(out this.id);
             deserializer.Read(out this.type);
@@ -113,7 +121,7 @@ namespace RosMessageTypes.Visualization
             this.pose = Geometry.PoseMsg.Deserialize(deserializer);
             this.scale = Geometry.Vector3Msg.Deserialize(deserializer);
             this.color = Std.ColorRGBAMsg.Deserialize(deserializer);
-            this.lifetime = DurationMsg.Deserialize(deserializer);
+            this.lifetime = BuiltinInterfaces.DurationMsg.Deserialize(deserializer);
             deserializer.Read(out this.frame_locked);
             deserializer.Read(out this.points, Geometry.PointMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.colors, Std.ColorRGBAMsg.Deserialize, deserializer.ReadLength());
@@ -163,11 +171,11 @@ namespace RosMessageTypes.Visualization
             "\nmesh_use_embedded_materials: " + mesh_use_embedded_materials.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

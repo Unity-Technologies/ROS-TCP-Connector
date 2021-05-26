@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/WrenchStamped";
 
         //  A wrench with reference coordinate frame and timestamp
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public WrenchMsg wrench;
 
         public WrenchStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.wrench = new WrenchMsg();
         }
 
-        public WrenchStampedMsg(HeaderMsg header, WrenchMsg wrench)
+        public WrenchStampedMsg(Std.HeaderMsg header, WrenchMsg wrench)
         {
             this.header = header;
             this.wrench = wrench;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private WrenchStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.wrench = WrenchMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\nwrench: " + wrench.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

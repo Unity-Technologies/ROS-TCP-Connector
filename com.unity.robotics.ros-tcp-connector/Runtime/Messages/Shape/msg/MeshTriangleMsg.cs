@@ -12,7 +12,7 @@ namespace RosMessageTypes.Shape
     {
         public const string k_RosMessageName = "shape_msgs/MeshTriangle";
 
-        //  Definition of a triangle's vertices
+        //  Definition of a triangle's vertices.
         public uint[] vertex_indices;
 
         public MeshTriangleMsg()
@@ -43,11 +43,11 @@ namespace RosMessageTypes.Shape
             "\nvertex_indices: " + System.String.Join(", ", vertex_indices.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

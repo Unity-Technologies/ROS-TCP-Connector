@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/Float64";
 
-
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy
         //  It is recommended to create your own semantically meaningful message.
@@ -29,7 +28,9 @@ namespace RosMessageTypes.Std
             this.data = data;
         }
 
-        public Float64Msg(MessageDeserializer deserializer)
+        public static Float64Msg Deserialize(MessageDeserializer deserializer) => new Float64Msg(deserializer);
+
+        private Float64Msg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.data);
         }
@@ -45,16 +46,11 @@ namespace RosMessageTypes.Std
             "\ndata: " + data.ToString();
         }
 
-        public static Float64Msg Deserialize(MessageDeserializer deserializer)
-        {
-            return new Float64Msg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

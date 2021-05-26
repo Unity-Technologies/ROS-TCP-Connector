@@ -13,22 +13,21 @@ namespace RosMessageTypes.Diagnostic
         public const string k_RosMessageName = "diagnostic_msgs/DiagnosticStatus";
 
         //  This message holds the status of an individual component of the robot.
-        //  
-        //  Possible levels of operations
+        //  Possible levels of operations.
         public const sbyte OK = 0;
         public const sbyte WARN = 1;
         public const sbyte ERROR = 2;
         public const sbyte STALE = 3;
+        //  Level of operation enumerated above.
         public sbyte level;
-        //  level of operation enumerated above 
+        //  A description of the test/component reporting.
         public string name;
-        //  a description of the test/component reporting
+        //  A description of the status.
         public string message;
-        //  a description of the status
+        //  A hardware unique string.
         public string hardware_id;
-        //  a hardware unique string
+        //  An array of values associated with the status.
         public KeyValueMsg[] values;
-        //  an array of values associated with the status
 
         public DiagnosticStatusMsg()
         {
@@ -79,11 +78,11 @@ namespace RosMessageTypes.Diagnostic
             "\nvalues: " + System.String.Join(", ", values.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,25 +12,25 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/JointState";
 
-        //  This is a message that holds data to describe the state of a set of torque controlled joints. 
+        //  This is a message that holds data to describe the state of a set of torque controlled joints.
         // 
         //  The state of each joint (revolute or prismatic) is defined by:
         //   * the position of the joint (rad or m),
-        //   * the velocity of the joint (rad/s or m/s) and 
+        //   * the velocity of the joint (rad/s or m/s) and
         //   * the effort that is applied in the joint (Nm or N).
         // 
         //  Each joint is uniquely identified by its name
         //  The header specifies the time at which the joint states were recorded. All the joint states
         //  in one message have to be recorded at the same time.
         // 
-        //  This message consists of a multiple arrays, one for each part of the joint state. 
+        //  This message consists of a multiple arrays, one for each part of the joint state.
         //  The goal is to make each of the fields optional. When e.g. your joints have no
-        //  effort associated with them, you can leave the effort array empty. 
+        //  effort associated with them, you can leave the effort array empty.
         // 
         //  All arrays in this message should have the same size, or be empty.
         //  This is the only way to uniquely associate the joint name with the correct
         //  states.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public string[] name;
         public double[] position;
         public double[] velocity;
@@ -39,14 +38,14 @@ namespace RosMessageTypes.Sensor
 
         public JointStateMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.name = new string[0];
             this.position = new double[0];
             this.velocity = new double[0];
             this.effort = new double[0];
         }
 
-        public JointStateMsg(HeaderMsg header, string[] name, double[] position, double[] velocity, double[] effort)
+        public JointStateMsg(Std.HeaderMsg header, string[] name, double[] position, double[] velocity, double[] effort)
         {
             this.header = header;
             this.name = name;
@@ -59,7 +58,7 @@ namespace RosMessageTypes.Sensor
 
         private JointStateMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.name, deserializer.ReadLength());
             deserializer.Read(out this.position, sizeof(double), deserializer.ReadLength());
             deserializer.Read(out this.velocity, sizeof(double), deserializer.ReadLength());
@@ -89,11 +88,11 @@ namespace RosMessageTypes.Sensor
             "\neffort: " + System.String.Join(", ", effort.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

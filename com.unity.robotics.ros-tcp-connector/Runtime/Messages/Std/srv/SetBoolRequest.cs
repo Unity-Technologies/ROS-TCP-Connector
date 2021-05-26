@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_srvs/SetBool";
 
-
         public bool data;
         //  e.g. for hardware enabling / disabling
 
@@ -26,7 +25,9 @@ namespace RosMessageTypes.Std
             this.data = data;
         }
 
-        public SetBoolRequest(MessageDeserializer deserializer)
+        public static SetBoolRequest Deserialize(MessageDeserializer deserializer) => new SetBoolRequest(deserializer);
+
+        private SetBoolRequest(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.data);
         }
@@ -42,16 +43,11 @@ namespace RosMessageTypes.Std
             "\ndata: " + data.ToString();
         }
 
-        public static SetBoolRequest Deserialize(MessageDeserializer deserializer)
-        {
-            return new SetBoolRequest(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

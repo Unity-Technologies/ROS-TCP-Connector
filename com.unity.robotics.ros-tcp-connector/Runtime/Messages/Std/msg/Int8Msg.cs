@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/Int8";
 
-
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy
         //  It is recommended to create your own semantically meaningful message.
@@ -29,7 +28,9 @@ namespace RosMessageTypes.Std
             this.data = data;
         }
 
-        public Int8Msg(MessageDeserializer deserializer)
+        public static Int8Msg Deserialize(MessageDeserializer deserializer) => new Int8Msg(deserializer);
+
+        private Int8Msg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.data);
         }
@@ -45,16 +46,11 @@ namespace RosMessageTypes.Std
             "\ndata: " + data.ToString();
         }
 
-        public static Int8Msg Deserialize(MessageDeserializer deserializer)
-        {
-            return new Int8Msg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

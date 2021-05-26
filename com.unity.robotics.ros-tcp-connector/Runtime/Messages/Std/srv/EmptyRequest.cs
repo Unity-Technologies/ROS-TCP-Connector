@@ -13,11 +13,12 @@ namespace RosMessageTypes.Std
         public const string k_RosMessageName = "std_srvs/Empty";
 
 
-
         public EmptyRequest()
         {
         }
-        public EmptyRequest(MessageDeserializer deserializer)
+        public static EmptyRequest Deserialize(MessageDeserializer deserializer) => new EmptyRequest(deserializer);
+
+        private EmptyRequest(MessageDeserializer deserializer)
         {
         }
 
@@ -30,16 +31,11 @@ namespace RosMessageTypes.Std
             return "EmptyRequest: ";
         }
 
-        public static EmptyRequest Deserialize(MessageDeserializer deserializer)
-        {
-            return new EmptyRequest(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

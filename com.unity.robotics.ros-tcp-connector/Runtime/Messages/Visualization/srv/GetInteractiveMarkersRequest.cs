@@ -13,11 +13,12 @@ namespace RosMessageTypes.Visualization
         public const string k_RosMessageName = "visualization_msgs/GetInteractiveMarkers";
 
 
-
         public GetInteractiveMarkersRequest()
         {
         }
-        public GetInteractiveMarkersRequest(MessageDeserializer deserializer)
+        public static GetInteractiveMarkersRequest Deserialize(MessageDeserializer deserializer) => new GetInteractiveMarkersRequest(deserializer);
+
+        private GetInteractiveMarkersRequest(MessageDeserializer deserializer)
         {
         }
 
@@ -30,16 +31,11 @@ namespace RosMessageTypes.Visualization
             return "GetInteractiveMarkersRequest: ";
         }
 
-        public static GetInteractiveMarkersRequest Deserialize(MessageDeserializer deserializer)
-        {
-            return new GetInteractiveMarkersRequest(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

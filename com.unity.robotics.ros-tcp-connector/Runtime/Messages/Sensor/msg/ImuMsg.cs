@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -17,16 +16,16 @@ namespace RosMessageTypes.Sensor
         // 
         //  Accelerations should be in m/s^2 (not in g's), and rotational velocity should be in rad/sec
         // 
-        //  If the covariance of the measurement is known, it should be filled in (if all you know is the 
+        //  If the covariance of the measurement is known, it should be filled in (if all you know is the
         //  variance of each measurement, e.g. from the datasheet, just put those along the diagonal)
         //  A covariance matrix of all zeros will be interpreted as "covariance unknown", and to use the
         //  data a covariance will have to be assumed or gotten from some other source
         // 
-        //  If you have no estimate for one of the data elements (e.g. your IMU doesn't produce an orientation 
-        //  estimate), please set element 0 of the associated covariance matrix to -1
-        //  If you are interpreting this message, please check for a value of -1 in the first element of each 
+        //  If you have no estimate for one of the data elements (e.g. your IMU doesn't produce an
+        //  orientation estimate), please set element 0 of the associated covariance matrix to -1
+        //  If you are interpreting this message, please check for a value of -1 in the first element of each
         //  covariance matrix, and disregard the associated estimate.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public Geometry.QuaternionMsg orientation;
         public double[] orientation_covariance;
         //  Row major about x, y, z axes
@@ -35,11 +34,11 @@ namespace RosMessageTypes.Sensor
         //  Row major about x, y, z axes
         public Geometry.Vector3Msg linear_acceleration;
         public double[] linear_acceleration_covariance;
-        //  Row major x, y z 
+        //  Row major x, y z
 
         public ImuMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.orientation = new Geometry.QuaternionMsg();
             this.orientation_covariance = new double[9];
             this.angular_velocity = new Geometry.Vector3Msg();
@@ -48,7 +47,7 @@ namespace RosMessageTypes.Sensor
             this.linear_acceleration_covariance = new double[9];
         }
 
-        public ImuMsg(HeaderMsg header, Geometry.QuaternionMsg orientation, double[] orientation_covariance, Geometry.Vector3Msg angular_velocity, double[] angular_velocity_covariance, Geometry.Vector3Msg linear_acceleration, double[] linear_acceleration_covariance)
+        public ImuMsg(Std.HeaderMsg header, Geometry.QuaternionMsg orientation, double[] orientation_covariance, Geometry.Vector3Msg angular_velocity, double[] angular_velocity_covariance, Geometry.Vector3Msg linear_acceleration, double[] linear_acceleration_covariance)
         {
             this.header = header;
             this.orientation = orientation;
@@ -63,7 +62,7 @@ namespace RosMessageTypes.Sensor
 
         private ImuMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.orientation = Geometry.QuaternionMsg.Deserialize(deserializer);
             deserializer.Read(out this.orientation_covariance, sizeof(double), 9);
             this.angular_velocity = Geometry.Vector3Msg.Deserialize(deserializer);
@@ -95,11 +94,11 @@ namespace RosMessageTypes.Sensor
             "\nlinear_acceleration_covariance: " + System.String.Join(", ", linear_acceleration_covariance.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

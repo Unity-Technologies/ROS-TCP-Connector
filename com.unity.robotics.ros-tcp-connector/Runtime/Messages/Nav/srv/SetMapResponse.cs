@@ -12,6 +12,7 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/SetMap";
 
+        //  True if the map was successfully set, false otherwise.
         public bool success;
 
         public SetMapResponse()
@@ -42,11 +43,11 @@ namespace RosMessageTypes.Nav
             "\nsuccess: " + success.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -17,12 +16,12 @@ namespace RosMessageTypes.Sensor
         //  contain additional information such as normals, intensity, etc. The
         //  point data is stored as a binary blob, its layout described by the
         //  contents of the "fields" array.
-        //  The point cloud data may be organized 2d (image-like) or 1d
-        //  (unordered). Point clouds organized as 2d images may be produced by
-        //  camera depth sensors such as stereo or time-of-flight.
-        //  Time of sensor data acquisition, and the coordinate frame ID (for 3d
-        //  points).
-        public HeaderMsg header;
+        // 
+        //  The point cloud data may be organized 2d (image-like) or 1d (unordered).
+        //  Point clouds organized as 2d images may be produced by camera depth sensors
+        //  such as stereo or time-of-flight.
+        //  Time of sensor data acquisition, and the coordinate frame ID (for 3d points).
+        public Std.HeaderMsg header;
         //  2D structure of the point cloud. If the cloud is unordered, height is
         //  1 and width is the length of the point cloud.
         public uint height;
@@ -42,7 +41,7 @@ namespace RosMessageTypes.Sensor
 
         public PointCloud2Msg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.height = 0;
             this.width = 0;
             this.fields = new PointFieldMsg[0];
@@ -53,7 +52,7 @@ namespace RosMessageTypes.Sensor
             this.is_dense = false;
         }
 
-        public PointCloud2Msg(HeaderMsg header, uint height, uint width, PointFieldMsg[] fields, bool is_bigendian, uint point_step, uint row_step, byte[] data, bool is_dense)
+        public PointCloud2Msg(Std.HeaderMsg header, uint height, uint width, PointFieldMsg[] fields, bool is_bigendian, uint point_step, uint row_step, byte[] data, bool is_dense)
         {
             this.header = header;
             this.height = height;
@@ -70,7 +69,7 @@ namespace RosMessageTypes.Sensor
 
         private PointCloud2Msg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.fields, PointFieldMsg.Deserialize, deserializer.ReadLength());
@@ -110,11 +109,11 @@ namespace RosMessageTypes.Sensor
             "\nis_dense: " + is_dense.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/AccelWithCovarianceStamped";
 
         //  This represents an estimated accel with reference coordinate frame and timestamp.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public AccelWithCovarianceMsg accel;
 
         public AccelWithCovarianceStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.accel = new AccelWithCovarianceMsg();
         }
 
-        public AccelWithCovarianceStampedMsg(HeaderMsg header, AccelWithCovarianceMsg accel)
+        public AccelWithCovarianceStampedMsg(Std.HeaderMsg header, AccelWithCovarianceMsg accel)
         {
             this.header = header;
             this.accel = accel;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private AccelWithCovarianceStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.accel = AccelWithCovarianceMsg.Deserialize(deserializer);
         }
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\naccel: " + accel.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

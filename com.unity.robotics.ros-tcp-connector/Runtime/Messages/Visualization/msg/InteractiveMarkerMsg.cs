@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Visualization
 {
@@ -19,7 +18,7 @@ namespace RosMessageTypes.Visualization
         //  in the same frame.
         //  Otherwise, you might receive feedback in a different frame.
         //  For rviz, this will be the current 'fixed frame' set by the user.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Initial pose. Also, defines the pivot point for rotations.
         public Geometry.PoseMsg pose;
         //  Identifying string. Must be globally unique in
@@ -36,7 +35,7 @@ namespace RosMessageTypes.Visualization
 
         public InteractiveMarkerMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.pose = new Geometry.PoseMsg();
             this.name = "";
             this.description = "";
@@ -45,7 +44,7 @@ namespace RosMessageTypes.Visualization
             this.controls = new InteractiveMarkerControlMsg[0];
         }
 
-        public InteractiveMarkerMsg(HeaderMsg header, Geometry.PoseMsg pose, string name, string description, float scale, MenuEntryMsg[] menu_entries, InteractiveMarkerControlMsg[] controls)
+        public InteractiveMarkerMsg(Std.HeaderMsg header, Geometry.PoseMsg pose, string name, string description, float scale, MenuEntryMsg[] menu_entries, InteractiveMarkerControlMsg[] controls)
         {
             this.header = header;
             this.pose = pose;
@@ -60,7 +59,7 @@ namespace RosMessageTypes.Visualization
 
         private InteractiveMarkerMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.pose = Geometry.PoseMsg.Deserialize(deserializer);
             deserializer.Read(out this.name);
             deserializer.Read(out this.description);
@@ -94,11 +93,11 @@ namespace RosMessageTypes.Visualization
             "\ncontrols: " + System.String.Join(", ", controls.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

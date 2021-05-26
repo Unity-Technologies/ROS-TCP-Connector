@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,18 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/Vector3Stamped";
 
         //  This represents a Vector3 with reference coordinate frame and timestamp
-        public HeaderMsg header;
+        //  Note that this follows vector semantics with it always anchored at the origin,
+        //  so the rotational elements of a transform are the only parts applied when transforming.
+        public Std.HeaderMsg header;
         public Vector3Msg vector;
 
         public Vector3StampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.vector = new Vector3Msg();
         }
 
-        public Vector3StampedMsg(HeaderMsg header, Vector3Msg vector)
+        public Vector3StampedMsg(Std.HeaderMsg header, Vector3Msg vector)
         {
             this.header = header;
             this.vector = vector;
@@ -33,7 +34,7 @@ namespace RosMessageTypes.Geometry
 
         private Vector3StampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             this.vector = Vector3Msg.Deserialize(deserializer);
         }
 
@@ -50,11 +51,11 @@ namespace RosMessageTypes.Geometry
             "\nvector: " + vector.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -12,7 +12,8 @@ namespace RosMessageTypes.Shape
     {
         public const string k_RosMessageName = "shape_msgs/Plane";
 
-        //  Representation of a plane, using the plane equation ax + by + cz + d = 0
+        //  Representation of a plane, using the plane equation ax + by + cz + d = 0.
+        // 
         //  a := coef[0]
         //  b := coef[1]
         //  c := coef[2]
@@ -47,11 +48,11 @@ namespace RosMessageTypes.Shape
             "\ncoef: " + System.String.Join(", ", coef.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

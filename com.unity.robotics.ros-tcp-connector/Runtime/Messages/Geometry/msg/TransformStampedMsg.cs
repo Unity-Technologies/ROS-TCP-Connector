@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,24 +13,30 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/TransformStamped";
 
         //  This expresses a transform from coordinate frame header.frame_id
-        //  to the coordinate frame child_frame_id
+        //  to the coordinate frame child_frame_id at the time of header.stamp
         // 
-        //  This message is mostly used by the 
-        //  <a href="http://wiki.ros.org/tf">tf</a> package. 
+        //  This message is mostly used by the
+        //  <a href="https://index.ros.org/p/tf2/">tf2</a> package.
         //  See its documentation for more information.
-        public HeaderMsg header;
+        // 
+        //  The child_frame_id is necessary in addition to the frame_id
+        //  in the Header to communicate the full reference for the transform
+        //  in a self contained message.
+        //  The frame id in the header is used as the reference frame of this transform.
+        public Std.HeaderMsg header;
+        //  The frame id of the child frame to which this transform points.
         public string child_frame_id;
-        //  the frame id of the child frame
+        //  Translation and rotation in 3-dimensions of child_frame_id from header.frame_id.
         public TransformMsg transform;
 
         public TransformStampedMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.child_frame_id = "";
             this.transform = new TransformMsg();
         }
 
-        public TransformStampedMsg(HeaderMsg header, string child_frame_id, TransformMsg transform)
+        public TransformStampedMsg(Std.HeaderMsg header, string child_frame_id, TransformMsg transform)
         {
             this.header = header;
             this.child_frame_id = child_frame_id;
@@ -42,7 +47,7 @@ namespace RosMessageTypes.Geometry
 
         private TransformStampedMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.child_frame_id);
             this.transform = TransformMsg.Deserialize(deserializer);
         }
@@ -62,11 +67,11 @@ namespace RosMessageTypes.Geometry
             "\ntransform: " + transform.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

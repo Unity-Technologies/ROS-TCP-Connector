@@ -12,6 +12,7 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/GetPlan";
 
+        //  Array of poses from start to goal if one was successfully found.
         public PathMsg plan;
 
         public GetPlanResponse()
@@ -42,11 +43,11 @@ namespace RosMessageTypes.Nav
             "\nplan: " + plan.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

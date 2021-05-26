@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -17,15 +16,16 @@ namespace RosMessageTypes.Sensor
         //  measured along the sensor's x-axis (the area of detection is the y-z plane).
         //  The illuminance should have a 0 or positive value and be received with
         //  the sensor's +X axis pointing toward the light source.
+        // 
         //  Photometric illuminance is the measure of the human eye's sensitivity of the
         //  intensity of light encountering or passing through a surface.
-        //  All other Photometric and Radiometric measurements should
-        //  not use this message.
+        // 
+        //  All other Photometric and Radiometric measurements should not use this message.
         //  This message cannot represent:
-        //  Luminous intensity (candela/light source output)
-        //  Luminance (nits/light output per area)
-        //  Irradiance (watt/area), etc.
-        public HeaderMsg header;
+        //   - Luminous intensity (candela/light source output)
+        //   - Luminance (nits/light output per area)
+        //   - Irradiance (watt/area), etc.
+        public Std.HeaderMsg header;
         //  timestamp is the time the illuminance was measured
         //  frame_id is the location and direction of the reading
         public double illuminance;
@@ -35,12 +35,12 @@ namespace RosMessageTypes.Sensor
 
         public IlluminanceMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.illuminance = 0.0;
             this.variance = 0.0;
         }
 
-        public IlluminanceMsg(HeaderMsg header, double illuminance, double variance)
+        public IlluminanceMsg(Std.HeaderMsg header, double illuminance, double variance)
         {
             this.header = header;
             this.illuminance = illuminance;
@@ -51,7 +51,7 @@ namespace RosMessageTypes.Sensor
 
         private IlluminanceMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.illuminance);
             deserializer.Read(out this.variance);
         }
@@ -71,11 +71,11 @@ namespace RosMessageTypes.Sensor
             "\nvariance: " + variance.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

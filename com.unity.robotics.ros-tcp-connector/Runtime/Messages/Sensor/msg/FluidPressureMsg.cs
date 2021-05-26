@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -16,8 +15,9 @@ namespace RosMessageTypes.Sensor
         //  Single pressure reading.  This message is appropriate for measuring the
         //  pressure inside of a fluid (air, water, etc).  This also includes
         //  atmospheric or barometric pressure.
+        // 
         //  This message is not appropriate for force/pressure contact sensors.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  timestamp of the measurement
         //  frame_id is the location of the pressure sensor
         public double fluid_pressure;
@@ -27,12 +27,12 @@ namespace RosMessageTypes.Sensor
 
         public FluidPressureMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.fluid_pressure = 0.0;
             this.variance = 0.0;
         }
 
-        public FluidPressureMsg(HeaderMsg header, double fluid_pressure, double variance)
+        public FluidPressureMsg(Std.HeaderMsg header, double fluid_pressure, double variance)
         {
             this.header = header;
             this.fluid_pressure = fluid_pressure;
@@ -43,7 +43,7 @@ namespace RosMessageTypes.Sensor
 
         private FluidPressureMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.fluid_pressure);
             deserializer.Read(out this.variance);
         }
@@ -63,11 +63,11 @@ namespace RosMessageTypes.Sensor
             "\nvariance: " + variance.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

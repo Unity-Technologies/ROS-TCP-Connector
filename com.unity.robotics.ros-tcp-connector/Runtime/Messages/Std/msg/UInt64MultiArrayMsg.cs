@@ -12,7 +12,6 @@ namespace RosMessageTypes.Std
     {
         public const string k_RosMessageName = "std_msgs/UInt64MultiArray";
 
-
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy
         //  It is recommended to create your own semantically meaningful message.
@@ -36,9 +35,11 @@ namespace RosMessageTypes.Std
             this.data = data;
         }
 
-        public UInt64MultiArrayMsg(MessageDeserializer deserializer)
+        public static UInt64MultiArrayMsg Deserialize(MessageDeserializer deserializer) => new UInt64MultiArrayMsg(deserializer);
+
+        private UInt64MultiArrayMsg(MessageDeserializer deserializer)
         {
-            this.layout = new MultiArrayLayoutMsg(deserializer);
+            this.layout = MultiArrayLayoutMsg.Deserialize(deserializer);
             deserializer.Read(out this.data, sizeof(ulong), deserializer.ReadLength());
         }
 
@@ -56,16 +57,11 @@ namespace RosMessageTypes.Std
             "\ndata: " + System.String.Join(", ", data.ToList());
         }
 
-        public static UInt64MultiArrayMsg Deserialize(MessageDeserializer deserializer)
-        {
-            return new UInt64MultiArrayMsg(deserializer);
-        }
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

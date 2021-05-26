@@ -4,8 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace RosMessageTypes.Visualization
 {
@@ -14,41 +12,43 @@ namespace RosMessageTypes.Visualization
     {
         public const string k_RosMessageName = "visualization_msgs/ImageMarker";
 
-        public const byte CIRCLE = 0;
-        public const byte LINE_STRIP = 1;
-        public const byte LINE_LIST = 2;
-        public const byte POLYGON = 3;
-        public const byte POINTS = 4;
-        public const byte ADD = 0;
-        public const byte REMOVE = 1;
-        public HeaderMsg header;
+        public const int CIRCLE = 0;
+        public const int LINE_STRIP = 1;
+        public const int LINE_LIST = 2;
+        public const int POLYGON = 3;
+        public const int POINTS = 4;
+        public const int ADD = 0;
+        public const int REMOVE = 1;
+        public Std.HeaderMsg header;
+        //  Namespace which is used with the id to form a unique id.
         public string ns;
-        //  namespace, used with id to form a unique id
+        //  Unique id within the namespace.
         public int id;
-        //  unique id within the namespace
+        //  One of the above types, e.g. CIRCLE, LINE_STRIP, etc.
         public int type;
-        //  CIRCLE/LINE_STRIP/etc.
+        //  Either ADD or REMOVE.
         public int action;
-        //  ADD/REMOVE
+        //  Two-dimensional coordinate position, in pixel-coordinates.
         public Geometry.PointMsg position;
-        //  2D, in pixel-coords
+        //  The scale of the object, e.g. the diameter for a CIRCLE.
         public float scale;
-        //  the diameter for a circle, etc.
+        //  The outline color of the marker.
         public Std.ColorRGBAMsg outline_color;
+        //  Whether or not to fill in the shape with color.
         public byte filled;
-        //  whether to fill in the shape with color
+        //  Fill color; in the range: [0.0-1.0]
         public Std.ColorRGBAMsg fill_color;
-        //  color [0.0-1.0]
-        public DurationMsg lifetime;
-        //  How long the object should last before being automatically deleted.  0 means forever
+        //  How long the object should last before being automatically deleted.
+        //  0 indicates forever.
+        public BuiltinInterfaces.DurationMsg lifetime;
+        //  Coordinates in 2D in pixel coords. Used for LINE_STRIP, LINE_LIST, POINTS, etc.
         public Geometry.PointMsg[] points;
-        //  used for LINE_STRIP/LINE_LIST/POINTS/etc., 2D in pixel coords
+        //  The color for each line, point, etc. in the points field.
         public Std.ColorRGBAMsg[] outline_colors;
-        //  a color for each line, point, etc.
 
         public ImageMarkerMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.ns = "";
             this.id = 0;
             this.type = 0;
@@ -58,12 +58,12 @@ namespace RosMessageTypes.Visualization
             this.outline_color = new Std.ColorRGBAMsg();
             this.filled = 0;
             this.fill_color = new Std.ColorRGBAMsg();
-            this.lifetime = new DurationMsg();
+            this.lifetime = new BuiltinInterfaces.DurationMsg();
             this.points = new Geometry.PointMsg[0];
             this.outline_colors = new Std.ColorRGBAMsg[0];
         }
 
-        public ImageMarkerMsg(HeaderMsg header, string ns, int id, int type, int action, Geometry.PointMsg position, float scale, Std.ColorRGBAMsg outline_color, byte filled, Std.ColorRGBAMsg fill_color, DurationMsg lifetime, Geometry.PointMsg[] points, Std.ColorRGBAMsg[] outline_colors)
+        public ImageMarkerMsg(Std.HeaderMsg header, string ns, int id, int type, int action, Geometry.PointMsg position, float scale, Std.ColorRGBAMsg outline_color, byte filled, Std.ColorRGBAMsg fill_color, BuiltinInterfaces.DurationMsg lifetime, Geometry.PointMsg[] points, Std.ColorRGBAMsg[] outline_colors)
         {
             this.header = header;
             this.ns = ns;
@@ -84,7 +84,7 @@ namespace RosMessageTypes.Visualization
 
         private ImageMarkerMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.ns);
             deserializer.Read(out this.id);
             deserializer.Read(out this.type);
@@ -94,7 +94,7 @@ namespace RosMessageTypes.Visualization
             this.outline_color = Std.ColorRGBAMsg.Deserialize(deserializer);
             deserializer.Read(out this.filled);
             this.fill_color = Std.ColorRGBAMsg.Deserialize(deserializer);
-            this.lifetime = DurationMsg.Deserialize(deserializer);
+            this.lifetime = BuiltinInterfaces.DurationMsg.Deserialize(deserializer);
             deserializer.Read(out this.points, Geometry.PointMsg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.outline_colors, Std.ColorRGBAMsg.Deserialize, deserializer.ReadLength());
         }
@@ -136,11 +136,11 @@ namespace RosMessageTypes.Visualization
             "\noutline_colors: " + System.String.Join(", ", outline_colors.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

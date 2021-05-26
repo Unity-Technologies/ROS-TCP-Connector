@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Geometry
 {
@@ -14,16 +13,16 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/PoseArray";
 
         //  An array of poses with a header for global reference.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         public PoseMsg[] poses;
 
         public PoseArrayMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.poses = new PoseMsg[0];
         }
 
-        public PoseArrayMsg(HeaderMsg header, PoseMsg[] poses)
+        public PoseArrayMsg(Std.HeaderMsg header, PoseMsg[] poses)
         {
             this.header = header;
             this.poses = poses;
@@ -33,7 +32,7 @@ namespace RosMessageTypes.Geometry
 
         private PoseArrayMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.poses, PoseMsg.Deserialize, deserializer.ReadLength());
         }
 
@@ -51,11 +50,11 @@ namespace RosMessageTypes.Geometry
             "\nposes: " + System.String.Join(", ", poses.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

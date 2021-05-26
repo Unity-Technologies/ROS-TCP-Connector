@@ -12,8 +12,7 @@ namespace RosMessageTypes.Geometry
     {
         public const string k_RosMessageName = "geometry_msgs/Wrench";
 
-        //  This represents force in free space, separated into
-        //  its linear and angular parts.
+        //  This represents force in free space, separated into its linear and angular parts.
         public Vector3Msg force;
         public Vector3Msg torque;
 
@@ -50,11 +49,11 @@ namespace RosMessageTypes.Geometry
             "\ntorque: " + torque.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Nav
 {
@@ -13,17 +12,19 @@ namespace RosMessageTypes.Nav
     {
         public const string k_RosMessageName = "nav_msgs/Path";
 
-        // An array of poses that represents a Path for a robot to follow
-        public HeaderMsg header;
+        //  An array of poses that represents a Path for a robot to follow.
+        //  Indicates the frame_id of the path.
+        public Std.HeaderMsg header;
+        //  Array of poses to follow.
         public Geometry.PoseStampedMsg[] poses;
 
         public PathMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.poses = new Geometry.PoseStampedMsg[0];
         }
 
-        public PathMsg(HeaderMsg header, Geometry.PoseStampedMsg[] poses)
+        public PathMsg(Std.HeaderMsg header, Geometry.PoseStampedMsg[] poses)
         {
             this.header = header;
             this.poses = poses;
@@ -33,7 +34,7 @@ namespace RosMessageTypes.Nav
 
         private PathMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.poses, Geometry.PoseStampedMsg.Deserialize, deserializer.ReadLength());
         }
 
@@ -51,11 +52,11 @@ namespace RosMessageTypes.Nav
             "\nposes: " + System.String.Join(", ", poses.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

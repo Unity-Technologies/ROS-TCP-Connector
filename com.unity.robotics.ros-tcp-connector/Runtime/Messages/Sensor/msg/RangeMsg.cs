@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -14,14 +13,15 @@ namespace RosMessageTypes.Sensor
         public const string k_RosMessageName = "sensor_msgs/Range";
 
         //  Single range reading from an active ranger that emits energy and reports
-        //  one range reading that is valid along an arc at the distance measured. 
+        //  one range reading that is valid along an arc at the distance measured.
         //  This message is  not appropriate for laser scanners. See the LaserScan
         //  message if you are working with a laser scanner.
+        // 
         //  This message also can represent a fixed-distance (binary) ranger.  This
         //  sensor will have min_range===max_range===distance of detection.
         //  These sensors follow REP 117 and will output -Inf if the object is detected
         //  and +Inf if the object is outside of the detection range.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  timestamp in the header is the time the ranger
         //  returned the distance reading
         //  Radiation type enums
@@ -36,7 +36,7 @@ namespace RosMessageTypes.Sensor
         //  valid for [rad]
         //  the object causing the range reading may have
         //  been anywhere within -field_of_view/2 and
-        //  field_of_view/2 at the measured range. 
+        //  field_of_view/2 at the measured range.
         //  0 angle corresponds to the x-axis of the sensor.
         public float min_range;
         //  minimum range value [m]
@@ -45,8 +45,7 @@ namespace RosMessageTypes.Sensor
         //  Fixed distance rangers require min_range==max_range
         public float range;
         //  range data [m]
-        //  (Note: values < range_min or > range_max
-        //  should be discarded)
+        //  (Note: values < range_min or > range_max should be discarded)
         //  Fixed distance rangers only output -Inf or +Inf.
         //  -Inf represents a detection within fixed distance.
         //  (Detection too close to the sensor to quantify)
@@ -55,7 +54,7 @@ namespace RosMessageTypes.Sensor
 
         public RangeMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.radiation_type = 0;
             this.field_of_view = 0.0f;
             this.min_range = 0.0f;
@@ -63,7 +62,7 @@ namespace RosMessageTypes.Sensor
             this.range = 0.0f;
         }
 
-        public RangeMsg(HeaderMsg header, byte radiation_type, float field_of_view, float min_range, float max_range, float range)
+        public RangeMsg(Std.HeaderMsg header, byte radiation_type, float field_of_view, float min_range, float max_range, float range)
         {
             this.header = header;
             this.radiation_type = radiation_type;
@@ -77,7 +76,7 @@ namespace RosMessageTypes.Sensor
 
         private RangeMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.radiation_type);
             deserializer.Read(out this.field_of_view);
             deserializer.Read(out this.min_range);
@@ -106,11 +105,11 @@ namespace RosMessageTypes.Sensor
             "\nrange: " + range.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -30,7 +30,7 @@ namespace RosMessageTypes.Visualization
         public const byte VIEW_FACING = 2;
         public byte orientation_mode;
         //  Interaction mode for this control
-        //  
+        // 
         //  NONE: This control is only meant for visualization; no context menu.
         //  MENU: Like NONE, but right-click menu is active.
         //  BUTTON: Element can be left-clicked.
@@ -59,10 +59,10 @@ namespace RosMessageTypes.Visualization
         //  Markers to be displayed as custom visual representation.
         //  Leave this empty to use the default control handles.
         // 
-        //  Note: 
+        //  Note:
         //  - The markers can be defined in an arbitrary coordinate frame,
         //    but will be transformed into the local frame of the interactive marker.
-        //  - If the header of a marker is empty, its pose will be interpreted as 
+        //  - If the header of a marker is empty, its pose will be interpreted as
         //    relative to the pose of the parent interactive marker.
         public MarkerMsg[] markers;
         //  In VIEW_FACING mode, set this to true if you don't want the markers
@@ -70,7 +70,7 @@ namespace RosMessageTypes.Visualization
         //  as in INHERIT mode.
         public bool independent_marker_orientation;
         //  Short description (< 40 characters) of what this control does,
-        //  e.g. "Move the robot". 
+        //  e.g. "Move the robot".
         //  Default: A generic description based on the interaction mode
         public string description;
 
@@ -138,11 +138,11 @@ namespace RosMessageTypes.Visualization
             "\ndescription: " + description.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -12,7 +12,8 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/NavSatStatus";
 
-        //  Navigation Satellite fix status for any Global Navigation Satellite System
+        //  Navigation Satellite fix status for any Global Navigation Satellite System.
+        // 
         //  Whether to output an augmented fix is determined by both the fix
         //  type and the last time differential corrections were received.  A
         //  fix is valid when status >= STATUS_FIX.
@@ -62,11 +63,11 @@ namespace RosMessageTypes.Sensor
             "\nservice: " + service.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

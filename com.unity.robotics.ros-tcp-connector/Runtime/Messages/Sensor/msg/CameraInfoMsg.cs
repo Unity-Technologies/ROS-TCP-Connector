@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -40,7 +39,7 @@ namespace RosMessageTypes.Sensor
         //                      Image acquisition info                          #
         // ######################################################################
         //  Time of image acquisition, camera coordinate frame ID
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Header timestamp should be acquisition time of image
         //  Header frame_id should be optical frame of camera
         //  origin of frame should be optical center of camera
@@ -60,17 +59,17 @@ namespace RosMessageTypes.Sensor
         //    2. A rectified image (requires D, K, R)                           #
         //  The projection matrix P projects 3D points into the rectified image.#
         // ######################################################################
-        //  The image dimensions with which the camera was calibrated. Normally
-        //  this will be the full camera resolution in pixels.
+        //  The image dimensions with which the camera was calibrated.
+        //  Normally this will be the full camera resolution in pixels.
         public uint height;
         public uint width;
         //  The distortion model used. Supported models are listed in
-        //  sensor_msgs/distortion_models.h. For most cameras, "plumb_bob" - a
-        //  simple model of radial and tangential distortion - is sufficient.
+        //  sensor_msgs/distortion_models.hpp. For most cameras, "plumb_bob" - a
+        //  simple model of radial and tangential distortion - is sufficent.
         public string distortion_model;
         //  The distortion parameters, size depending on the distortion model.
         //  For "plumb_bob", the 5 parameters are: (k1, k2, t1, t2, k3).
-        public double[] D;
+        public double[] d;
         //  Intrinsic camera matrix for the raw (distorted) images.
         //      [fx  0 cx]
         //  K = [ 0 fy cy]
@@ -78,13 +77,13 @@ namespace RosMessageTypes.Sensor
         //  Projects 3D points in the camera coordinate frame to 2D pixel
         //  coordinates using the focal lengths (fx, fy) and principal point
         //  (cx, cy).
-        public double[] K;
+        public double[] k;
         //  3x3 row-major matrix
         //  Rectification matrix (stereo cameras only)
         //  A rotation matrix aligning the camera coordinate system to the ideal
         //  stereo image plane so that epipolar lines in both stereo images are
         //  parallel.
-        public double[] R;
+        public double[] r;
         //  3x3 row-major matrix
         //  Projection/camera matrix
         //      [fx'  0  cx' Tx]
@@ -110,7 +109,7 @@ namespace RosMessageTypes.Sensor
         //          x = u / w
         //          y = v / w
         //   This holds for both images of a stereo pair.
-        public double[] P;
+        public double[] p;
         //  3x4 row-major matrix
         // ######################################################################
         //                       Operational Parameters                         #
@@ -137,29 +136,29 @@ namespace RosMessageTypes.Sensor
 
         public CameraInfoMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.height = 0;
             this.width = 0;
             this.distortion_model = "";
-            this.D = new double[0];
-            this.K = new double[9];
-            this.R = new double[9];
-            this.P = new double[12];
+            this.d = new double[0];
+            this.k = new double[9];
+            this.r = new double[9];
+            this.p = new double[12];
             this.binning_x = 0;
             this.binning_y = 0;
             this.roi = new RegionOfInterestMsg();
         }
 
-        public CameraInfoMsg(HeaderMsg header, uint height, uint width, string distortion_model, double[] D, double[] K, double[] R, double[] P, uint binning_x, uint binning_y, RegionOfInterestMsg roi)
+        public CameraInfoMsg(Std.HeaderMsg header, uint height, uint width, string distortion_model, double[] d, double[] k, double[] r, double[] p, uint binning_x, uint binning_y, RegionOfInterestMsg roi)
         {
             this.header = header;
             this.height = height;
             this.width = width;
             this.distortion_model = distortion_model;
-            this.D = D;
-            this.K = K;
-            this.R = R;
-            this.P = P;
+            this.d = d;
+            this.k = k;
+            this.r = r;
+            this.p = p;
             this.binning_x = binning_x;
             this.binning_y = binning_y;
             this.roi = roi;
@@ -169,14 +168,14 @@ namespace RosMessageTypes.Sensor
 
         private CameraInfoMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.distortion_model);
-            deserializer.Read(out this.D, sizeof(double), deserializer.ReadLength());
-            deserializer.Read(out this.K, sizeof(double), 9);
-            deserializer.Read(out this.R, sizeof(double), 9);
-            deserializer.Read(out this.P, sizeof(double), 12);
+            deserializer.Read(out this.d, sizeof(double), deserializer.ReadLength());
+            deserializer.Read(out this.k, sizeof(double), 9);
+            deserializer.Read(out this.r, sizeof(double), 9);
+            deserializer.Read(out this.p, sizeof(double), 12);
             deserializer.Read(out this.binning_x);
             deserializer.Read(out this.binning_y);
             this.roi = RegionOfInterestMsg.Deserialize(deserializer);
@@ -188,11 +187,11 @@ namespace RosMessageTypes.Sensor
             serializer.Write(this.height);
             serializer.Write(this.width);
             serializer.Write(this.distortion_model);
-            serializer.WriteLength(this.D);
-            serializer.Write(this.D);
-            serializer.Write(this.K);
-            serializer.Write(this.R);
-            serializer.Write(this.P);
+            serializer.WriteLength(this.d);
+            serializer.Write(this.d);
+            serializer.Write(this.k);
+            serializer.Write(this.r);
+            serializer.Write(this.p);
             serializer.Write(this.binning_x);
             serializer.Write(this.binning_y);
             serializer.Write(this.roi);
@@ -205,20 +204,20 @@ namespace RosMessageTypes.Sensor
             "\nheight: " + height.ToString() +
             "\nwidth: " + width.ToString() +
             "\ndistortion_model: " + distortion_model.ToString() +
-            "\nD: " + System.String.Join(", ", D.ToList()) +
-            "\nK: " + System.String.Join(", ", K.ToList()) +
-            "\nR: " + System.String.Join(", ", R.ToList()) +
-            "\nP: " + System.String.Join(", ", P.ToList()) +
+            "\nd: " + System.String.Join(", ", d.ToList()) +
+            "\nk: " + System.String.Join(", ", k.ToList()) +
+            "\nr: " + System.String.Join(", ", r.ToList()) +
+            "\np: " + System.String.Join(", ", p.ToList()) +
             "\nbinning_x: " + binning_x.ToString() +
             "\nbinning_y: " + binning_y.ToString() +
             "\nroi: " + roi.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

@@ -13,17 +13,13 @@ namespace RosMessageTypes.Geometry
         public const string k_RosMessageName = "geometry_msgs/Quaternion";
 
         //  This represents an orientation in free space in quaternion form.
-        public double x;
-        public double y;
-        public double z;
-        public double w;
+        public double x = 0;
+        public double y = 0;
+        public double z = 0;
+        public double w = 1;
 
         public QuaternionMsg()
         {
-            this.x = 0.0;
-            this.y = 0.0;
-            this.z = 0.0;
-            this.w = 0.0;
         }
 
         public QuaternionMsg(double x, double y, double z, double w)
@@ -61,11 +57,11 @@ namespace RosMessageTypes.Geometry
             "\nw: " + w.ToString();
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);

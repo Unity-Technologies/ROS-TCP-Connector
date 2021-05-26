@@ -4,7 +4,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using RosMessageTypes.Std;
 
 namespace RosMessageTypes.Sensor
 {
@@ -13,10 +12,12 @@ namespace RosMessageTypes.Sensor
     {
         public const string k_RosMessageName = "sensor_msgs/PointCloud";
 
+        // # THIS MESSAGE IS DEPRECATED AS OF FOXY
+        // # Please use sensor_msgs/PointCloud2
         //  This message holds a collection of 3d points, plus optional additional
         //  information about each point.
         //  Time of sensor data acquisition, coordinate frame ID.
-        public HeaderMsg header;
+        public Std.HeaderMsg header;
         //  Array of 3d points. Each Point32 should be interpreted as a 3d point
         //  in the frame given in the header.
         public Geometry.Point32Msg[] points;
@@ -27,12 +28,12 @@ namespace RosMessageTypes.Sensor
 
         public PointCloudMsg()
         {
-            this.header = new HeaderMsg();
+            this.header = new Std.HeaderMsg();
             this.points = new Geometry.Point32Msg[0];
             this.channels = new ChannelFloat32Msg[0];
         }
 
-        public PointCloudMsg(HeaderMsg header, Geometry.Point32Msg[] points, ChannelFloat32Msg[] channels)
+        public PointCloudMsg(Std.HeaderMsg header, Geometry.Point32Msg[] points, ChannelFloat32Msg[] channels)
         {
             this.header = header;
             this.points = points;
@@ -43,7 +44,7 @@ namespace RosMessageTypes.Sensor
 
         private PointCloudMsg(MessageDeserializer deserializer)
         {
-            this.header = HeaderMsg.Deserialize(deserializer);
+            this.header = Std.HeaderMsg.Deserialize(deserializer);
             deserializer.Read(out this.points, Geometry.Point32Msg.Deserialize, deserializer.ReadLength());
             deserializer.Read(out this.channels, ChannelFloat32Msg.Deserialize, deserializer.ReadLength());
         }
@@ -65,11 +66,11 @@ namespace RosMessageTypes.Sensor
             "\nchannels: " + System.String.Join(", ", channels.ToList());
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
-        #else
+#else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
-        #endif
+#endif
         public static void Register()
         {
             MessageRegistry.Register(k_RosMessageName, Deserialize);
