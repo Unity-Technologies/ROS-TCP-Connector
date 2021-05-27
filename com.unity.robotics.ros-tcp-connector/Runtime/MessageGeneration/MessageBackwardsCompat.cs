@@ -907,6 +907,8 @@ namespace RosMessageTypes.Std
     public class MDuration : DurationMsg
     {
         public const string RosMessageName = k_RosMessageName;
+        public int secs;
+        public int nsecs;
         public MDuration() { }
         public MDuration(int secs, int nsecs) { }
     }
@@ -1050,6 +1052,8 @@ namespace RosMessageTypes.Std
     public class MTime : TimeMsg
     {
         public const string RosMessageName = k_RosMessageName;
+        public uint secs;
+        public uint nsecs;
         public MTime() { }
         public MTime(uint secs, uint nsecs) { }
     }
