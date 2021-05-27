@@ -14,7 +14,6 @@ using UnityEditor;
 public class PointCloud2Editor : Editor
 {
     PointCloud2VisualizerSettings pcl2Config;
-    string topic = "";
     string colorMin = "0";
     string colorMax = "1000";
     float colorMinVal = 0;
