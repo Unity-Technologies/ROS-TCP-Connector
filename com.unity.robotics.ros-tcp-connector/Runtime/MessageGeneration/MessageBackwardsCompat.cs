@@ -8,11 +8,26 @@ using UnityEngine;
 namespace RosMessageTypes.Actionlib
 {
     [Obsolete("MGoalID is now called GoalIDMsg")]
-    public class MGoalID: GoalIDMsg {}
+    public class MGoalID: GoalIDMsg
+    {
+        public const string RosMessageName = k_RosMessageName;
+        public MGoalID() { }
+        public MGoalID(Std.MTime stamp, string id) { }
+    }
     [Obsolete("MGoalStatusArray is now called GoalStatusArrayMsg")]
-    public class MGoalStatusArray: GoalStatusArrayMsg {}
+    public class MGoalStatusArray: GoalStatusArrayMsg
+    {
+        public const string RosMessageName = k_RosMessageName;
+        public MGoalStatusArray() { }
+        public MGoalStatusArray(Std.MHeader header, MGoalStatus[] status_list) { }
+    }
     [Obsolete("MGoalStatus is now called GoalStatusMsg")]
-    public class MGoalStatus: GoalStatusMsg {}
+    public class MGoalStatus: GoalStatusMsg
+    {
+        public const string RosMessageName = k_RosMessageName;
+        public MGoalStatus() { }
+        public MGoalStatus(MGoalID goal_id, byte status, string text) { }
+    }
 }
 
 namespace RosMessageTypes.Diagnostic

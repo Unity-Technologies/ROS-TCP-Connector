@@ -167,25 +167,46 @@ namespace Unity.Robotics.ROSTCPConnector
             SendServiceMessage<RosUnityTopicListResponse>("__topic_list", new RosUnityTopicListRequest(), response => callback(response.topics));
         }
 
-        public void RegisterSubscriber<T>(string topic) where T:Message
+        public void RegisterSubscriber<T>(string topic) where T : Message
         {
-            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = MessageRegistry.GetRosMessageName<T>() });
+            RegisterSubscriber(topic, MessageRegistry.GetRosMessageName<T>());
         }
 
-        public void RegisterPublisher<T>(string topic) where T:Message
+        public void RegisterSubscriber(string topic, string rosMessageName)
         {
-            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = MessageRegistry.GetRosMessageName<T>() });
+            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
 
-        public void RegisterRosService<T>(string topic) where T:Message
+        public void RegisterPublisher<T>(string topic) where T : Message
         {
-            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = MessageRegistry.GetRosMessageName<T>() });
+            RegisterPublisher(topic, MessageRegistry.GetRosMessageName<T>());
         }
 
-        public void RegisterUnityService<T>(string topic) where T:Message
+        public void RegisterPublisher(string topic, string rosMessageName)
         {
-            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = MessageRegistry.GetRosMessageName<T>() });
+            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
         }
+
+        public void RegisterRosService<T>(string topic) where T : Message
+        {
+            RegisterRosService(topic, MessageRegistry.GetRosMessageName<T>());
+        }
+
+        public void RegisterRosService(string topic, string rosMessageName)
+        {
+            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
+        public void RegisterUnityService<T>(string topic) where T : Message
+        {
+            RegisterUnityService(topic, MessageRegistry.GetRosMessageName<T>());
+        }
+
+        public void RegisterUnityService(string topic, string rosMessageName)
+        {
+            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+        }
+
 
         private static ROSConnection _instance;
         public static ROSConnection instance
