@@ -57,7 +57,7 @@ namespace RosMessageTypes.Diagnostic
         public MKeyValue(string key, string value) { }
     }
 
-    [Obsolete("MAddDiagnosticsRequest is now called AddDiagnosticsRequestMsg")]
+    [Obsolete("MAddDiagnosticsRequest is now called AddDiagnosticsRequest")]
     public class MAddDiagnosticsRequest : AddDiagnosticsRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -65,7 +65,7 @@ namespace RosMessageTypes.Diagnostic
         public MAddDiagnosticsRequest(string load_namespace) { }
     }
 
-    [Obsolete("MAddDiagnosticsResponse is now called AddDiagnosticsResponseMsg")]
+    [Obsolete("MAddDiagnosticsResponse is now called AddDiagnosticsResponse")]
     public class MAddDiagnosticsResponse : AddDiagnosticsResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -73,14 +73,14 @@ namespace RosMessageTypes.Diagnostic
         public MAddDiagnosticsResponse(bool success, string message) { }
     }
 
-    [Obsolete("MSelfTestRequest is now called SelfTestRequestMsg")]
+    [Obsolete("MSelfTestRequest is now called SelfTestRequest")]
     public class MSelfTestRequest : SelfTestRequest
     {
         public const string RosMessageName = k_RosMessageName;
         public MSelfTestRequest() { }
     }
 
-    [Obsolete("MSelfTestResponse is now called SelfTestResponseMsg")]
+    [Obsolete("MSelfTestResponse is now called SelfTestResponse")]
     public class MSelfTestResponse : SelfTestResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -326,21 +326,21 @@ namespace RosMessageTypes.Geometry
 
 namespace RosMessageTypes.Nav
 {
-    [Obsolete("MGetMapFeedback is now called GetMapFeedbackMsg")]
+    [Obsolete("MGetMapFeedback is now called GetMapFeedback")]
     public class MGetMapFeedback : GetMapFeedback
     {
         public const string RosMessageName = k_RosMessageName;
         public MGetMapFeedback() { }
     }
 
-    [Obsolete("MGetMapGoal is now called GetMapGoalMsg")]
+    [Obsolete("MGetMapGoal is now called GetMapGoal")]
     public class MGetMapGoal : GetMapGoal
     {
         public const string RosMessageName = k_RosMessageName;
         public MGetMapGoal() { }
     }
 
-    [Obsolete("MGetMapResult is now called GetMapResultMsg")]
+    [Obsolete("MGetMapResult is now called GetMapResult")]
     public class MGetMapResult : GetMapResult
     {
         public const string RosMessageName = k_RosMessageName;
@@ -388,14 +388,14 @@ namespace RosMessageTypes.Nav
         public MPath(MHeader header, Geometry.MPoseStamped[] poses) { }
     }
 
-    [Obsolete("MGetMapRequest is now called GetMapRequestMsg")]
+    [Obsolete("MGetMapRequest is now called GetMapRequest")]
     public class MGetMapRequest : GetMapRequest
     {
         public const string RosMessageName = k_RosMessageName;
         public MGetMapRequest() { }
     }
 
-    [Obsolete("MGetMapResponse is now called GetMapResponseMsg")]
+    [Obsolete("MGetMapResponse is now called GetMapResponse")]
     public class MGetMapResponse : GetMapResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -403,7 +403,7 @@ namespace RosMessageTypes.Nav
         public MGetMapResponse(MOccupancyGrid map) { }
     }
 
-    [Obsolete("MGetPlanRequest is now called GetPlanRequestMsg")]
+    [Obsolete("MGetPlanRequest is now called GetPlanRequest")]
     public class MGetPlanRequest : GetPlanRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -411,7 +411,7 @@ namespace RosMessageTypes.Nav
         public MGetPlanRequest(Geometry.MPoseStamped start, Geometry.MPoseStamped goal, float tolerance) { }
     }
 
-    [Obsolete("MGetPlanResponse is now called GetPlanResponseMsg")]
+    [Obsolete("MGetPlanResponse is now called GetPlanResponse")]
     public class MGetPlanResponse : GetPlanResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -419,7 +419,7 @@ namespace RosMessageTypes.Nav
         public MGetPlanResponse(MPath plan) { }
     }
 
-    [Obsolete("MLoadMapRequest is now called LoadMapRequestMsg")]
+    [Obsolete("MLoadMapRequest is now called LoadMapRequest")]
     public class MLoadMapRequest : LoadMapRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -427,7 +427,7 @@ namespace RosMessageTypes.Nav
         public MLoadMapRequest(string map_url) { }
     }
 
-    [Obsolete("MLoadMapResponse is now called LoadMapResponseMsg")]
+    [Obsolete("MLoadMapResponse is now called LoadMapResponse")]
     public class MLoadMapResponse : LoadMapResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -435,7 +435,7 @@ namespace RosMessageTypes.Nav
         public MLoadMapResponse(MOccupancyGrid map, byte result) { }
     }
 
-    [Obsolete("MSetMapRequest is now called SetMapRequestMsg")]
+    [Obsolete("MSetMapRequest is now called SetMapRequest")]
     public class MSetMapRequest : SetMapRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -443,7 +443,7 @@ namespace RosMessageTypes.Nav
         public MSetMapRequest(MOccupancyGrid map, Geometry.MPoseWithCovarianceStamped initial_pose) { }
     }
 
-    [Obsolete("MSetMapResponse is now called SetMapResponseMsg")]
+    [Obsolete("MSetMapResponse is now called SetMapResponse")]
     public class MSetMapResponse : SetMapResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -454,14 +454,14 @@ namespace RosMessageTypes.Nav
 
 namespace RosMessageTypes.ObjectRecognition
 {
-    [Obsolete("MObjectRecognitionFeedback is now called ObjectRecognitionFeedbackMsg")]
+    [Obsolete("MObjectRecognitionFeedback is now called ObjectRecognitionFeedback")]
     public class MObjectRecognitionFeedback : ObjectRecognitionFeedback
     {
         public const string RosMessageName = k_RosMessageName;
         public MObjectRecognitionFeedback() { }
     }
 
-    [Obsolete("MObjectRecognitionGoal is now called ObjectRecognitionGoalMsg")]
+    [Obsolete("MObjectRecognitionGoal is now called ObjectRecognitionGoal")]
     public class MObjectRecognitionGoal : ObjectRecognitionGoal
     {
         public const string RosMessageName = k_RosMessageName;
@@ -469,7 +469,7 @@ namespace RosMessageTypes.ObjectRecognition
         public MObjectRecognitionGoal(bool use_roi, float[] filter_limits) { }
     }
 
-    [Obsolete("MObjectRecognitionResult is now called ObjectRecognitionResultMsg")]
+    [Obsolete("MObjectRecognitionResult is now called ObjectRecognitionResult")]
     public class MObjectRecognitionResult : ObjectRecognitionResult
     {
         public const string RosMessageName = k_RosMessageName;
@@ -525,7 +525,7 @@ namespace RosMessageTypes.ObjectRecognition
         public MTableArray(MHeader header, MTable[] tables) { }
     }
 
-    [Obsolete("MGetObjectInformationRequest is now called GetObjectInformationRequestMsg")]
+    [Obsolete("MGetObjectInformationRequest is now called GetObjectInformationRequest")]
     public class MGetObjectInformationRequest : GetObjectInformationRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -533,7 +533,7 @@ namespace RosMessageTypes.ObjectRecognition
         public MGetObjectInformationRequest(MObjectType type) { }
     }
 
-    [Obsolete("MGetObjectInformationResponse is now called GetObjectInformationResponseMsg")]
+    [Obsolete("MGetObjectInformationResponse is now called GetObjectInformationResponse")]
     public class MGetObjectInformationResponse : GetObjectInformationResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -560,7 +560,7 @@ namespace RosMessageTypes.Octomap
         public MOctomapWithPose(MHeader header, Geometry.MPose origin, MOctomap octomap) { }
     }
 
-    [Obsolete("MBoundingBoxQueryRequest is now called BoundingBoxQueryRequestMsg")]
+    [Obsolete("MBoundingBoxQueryRequest is now called BoundingBoxQueryRequest")]
     public class MBoundingBoxQueryRequest : BoundingBoxQueryRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -568,21 +568,21 @@ namespace RosMessageTypes.Octomap
         public MBoundingBoxQueryRequest(Geometry.MPoint min, Geometry.MPoint max) { }
     }
 
-    [Obsolete("MBoundingBoxQueryResponse is now called BoundingBoxQueryResponseMsg")]
+    [Obsolete("MBoundingBoxQueryResponse is now called BoundingBoxQueryResponse")]
     public class MBoundingBoxQueryResponse : BoundingBoxQueryResponse
     {
         public const string RosMessageName = k_RosMessageName;
         public MBoundingBoxQueryResponse() { }
     }
 
-    [Obsolete("MGetOctomapRequest is now called GetOctomapRequestMsg")]
+    [Obsolete("MGetOctomapRequest is now called GetOctomapRequest")]
     public class MGetOctomapRequest : GetOctomapRequest
     {
         public const string RosMessageName = k_RosMessageName;
         public MGetOctomapRequest() { }
     }
 
-    [Obsolete("MGetOctomapResponse is now called GetOctomapResponseMsg")]
+    [Obsolete("MGetOctomapResponse is now called GetOctomapResponse")]
     public class MGetOctomapResponse : GetOctomapResponse
     {
         public const string RosMessageName = k_RosMessageName;
@@ -809,7 +809,7 @@ namespace RosMessageTypes.Sensor
         public MTimeReference(MHeader header, MTime time_ref, string source) { }
     }
 
-    [Obsolete("MSetCameraInfoRequest is now called SetCameraInfoRequestMsg")]
+    [Obsolete("MSetCameraInfoRequest is now called SetCameraInfoRequest")]
     public class MSetCameraInfoRequest : SetCameraInfoRequest
     {
         public const string RosMessageName = k_RosMessageName;
@@ -817,7 +817,7 @@ namespace RosMessageTypes.Sensor
         public MSetCameraInfoRequest(MCameraInfo camera_info) { }
     }
 
-    [Obsolete("MSetCameraInfoResponse is now called SetCameraInfoResponseMsg")]
+    [Obsolete("MSetCameraInfoResponse is now called SetCameraInfoResponse")]
     public class MSetCameraInfoResponse : SetCameraInfoResponse
     {
         public const string RosMessageName = k_RosMessageName;
