@@ -81,11 +81,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             }
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
-            prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
-            prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+            ROSConnection.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", ROSConnection.RosIPAddress);
+            ROSConnection.RosPort = EditorGUILayout.IntField("ROS Port", ROSConnection.RosPort);
             EditorGUILayout.Space();
 
-            if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
+            if (!ROSConnection.IPFormatIsCorrect(ROSConnection.RosIPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
