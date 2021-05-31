@@ -155,8 +155,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (!ROSConnection.instance.HasConnectionThread)
             {
-                ROSConnection.RosIPAddress = GUILayout.TextField(ROSConnection.RosIPAddress);
-                ROSConnection.RosPort = Convert.ToInt32(GUILayout.TextField(ROSConnection.RosPort.ToString()));
+                ROSConnection.RosIPAddressPref = GUILayout.TextField(ROSConnection.RosIPAddressPref);
+                ROSConnection.RosPortPref = Convert.ToInt32(GUILayout.TextField(ROSConnection.RosPortPref.ToString()));
                 GUILayout.EndHorizontal();
                 GUILayout.Label("(Not connected)");
                 if (GUILayout.Button("Connect"))
