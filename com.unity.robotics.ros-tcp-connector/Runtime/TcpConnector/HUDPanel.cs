@@ -67,17 +67,37 @@ namespace Unity.Robotics.ROSTCPConnector
 
         string LayoutFilePath => Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
-        void SaveLayout()
+        public void SaveLayout(string path="")
         {
+            if (path.Length > 0)
+            {
+                Debug.Log($"Saved visualizations layout to {path}");
+            }
+            else 
+            {
+                path = LayoutFilePath;
+            }
+
             HUDLayoutSave saveState = new HUDLayoutSave { };
             saveState.AddRules(m_AllTopics.Values);
-            File.WriteAllText(LayoutFilePath, JsonUtility.ToJson(saveState));
+            File.WriteAllText(path, JsonUtility.ToJson(saveState));
         }
 
-        void LoadLayout()
+        public void LoadLayout(string path="")
         {
-            if (File.Exists(LayoutFilePath))
-                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(LayoutFilePath)));
+            if (path.Length > 0)
+            {
+                Debug.Log($"Loading visualizations layout from {path}");
+            }
+            else 
+            {
+                path = LayoutFilePath;
+            }
+
+            if (File.Exists(path))
+            {
+                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(path)));
+            }
         }
 
         void LoadLayout(HUDLayoutSave saveState)
