@@ -22,7 +22,7 @@ namespace Unity.Robotics.MessageVisualizers
         { 
             // Save/Load layout files
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Save layout"))
+            if (GUILayout.Button("Export layout"))
             {
                 m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
                 hud.SaveLayout(m_LayoutPath);
