@@ -1,23 +1,19 @@
-using System;
 using System.IO;
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using UnityEditor;
-using IHudTab = Unity.Robotics.ROSTCPConnector.IHudTab;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class VisualizationSettings : MonoBehaviour, ROSTCPConnector.IHudTab
+    public class VisualizerSettings : MonoBehaviour, IHudTab
     {
         string IHudTab.Label => "Settings";
         string m_LayoutPath;
 
         IEnumerator Start()
         {
-            // Add settings to HUD last
+            // Add settings to HUD after other tabs registered
             yield return new WaitForEndOfFrame();
             HUDPanel.RegisterTab(this);
         }
@@ -31,13 +27,14 @@ namespace Unity.Robotics.MessageVisualizers
                 m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
                 hud.SaveLayout(m_LayoutPath);
             }
-            if (GUILayout.Button("Load layout"))
+            if (GUILayout.Button("Import layout"))
             {
                 m_LayoutPath = EditorUtility.OpenFilePanel("Select Visualizations Settings", "", "json");
                 hud.LoadLayout(m_LayoutPath);
             }
             GUILayout.EndHorizontal();
         }
+
         void IHudTab.OnSelected() { }
         void IHudTab.OnDeselected() { }
     }
