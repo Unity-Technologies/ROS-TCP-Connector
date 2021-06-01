@@ -37,14 +37,14 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
 
     public override Action CreateGUI(MPointCloud2 message, MessageMetadata meta, BasicDrawing drawing)
     {
-        var formatDict = new Dictionary<PointFieldFormat, List<string>>();
+        var formatDict = new Dictionary<PointField_Format_Constants, List<string>>();
 
         foreach (MPointField field in message.fields)
         {
-            if (formatDict.ContainsKey((PointFieldFormat)field.datatype))
-                formatDict[(PointFieldFormat)field.datatype].Add(field.name);
+            if (formatDict.ContainsKey((PointField_Format_Constants)field.datatype))
+                formatDict[(PointField_Format_Constants)field.datatype].Add(field.name);
             else 
-                formatDict.Add((PointFieldFormat)field.datatype, new List<string>() { field.name });
+                formatDict.Add((PointField_Format_Constants)field.datatype, new List<string>() { field.name });
         }
 
         string formats = "";

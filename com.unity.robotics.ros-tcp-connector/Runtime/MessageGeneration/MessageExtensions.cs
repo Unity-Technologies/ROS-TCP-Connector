@@ -8,44 +8,44 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
-    public enum BatteryStateStatusConstants
+    public enum BatteryState_Status_Constants
     {
-        POWER_SUPPLY_STATUS_UNKNOWN = 0,
-        POWER_SUPPLY_STATUS_CHARGING = 1,
-        POWER_SUPPLY_STATUS_DISCHARGING = 2,
-        POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
-        POWER_SUPPLY_STATUS_FULL = 4
+        UNKNOWN = 0,
+        CHARGING = 1,
+        DISCHARGING = 2,
+        NOT_CHARGING = 3,
+        FULL = 4
     };
 
-    public enum BatteryStateHealthConstants
+    public enum BatteryState_Health_Constants
     {
-        POWER_SUPPLY_HEALTH_UNKNOWN = 0,
-        POWER_SUPPLY_HEALTH_GOOD = 1,
-        POWER_SUPPLY_HEALTH_OVERHEAT = 2,
-        POWER_SUPPLY_HEALTH_DEAD = 3,
-        POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
-        POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
-        POWER_SUPPLY_HEALTH_COLD = 6,
-        POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
-        POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8
+        UNKNOWN = 0,
+        GOOD = 1,
+        OVERHEAT = 2,
+        DEAD = 3,
+        OVERVOLTAGE = 4,
+        UNSPEC_FAILURE = 5,
+        COLD = 6,
+        WATCHDOG_TIMER_EXPIRE = 7,
+        SAFETY_TIMER_EXPIRE = 8
     };
 
-    public enum BatteryStateTechnologyConstants
+    public enum BatteryState_Technology_Constants
     {
-        POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
-        POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
-        POWER_SUPPLY_TECHNOLOGY_LION = 2,
-        POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
-        POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
-        POWER_SUPPLY_TECHNOLOGY_NICD = 5,
-        POWER_SUPPLY_TECHNOLOGY_LIMN = 6
+        UNKNOWN = 0,
+        NIMH = 1,
+        LION = 2,
+        LIPO = 3,
+        LIFE = 4,
+        NICD = 5,
+        LIMN = 6
     };
 
-    public enum JoyFeedbackTypes
+    public enum JoyFeedback_Type_Constants
     {
-        TYPE_LED    = 0,
-        TYPE_RUMBLE = 1,
-        TYPE_BUZZER = 2,
+        LED    = 0,
+        RUMBLE = 1,
+        BUZZER = 2,
     };
 
     public enum JoyLayout
@@ -74,37 +74,37 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
     };
 
-    public enum NavSatStatuses
+    public enum NavSatStatus_Type_Constants
     {
-        STATUS_NO_FIX =  -1,        // unable to fix position
-        STATUS_FIX =      0,        // unaugmented fix
-        STATUS_SBAS_FIX = 1,        // with satellite-based augmentation
-        STATUS_GBAS_FIX = 2         // with ground-based augmentation
+        NO_FIX =  -1,        // unable to fix position
+        FIX =      0,        // unaugmented fix
+        SBAS_FIX = 1,        // with satellite-based augmentation
+        GBAS_FIX = 2         // with ground-based augmentation
     };
 
-    public enum NavSatStatusServices
+    public enum NavSatStatus_Service_Constants
     {
-        SERVICE_GPS =     1,
-        SERVICE_GLONASS = 2,
-        SERVICE_COMPASS = 4,      // includes BeiDou.
-        SERVICE_GALILEO = 8
+        GPS =     1,
+        GLONASS = 2,
+        COMPASS = 4,      // includes BeiDou.
+        GALILEO = 8
     };
 
-    public enum NavSatFixCovariance
+    public enum NavSatFix_Covariance_Constants
     {
-        COVARIANCE_TYPE_UNKNOWN = 0,
-        COVARIANCE_TYPE_APPROXIMATED = 1,
-        COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
-        COVARIANCE_TYPE_KNOWN = 3
+        UNKNOWN = 0,
+        APPROXIMATED = 1,
+        DIAGONAL_KNOWN = 2,
+        KNOWN = 3
     };
 
-    public enum RangeRadiationTypes
+    public enum Range_RadiationType_Constants
     {
         ULTRASOUND = 0,
         INFRARED = 1
     };
 
-    public enum PointFieldFormat
+    public enum PointField_Format_Constants
     {
         INT8    = 1,
         UINT8   = 2,

@@ -12,6 +12,6 @@ public class DefaultVisualizerNavSatFix : BasicVisualizer<MNavSatFix>
     {
         message.header.GUI();
         message.status.GUI();
-        GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFixCovariance)message.position_covariance_type}");
+        GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFix_Covariance_Constants)message.position_covariance_type}");
     };
 }

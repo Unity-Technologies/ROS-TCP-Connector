@@ -64,15 +64,18 @@ public class PointCloud2Editor : Editor
         maxS = maxVal.ToString();
     }
 
+    void Awake() 
+    {
+        if (pcl2Config == null)
+        {
+            ((DefaultVisualizerPointCloud2)target).m_Settings = (PointCloud2VisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloud2VisualizerSettings.asset", typeof(PointCloud2VisualizerSettings));
+            pcl2Config = ((DefaultVisualizerPointCloud2)target).m_Settings;
+        }
+    }
     
     public override void OnInspectorGUI()
     {
-        //pcl2Config = (PointCloud2VisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", pcl2Config, typeof(PointCloud2VisualizerSettings), false);
-        //if (pcl2Config == null)
-        //{
-            //pcl2Config = (PointCloud2VisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloud2VisualizerSettings.asset", typeof(PointCloud2VisualizerSettings));
-        //}
-        pcl2Config = ((DefaultVisualizerPointCloud2)target).m_Settings;// = pcl2Config;
+        pcl2Config = (PointCloud2VisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", pcl2Config, typeof(PointCloud2VisualizerSettings), false);
 
         if (pcl2Config != null)
         {
