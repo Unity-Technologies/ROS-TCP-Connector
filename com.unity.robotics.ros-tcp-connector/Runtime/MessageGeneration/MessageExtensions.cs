@@ -10,42 +10,42 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public enum BatteryStateStatusConstants
     {
-        POWER_SUPPLY_STATUS_UNKNOWN = 0,
-        POWER_SUPPLY_STATUS_CHARGING = 1,
-        POWER_SUPPLY_STATUS_DISCHARGING = 2,
-        POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
-        POWER_SUPPLY_STATUS_FULL = 4
+        UNKNOWN = 0,
+        CHARGING = 1,
+        DISCHARGING = 2,
+        NOT_CHARGING = 3,
+        FULL = 4
     };
 
     public enum BatteryStateHealthConstants
     {
-        POWER_SUPPLY_HEALTH_UNKNOWN = 0,
-        POWER_SUPPLY_HEALTH_GOOD = 1,
-        POWER_SUPPLY_HEALTH_OVERHEAT = 2,
-        POWER_SUPPLY_HEALTH_DEAD = 3,
-        POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
-        POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
-        POWER_SUPPLY_HEALTH_COLD = 6,
-        POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
-        POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8
+        UNKNOWN = 0,
+        GOOD = 1,
+        OVERHEAT = 2,
+        DEAD = 3,
+        OVERVOLTAGE = 4,
+        UNSPEC_FAILURE = 5,
+        COLD = 6,
+        WATCHDOG_TIMER_EXPIRE = 7,
+        SAFETY_TIMER_EXPIRE = 8
     };
 
     public enum BatteryStateTechnologyConstants
     {
-        POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
-        POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
-        POWER_SUPPLY_TECHNOLOGY_LION = 2,
-        POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
-        POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
-        POWER_SUPPLY_TECHNOLOGY_NICD = 5,
-        POWER_SUPPLY_TECHNOLOGY_LIMN = 6
+        UNKNOWN = 0,
+        NIMH = 1,
+        LION = 2,
+        LIPO = 3,
+        LIFE = 4,
+        NICD = 5,
+        LIMN = 6
     };
 
     public enum JoyFeedbackTypes
     {
-        TYPE_LED    = 0,
-        TYPE_RUMBLE = 1,
-        TYPE_BUZZER = 2,
+        LED    = 0,
+        RUMBLE = 1,
+        BUZZER = 2,
     };
 
     public enum JoyLayout
@@ -76,26 +76,26 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
     public enum NavSatStatuses
     {
-        STATUS_NO_FIX =  -1,        // unable to fix position
-        STATUS_FIX =      0,        // unaugmented fix
-        STATUS_SBAS_FIX = 1,        // with satellite-based augmentation
-        STATUS_GBAS_FIX = 2         // with ground-based augmentation
+        NO_FIX =  -1,        // unable to fix position
+        FIX =      0,        // unaugmented fix
+        SBAS_FIX = 1,        // with satellite-based augmentation
+        GBAS_FIX = 2         // with ground-based augmentation
     };
 
     public enum NavSatStatusServices
     {
-        SERVICE_GPS =     1,
-        SERVICE_GLONASS = 2,
-        SERVICE_COMPASS = 4,      // includes BeiDou.
-        SERVICE_GALILEO = 8
+        GPS =     1,
+        GLONASS = 2,
+        COMPASS = 4,      // includes BeiDou.
+        GALILEO = 8
     };
 
     public enum NavSatFixCovariance
     {
-        COVARIANCE_TYPE_UNKNOWN = 0,
-        COVARIANCE_TYPE_APPROXIMATED = 1,
-        COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
-        COVARIANCE_TYPE_KNOWN = 3
+        UNKNOWN = 0,
+        APPROXIMATED = 1,
+        DIAGONAL_KNOWN = 2,
+        KNOWN = 3
     };
 
     public enum RangeRadiationTypes
