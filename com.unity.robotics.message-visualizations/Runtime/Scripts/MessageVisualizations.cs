@@ -821,7 +821,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MJoyFeedback message)
         {
-            GUILayout.Label($"Type: {(JoyFeedback_Types_Constants)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
+            GUILayout.Label($"Type: {(JoyFeedback_Type_Constants)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
         }
 
         public static void GUI(this MMapMetaData message)
@@ -848,7 +848,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MNavSatStatus message)
         {
-            GUILayout.Label($"Status: {(NavSatStatus_Types_Constants)message.status}\nService: {(NavSatStatus_Services_Constants)message.service}");
+            GUILayout.Label($"Status: {(NavSatStatus_Type_Constants)message.status}\nService: {(NavSatStatus_Service_Constants)message.service}");
         }
 
         public static void GUI(this MPoint message, string name)

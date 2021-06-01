@@ -20,6 +20,6 @@ public class DefaultVisualizerRange : BasicVisualizer<MRange>
     public override Action CreateGUI(MRange message, MessageMetadata meta, BasicDrawing drawing) => () =>
     {
         message.header.GUI();
-        GUILayout.Label($"Radiation type: {(Range_RadiationTypes_Constants)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
+        GUILayout.Label($"Radiation type: {(Range_RadiationType_Constants)message.radiation_type}\nFOV: {message.field_of_view} (rad)\nMin range: {message.min_range} (m)\nMax range: {message.max_range} (m)\nRange: {message.range} (m)");
     };
 }

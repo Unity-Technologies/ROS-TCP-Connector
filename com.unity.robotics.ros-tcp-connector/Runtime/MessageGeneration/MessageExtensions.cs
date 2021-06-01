@@ -41,7 +41,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         LIMN = 6
     };
 
-    public enum JoyFeedback_Types_Constants
+    public enum JoyFeedback_Type_Constants
     {
         LED    = 0,
         RUMBLE = 1,
@@ -74,7 +74,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
     };
 
-    public enum NavSatStatus_Types_Constants
+    public enum NavSatStatus_Type_Constants
     {
         NO_FIX =  -1,        // unable to fix position
         FIX =      0,        // unaugmented fix
@@ -82,7 +82,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         GBAS_FIX = 2         // with ground-based augmentation
     };
 
-    public enum NavSatStatus_Services_Constants
+    public enum NavSatStatus_Service_Constants
     {
         GPS =     1,
         GLONASS = 2,
@@ -98,7 +98,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         KNOWN = 3
     };
 
-    public enum Range_RadiationTypes_Constants
+    public enum Range_RadiationType_Constants
     {
         ULTRASOUND = 0,
         INFRARED = 1
