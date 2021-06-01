@@ -69,6 +69,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SaveLayout(string path="")
         {
+            // Print filepath if saving to user-input path; default to persistentDataPath
             if (path.Length > 0)
             {
                 Debug.Log($"Saved visualizations layout to {path}");
@@ -85,11 +86,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void LoadLayout(string path="")
         {
-            if (path.Length > 0)
-            {
-                Debug.Log($"Loading visualizations layout from {path}");
-            }
-            else 
+            if (path.Length == 0)
             {
                 path = LayoutFilePath;
             }
@@ -97,6 +94,7 @@ namespace Unity.Robotics.ROSTCPConnector
             if (File.Exists(path))
             {
                 LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(path)));
+                Debug.Log($"Loaded visualizations layout from {path}");
             }
         }
 
