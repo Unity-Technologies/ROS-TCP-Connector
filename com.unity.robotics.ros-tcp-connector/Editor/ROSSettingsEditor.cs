@@ -39,45 +39,38 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 }
             }
 
-            EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
-            prefab.rosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.rosIPAddress);
-            prefab.rosPort = EditorGUILayout.IntField("ROS Port", prefab.rosPort);
-            EditorGUILayout.Space();
-            prefab.overrideUnityIP = EditorGUILayout.TextField(
-                new GUIContent("Override Unity IP Address", "If blank, determine IP automatically."),
-                prefab.overrideUnityIP);
-            prefab.unityPort = EditorGUILayout.IntField("Unity Port", prefab.unityPort);
-            if ((prefab.overrideUnityIP != "" && !ROSConnection.IPFormatIsCorrect(prefab.overrideUnityIP)))
-            {   
-                EditorGUILayout.HelpBox("Unity Override IP invalid", MessageType.Warning);
-            }
+            prefab.ConnectOnStart = EditorGUILayout.Toggle("Connect on Startup", prefab.ConnectOnStart);
 
-            if(!ROSConnection.IPFormatIsCorrect(prefab.rosIPAddress))
+            EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
+            prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
+            prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+            EditorGUILayout.Space();
+
+            if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
+
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("If awaiting a service response:", EditorStyles.boldLabel);
-            prefab.awaitDataMaxRetries = EditorGUILayout.IntField(
-                new GUIContent("Max Service Retries",
-                    "While waiting for a service to respond, check this many times before giving up."),
-                prefab.awaitDataMaxRetries);
-            prefab.awaitDataSleepSeconds = EditorGUILayout.FloatField(
-                new GUIContent("Sleep (seconds)",
-                    "While waiting for a service to respond, wait this many seconds between checks."),
-                prefab.awaitDataSleepSeconds);
-            prefab.readChunkSize = EditorGUILayout.IntField(
-                new GUIContent("Read chunk size",
-                    "While reading received messages, read this many bytes at a time."),
-                prefab.readChunkSize);
-            prefab.awaitDataReadRetry = EditorGUILayout.IntField(
-                new GUIContent("Max Read retries",
-                    "While waiting to read a full message, check this many times before giving up."),
-                prefab.awaitDataReadRetry);
-            prefab.timeoutOnIdle = EditorGUILayout.FloatField(
-                new GUIContent("Timeout on idle (seconds)",
-                    "If no messages have been sent for this long, close the connection."),
-                prefab.timeoutOnIdle);
+
+            prefab.ShowHud = EditorGUILayout.Toggle("Show HUD", prefab.ShowHud);
+
+            EditorGUILayout.Space();
+
+            prefab.KeepaliveTime = EditorGUILayout.FloatField(
+                new GUIContent("KeepAlive time (secs)",
+                    "If no other messages are being sent, test the connection this often. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
+                prefab.KeepaliveTime);
+
+            prefab.NetworkTimeoutSeconds = EditorGUILayout.FloatField(
+                new GUIContent("Network timeout (secs)",
+                    "If a network message takes this long to send, assume the connection has failed. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
+                prefab.NetworkTimeoutSeconds);
+
+            prefab.SleepTimeSeconds = EditorGUILayout.FloatField(
+                new GUIContent("Sleep time (secs)",
+                    "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
+                prefab.SleepTimeSeconds);
 
             if (GUI.changed)
             {

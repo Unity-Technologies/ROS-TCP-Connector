@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019
 Author: Sifan Ye (sifan.ye@siemens.com)
 
@@ -30,7 +30,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             status = new MGoalStatus();
         }
 
-        public ActionFeedback(MHeader header, MGoalStatus status) {
+        public ActionFeedback(MHeader header, MGoalStatus status)
+        {
             this.header = header;
             this.status = status;
         }
