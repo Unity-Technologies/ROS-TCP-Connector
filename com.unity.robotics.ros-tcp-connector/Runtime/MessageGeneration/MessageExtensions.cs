@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
-    public enum BatteryStateStatusConstants
+    public enum BatteryState_Status_Constants
     {
         UNKNOWN = 0,
         CHARGING = 1,
@@ -17,7 +17,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         FULL = 4
     };
 
-    public enum BatteryStateHealthConstants
+    public enum BatteryState_Health_Constants
     {
         UNKNOWN = 0,
         GOOD = 1,
@@ -30,7 +30,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         SAFETY_TIMER_EXPIRE = 8
     };
 
-    public enum BatteryStateTechnologyConstants
+    public enum BatteryState_Technology_Constants
     {
         UNKNOWN = 0,
         NIMH = 1,
@@ -41,7 +41,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         LIMN = 6
     };
 
-    public enum JoyFeedbackTypes
+    public enum JoyFeedback_Types_Constants
     {
         LED    = 0,
         RUMBLE = 1,
@@ -74,7 +74,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
     };
 
-    public enum NavSatStatuses
+    public enum NavSatStatus_Types_Constants
     {
         NO_FIX =  -1,        // unable to fix position
         FIX =      0,        // unaugmented fix
@@ -82,7 +82,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         GBAS_FIX = 2         // with ground-based augmentation
     };
 
-    public enum NavSatStatusServices
+    public enum NavSatStatus_Services_Constants
     {
         GPS =     1,
         GLONASS = 2,
@@ -90,7 +90,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         GALILEO = 8
     };
 
-    public enum NavSatFixCovariance
+    public enum NavSatFix_Covariance_Constants
     {
         UNKNOWN = 0,
         APPROXIMATED = 1,
@@ -98,13 +98,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         KNOWN = 3
     };
 
-    public enum RangeRadiationTypes
+    public enum Range_RadiationTypes_Constants
     {
         ULTRASOUND = 0,
         INFRARED = 1
     };
 
-    public enum PointFieldFormat
+    public enum PointField_Format_Constants
     {
         INT8    = 1,
         UINT8   = 2,
