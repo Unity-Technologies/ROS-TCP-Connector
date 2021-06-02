@@ -13,7 +13,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         void Start()
         {
-            HUDPanel.RegisterTab(this, index: 2);
+            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
         }
 
         void IHudTab.OnGUI(HUDPanel hud) 

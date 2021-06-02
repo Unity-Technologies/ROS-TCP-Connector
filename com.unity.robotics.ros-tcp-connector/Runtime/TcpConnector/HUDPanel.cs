@@ -53,11 +53,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public SortedList<string, HUDVisualizationRule> AllTopics => m_AllTopics;
 
-        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { {0, new TopicsHudTab()} };
+        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { {(int)HudTabIndices.Topics, new TopicsHudTab()} };
+        public enum HudTabIndices
+        {
+            Topics = -3,
+            TF = -2,
+            Settings = -1
+        }
 
         public static void RegisterTab(IHudTab tab, int index=0)
         {
-            if (index == 0 || s_HUDTabs.ContainsKey(index))
+            if (s_HUDTabs.ContainsKey(index))
             {
                 Debug.LogWarning($"HUDPanel already contains a tab registered at index {index}! Registering at index {s_HUDTabs.Count} instead.");
                 index = s_HUDTabs.Count;
