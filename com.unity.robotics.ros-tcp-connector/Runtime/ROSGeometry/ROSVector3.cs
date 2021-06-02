@@ -58,7 +58,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public static implicit operator Point32Msg(Vector3<C> rvec) => new Point32Msg(rvec.x, rvec.y, rvec.z);
         public static implicit operator Vector3Msg(Vector3<C> rvec) => new Vector3Msg(rvec.x, rvec.y, rvec.z);
 
-        [Obsolete]  
+        [Obsolete]
         public static implicit operator MPoint(Vector3<C> rvec) => throw new NotImplementedException();
         [Obsolete]
         public static implicit operator MPoint32(Vector3<C> rvec) => throw new NotImplementedException();

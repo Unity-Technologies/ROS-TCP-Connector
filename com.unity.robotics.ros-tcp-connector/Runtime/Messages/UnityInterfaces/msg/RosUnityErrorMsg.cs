@@ -41,19 +41,19 @@ namespace RosMessageTypes.UnityInterfaces
             "\nmessage: " + message.ToString();
         }
 
-		public static RosUnityErrorMsg Deserialize(MessageDeserializer deserializer)
-		{
-			return new RosUnityErrorMsg(deserializer);
-		}
+        public static RosUnityErrorMsg Deserialize(MessageDeserializer deserializer)
+        {
+            return new RosUnityErrorMsg(deserializer);
+        }
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[UnityEditor.InitializeOnLoadMethod]
-		#else
-		[UnityEngine.RuntimeInitializeOnLoadMethod]
-		#endif
-		public static void Register()
-		{
-			MessageRegistry.Register(k_RosMessageName, Deserialize);
-		}
+#else
+        [UnityEngine.RuntimeInitializeOnLoadMethod]
+#endif
+        public static void Register()
+        {
+            MessageRegistry.Register(k_RosMessageName, Deserialize);
+        }
     }
 }

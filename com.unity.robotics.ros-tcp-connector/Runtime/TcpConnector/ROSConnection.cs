@@ -123,7 +123,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 SendSubscriberRegistration(topic, rosMessageName);
         }
 
-        void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T:Message
+        void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T : Message
         {
             SubscriberCallback subCallbacks;
             if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
@@ -227,7 +227,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 SendRosServiceRegistration(topic, rosMessageName);
         }
 
-        [Obsolete("ImplementUnityService will now implicitly register it")]
+        [Obsolete("Calling ImplementUnityService implicitly registers the service")]
         public void RegisterUnityService(string topic, string rosMessageName)
         {
         }
@@ -318,9 +318,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
-            foreach(var keyValue in m_Subscribers)
+            foreach (var keyValue in m_Subscribers)
             {
-                if(keyValue.Value.rosMessageName != null)
+                if (keyValue.Value.rosMessageName != null)
                     SendSubscriberRegistration(keyValue.Key, keyValue.Value.rosMessageName);
             }
 
@@ -330,9 +330,9 @@ namespace Unity.Robotics.ROSTCPConnector
                     SendUnityServiceRegistration(keyValue.Key, keyValue.Value.rosMessageName);
             }
 
-            foreach(var keyValue in m_Publishers)
+            foreach (var keyValue in m_Publishers)
             {
-                if(keyValue.Value != null)
+                if (keyValue.Value != null)
                     SendPublisherRegistration(keyValue.Key, keyValue.Value);
             }
 
@@ -613,7 +613,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Send(k_Topic_SysCommand, new RosUnitySysCommandMsg(command, JsonUtility.ToJson(param)));
         }
 
-        public void Send<T>(string rosTopicName, T message) where T:Message
+        public void Send<T>(string rosTopicName, T message) where T : Message
         {
             if (!rosTopicName.StartsWith("__"))
             {
