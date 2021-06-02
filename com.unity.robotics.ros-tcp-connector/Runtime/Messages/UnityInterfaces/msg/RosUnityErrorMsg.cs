@@ -47,7 +47,7 @@ namespace RosMessageTypes.UnityInterfaces
         }
 
 #if UNITY_EDITOR
-		[UnityEditor.InitializeOnLoadMethod]
+        [UnityEditor.InitializeOnLoadMethod]
 #else
         [UnityEngine.RuntimeInitializeOnLoadMethod]
 #endif
