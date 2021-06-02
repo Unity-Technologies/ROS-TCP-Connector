@@ -924,8 +924,11 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MRegionOfInterest message, Texture2D tex)
         {
-            var ratio = (float)tex.width / (float)tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
+            if (tex != null) 
+            {
+                var ratio = (float)tex.width / (float)tex.height;
+                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
+            }
             GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
         }
 

@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage>
 {
-    public Texture2D m_Tex { get; private set; }
+    public static Texture2D m_Tex { get; private set; }
 
     public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, BasicDrawing drawing)
     {

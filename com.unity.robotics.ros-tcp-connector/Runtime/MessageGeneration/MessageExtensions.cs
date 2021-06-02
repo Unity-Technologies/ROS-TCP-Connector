@@ -310,15 +310,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY, MCameraInfo info=null)
+        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
             var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
             tex.LoadRawTextureData(data);
             tex.Apply();
-            // if (info != null) 
-            //     tex = tex.ApplyCameraInfoProjection(info);
-            // tex.Apply();
             return tex;
         }
 
