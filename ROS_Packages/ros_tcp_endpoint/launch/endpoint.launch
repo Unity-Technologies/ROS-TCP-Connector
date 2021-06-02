@@ -1,0 +1,4 @@
+<launch>
+    <rosparam file="$(find ros_tcp_endpoint)/config/params.yaml" command="load"/>
+    <node name="server_endpoint" pkg="ros_tcp_endpoint" type="default_server_endpoint.py" args="--wait" output="screen" respawn="true" />
+</launch>

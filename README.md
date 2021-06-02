@@ -2,6 +2,12 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+## Introduction
+
+Unity package and ROS/ROS2 packages for setting up communication between Unity and ROS.
+
+Instructions and examples on how to use these packages can be found on the [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/master/tutorials/ros_unity_integration/README.md) repository.
+
 ## Installation
 1. Using Unity 2020.2 or later, open the package manager from `Window` -> `Package Manager` and select "Add package from git URL..."
 ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
