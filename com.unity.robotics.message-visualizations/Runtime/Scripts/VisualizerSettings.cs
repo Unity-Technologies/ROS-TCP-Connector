@@ -11,11 +11,9 @@ namespace Unity.Robotics.MessageVisualizers
         string IHudTab.Label => "Settings";
         string m_LayoutPath;
 
-        IEnumerator Start()
+        void Start()
         {
-            // Add settings to HUD after other tabs registered
-            yield return new WaitForEndOfFrame();
-            HUDPanel.RegisterTab(this);
+            HUDPanel.RegisterTab(this, index: 2);
         }
 
         void IHudTab.OnGUI(HUDPanel hud) 

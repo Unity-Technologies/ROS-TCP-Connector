@@ -15,7 +15,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
-            HUDPanel.RegisterTab(this);
+            HUDPanel.RegisterTab(this, index: 1);
             TFSystem.Register(this);
             if (color.a == 0)
                 color.a = 1;

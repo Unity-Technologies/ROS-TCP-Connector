@@ -53,11 +53,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public SortedList<string, HUDVisualizationRule> AllTopics => m_AllTopics;
 
-        static List<IHudTab> s_HUDTabs = new List<IHudTab> { new TopicsHudTab() };
+        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { {0, new TopicsHudTab()} };
 
-        public static void RegisterTab(IHudTab tab)
+        public static void RegisterTab(IHudTab tab, int index=0)
         {
-            s_HUDTabs.Add(tab);
+            if (index == 0 || s_HUDTabs.ContainsKey(index))
+            {
+                Debug.LogWarning($"HUDPanel already contains a tab registered at index {index}! Registering at index {s_HUDTabs.Count} instead.");
+                index = s_HUDTabs.Count;
+            }
+            
+            s_HUDTabs.Add(index, tab);
         }
 
         IHudTab m_SelectedTab;
@@ -86,7 +92,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void LoadLayout(string path="")
         {
-            if (path.Length == 0)
+            if (path.Length > 0)
+            {
+                Debug.Log($"Loaded visualizations layout from {path}");
+            }
+            else
             {
                 path = LayoutFilePath;
             }
@@ -94,7 +104,6 @@ namespace Unity.Robotics.ROSTCPConnector
             if (File.Exists(path))
             {
                 LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(path)));
-                Debug.Log($"Loaded visualizations layout from {path}");
             }
         }
 
@@ -283,7 +292,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             GUILayout.BeginHorizontal();
-            foreach(IHudTab tab in s_HUDTabs)
+            foreach(IHudTab tab in s_HUDTabs.Values)
             {
                 bool wasSelected = tab == m_SelectedTab;
                 bool selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
