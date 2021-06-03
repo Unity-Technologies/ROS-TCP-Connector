@@ -77,7 +77,7 @@ namespace Unity.Robotics.ROSTCPConnector
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
 
-        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
+        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages;
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
@@ -317,6 +317,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_HudPanel.host = $"{ipAddress}:{port}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
+            m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
 
             foreach (var keyValue in m_Subscribers)
             {
@@ -615,14 +616,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Send<T>(string rosTopicName, T message) where T : Message
         {
+            if (m_OutgoingMessages == null)
+            {
+                Debug.LogWarning($"No connection - can't publish to {rosTopicName}");
+                return;
+            }
+
             if (!rosTopicName.StartsWith("__"))
             {
                 m_Publishers[rosTopicName] = MessageRegistry.GetRosMessageName<T>();
                 if (m_HudPanel != null)
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }
-            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
 
+            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
