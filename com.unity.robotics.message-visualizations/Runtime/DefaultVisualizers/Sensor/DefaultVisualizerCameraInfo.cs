@@ -19,22 +19,26 @@ public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify) 
         {
-            m_Visualizer = ROSConnection.instance.HudPanel.GetVisualizer(m_ImageTopic);
-            if (m_Visualizer != null)
+            if (m_Visualizer == null)
+            {
+                m_Visualizer = ROSConnection.instance.HudPanel.GetVisualizer(m_ImageTopic);
+            }
+            if (m_Rule == null)
             {
                 m_Rule = ROSConnection.instance.HudPanel.AllTopics[m_ImageTopic];
-                if (m_Rule.RosMessageName == "sensor_msgs/CompressedImage")
-                {
-                    m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerCompressedImage)m_Visualizer).m_Tex);
-                }
-                else if (m_Rule.RosMessageName == "sensor_msgs/Image")
-                {
-                    m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerImage)m_Visualizer).m_Tex);
-                }
-                else
-                {
-                    Debug.LogError($"Message type {m_Rule.RosMessageName} is not supported with CameraInfo!");
-                }
+            }
+            
+            if (m_Rule.RosMessageName == "sensor_msgs/CompressedImage")
+            {
+                m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerCompressedImage)m_Visualizer).m_Tex);
+            }
+            else if (m_Rule.RosMessageName == "sensor_msgs/Image")
+            {
+                m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerImage)m_Visualizer).m_Tex);
+            }
+            else
+            {
+                Debug.LogError($"Message type {m_Rule.RosMessageName} is not supported with CameraInfo!");
             }
         }
         

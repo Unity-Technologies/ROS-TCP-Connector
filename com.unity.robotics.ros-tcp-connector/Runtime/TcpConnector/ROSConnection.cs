@@ -194,7 +194,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
-
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)
