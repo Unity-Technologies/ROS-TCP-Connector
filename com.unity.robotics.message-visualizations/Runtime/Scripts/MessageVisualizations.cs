@@ -525,6 +525,19 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
         }
 
+        public static void Draw<C>(this MOdometry message, BasicDrawing drawing, Color color, GameObject origin) where C : ICoordinateSpace, new()
+        {
+            // TODO
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+            Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
+            if (origin != null)
+            {
+                pos += origin.transform.position;
+            }
+            message.pose.pose.Draw<C>(drawing);
+            message.twist.twist.Draw<C>(drawing, color, pos);
+        }
+
         public static void Draw<C>(this MPath message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
@@ -666,6 +679,12 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MTransform transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
+        }
+
+        public static void Draw<C>(this MTwist message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawArrow(origin, origin + message.linear.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
         }
 
         public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
@@ -893,8 +912,12 @@ namespace Unity.Robotics.MessageVisualizers
                 GUI(p);
         }
 
-        public static void GUI(this MPose message)
+        public static void GUI(this MPose message, string name="")
         {
+            if (name.Length > 0)
+            {
+                GUILayout.Label(name);
+            }
             message.position.GUI("Position");
             message.orientation.GUI("Orientation");
         }
@@ -970,8 +993,12 @@ namespace Unity.Robotics.MessageVisualizers
             message.rotation.GUI("Rotation");
         }
 
-        public static void GUI(this MTwist message)
+        public static void GUI(this MTwist message, string name="")
         {
+            if (name.Length > 0)
+            {
+                GUILayout.Label(name);
+            }
             message.linear.GUI("Linear");
             message.angular.GUI("Angular");
         }
