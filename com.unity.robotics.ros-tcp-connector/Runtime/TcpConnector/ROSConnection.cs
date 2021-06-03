@@ -77,7 +77,7 @@ namespace Unity.Robotics.ROSTCPConnector
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
 
-        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
+        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages;
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
@@ -123,7 +123,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 SendSubscriberRegistration(topic, rosMessageName);
         }
 
-        void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T:Message
+        void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T : Message
         {
             SubscriberCallback subCallbacks;
             if (!m_Subscribers.TryGetValue(topic, out subCallbacks))
@@ -317,10 +317,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_HudPanel.host = $"{ipAddress}:{port}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
+            m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
 
-            foreach(var keyValue in m_Subscribers)
+            foreach (var keyValue in m_Subscribers)
             {
-                if(keyValue.Value.rosMessageName != null)
+                if (keyValue.Value.rosMessageName != null)
                     SendSubscriberRegistration(keyValue.Key, keyValue.Value.rosMessageName);
             }
 
@@ -330,9 +331,9 @@ namespace Unity.Robotics.ROSTCPConnector
                     SendUnityServiceRegistration(keyValue.Key, keyValue.Value.rosMessageName);
             }
 
-            foreach(var keyValue in m_Publishers)
+            foreach (var keyValue in m_Publishers)
             {
-                if(keyValue.Value != null)
+                if (keyValue.Value != null)
                     SendPublisherRegistration(keyValue.Key, keyValue.Value);
             }
 
@@ -613,16 +614,22 @@ namespace Unity.Robotics.ROSTCPConnector
             Send(k_Topic_SysCommand, new RosUnitySysCommandMsg(command, JsonUtility.ToJson(param)));
         }
 
-        public void Send<T>(string rosTopicName, T message) where T:Message
+        public void Send<T>(string rosTopicName, T message) where T : Message
         {
+            if (m_OutgoingMessages == null)
+            {
+                Debug.LogWarning($"No connection - can't publish to {rosTopicName}");
+                return;
+            }
+
             if (!rosTopicName.StartsWith("__"))
             {
                 m_Publishers[rosTopicName] = MessageRegistry.GetRosMessageName<T>();
                 if (m_HudPanel != null)
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }
-            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
 
+            m_OutgoingMessages.Enqueue(new Tuple<string, Message>(rosTopicName, message));
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
