@@ -373,11 +373,13 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
 
-        IVisualizer GetVisualizer(string topic)
+        public IVisualizer GetVisualizer(string topic)
         {
             IVisualizer result;
             if (m_TopicVisualizers.TryGetValue(topic, out result))
+            {
                 return result;
+            }
 
             string rosMessageName = GetMessageNameByTopic(topic);
             result = VisualizationRegistry.GetVisualizer(topic, rosMessageName);

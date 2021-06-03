@@ -10,7 +10,7 @@ using UnityEngine;
 
 public class DefaultVisualizerImage : BasicVisualizer<MImage>
 {
-    public static Texture2D m_Tex { get; private set; }
+    public Texture2D m_Tex { get; private set; }
     bool m_ConvertBgr = true;
     bool m_PrevConvert = true;
     bool m_FlipY = true;

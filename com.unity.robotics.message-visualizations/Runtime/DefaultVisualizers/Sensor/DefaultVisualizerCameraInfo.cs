@@ -4,12 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 
 public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
 {
-    public enum AssociatedImageType { Image, CompressedImage };
-    public AssociatedImageType m_ImageType;
+    public string m_ImageTopic;
+    IVisualizer m_Visualizer;
+    HUDVisualizationRule m_Rule;
     static Texture2D m_Tex;
 
     public override Action CreateGUI(MCameraInfo message, MessageMetadata meta, BasicDrawing drawing) 
@@ -17,7 +19,23 @@ public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify) 
         {
-            m_Tex = message.roi.RegionOfInterestTexture(m_ImageType == AssociatedImageType.Image ? DefaultVisualizerImage.m_Tex : DefaultVisualizerCompressedImage.m_Tex);
+            m_Visualizer = ROSConnection.instance.HudPanel.GetVisualizer(m_ImageTopic);
+            if (m_Visualizer != null)
+            {
+                m_Rule = ROSConnection.instance.HudPanel.AllTopics[m_ImageTopic];
+                if (m_Rule.RosMessageName == "sensor_msgs/CompressedImage")
+                {
+                    m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerCompressedImage)m_Visualizer).m_Tex);
+                }
+                else if (m_Rule.RosMessageName == "sensor_msgs/Image")
+                {
+                    m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerImage)m_Visualizer).m_Tex);
+                }
+                else
+                {
+                    Debug.LogError($"Message type {m_Rule.RosMessageName} is not supported with CameraInfo!");
+                }
+            }
         }
         
         return () => 

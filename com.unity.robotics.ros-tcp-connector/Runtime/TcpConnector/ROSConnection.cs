@@ -63,6 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
+        public HUDPanel HudPanel => m_HudPanel;
 
         ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
