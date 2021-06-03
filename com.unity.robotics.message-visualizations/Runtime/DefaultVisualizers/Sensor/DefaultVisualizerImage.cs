@@ -10,17 +10,17 @@ using UnityEngine;
 
 public class DefaultVisualizerImage : BasicVisualizer<MImage>
 {
-    public static Texture2D tex { get; private set; }
-    bool convertBgr = true;
-    bool prevConvert = true;
-    bool flipY = true;
-    bool prevFlip = true;
+    public static Texture2D m_Tex { get; private set; }
+    bool m_ConvertBgr = true;
+    bool m_PrevConvert = true;
+    bool m_FlipY = true;
+    bool m_PrevFlip = true;
 
     public override Action CreateGUI(MImage message, MessageMetadata meta, BasicDrawing drawing)
     {
         if (message.data.Length > 0)
         {
-            tex = message.ToTexture2D(convertBgr, flipY);
+            m_Tex = message.ToTexture2D(m_ConvertBgr, m_FlipY);
         }
 
 		return () =>
@@ -31,27 +31,27 @@ public class DefaultVisualizerImage : BasicVisualizer<MImage>
                 GUILayout.BeginHorizontal();
                 if (!message.encoding.Contains("1") && !message.encoding.Contains("mono") && !message.encoding.Contains("bayer"))
                 {
-                    convertBgr = GUILayout.Toggle(convertBgr, "From BGR");
+                    m_ConvertBgr = GUILayout.Toggle(m_ConvertBgr, "From BGR");
                 }
-                flipY = GUILayout.Toggle(flipY, "Flip Y");
+                m_FlipY = GUILayout.Toggle(m_FlipY, "Flip Y");
                 GUILayout.EndHorizontal();
 
-                if (convertBgr != prevConvert || flipY != prevFlip)
+                if (m_ConvertBgr != m_PrevConvert || m_FlipY != m_PrevFlip)
                 {
-                    tex = message.ToTexture2D(convertBgr, flipY);
+                    m_Tex = message.ToTexture2D(m_ConvertBgr, m_FlipY);
                 }
             }
 
             // TODO: Rescale/recenter image based on window height/width
-            if (tex != null)
+            if (m_Tex != null)
             {
-                var origRatio = (float)tex.width / (float)tex.height;
-                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+                var origRatio = (float)m_Tex.width / (float)m_Tex.height;
+                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
             }
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
 
-            prevConvert = convertBgr;
-            prevFlip = flipY;
+            m_PrevConvert = m_ConvertBgr;
+            m_PrevFlip = m_FlipY;
 		};
     }
 }
