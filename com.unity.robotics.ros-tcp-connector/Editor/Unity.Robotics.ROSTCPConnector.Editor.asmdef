@@ -1,6 +1,5 @@
 {
     "name": "Unity.Robotics.ROSTCPConnector.Editor",
-    "rootNamespace": "Unity.Robotics.ROSTCPConnector.Editor",
     "references": [
         "GUID:625bfc588fb96c74696858f2c467e978"
     ],
@@ -11,7 +10,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
