@@ -77,7 +77,7 @@ namespace Unity.Robotics.ROSTCPConnector
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
 
-        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages;
+        ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
@@ -317,8 +317,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_HudPanel.host = $"{ipAddress}:{port}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
-            m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
 
+            Task.Run(() => ConnectionThread(ipAddress, port, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds * 1000.0f), RegisterAll, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+        }
+
+        void RegisterAll()
+        {
             foreach (var keyValue in m_Subscribers)
             {
                 if (keyValue.Value.rosMessageName != null)
@@ -342,8 +346,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (keyValue.Value != null)
                     SendRosServiceRegistration(keyValue.Key, keyValue.Value);
             }
-
-            Task.Run(() => ConnectionThread(ipAddress, port, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds * 1000.0f), m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
         }
 
         public void Disconnect()
@@ -441,12 +443,21 @@ namespace Unity.Robotics.ROSTCPConnector
             stream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
         }
 
+        static void ClearMessageQueue(ConcurrentQueue<Tuple<string, Message>> queue)
+        {
+            Tuple<string, Message> unused;
+            while (queue.TryDequeue(out unused))
+            {
+            }
+        }
+
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
+            Action RegisterAll,
             ConcurrentQueue<Tuple<string, Message>> outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
@@ -471,7 +482,10 @@ namespace Unity.Robotics.ROSTCPConnector
                     NetworkStream networkStream = client.GetStream();
                     networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
+                    ClearMessageQueue(outgoingQueue);
                     SendKeepalive(networkStream);
+
+                    RegisterAll();
 
                     readerCancellation = new CancellationTokenSource();
                     _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
@@ -523,10 +537,7 @@ namespace Unity.Robotics.ROSTCPConnector
                         client.Close();
 
                     // clear the message queue
-                    Tuple<string, Message> unused;
-                    while (outgoingQueue.TryDequeue(out unused))
-                    {
-                    }
+                    ClearMessageQueue(outgoingQueue);
                 }
                 await Task.Yield();
             }
@@ -616,12 +627,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Send<T>(string rosTopicName, T message) where T : Message
         {
-            if (m_OutgoingMessages == null)
-            {
-                Debug.LogWarning($"No connection - can't publish to {rosTopicName}");
-                return;
-            }
-
             if (!rosTopicName.StartsWith("__"))
             {
                 m_Publishers[rosTopicName] = MessageRegistry.GetRosMessageName<T>();
