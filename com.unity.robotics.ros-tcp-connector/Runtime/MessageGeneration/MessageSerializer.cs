@@ -77,6 +77,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return serializedMessage;
         }
 
+        public List<byte[]> GetBytesSequence()
+        {
+            // TODO: check what's faster - copying the list...
+            List<byte[]> result = new List<byte[]>(m_ListOfSerializations);
+            // ...or giving away the old list and making a new one?
+            //List<byte[]> result = m_ListOfSerializations;
+            //m_ListOfSerializations = new List<byte[]>();
+            return result;
+        }
+
         public void SendTo(System.IO.Stream stream)
         {
             foreach (byte[] statement in m_ListOfSerializations)
