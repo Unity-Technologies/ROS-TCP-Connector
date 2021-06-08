@@ -69,10 +69,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             else
             {
                 m_SelectedProtocol = (RosProtocol)EditorGUILayout.EnumPopup("Protocol", m_SelectedProtocol);
-                if(m_SelectedProtocol == k_AlternateProtocol)
+                if (m_SelectedProtocol == k_AlternateProtocol)
                 {
                     List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
-                    if(m_SelectedProtocol == RosProtocol.ROS1)
+                    if (m_SelectedProtocol == RosProtocol.ROS1)
                         allDefines.Remove("ROS2");
                     else
                         allDefines.Add("ROS2");
