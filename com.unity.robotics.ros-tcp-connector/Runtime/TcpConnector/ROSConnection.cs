@@ -12,7 +12,6 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
-using RosMessageTypes.UnityInterfaces;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
