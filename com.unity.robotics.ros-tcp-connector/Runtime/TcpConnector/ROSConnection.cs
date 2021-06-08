@@ -74,6 +74,7 @@ namespace Unity.Robotics.ROSTCPConnector
         const string k_SysCommand_Publish = "__publish";
         const string k_SysCommand_RosService = "__ros_service";
         const string k_SysCommand_UnityService = "__unity_service";
+        const string k_SysCommand_TopicList = "__topic_list";
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
@@ -114,6 +115,8 @@ namespace Unity.Robotics.ROSTCPConnector
         Dictionary<string, string> m_RosServices = new Dictionary<string, string>();
         MessageSerializer m_MessageSerializer = new MessageSerializer();
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
+        List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
+        List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
@@ -196,7 +199,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void GetTopicList(Action<string[]> callback)
         {
-            SendServiceMessage<RosUnityTopicListResponse>("__topic_list", new RosUnityTopicListRequest(), response => callback(response.topics));
+            m_TopicsListCallbacks.Add(callback);
+            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+        }
+
+        public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
+        {
+            m_TopicsAndTypesListCallbacks.Add(callback);
+            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
         [Obsolete("Calling Subscribe now implicitly registers a subscriber")]
@@ -486,6 +496,25 @@ namespace Unity.Robotics.ROSTCPConnector
                         };
                     }
                     break;
+
+                case k_SysCommand_TopicList:
+                    {
+                        var topicsResponse = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
+                        if (m_TopicsAndTypesListCallbacks.Count > 0)
+                        {
+                            Dictionary<string, string> callbackParam = new Dictionary<string, string>();
+                            for (int Idx = 0; Idx < topicsResponse.topics.Length; ++Idx)
+                                callbackParam[topicsResponse.topics[Idx]] = topicsResponse.types[Idx];
+                            m_TopicsAndTypesListCallbacks.ForEach(a => a(callbackParam));
+                            m_TopicsAndTypesListCallbacks.Clear();
+                        }
+                        if (m_TopicsListCallbacks.Count > 0)
+                        {
+                            m_TopicsListCallbacks.ForEach(a => a(topicsResponse.topics));
+                            m_TopicsListCallbacks.Clear();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -534,7 +563,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     NetworkStream networkStream = client.GetStream();
                     networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
-                    ClearMessageQueue(outgoingQueue);
+                    //ClearMessageQueue(outgoingQueue);
                     SendKeepalive(networkStream);
 
                     RegisterAll();
@@ -660,7 +689,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Disconnect();
         }
 
-        struct SysCommand_TopicAndType
+        public struct SysCommand_TopicAndType
         {
             public string topic;
             public string message_name;
@@ -674,6 +703,16 @@ namespace Unity.Robotics.ROSTCPConnector
         struct SysCommand_Service
         {
             public int srv_id;
+        }
+
+        struct SysCommand_TopicsRequest
+        {
+        }
+
+        struct SysCommand_TopicsResponse
+        {
+            public string[] topics;
+            public string[] types;
         }
 
         void SendSysCommand(string command, object param)
