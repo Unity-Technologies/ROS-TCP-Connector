@@ -723,7 +723,8 @@ namespace Unity.Robotics.ROSTCPConnector
             // (all command names start with __ to distinguish them from ros topics)
             m_MessageSerializer.Write(command);
             // 4-byte json length, followed by a json string of that length
-            m_MessageSerializer.Write(JsonUtility.ToJson(param));
+            string json = JsonUtility.ToJson(param);
+            m_MessageSerializer.WriteUnaligned(json);
 
             m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
         }

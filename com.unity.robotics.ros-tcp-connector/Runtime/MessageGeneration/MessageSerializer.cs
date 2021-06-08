@@ -311,6 +311,25 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 #endif
         }
 
+        public void WriteUnaligned(string inputString)
+        {
+            byte[] encodedString = Encoding.UTF8.GetBytes(inputString);
+
+#if !ROS2
+            m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length));
+            m_ListOfSerializations.Add(encodedString);
+
+            m_AlignmentOffset += 4 + encodedString.Length;
+#else
+            // ROS2 strings are 4-byte aligned, and padded with a null byte at the end
+            m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length + 1));
+            m_ListOfSerializations.Add(encodedString);
+            m_ListOfSerializations.Add(k_NullByte);
+
+            m_AlignmentOffset += 4 + encodedString.Length + 1;
+#endif
+        }
+
         public void Write(string[] values)
         {
             foreach (string entry in values)
