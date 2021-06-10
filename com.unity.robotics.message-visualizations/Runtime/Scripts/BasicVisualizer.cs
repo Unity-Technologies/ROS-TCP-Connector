@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,12 +21,24 @@ namespace Unity.Robotics.MessageVisualizers
         public virtual void Start()
         {
             if (m_Topic == "")
+            {
                 VisualizationRegistry.RegisterTypeVisualizer<TargetMessageType>(this, Priority);
+            }
             else
+            {
                 VisualizationRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
+            }
         }
 
-        public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
+        public IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing)
+        {
+            var action = CreateGUI(message, meta, null);
+            var drawing = CreateDrawing(message, meta, null);
+            var visualization = new BasicVisualization(message, meta, action, drawing);
+            return visualization;
+        }
+
+        public BasicDrawing CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
         {
             if (!AssertMessageType(message, meta))
             {
@@ -75,7 +88,7 @@ namespace Unity.Robotics.MessageVisualizers
             ((BasicDrawing)drawing).Destroy();
         }
 
-        public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
+        public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
             if (!AssertMessageType(message, meta))
             {
@@ -95,7 +108,7 @@ namespace Unity.Robotics.MessageVisualizers
             return true;
         }
 
-        public virtual System.Action CreateGUI(TargetMessageType message, MessageMetadata meta, BasicDrawing drawing)
+        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, BasicDrawing drawing)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }

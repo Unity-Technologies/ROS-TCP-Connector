@@ -6,9 +6,25 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage>
+public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage>, ITextureMessageVisualization
 {
-    public Texture2D m_Tex { get; private set; }
+    public Message message { get; }
+    public MessageMetadata meta { get; }
+    public bool hasDrawing 
+    { 
+        get { return false; } 
+        set { hasDrawing = value; } }
+    public bool hasAction { get; set; }
+
+    Texture2D m_Tex;
+
+    public Texture2D GetTexture()
+    {
+        return m_Tex;
+    }
+
+    public void Delete() {}
+    public void OnGUI() {}
 
     public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, BasicDrawing drawing)
     {

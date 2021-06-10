@@ -11,34 +11,24 @@ public class DefaultVisualizerCameraInfo : BasicVisualizer<MCameraInfo>
 {
     public string m_ImageTopic;
     IVisualizer m_Visualizer;
-    HUDVisualizationRule m_Rule;
-    static Texture2D m_Tex;
+    ITextureMessageVisualization m_TextureVisualization;
+    Texture2D m_Tex;
 
     public override Action CreateGUI(MCameraInfo message, MessageMetadata meta, BasicDrawing drawing) 
     {
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify) 
         {
-            if (m_Visualizer == null)
+            m_Visualizer = ROSConnection.instance.HudPanel.GetVisualizer(m_ImageTopic);
+            m_TextureVisualization = m_Visualizer as ITextureMessageVisualization;
+            if (m_TextureVisualization != null)
             {
-                m_Visualizer = ROSConnection.instance.HudPanel.GetVisualizer(m_ImageTopic);
-            }
-            if (m_Rule == null)
-            {
-                m_Rule = ROSConnection.instance.HudPanel.AllTopics[m_ImageTopic];
-            }
-            
-            if (m_Rule.RosMessageName == "sensor_msgs/CompressedImage")
-            {
-                m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerCompressedImage)m_Visualizer).m_Tex);
-            }
-            else if (m_Rule.RosMessageName == "sensor_msgs/Image")
-            {
-                m_Tex = message.roi.RegionOfInterestTexture(((DefaultVisualizerImage)m_Visualizer).m_Tex);
+                m_Tex = message.roi.RegionOfInterestTexture(((ITextureMessageVisualization)m_TextureVisualization).GetTexture());
             }
             else
             {
-                Debug.LogError($"Message type {m_Rule.RosMessageName} is not supported with CameraInfo!");
+                Debug.LogError($"{m_ImageTopic} was not a texture visualizer!");
+                return null;
             }
         }
         

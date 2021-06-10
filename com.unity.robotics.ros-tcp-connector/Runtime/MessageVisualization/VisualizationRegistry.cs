@@ -8,9 +8,22 @@ namespace Unity.Robotics.MessageVisualizers
     public interface IVisualizer
     {
         bool CanShowDrawing { get; }
-        object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing);
-        void DeleteDrawing(object drawing);
-        Action CreateGUI(Message message, MessageMetadata meta, object drawing);
+        IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing);
+    }
+
+    public interface IMessageVisualization
+    {
+        Message message { get; }
+        MessageMetadata meta { get; }
+        bool hasDrawing { get; set; }
+        bool hasAction { get; set; }
+        void Delete();
+        void OnGUI();
+    }
+
+    public interface ITextureMessageVisualization : IMessageVisualization
+    {
+        Texture2D GetTexture();
     }
 
     public struct MessageMetadata
@@ -31,6 +44,7 @@ namespace Unity.Robotics.MessageVisualizers
     {
         private static Dictionary<string, Tuple<IVisualizer, int>> s_TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
         private static Dictionary<string, Tuple<IVisualizer, int>> s_TypeVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
+        private static Dictionary<string, IMessageVisualization> s_TopicVisualizations = new Dictionary<string, IMessageVisualization>();
 
         public static void RegisterTypeVisualizer<MsgType>(IVisualizer visualizer, int priority = 0) where MsgType:Message
         {
@@ -93,6 +107,8 @@ namespace Unity.Robotics.MessageVisualizers
         {
             // If you're trying to register the default visualizer, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }
+            
+            public IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGUI, bool withDrawing) => null;
 
             public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing) => null;
 

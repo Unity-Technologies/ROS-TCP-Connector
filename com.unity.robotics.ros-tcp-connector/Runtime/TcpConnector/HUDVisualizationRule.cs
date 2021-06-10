@@ -256,10 +256,9 @@ namespace Unity.Robotics.ROSTCPConnector
             Message m_Message;
             MessageMetadata m_Meta;
             IVisualizer m_VisualizerConfig;
-            object m_VisualizerDrawing;
-            Action m_VisualizerGUI;
+            IMessageVisualization m_Visualization;
 
-            public bool HasDrawing => m_VisualizerDrawing != null;
+            public bool HasDrawing => m_Visualization != null && m_Visualization.hasDrawing;
 
             public MessageWindowContents(HUDVisualizationRule rule, Message message, MessageMetadata meta)
             {
@@ -279,7 +278,10 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Message = message;
                 m_Meta = meta;
-                m_VisualizerGUI = null;
+                if (m_Visualization != null)
+                {
+                    m_Visualization.hasAction = false;
+                }
             }
 
             public void ShowDrawing(bool show)
@@ -287,22 +289,23 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (show)
                 {
                     if (m_VisualizerConfig == null && m_Message != null)
+                    {
                         m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
-
+                    }
+                    
                     if (m_VisualizerConfig != null)
                     {
-                        object oldDrawing = m_VisualizerDrawing;
-                        m_VisualizerDrawing = m_VisualizerConfig.CreateDrawing(m_Message, m_Meta, oldDrawing);
-
-                        if (oldDrawing != null && oldDrawing != m_VisualizerDrawing)
-                            m_VisualizerConfig.DeleteDrawing(oldDrawing);
+                        m_Visualization?.Delete();
+                        m_Visualization = m_VisualizerConfig.CreateVisualization(m_Message, m_Meta, false, true);
                     }
                 }
                 else
                 {
-                    if (m_VisualizerConfig != null && m_VisualizerDrawing != null)
-                        m_VisualizerConfig.DeleteDrawing(m_VisualizerDrawing);
-                    m_VisualizerDrawing = null;
+                    if (m_VisualizerConfig != null && m_Visualization.hasDrawing)
+                    {
+                        m_Visualization.Delete();
+                    }
+                    m_Visualization.hasDrawing = false;
                 }
             }
 
@@ -320,13 +323,18 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_VisualizerConfig == null)
+                    {
                         m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
-
-                    if (m_VisualizerGUI == null)
-                        m_VisualizerGUI = m_VisualizerConfig.CreateGUI(m_Message, m_Meta, m_VisualizerDrawing);
+                    }
+                    if (m_VisualizerConfig != null)
+                    {
+                        m_Visualization?.Delete();
+                        m_Visualization = m_VisualizerConfig.CreateVisualization(m_Message, m_Meta, true, false);
+                    }
+                    
 
                     m_Rule.WindowScrollPosition = GUILayout.BeginScrollView(m_Rule.WindowScrollPosition);
-                    m_VisualizerGUI();
+                    m_Visualization.OnGUI();
                     GUILayout.EndScrollView();
                 }
             }
@@ -338,16 +346,14 @@ namespace Unity.Robotics.ROSTCPConnector
             Message m_Request;
             MessageMetadata m_RequestMeta;
             IVisualizer m_RequestVisualizer;
-            object m_RequestDrawing;
-            Action m_RequestGUI;
+            IMessageVisualization m_RequestVisualization;
 
             Message m_Response;
             MessageMetadata m_ResponseMeta;
             IVisualizer m_ResponseVisualizer;
-            object m_ResponseDrawing;
-            Action m_ResponseGUI;
+            IMessageVisualization m_ResponseVisualization;
 
-            public bool HasDrawing => m_RequestDrawing != null || m_ResponseDrawing != null;
+            public bool HasDrawing => (m_RequestVisualization != null && m_RequestVisualization.hasDrawing) || (m_ResponseVisualization != null && m_ResponseVisualization.hasDrawing);
 
             public ServiceWindowContents(HUDVisualizationRule rule, Message request, MessageMetadata requestMeta)
             {
@@ -360,14 +366,14 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Request = request;
                 m_RequestMeta = requestMeta;
-                m_RequestGUI = null;
+                m_RequestVisualization.hasAction = false;
             }
 
             public void SetResponse(Message response, MessageMetadata responseMeta)
             {
                 m_Response = response;
                 m_ResponseMeta = responseMeta;
-                m_ResponseGUI = null;
+                m_ResponseVisualization.hasAction = false;
             }
 
             public void ShowDrawing(bool show)
@@ -375,26 +381,41 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (show)
                 {
                     if (m_RequestVisualizer == null && m_Request != null)
+                    {
                         m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
+                    }
 
                     if (m_ResponseVisualizer == null && m_Response != null)
+                    {
                         m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
+                    }
 
-                    if (m_RequestVisualizer != null && m_RequestDrawing == null)
-                        m_RequestDrawing = m_RequestVisualizer.CreateDrawing(m_Request, m_RequestMeta, m_RequestDrawing);
+                    if (m_RequestVisualizer != null && !m_RequestVisualization.hasDrawing)
+                    {
+                        m_RequestVisualization?.Delete();
+                        m_RequestVisualization = m_RequestVisualizer.CreateVisualization(m_Request, m_RequestMeta, false, true);
+                    }
 
-                    if (m_ResponseVisualizer != null && m_ResponseDrawing == null)
-                        m_ResponseDrawing = m_ResponseVisualizer.CreateDrawing(m_Response, m_ResponseMeta, m_ResponseDrawing);
+                    if (m_ResponseVisualizer != null && !m_ResponseVisualization.hasDrawing)
+                    {
+                        m_ResponseVisualization?.Delete();
+                        m_ResponseVisualization = m_ResponseVisualizer.CreateVisualization(m_Response, m_ResponseMeta, false, true);
+                    }
                 }
                 else
                 {
-                    if (m_RequestVisualizer != null && m_RequestDrawing != null)
-                        m_RequestVisualizer.DeleteDrawing(m_RequestDrawing);
-                    m_RequestDrawing = null;
+                    if (m_RequestVisualizer != null && m_RequestVisualization.hasDrawing)
+                    {
+                        m_RequestVisualization.Delete();
+                    }
+                    m_RequestVisualization.hasDrawing = false;
 
-                    if (m_ResponseVisualizer != null && m_ResponseDrawing != null)
-                        m_ResponseVisualizer.DeleteDrawing(m_ResponseDrawing);
-                    m_ResponseDrawing = null;
+                    if (m_ResponseVisualizer != null && m_ResponseVisualization.hasDrawing)
+                    {
+                        m_ResponseVisualization.Delete();
+                    }
+                    m_ResponseVisualization.hasDrawing = false;
+
                 }
             }
 
@@ -414,12 +435,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_RequestVisualizer == null)
+                    {
                         m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
+                    }
 
-                    if (m_RequestGUI == null)
-                        m_RequestGUI = m_RequestVisualizer.CreateGUI(m_Request, m_RequestMeta, m_RequestDrawing);
+                    if (!m_RequestVisualization.hasAction)
+                    {
+                        m_RequestVisualization?.Delete();
+                        m_RequestVisualization = m_RequestVisualizer.CreateVisualization(m_Response, m_ResponseMeta, true, false);
+                    }
 
-                    m_RequestGUI();
+                    m_RequestVisualization.OnGUI();
                 }
 
                 // horizontal line
@@ -432,12 +458,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_ResponseVisualizer == null)
+                    {
                         m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
+                    }
 
-                    if (m_ResponseGUI == null)
-                        m_ResponseGUI = m_ResponseVisualizer.CreateGUI(m_Response, m_ResponseMeta, m_ResponseDrawing);
+                    if (!m_ResponseVisualization.hasAction)
+                    {
+                        m_ResponseVisualization?.Delete();
+                        m_ResponseVisualization = m_ResponseVisualizer.CreateVisualization(m_Response, m_ResponseMeta, true, false);
+                    }
 
-                    m_ResponseGUI();
+                    m_ResponseVisualization.OnGUI();
                 }
                 GUILayout.EndScrollView();
             }
