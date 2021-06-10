@@ -9,6 +9,7 @@ namespace Unity.Robotics.ROSTCPConnector
     {
         // GUI variables
         GUIStyle m_LabelStyle;
+        GUIStyle m_ConnectionArrowStyle;
         GUIStyle m_ContentStyle;
         GUIStyle m_MessageStyle;
         bool m_ViewSent = false;
@@ -90,6 +91,15 @@ namespace Unity.Robotics.ROSTCPConnector
                 fixedWidth = 250
             };
 
+            m_ConnectionArrowStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = Color.white },
+                fontSize = 22,
+                fontStyle = FontStyle.Bold,
+                fixedWidth = 250
+            };
+
             m_ContentStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
@@ -139,10 +149,12 @@ namespace Unity.Robotics.ROSTCPConnector
             // ROS IP Setup
             GUILayout.BeginHorizontal();
             Color baseColor = GUI.color;
+            GUI.color = Color.white;
+            GUI.Label(new Rect(4, 5, 25, 15), "I", m_ConnectionArrowStyle);
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageReceivedRealtime);
-            GUILayout.Label("\u25C0", m_LabelStyle, GUILayout.Width(10));
+            GUI.Label(new Rect(8, 6, 25, 15), "\u2190", m_ConnectionArrowStyle);
             GUI.color = GetConnectionColor(Time.realtimeSinceStartup - m_LastMessageSentRealtime);
-            GUILayout.Label("\u25B6", m_LabelStyle, GUILayout.Width(15));
+            GUI.Label(new Rect(8, 0, 25, 15), "\u2192", m_ConnectionArrowStyle);
             GUI.color = baseColor;
 
 #if ROS2
@@ -151,6 +163,7 @@ namespace Unity.Robotics.ROSTCPConnector
             string protocolName = "ROS";
 #endif
 
+            GUILayout.Space(30);
             GUILayout.Label($"{protocolName} IP: ", m_LabelStyle, GUILayout.Width(100));
 
             if (!ROSConnection.instance.HasConnectionThread)
