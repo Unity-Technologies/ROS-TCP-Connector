@@ -68,12 +68,7 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         public virtual void Draw(BasicDrawing drawing, TargetMessageType message, MessageMetadata meta) { }
-
-        public void DeleteDrawing(object drawing)
-        {
-            ((BasicDrawing)drawing).Destroy();
-        }
-
+        
         public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
             if (!AssertMessageType(message, meta)) return MessageVisualizations.CreateDefaultGUI(message, meta);
