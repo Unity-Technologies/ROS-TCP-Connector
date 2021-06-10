@@ -34,8 +34,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             var action = CreateGUI(message, meta, null);
             var drawing = CreateDrawing(message, meta, null);
-            var visualization = new BasicVisualization(message, meta, action, drawing);
-            return visualization;
+            return new BasicVisualization(message, meta, action, drawing);
         }
 
         public BasicDrawing CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)

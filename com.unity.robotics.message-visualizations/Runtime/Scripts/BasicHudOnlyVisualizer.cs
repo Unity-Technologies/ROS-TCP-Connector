@@ -27,9 +27,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing)
         {
-            // TODO
-            Debug.Log("calling basichudonlyvisulizer createvisualization");
-            return null;
+            var action = CreateGUI(message, meta, null);
+            return new BasicVisualization(message, meta, action, null);
         }
 
         public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)

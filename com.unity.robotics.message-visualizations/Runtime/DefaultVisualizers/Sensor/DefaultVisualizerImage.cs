@@ -8,13 +8,27 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerImage : BasicVisualizer<MImage>
+public class DefaultVisualizerImage : BasicVisualizer<MImage>, ITextureMessageVisualization
 {
-    public Texture2D m_Tex { get; private set; }
+    public Message message { get; }
+    public MessageMetadata meta { get; }
+    public bool hasDrawing 
+    { 
+        get { return false; } 
+        set { hasDrawing = value; } }
+    public bool hasAction { get; set; }
+
+    Texture2D m_Tex;
     bool m_ConvertBgr = true;
     bool m_PrevConvert = true;
     bool m_FlipY = true;
     bool m_PrevFlip = true;
+    public void Delete() {}
+    public void OnGUI() {}
+    public Texture2D GetTexture()
+    {
+        return m_Tex;
+    }
 
     public override Action CreateGUI(MImage message, MessageMetadata meta, BasicDrawing drawing)
     {

@@ -17,14 +17,12 @@ public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage
     public bool hasAction { get; set; }
 
     Texture2D m_Tex;
-
+    public void Delete() {}
+    public void OnGUI() {}
     public Texture2D GetTexture()
     {
         return m_Tex;
     }
-
-    public void Delete() {}
-    public void OnGUI() {}
 
     public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, BasicDrawing drawing)
     {
