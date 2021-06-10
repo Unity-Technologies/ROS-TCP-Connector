@@ -1,24 +1,25 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage>, ITextureMessageVisualization
 {
+    Texture2D m_Tex;
     public Message message { get; }
     public MessageMetadata meta { get; }
-    public bool hasDrawing 
-    { 
-        get { return false; } 
-        set { hasDrawing = value; } }
-    public bool hasAction { get; set; }
 
-    Texture2D m_Tex;
-    public void Delete() {}
-    public void OnGUI() {}
+    public bool hasDrawing
+    {
+        get => false;
+        set => hasDrawing = value;
+    }
+
+    public bool hasAction { get; set; }
+    public void Delete() { }
+    public void OnGUI() { }
+
     public Texture2D GetTexture()
     {
         return m_Tex;
@@ -29,12 +30,13 @@ public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage
         m_Tex = message.ToTexture2D();
 
         return () =>
-		{
+        {
             message.header.GUI();
-			// TODO: Rescale/recenter image based on window height/width
-            var origRatio = (float)m_Tex.width / (float)m_Tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
+
+            // TODO: Rescale/recenter image based on window height/width
+            var origRatio = m_Tex.width / (float)m_Tex.height;
+            GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
             GUILayout.Label($"Format: {message.format}");
-		};
+        };
     }
 }

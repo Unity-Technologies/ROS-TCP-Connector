@@ -1,10 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using RosMessageTypes.Geometry;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -14,21 +10,17 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Topic;
 
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => true;
-
         public virtual void Start()
         {
             if (m_Topic == "")
-            {
                 VisualizationRegistry.RegisterTypeVisualizer<TargetMessageType>(this, Priority);
-            }
             else
-            {
                 VisualizationRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
         }
+
+        public int Priority { get; set; }
+
+        public bool CanShowDrawing => true;
 
         public IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing)
         {
@@ -39,10 +31,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public BasicDrawing CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
         {
-            if (!AssertMessageType(message, meta))
-            {
-                return null;
-            }
+            if (!AssertMessageType(message, meta)) return null;
 
             BasicDrawing drawing;
             if (oldDrawing != null)
@@ -78,9 +67,7 @@ namespace Unity.Robotics.MessageVisualizers
             return userLabel;
         }
 
-        public virtual void Draw(BasicDrawing drawing, TargetMessageType message, MessageMetadata meta)
-        {
-        }
+        public virtual void Draw(BasicDrawing drawing, TargetMessageType message, MessageMetadata meta) { }
 
         public void DeleteDrawing(object drawing)
         {
@@ -89,10 +76,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
-            if (!AssertMessageType(message, meta))
-            {
-                return MessageVisualizations.CreateDefaultGUI(message, meta);
-            }
+            if (!AssertMessageType(message, meta)) return MessageVisualizations.CreateDefaultGUI(message, meta);
 
             return CreateGUI((TargetMessageType)message, meta, (BasicDrawing)drawing);
         }
@@ -101,9 +85,10 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (!(message is TargetMessageType))
             {
-                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
+                Debug.LogError($"{GetType()}, visualizer for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
                 return false;
             }
+
             return true;
         }
 
