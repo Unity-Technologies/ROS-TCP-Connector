@@ -146,14 +146,14 @@ namespace Unity.Robotics.ROSTCPConnector
             });
         }
 
-        public void ImplementService<T>(string topic, Func<T, Message> callback) where T : Message
+        public void ImplementService<REQUEST>(string topic, Func<REQUEST, Message> callback) where REQUEST : Message
         {
-            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<T>();
+            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<REQUEST>();
             m_UnityServices[topic] = new UnityServiceImplementation
             {
-                messageConstructor = MessageRegistry.GetConstructor<T>(),
+                messageConstructor = MessageRegistry.GetConstructor<REQUEST>(),
                 rosMessageName = rosMessageName,
-                callback = (Message msg) => callback((T)msg)
+                callback = (Message msg) => callback((REQUEST)msg)
             };
 
             if (HasConnectionThread)
