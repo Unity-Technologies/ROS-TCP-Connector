@@ -47,8 +47,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
 
         [SerializeField]
-        [Tooltip("Send keepalive message if nothing has been sent for this long (seconds).")]
-        float m_KeepaliveTime = 10;
+        [Tooltip("If nothing has been sent for this long (seconds), send a keepalive message to check the connection is still working.")]
+        float m_KeepaliveTime = 1;
         public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
 
         [SerializeField]
