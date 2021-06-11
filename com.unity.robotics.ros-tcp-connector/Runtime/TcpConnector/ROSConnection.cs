@@ -24,23 +24,11 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_RosIPAddress = "127.0.0.1";
         public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
 
-        public static string RosIPAddressPref
-        {
-            get => PlayerPrefs.GetString("ROS_IP", "127.0.0.1");
-            set => PlayerPrefs.SetString("ROS_IP", value);
-        }
-
-
         [SerializeField]
         [FormerlySerializedAs("hostPort")]
         [FormerlySerializedAs("rosPort")]
         int m_RosPort = 10000;
         public int RosPort { get => m_RosPort; set => m_RosPort = value; }
-        public static int RosPortPref
-        {
-            get => PlayerPrefs.GetInt("ROS_TCP_PORT", 10000);
-            set => PlayerPrefs.SetInt("ROS_TCP_PORT", value);
-        }
 
         [SerializeField]
         bool m_ConnectOnStart = true;
@@ -282,8 +270,6 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         _instance = Instantiate(prefab).GetComponent<ROSConnection>();
                     }
-                    _instance.m_RosIPAddress = RosIPAddressPref;
-                    _instance.RosPort = RosPortPref;
                 }
 
                 return _instance;
@@ -308,25 +294,32 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Connect(string ipAddress, int port)
         {
-            PlayerPrefs.SetString("ROS_IP", ipAddress);
-            PlayerPrefs.SetInt("ROS_TCP_PORT", port);
+            RosIPAddress = ipAddress;
+            RosPort = port;
             Connect();
         }
 
         public void Connect()
         {
-            string ipAddress = PlayerPrefs.GetString("ROS_IP", "127.0.0.1");
-            int port = PlayerPrefs.GetInt("ROS_TCP_PORT", 10000);
-
-            if (!IPFormatIsCorrect(ipAddress))
-                Debug.LogError("ROS IP address is not correct");
+            if (!IPFormatIsCorrect(RosIPAddress))
+                Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
             if (m_HudPanel != null)
-                m_HudPanel.host = $"{ipAddress}:{port}";
+                m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
-            Task.Run(() => ConnectionThread(ipAddress, port, m_NetworkTimeoutSeconds, m_KeepaliveTime, (int)(m_SleepTimeSeconds * 1000.0f), RegisterAll, m_OutgoingMessages, m_IncomingMessages, m_ConnectionThreadCancellation.Token));
+            Task.Run(() => ConnectionThread(
+                RosIPAddress,
+                RosPort,
+                m_NetworkTimeoutSeconds,
+                m_KeepaliveTime,
+                (int)(m_SleepTimeSeconds * 1000.0f),
+                RegisterAll,
+                m_OutgoingMessages,
+                m_IncomingMessages,
+                m_ConnectionThreadCancellation.Token
+            ));
         }
 
         void RegisterAll(NetworkStream stream)

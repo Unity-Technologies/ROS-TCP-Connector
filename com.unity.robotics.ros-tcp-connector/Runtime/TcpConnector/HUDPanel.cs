@@ -25,6 +25,32 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_LastMessageSentMeta = "None";
         float m_LastMessageSentRealtime;
 
+        // For the Hud's IP address field, we store the IP address and port in PlayerPrefs.
+        // This is used to remember the last IP address the player typed into the HUD, in builds where ConnectOnStart is not checked
+        public const string PlayerPrefsKey_ROS_IP = "ROS_IP";
+        public const string PlayerPrefsKey_ROS_TCP_PORT = "ROS_TCP_PORT";
+
+        public static string RosIPAddressPref
+        {
+            get => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
+        }
+
+        public static int RosPortPref
+        {
+            get => PlayerPrefs.GetInt(PlayerPrefsKey_ROS_TCP_PORT, 10000);
+        }
+
+        public static void SetIPPref(string ipAddress)
+        {
+            PlayerPrefs.SetString(PlayerPrefsKey_ROS_IP, ipAddress);
+        }
+
+        public static void SetPortPref(int port)
+        {
+            PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
+        }
+
+
         public void SetLastMessageSent(string topic, Message message)
         {
             m_LastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
@@ -168,12 +194,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (!ROSConnection.instance.HasConnectionThread)
             {
-                ROSConnection.RosIPAddressPref = GUILayout.TextField(ROSConnection.RosIPAddressPref);
-                ROSConnection.RosPortPref = Convert.ToInt32(GUILayout.TextField(ROSConnection.RosPortPref.ToString()));
+                // if you've never run a build on this machine before, initialize the playerpref settings to the ones from the RosConnection
+                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_IP))
+                    SetIPPref(ROSConnection.instance.RosIPAddress);
+                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_TCP_PORT))
+                    SetPortPref(ROSConnection.instance.RosPort);
+
+                // NB, here the user is editing the PlayerPrefs values, not the ones in the RosConnection.
+                // (So that the hud remembers what IP you used last time you ran this build.)
+                // The RosConnection receives the edited values when you click Connect.
+                SetIPPref(GUILayout.TextField(RosIPAddressPref));
+                SetPortPref(Convert.ToInt32(GUILayout.TextField(RosPortPref.ToString())));
+
                 GUILayout.EndHorizontal();
                 GUILayout.Label("(Not connected)");
                 if (GUILayout.Button("Connect"))
-                    ROSConnection.instance.Connect();
+                    ROSConnection.instance.Connect(RosIPAddressPref, RosPortPref);
             }
             else
             {
