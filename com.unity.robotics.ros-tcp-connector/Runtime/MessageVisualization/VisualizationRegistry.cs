@@ -24,6 +24,7 @@ namespace Unity.Robotics.MessageVisualizers
     public interface ITextureMessageVisualization : IMessageVisualization
     {
         Texture2D GetTexture();
+        void SetTexture(Texture2D tex);
     }
 
     public readonly struct MessageMetadata
@@ -44,6 +45,7 @@ namespace Unity.Robotics.MessageVisualizers
     {
         static Dictionary<string, Tuple<IVisualizer, int>> s_TopicVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
         static Dictionary<string, Tuple<IVisualizer, int>> s_TypeVisualizers = new Dictionary<string, Tuple<IVisualizer, int>>();
+        static Dictionary<string, IMessageVisualization> s_TopicVisualizations = new Dictionary<string, IMessageVisualization>();
 
         static DefaultVisualizer s_DefaultVisualizer = new DefaultVisualizer();
 
@@ -62,6 +64,14 @@ namespace Unity.Robotics.MessageVisualizers
         {
             Tuple<IVisualizer, int> currentEntry;
             if (!s_TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority) s_TopicVisualizers[topic] = new Tuple<IVisualizer, int>(visualizer, priority);
+        }
+        
+        public static void RegisterTopicVisualization(string topic, IMessageVisualization visualizer)
+        {
+            if (visualizer != null)
+            {
+                s_TopicVisualizations[topic] = visualizer;
+            }
         }
 
         public static IVisualizer GetVisualizer(string topic, string rosMessageName)
@@ -96,6 +106,13 @@ namespace Unity.Robotics.MessageVisualizers
                 return result.Item1;
 
             return s_DefaultVisualizer;
+        }
+
+        public static IMessageVisualization GetVisualization(string topic)
+        {
+            IMessageVisualization result;
+            s_TopicVisualizations.TryGetValue(topic, out result);
+            return result;
         }
 
         class DefaultVisualizer : IVisualizer

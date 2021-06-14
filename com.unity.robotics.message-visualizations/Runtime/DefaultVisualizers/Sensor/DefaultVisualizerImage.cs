@@ -4,35 +4,20 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerImage : BasicVisualizer<MImage>, ITextureMessageVisualization
+public class DefaultVisualizerImage : BasicTextureVisualizer<MImage>
 {
     bool m_ConvertBgr = true;
     bool m_FlipY = true;
     bool m_PrevConvert = true;
     bool m_PrevFlip = true;
 
-    Texture2D m_Tex;
-    public Message message { get; }
-    public MessageMetadata meta { get; }
-
-    public bool hasDrawing
-    {
-        get => false;
-        set => hasDrawing = value;
-    }
-
-    public bool hasAction { get; set; }
-    public void Delete() { }
-    public void OnGUI() { }
-
-    public Texture2D GetTexture()
-    {
-        return m_Tex;
-    }
-
     public override Action CreateGUI(MImage message, MessageMetadata meta, BasicDrawing drawing)
     {
-        if (message.data.Length > 0) m_Tex = message.ToTexture2D(m_ConvertBgr, m_FlipY);
+        if (message.data.Length > 0)
+        {
+            if (m_Visualization == null) m_Visualization = (ITextureMessageVisualization)VisualizationRegistry.GetVisualization(meta.Topic);
+            m_Visualization.SetTexture(message.ToTexture2D(m_ConvertBgr, m_FlipY));
+        }
 
         return () =>
         {
@@ -44,14 +29,14 @@ public class DefaultVisualizerImage : BasicVisualizer<MImage>, ITextureMessageVi
                 m_FlipY = GUILayout.Toggle(m_FlipY, "Flip Y");
                 GUILayout.EndHorizontal();
 
-                if (m_ConvertBgr != m_PrevConvert || m_FlipY != m_PrevFlip) m_Tex = message.ToTexture2D(m_ConvertBgr, m_FlipY);
+                if (m_ConvertBgr != m_PrevConvert || m_FlipY != m_PrevFlip) m_Visualization.SetTexture(message.ToTexture2D(m_ConvertBgr, m_FlipY));
             }
 
             // TODO: Rescale/recenter image based on window height/width
-            if (m_Tex != null)
+            if (m_Visualization.GetTexture() != null)
             {
-                var origRatio = m_Tex.width / (float)m_Tex.height;
-                GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
+                var origRatio = m_Visualization.GetTexture().width / (float)m_Visualization.GetTexture().height;
+                GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Visualization.GetTexture());
             }
 
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");

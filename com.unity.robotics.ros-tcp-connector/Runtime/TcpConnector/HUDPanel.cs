@@ -48,6 +48,7 @@ namespace Unity.Robotics.ROSTCPConnector
         List<HUDVisualizationRule> m_ActiveWindows = new List<HUDVisualizationRule>();
         SortedList<string, HUDVisualizationRule> m_AllTopics = new SortedList<string, HUDVisualizationRule>();
         Dictionary<string, IVisualizer> m_TopicVisualizers = new Dictionary<string, IVisualizer>();
+        Dictionary<string, IMessageVisualization> m_TopicVisualizations = new Dictionary<string, IMessageVisualization>();
         Dictionary<int, HUDVisualizationRule> m_PendingServiceRequests = new Dictionary<int, HUDVisualizationRule>();
         HUDVisualizationRule m_DraggingWindow;
 
@@ -385,6 +386,24 @@ namespace Unity.Robotics.ROSTCPConnector
             result = VisualizationRegistry.GetVisualizer(topic, rosMessageName);
             m_TopicVisualizers[topic] = result;
             return result;
+        }
+
+        public IMessageVisualization GetVisualization(string topic)
+        {
+            IMessageVisualization result;
+            if (m_TopicVisualizations.TryGetValue(topic, out result))
+            {
+                return result;
+            }
+
+            result = VisualizationRegistry.GetVisualization(topic);
+            if (result != null)
+            {
+                m_TopicVisualizations[topic] = result;
+                return result;
+            }
+
+            return null;
         }
 
         float m_LastTopicsRequestRealtime = -1;

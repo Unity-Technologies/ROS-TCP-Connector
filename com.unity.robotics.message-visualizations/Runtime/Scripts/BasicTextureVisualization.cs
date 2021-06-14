@@ -1,20 +1,21 @@
 using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicVisualization : IMessageVisualization
+    public class BasicTextureVisualization : ITextureMessageVisualization
     {
-        BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
+        Texture2D m_Texture2D;
 
-        public BasicVisualization(Message newMessage, MessageMetadata newMeta, Action action, BasicDrawing drawing)
+        public BasicTextureVisualization(Message newMessage, MessageMetadata newMeta, Action action, Texture2D tex)
         {
             message = newMessage;
             meta = newMeta;
             m_GUIAction = action;
-            m_BasicDrawing = drawing;
+            m_Texture2D = tex;
         }
 
         public Message message { get; }
@@ -22,7 +23,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public bool hasDrawing
         {
-            get => m_BasicDrawing != null;
+            get => false;
             set => Delete();
         }
 
@@ -39,8 +40,17 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Delete()
         {
-            m_BasicDrawing.Destroy();
-            m_BasicDrawing = null;
+            Object.Destroy(m_Texture2D);
+        }
+
+        public Texture2D GetTexture()
+        {
+            return m_Texture2D;
+        }
+
+        public void SetTexture(Texture2D tex)
+        {
+            m_Texture2D = tex;
         }
     }
 }

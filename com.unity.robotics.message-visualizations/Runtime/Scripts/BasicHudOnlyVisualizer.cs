@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using RosMessageTypes.Geometry;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -13,10 +10,6 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Topic;
 
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => false;
-
         public virtual void Start()
         {
             if (m_Topic == "")
@@ -25,27 +18,21 @@ namespace Unity.Robotics.MessageVisualizers
                 VisualizationRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
         }
 
-        public IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing)
+        public int Priority { get; set; }
+
+        public bool CanShowDrawing => false;
+
+        public virtual IMessageVisualization CreateVisualization(Message message, MessageMetadata meta, bool withGui, bool withDrawing)
         {
             var action = CreateGUI(message, meta, null);
-            return new BasicVisualization(message, meta, action, null);
+            var vis = new BasicVisualization(message, meta, action, null);
+            VisualizationRegistry.RegisterTopicVisualization(meta.Topic, vis);
+            return vis;
         }
 
-        public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
+        public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
         {
-            return null;
-        }
-
-        public void DeleteDrawing(object drawing)
-        {
-        }
-
-        public System.Action CreateGUI(Message message, MessageMetadata meta, object drawing)
-        {
-            if (!AssertMessageType(message, meta))
-            {
-                return MessageVisualizations.CreateDefaultGUI(message, meta);
-            }
+            if (!AssertMessageType(message, meta)) return MessageVisualizations.CreateDefaultGUI(message, meta);
 
             return CreateGUI((TargetMessageType)message, meta, (BasicDrawing)drawing);
         }
@@ -54,13 +41,14 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (!(message is TargetMessageType))
             {
-                Debug.LogError($"{this.GetType()}, visualizer for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
+                Debug.LogError($"{GetType()}, visualizer for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
                 return false;
             }
+
             return true;
         }
 
-        public virtual System.Action CreateGUI(TargetMessageType message, MessageMetadata meta, BasicDrawing drawing)
+        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, BasicDrawing drawing)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
