@@ -66,7 +66,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 DeleteDrawing();
             }
-            m_BasicDrawing ??= m_Factory.CreateDrawing(message, meta, m_BasicDrawing);
+            m_BasicDrawing ??= m_Factory.CreateDrawing(message, meta, null);
         }
     }
 }

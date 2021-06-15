@@ -33,7 +33,6 @@ namespace Unity.Robotics.MessageVisualizers
 
         public BasicDrawing CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
         {
-            Debug.Log($"in basicvisualfactory, calling CreateDrawing");
             if (!AssertMessageType(message, meta)) return null;
 
             BasicDrawing drawing;
@@ -71,13 +70,6 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         public virtual void Draw(BasicDrawing drawing, TargetMessageType message, MessageMetadata meta) { }
-        
-        public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
-        {
-            if (!AssertMessageType(message, meta)) return MessageVisualizations.CreateDefaultGUI(message, meta);
-
-            return CreateGUI((TargetMessageType)message, meta, (BasicDrawing)drawing);
-        }
 
         public bool AssertMessageType(Message message, MessageMetadata meta)
         {
