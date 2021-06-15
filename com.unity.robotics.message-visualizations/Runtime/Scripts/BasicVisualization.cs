@@ -1,46 +1,72 @@
 using System;
+using System.Security.Cryptography;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicVisualization : IMessageVisualization
+    public class BasicVisualization<TargetMessageType> : IVisual
+        where TargetMessageType : Message
     {
+        public TargetMessageType message { get; }
+        Message IVisual.message
+        {
+            get => message;
+        }
+        public MessageMetadata meta { get; }
+        
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
+        BasicVisualFactory<TargetMessageType> m_Factory;
 
-        public BasicVisualization(Message newMessage, MessageMetadata newMeta, Action action, BasicDrawing drawing)
+        public BasicVisualization(TargetMessageType newMessage, MessageMetadata newMeta, BasicVisualFactory<TargetMessageType> factory)
         {
             message = newMessage;
             meta = newMeta;
-            m_GUIAction = action;
-            m_BasicDrawing = drawing;
+            m_Factory = factory;
         }
-
-        public Message message { get; }
-        public MessageMetadata meta { get; }
 
         public bool hasDrawing
         {
             get => m_BasicDrawing != null;
-            set => Delete();
+            set
+            {
+                if (!value) DeleteDrawing();
+            }
         }
 
         public bool hasAction
         {
             get => m_GUIAction != null;
-            set => m_GUIAction = null;
+            set
+            {
+                if (!value) m_GUIAction = null;
+            }
         }
 
         public void OnGUI()
         {
-            if (m_GUIAction != null) m_GUIAction();
+            m_GUIAction ??= m_Factory.CreateGUI(message, meta);     
+            m_GUIAction();
         }
 
-        public void Delete()
+        public void DeleteDrawing()
         {
-            m_BasicDrawing.Destroy();
+            if (m_BasicDrawing != null)
+            {
+                Debug.Log($"Calling destroy on {meta.Topic} drawing");
+                m_BasicDrawing.Destroy();
+            }
             m_BasicDrawing = null;
+        }
+        
+        public void CreateDrawing()
+        {
+            if (m_BasicDrawing != null)
+            {
+                DeleteDrawing();
+            }
+            m_BasicDrawing ??= m_Factory.CreateDrawing(message, meta, m_BasicDrawing);
         }
     }
 }

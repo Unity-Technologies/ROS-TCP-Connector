@@ -7,7 +7,7 @@ using System.Linq;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory>
+public class DefaultVisualizerJointTrajectory : BasicVisualFactory<MJointTrajectory>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;
@@ -28,10 +28,5 @@ public class DefaultVisualizerJointTrajectory : BasicVisualizer<MJointTrajectory
     public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta)
     {
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
-    }
-
-    public override Action CreateGUI(MJointTrajectory message, MessageMetadata meta, BasicDrawing drawing)
-    {
-        return base.CreateGUI(message, meta, drawing);
     }
 }

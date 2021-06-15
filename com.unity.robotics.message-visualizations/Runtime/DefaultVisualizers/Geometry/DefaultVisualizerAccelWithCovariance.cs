@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerAccelWithCovariance : BasicVisualizer<MAccelWithCovariance>
+public class DefaultVisualizerAccelWithCovariance : BasicVisualFactory<MAccelWithCovariance>
 {
     public float m_Thickness = 0.01f;
     public float m_LengthScale = 1.0f;
@@ -20,7 +20,7 @@ public class DefaultVisualizerAccelWithCovariance : BasicVisualizer<MAccelWithCo
         message.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness );
     }
 
-    public override Action CreateGUI(MAccelWithCovariance message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MAccelWithCovariance message, MessageMetadata meta) => () =>
     {
         message.accel.GUI();
         MessageVisualizations.GUIGrid(message.covariance, 6);

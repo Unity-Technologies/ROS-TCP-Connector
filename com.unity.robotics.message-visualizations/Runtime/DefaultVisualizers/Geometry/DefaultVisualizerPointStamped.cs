@@ -8,7 +8,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPointStamped : BasicVisualizer<MPointStamped>
+    public class DefaultVisualizerPointStamped : BasicVisualFactory<MPointStamped>
     {
         [SerializeField]
         float m_Radius = 0.01f;
@@ -22,7 +22,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.point.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
-        public override Action CreateGUI(MPointStamped message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override Action CreateGUI(MPointStamped message, MessageMetadata meta) => () =>
         {
             message.header.GUI();
             message.point.GUI();

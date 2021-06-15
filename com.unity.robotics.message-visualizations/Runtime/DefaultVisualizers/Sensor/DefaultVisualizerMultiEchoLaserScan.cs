@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMultiEchoLaserScan : BasicVisualizer<MMultiEchoLaserScan>
+public class DefaultVisualizerMultiEchoLaserScan : BasicVisualFactory<MMultiEchoLaserScan>
 {
     public MultiEchoLaserScanVisualizerSettings m_Settings;
 
@@ -15,7 +15,7 @@ public class DefaultVisualizerMultiEchoLaserScan : BasicVisualizer<MMultiEchoLas
         message.Draw<FLU>(drawing, m_Settings);
     }
 
-    public override Action CreateGUI(MMultiEchoLaserScan message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MMultiEchoLaserScan message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         GUILayout.Label($"Angle min, max: [{message.angle_min}, {message.angle_max}] (rad)\nIncrement: {message.angle_increment} (rad)");

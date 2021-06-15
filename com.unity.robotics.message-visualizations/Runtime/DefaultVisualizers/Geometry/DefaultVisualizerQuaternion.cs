@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerQuaternion : BasicVisualizer<MQuaternion>
+    public class DefaultVisualizerQuaternion : BasicVisualFactory<MQuaternion>
     {
         [SerializeField]
         float m_Size = 0.1f;
@@ -27,7 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLabel(SelectLabel(m_Label, meta), transform.position, SelectColor(m_Color, meta), m_Size);
         }
 
-        public override System.Action CreateGUI(MQuaternion message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override System.Action CreateGUI(MQuaternion message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };

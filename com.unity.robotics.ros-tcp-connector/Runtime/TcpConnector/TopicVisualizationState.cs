@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class HUDVisualizationRule
+    public class TopicVisualizationState
     {
         const float c_DraggableSize = 8;
         IWindowContents m_Contents;
@@ -23,7 +23,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Rect m_WindowRect;
 
-        public HUDVisualizationRule(SaveState saveState, HUDPanel hud)
+        public TopicVisualizationState(SaveState saveState, HUDPanel hud)
         {
             m_Hud = hud;
             m_WindowRect = saveState.Rect;
@@ -42,21 +42,36 @@ namespace Unity.Robotics.ROSTCPConnector
             SetShowDrawing(saveState.ShowDrawing);
         }
 
-        public HUDVisualizationRule(string topic, string rosMessageName, HUDPanel hud)
+        public TopicVisualizationState(string topic, string rosMessageName, HUDPanel hud, bool subscribe=false)
         {
             m_Hud = hud;
             m_WindowRect = HUDPanel.GetDefaultWindowRect();
+            m_HasWindowRect = false;
             m_WindowID = hud.GetNextWindowID();
             Topic = topic;
             RosMessageName = rosMessageName;
+            if (subscribe)
+            {
+                if (!ROSConnection.instance.HasSubscriber(Topic))
+                {
+                    ROSConnection.instance.SubscribeByMessageName(Topic, RosMessageName, Message => { });
+                    ROSConnection.instance.RegisterSubscriber(Topic, RosMessageName);
+                }
+
+                SetShowWindow(false);
+                SetShowDrawing(false);
+                SetDrawVisual(true);
+            }
         }
 
         public string Topic { get; }
         public string RosMessageName { get; }
         public bool ShowWindow { get; private set; }
         public bool ShowDrawing { get; private set; }
+        public bool DrawVisual { get; private set; }
         public Vector2 WindowScrollPosition { get; set; }
         public Rect WindowRect => m_WindowRect;
+        public MessageWindowContents WindowContents => m_Contents as MessageWindowContents;
 
         public SaveState CreateSaveState()
         {
@@ -69,22 +84,36 @@ namespace Unity.Robotics.ROSTCPConnector
                 Topic = Topic,
                 RosMessageName = RosMessageName,
                 ShowWindow = ShowWindow,
-                ShowDrawing = ShowDrawing
+                ShowDrawing = ShowDrawing,
+                DrawVisual = DrawVisual
             };
         }
 
         public void SetMessage(Message message, MessageMetadata meta)
         {
             if (m_Contents is MessageWindowContents)
-                ((MessageWindowContents)m_Contents).SetMessage(message, meta);
-            else
-                m_Contents = new MessageWindowContents(this, message, meta);
-
-            if (ShowDrawing && m_DrawingUpdatedAtFrameIndex != meta.FrameIndex)
             {
-                m_Contents.ShowDrawing(true);
+                ((MessageWindowContents)m_Contents).SetMessage(message, meta);
+            }
+            else
+            {
+                m_Contents = new MessageWindowContents(this, message, meta);
+            }
+
+            if (m_DrawingUpdatedAtFrameIndex != meta.FrameIndex)
+            {
+                if (ShowDrawing)
+                {
+                    m_Contents.ShowDrawing(true);
+                }
+
+                if (DrawVisual)
+                {
+                    m_Contents.DrawVisual();
+                }
                 m_DrawingUpdatedAtFrameIndex = meta.FrameIndex;
             }
+            
         }
 
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
@@ -119,11 +148,31 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
             }
         }
-
+        
         public void DrawWindow()
         {
             if (m_Contents != null)
                 m_Contents.DrawWindow(m_WindowID, m_WindowRect);
+        }
+
+        void SetDrawVisual(bool drawVisual)
+        {
+            var drawingVisual = DrawVisual;
+            if (drawVisual == drawingVisual) return;
+
+            if (!drawVisual)
+            {
+                DrawVisual = false;
+                return;
+            }
+
+            if (m_Contents == null && TrySubscribe())
+            {
+                m_Contents = new MessageWindowContents(this, Topic);
+            }
+
+            DrawVisual = true;
+            if (m_Contents != null) m_Contents.DrawVisual();
         }
 
         public void SetShowDrawing(bool showDrawing)
@@ -183,7 +232,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 // TODO: this should not be necessary
                 ROSConnection.instance.SubscribeByMessageName(Topic, rosMessageName, m => { });
             }
-
             return true;
         }
 
@@ -233,55 +281,59 @@ namespace Unity.Robotics.ROSTCPConnector
             public string RosMessageName;
             public bool ShowWindow;
             public bool ShowDrawing;
+            public bool DrawVisual;
         }
 
-        interface IWindowContents
+        public interface IWindowContents
         {
             bool HasDrawing { get; }
             void ShowDrawing(bool show);
             void DrawWindow(int windowID, Rect windowRect);
+            void DrawVisual();
         }
 
-        class MessageWindowContents : IWindowContents
+        public class MessageWindowContents : IWindowContents
         {
             Message m_Message;
             MessageMetadata m_Meta;
-            HUDVisualizationRule m_Rule;
-            IMessageVisualization m_Visualization;
-            IVisualizer m_VisualizerConfig;
+            TopicVisualizationState m_State;
+            IVisual m_Visual;
+            IVisualFactory m_VisualFactory;
 
-            public MessageWindowContents(HUDVisualizationRule rule, Message message, MessageMetadata meta)
+            public MessageWindowContents(TopicVisualizationState state, Message message, MessageMetadata meta)
             {
-                m_Rule = rule;
                 m_Message = message;
                 m_Meta = meta;
+                m_State = state;
+                m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
             }
 
-            public MessageWindowContents(HUDVisualizationRule rule, string topic)
+            public MessageWindowContents(TopicVisualizationState state, string topic)
             {
-                m_Rule = rule;
                 m_Message = null;
                 m_Meta = new MessageMetadata(topic, 0, DateTime.Now);
+                m_State = state;
             }
 
-            public bool HasDrawing => m_Visualization != null && m_Visualization.hasDrawing;
+            public IVisual Visual => m_Visual;
+            public bool HasDrawing => m_Visual != null && m_Visual.hasDrawing;
 
             public void ShowDrawing(bool show)
             {
                 if (show)
                 {
-                    if (m_VisualizerConfig == null && m_Message != null) m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
+                    if (m_VisualFactory == null && m_Message != null) m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
 
-                    if (m_VisualizerConfig != null)
+                    if (m_VisualFactory != null)
                     {
-                        m_Visualization?.Delete();
-                        m_Visualization = m_VisualizerConfig.CreateVisualization(m_Message, m_Meta, false, true);
+                        m_Visual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
+                        m_Visual.CreateDrawing();
                     }
                 }
                 else
                 {
-                    if (m_VisualizerConfig != null && m_Visualization.hasDrawing) m_Visualization.Delete();
-                    m_Visualization.hasDrawing = false;
+                    if (m_VisualFactory != null && m_Visual.hasDrawing) m_Visual.DeleteDrawing();
+                    m_Visual.hasDrawing = false;
                 }
             }
 
@@ -290,11 +342,22 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUI.Window(windowID, windowRect, DrawWindowContents, m_Meta.Topic);
             }
 
+            public void DrawVisual()
+            {
+                if (m_VisualFactory == null && m_Message != null) m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
+
+                if (m_VisualFactory != null)
+                {
+                    m_Visual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
+                    m_Visual.CreateDrawing();
+                    m_Visual.OnGUI();
+                }
+            }
+
             public void SetMessage(Message message, MessageMetadata meta)
             {
                 m_Message = message;
                 m_Meta = meta;
-                if (m_Visualization != null) m_Visualization.hasAction = false;
             }
 
             void DrawWindowContents(int id)
@@ -305,15 +368,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
-                    if (m_VisualizerConfig == null) m_VisualizerConfig = VisualizationRegistry.GetVisualizer(m_Message, m_Meta);
-                    if (m_VisualizerConfig != null)
-                    {
-                        m_Visualization?.Delete();
-                        m_Visualization = m_VisualizerConfig.CreateVisualization(m_Message, m_Meta, true, false);
-                    }
+                    if (m_VisualFactory == null) m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
 
-                    m_Rule.WindowScrollPosition = GUILayout.BeginScrollView(m_Rule.WindowScrollPosition);
-                    m_Visualization.OnGUI();
+                    m_State.WindowScrollPosition = GUILayout.BeginScrollView(m_State.WindowScrollPosition);
+                    m_Visual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
+                    m_Visual.OnGUI();
                     GUILayout.EndScrollView();
                 }
             }
@@ -323,50 +382,50 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             Message m_Request;
             MessageMetadata m_RequestMeta;
-            IMessageVisualization m_RequestVisualization;
-            IVisualizer m_RequestVisualizer;
+            IVisual m_RequestVisual;
+            IVisualFactory m_RequestVisualFactory;
 
             Message m_Response;
             MessageMetadata m_ResponseMeta;
-            IMessageVisualization m_ResponseVisualization;
-            IVisualizer m_ResponseVisualizer;
-            HUDVisualizationRule m_Rule;
+            IVisual m_ResponseVisualization;
+            IVisualFactory m_ResponseVisualFactory;
+            TopicVisualizationState m_State;
 
-            public ServiceWindowContents(HUDVisualizationRule rule, Message request, MessageMetadata requestMeta)
+            public ServiceWindowContents(TopicVisualizationState state, Message request, MessageMetadata requestMeta)
             {
-                m_Rule = rule;
+                m_State = state;
                 m_Request = request;
                 m_RequestMeta = requestMeta;
             }
 
-            public bool HasDrawing => m_RequestVisualization != null && m_RequestVisualization.hasDrawing || m_ResponseVisualization != null && m_ResponseVisualization.hasDrawing;
+            public bool HasDrawing => m_RequestVisual != null && m_RequestVisual.hasDrawing || m_ResponseVisualization != null && m_ResponseVisualization.hasDrawing;
 
             public void ShowDrawing(bool show)
             {
                 if (show)
                 {
-                    if (m_RequestVisualizer == null && m_Request != null) m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
+                    if (m_RequestVisualFactory == null && m_Request != null) m_RequestVisualFactory = VisualFactoryRegistry.GetVisualizer(m_Request, m_RequestMeta);
 
-                    if (m_ResponseVisualizer == null && m_Response != null) m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
+                    if (m_ResponseVisualFactory == null && m_Response != null) m_ResponseVisualFactory = VisualFactoryRegistry.GetVisualizer(m_Response, m_ResponseMeta);
 
-                    if (m_RequestVisualizer != null && !m_RequestVisualization.hasDrawing)
+                    if (m_RequestVisualFactory != null && !m_RequestVisual.hasDrawing)
                     {
-                        m_RequestVisualization?.Delete();
-                        m_RequestVisualization = m_RequestVisualizer.CreateVisualization(m_Request, m_RequestMeta, false, true);
+                        m_RequestVisual?.DeleteDrawing();
+                        m_RequestVisual = m_RequestVisualFactory.CreateVisual(m_Request, m_RequestMeta);
                     }
 
-                    if (m_ResponseVisualizer != null && !m_ResponseVisualization.hasDrawing)
+                    if (m_ResponseVisualFactory != null && !m_ResponseVisualization.hasDrawing)
                     {
-                        m_ResponseVisualization?.Delete();
-                        m_ResponseVisualization = m_ResponseVisualizer.CreateVisualization(m_Response, m_ResponseMeta, false, true);
+                        m_ResponseVisualization?.DeleteDrawing();
+                        m_ResponseVisualization = m_ResponseVisualFactory.CreateVisual(m_Response, m_ResponseMeta);
                     }
                 }
                 else
                 {
-                    if (m_RequestVisualizer != null && m_RequestVisualization.hasDrawing) m_RequestVisualization.Delete();
-                    m_RequestVisualization.hasDrawing = false;
+                    if (m_RequestVisualFactory != null && m_RequestVisual.hasDrawing) m_RequestVisual.DeleteDrawing();
+                    m_RequestVisual.hasDrawing = false;
 
-                    if (m_ResponseVisualizer != null && m_ResponseVisualization.hasDrawing) m_ResponseVisualization.Delete();
+                    if (m_ResponseVisualFactory != null && m_ResponseVisualization.hasDrawing) m_ResponseVisualization.DeleteDrawing();
                     m_ResponseVisualization.hasDrawing = false;
                 }
             }
@@ -376,11 +435,23 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUI.Window(windowID, windowRect, DrawWindowContents, m_RequestMeta.Topic);
             }
 
+            public void DrawVisual()
+            {
+                if (m_RequestVisualFactory == null && m_Request != null) m_RequestVisualFactory = VisualFactoryRegistry.GetVisualizer(m_Request, m_RequestMeta);
+
+                if (m_RequestVisualFactory != null)
+                {
+                    m_RequestVisual = m_RequestVisualFactory.CreateVisual(m_Request, m_RequestMeta);
+                    m_RequestVisual.CreateDrawing();
+                    m_RequestVisual.OnGUI();
+                }
+            }
+
             public void SetRequest(Message request, MessageMetadata requestMeta)
             {
                 m_Request = request;
                 m_RequestMeta = requestMeta;
-                m_RequestVisualization.hasAction = false;
+                m_RequestVisual.hasAction = false;
             }
 
             public void SetResponse(Message response, MessageMetadata responseMeta)
@@ -392,7 +463,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             void DrawWindowContents(int id)
             {
-                m_Rule.WindowScrollPosition = GUILayout.BeginScrollView(m_Rule.WindowScrollPosition);
+                m_State.WindowScrollPosition = GUILayout.BeginScrollView(m_State.WindowScrollPosition);
 
                 if (m_Request == null)
                 {
@@ -400,15 +471,15 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
-                    if (m_RequestVisualizer == null) m_RequestVisualizer = VisualizationRegistry.GetVisualizer(m_Request, m_RequestMeta);
+                    if (m_RequestVisualFactory == null) m_RequestVisualFactory = VisualFactoryRegistry.GetVisualizer(m_Request, m_RequestMeta);
 
-                    if (!m_RequestVisualization.hasAction)
+                    if (!m_RequestVisual.hasAction)
                     {
-                        m_RequestVisualization?.Delete();
-                        m_RequestVisualization = m_RequestVisualizer.CreateVisualization(m_Response, m_ResponseMeta, true, false);
+                        m_RequestVisual?.DeleteDrawing();
+                        m_RequestVisual = m_RequestVisualFactory.CreateVisual(m_Response, m_ResponseMeta);
                     }
 
-                    m_RequestVisualization.OnGUI();
+                    m_RequestVisual.OnGUI();
                 }
 
                 // horizontal line
@@ -420,12 +491,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
-                    if (m_ResponseVisualizer == null) m_ResponseVisualizer = VisualizationRegistry.GetVisualizer(m_Response, m_ResponseMeta);
+                    if (m_ResponseVisualFactory == null) m_ResponseVisualFactory = VisualFactoryRegistry.GetVisualizer(m_Response, m_ResponseMeta);
 
                     if (!m_ResponseVisualization.hasAction)
                     {
-                        m_ResponseVisualization?.Delete();
-                        m_ResponseVisualization = m_ResponseVisualizer.CreateVisualization(m_Response, m_ResponseMeta, true, false);
+                        m_ResponseVisualization?.DeleteDrawing();
+                        m_ResponseVisualization = m_ResponseVisualFactory.CreateVisual(m_Response, m_ResponseMeta);
                     }
 
                     m_ResponseVisualization.OnGUI();

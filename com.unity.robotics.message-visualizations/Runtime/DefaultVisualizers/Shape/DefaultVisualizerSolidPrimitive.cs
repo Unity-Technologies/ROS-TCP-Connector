@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerSolidPrimitive : BasicVisualizer<MSolidPrimitive>
+public class DefaultVisualizerSolidPrimitive : BasicVisualFactory<MSolidPrimitive>
 {
     [SerializeField]
     GameObject m_Origin;
@@ -18,7 +18,7 @@ public class DefaultVisualizerSolidPrimitive : BasicVisualizer<MSolidPrimitive>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin);
     }
 
-    public override Action CreateGUI(MSolidPrimitive message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MSolidPrimitive message, MessageMetadata meta) => () =>
     {
         message.GUI();
     };

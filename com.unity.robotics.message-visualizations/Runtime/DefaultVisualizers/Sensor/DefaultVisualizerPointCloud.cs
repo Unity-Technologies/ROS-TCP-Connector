@@ -7,7 +7,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPointCloud : BasicVisualizer<MPointCloud>
+public class DefaultVisualizerPointCloud : BasicVisualFactory<MPointCloud>
 {
     public PointCloudVisualizerSettings m_Settings;
     [SerializeField]
@@ -20,7 +20,7 @@ public class DefaultVisualizerPointCloud : BasicVisualizer<MPointCloud>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
     }
 
-    public override Action CreateGUI(MPointCloud message, MessageMetadata meta, BasicDrawing drawing) 
+    public override Action CreateGUI(MPointCloud message, MessageMetadata meta) 
     {
         string channelNames = String.Join(", ", message.channels.Select(i => i.name));
 

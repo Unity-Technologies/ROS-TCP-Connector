@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerIlluminance : BasicVisualizer<MIlluminance>
+public class DefaultVisualizerIlluminance : BasicVisualFactory<MIlluminance>
 {
-    public override Action CreateGUI(MIlluminance message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MIlluminance message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");

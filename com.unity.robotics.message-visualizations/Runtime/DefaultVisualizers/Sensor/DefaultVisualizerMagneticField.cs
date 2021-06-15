@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMagneticField : BasicVisualizer<MMagneticField>
+public class DefaultVisualizerMagneticField : BasicVisualFactory<MMagneticField>
 {
     [SerializeField]
     Color m_Color;
@@ -16,7 +16,7 @@ public class DefaultVisualizerMagneticField : BasicVisualizer<MMagneticField>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
     }
 
-    public override Action CreateGUI(MMagneticField message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MMagneticField message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         message.magnetic_field.GUI("Magnetic field (Tesla)");

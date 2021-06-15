@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerNavSatStatus : BasicVisualizer<MNavSatStatus>
+public class DefaultVisualizerNavSatStatus : BasicVisualFactory<MNavSatStatus>
 {
-    public override Action CreateGUI(MNavSatStatus message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MNavSatStatus message, MessageMetadata meta) => () =>
     {
         message.GUI();
     };

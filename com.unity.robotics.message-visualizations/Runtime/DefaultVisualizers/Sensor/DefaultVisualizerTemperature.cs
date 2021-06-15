@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerTemperature : BasicVisualizer<MTemperature>
+public class DefaultVisualizerTemperature : BasicVisualFactory<MTemperature>
 {
-    public override Action CreateGUI(MTemperature message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MTemperature message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");

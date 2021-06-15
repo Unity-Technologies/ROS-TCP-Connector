@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMesh : BasicVisualizer<MMesh>
+public class DefaultVisualizerMesh : BasicVisualFactory<MMesh>
 {
     [SerializeField]
     GameObject m_Origin;
@@ -18,7 +18,7 @@ public class DefaultVisualizerMesh : BasicVisualizer<MMesh>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin);
     }
 
-    public override Action CreateGUI(MMesh message, MessageMetadata meta, BasicDrawing drawing)
+    public override Action CreateGUI(MMesh message, MessageMetadata meta)
     {
         bool showTriangles = false;
         return () =>

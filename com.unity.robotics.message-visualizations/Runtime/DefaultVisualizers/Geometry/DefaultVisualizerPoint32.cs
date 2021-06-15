@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPoint32 : BasicVisualizer<MPoint32>
+    public class DefaultVisualizerPoint32 : BasicVisualFactory<MPoint32>
     {
         [SerializeField]
         float m_Radius = 0.01f;
@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
-        public override System.Action CreateGUI(MPoint32 message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override System.Action CreateGUI(MPoint32 message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };

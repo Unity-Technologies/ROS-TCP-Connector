@@ -4,28 +4,19 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCompressedImage : BasicTextureVisualizer<MCompressedImage>
+public class DefaultVisualizerCompressedImage : BasicTextureVisualFactory<MCompressedImage>
 {
-    public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, BasicDrawing drawing)
+    protected override Texture2D CreateTexture(MCompressedImage message)
     {
-        m_Visualization ??= (ITextureMessageVisualization)VisualizationRegistry.GetVisualization(meta.Topic);
-        if (m_Visualization != null)
-        {
-            m_Visualization.Delete();
-            m_Visualization.SetTexture(message.ToTexture2D());
-        }
-
-        return () =>
-        {
-            message.header.GUI();
-
-            // TODO: Rescale/recenter image based on window height/width
-            if (m_Visualization?.GetTexture() != null)
-            {
-                var origRatio = m_Visualization.GetTexture().width / (float)m_Visualization.GetTexture().height;
-                GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Visualization?.GetTexture());
-                GUILayout.Label($"Format: {message.format}");
-            }
-        };
+        return message.ToTexture2D();
     }
+
+    public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, Texture2D tex) => () =>
+    {
+        message.header.GUI();
+        // TODO: Rescale/recenter image based on window height/width
+        var origRatio = tex.width / (float)tex.height;
+        GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+        GUILayout.Label($"Format: {message.format}");
+    };
 }

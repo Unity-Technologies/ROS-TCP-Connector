@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerTime : BasicHudOnlyVisualizer<MTime>
+public class DefaultVisualizerTime : BasicHudOnlyVisualFactory<MTime>
 {
-    public override Action CreateGUI(MTime message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MTime message, MessageMetadata meta) => () =>
     {
         message.GUI();
     };

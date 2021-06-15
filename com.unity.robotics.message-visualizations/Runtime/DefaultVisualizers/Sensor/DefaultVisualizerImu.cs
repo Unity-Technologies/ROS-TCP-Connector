@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerImu : BasicVisualizer<MImu>
+public class DefaultVisualizerImu : BasicVisualFactory<MImu>
 {
     [SerializeField]
     public Color m_Color;
@@ -22,7 +22,7 @@ public class DefaultVisualizerImu : BasicVisualizer<MImu>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
-    public override Action CreateGUI(MImu message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MImu message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         message.orientation.GUI("Orientation");

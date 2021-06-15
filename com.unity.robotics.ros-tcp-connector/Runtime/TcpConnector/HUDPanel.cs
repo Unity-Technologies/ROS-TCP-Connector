@@ -1,10 +1,8 @@
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using Unity.Robotics.MessageVisualizers;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.MessageVisualizers;
 using System.IO;
 
 namespace Unity.Robotics.ROSTCPConnector
@@ -26,11 +24,11 @@ namespace Unity.Robotics.ROSTCPConnector
         public static GUIStyle s_IPStyle;
         public static GUIStyle s_BoldStyle;
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
-
+        static SortedList<string, TopicVisualizationState> s_AllTopics = new SortedList<string, TopicVisualizationState>();
+        
         public static string GetMessageNameByTopic(string topic)
         {
-            string rosMessageName;
-            if (!s_MessageNamesByTopic.TryGetValue(topic, out rosMessageName))
+            if (!s_MessageNamesByTopic.TryGetValue(topic, out var rosMessageName))
             {
                 return null;
             }
@@ -45,15 +43,12 @@ namespace Unity.Robotics.ROSTCPConnector
         int m_NextWindowID = 101;
         int m_CurrentFrameIndex;
 
-        List<HUDVisualizationRule> m_ActiveWindows = new List<HUDVisualizationRule>();
-        SortedList<string, HUDVisualizationRule> m_AllTopics = new SortedList<string, HUDVisualizationRule>();
-        Dictionary<string, IVisualizer> m_TopicVisualizers = new Dictionary<string, IVisualizer>();
-        Dictionary<string, IMessageVisualization> m_TopicVisualizations = new Dictionary<string, IMessageVisualization>();
-        Dictionary<int, HUDVisualizationRule> m_PendingServiceRequests = new Dictionary<int, HUDVisualizationRule>();
-        HUDVisualizationRule m_DraggingWindow;
+        List<TopicVisualizationState> m_ActiveWindows = new List<TopicVisualizationState>();
+        Dictionary<string, IVisualFactory> m_TopicVisualizers = new Dictionary<string, IVisualFactory>();
+        Dictionary<int, TopicVisualizationState> m_PendingServiceRequests = new Dictionary<int, TopicVisualizationState>();
+        TopicVisualizationState m_DraggingWindow;
 
-        public SortedList<string, HUDVisualizationRule> AllTopics => m_AllTopics;
-
+        public static SortedList<string, TopicVisualizationState> AllTopics => s_AllTopics;
         static List<IHudTab> s_HUDTabs = new List<IHudTab> { new TopicsHudTab() };
 
         public static void RegisterTab(IHudTab tab)
@@ -71,7 +66,7 @@ namespace Unity.Robotics.ROSTCPConnector
         void SaveLayout()
         {
             HUDLayoutSave saveState = new HUDLayoutSave { };
-            saveState.AddRules(m_AllTopics.Values);
+            saveState.AddRules(s_AllTopics.Values);
             File.WriteAllText(LayoutFilePath, JsonUtility.ToJson(saveState));
         }
 
@@ -84,18 +79,18 @@ namespace Unity.Robotics.ROSTCPConnector
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
-            foreach (HUDVisualizationRule.SaveState savedRule in saveState.Rules)
+            foreach (TopicVisualizationState.SaveState savedRule in saveState.Rules)
             {
-                m_AllTopics[savedRule.Topic] = new HUDVisualizationRule(savedRule, this);
+                s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
             }
         }
 
-        public void AddWindow(HUDVisualizationRule window)
+        public void AddWindow(TopicVisualizationState window)
         {
             m_ActiveWindows.Add(window);
         }
 
-        public void RemoveWindow(HUDVisualizationRule window)
+        public void RemoveWindow(TopicVisualizationState window)
         {
             m_ActiveWindows.Remove(window);
         }
@@ -112,13 +107,13 @@ namespace Unity.Robotics.ROSTCPConnector
             if (topic.StartsWith("__"))
                 return;
 
-            HUDVisualizationRule rule;
-            if (!m_AllTopics.TryGetValue(topic, out rule))
+            TopicVisualizationState state;
+            if (!s_AllTopics.TryGetValue(topic, out state))
             {
-                m_AllTopics.Add(topic, null);
+                s_AllTopics.Add(topic, null);
             }
-            if (rule != null)
-                rule.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
             m_MessageOutLastRealtime = Time.realtimeSinceStartup;
         }
 
@@ -127,13 +122,13 @@ namespace Unity.Robotics.ROSTCPConnector
             if (topic.StartsWith("__"))
                 return;
 
-            HUDVisualizationRule rule;
-            if (!m_AllTopics.TryGetValue(topic, out rule))
+            TopicVisualizationState state;
+            if (!s_AllTopics.TryGetValue(topic, out state))
             {
-                m_AllTopics.Add(topic, null);
+                s_AllTopics.Add(topic, null);
             }
-            if (rule != null)
-                rule.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
             m_MessageInLastRealtime = Time.realtimeSinceStartup;
         }
 
@@ -144,30 +139,30 @@ namespace Unity.Robotics.ROSTCPConnector
 
             MessageMetadata meta = new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now);
 
-            HUDVisualizationRule rule;
-            if (!m_AllTopics.TryGetValue(topic, out rule))
+            TopicVisualizationState state;
+            if (!s_AllTopics.TryGetValue(topic, out state))
             {
-                m_AllTopics.Add(topic, null);
+                s_AllTopics.Add(topic, null);
             }
-            if (rule != null)
+            if (state != null)
             {
-                m_PendingServiceRequests.Add(serviceID, rule);
-                rule.SetServiceRequest(request, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
+                m_PendingServiceRequests.Add(serviceID, state);
+                state.SetServiceRequest(request, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
             }
             return serviceID;
         }
 
         public void AddServiceResponse(int serviceID, Message response)
         {
-            HUDVisualizationRule rule;
-            if (!m_PendingServiceRequests.TryGetValue(serviceID, out rule))
+            TopicVisualizationState state;
+            if (!m_PendingServiceRequests.TryGetValue(serviceID, out state))
                 return; // don't know what happened there, but that's not a request I recognize
 
             m_PendingServiceRequests.Remove(serviceID);
 
-            if (rule != null)
+            if (state != null)
             {
-                rule.SetServiceResponse(response, new MessageMetadata(rule.Topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
+                state.SetServiceResponse(response, new MessageMetadata(state.Topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
             }
         }
 
@@ -294,7 +289,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 for (int Idx = m_ActiveWindows.Count - 1; Idx >= 0; --Idx)
                 {
-                    HUDVisualizationRule window = m_ActiveWindows[Idx];
+                    TopicVisualizationState window = m_ActiveWindows[Idx];
                     if (m_ActiveWindows[Idx].TryDragWindow(current))
                     {
                         m_DraggingWindow = m_ActiveWindows[Idx];
@@ -312,7 +307,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_DraggingWindow = null;
             }
 
-            foreach (HUDVisualizationRule window in m_ActiveWindows)
+            foreach (TopicVisualizationState window in m_ActiveWindows)
             {
                 window.DrawWindow();
             }
@@ -348,7 +343,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool IsFreeWindowRect(Rect rect)
         {
-            foreach(HUDVisualizationRule window in m_ActiveWindows)
+            foreach(TopicVisualizationState window in m_ActiveWindows)
             {
                 if (window.WindowRect.Overlaps(rect))
                     return false;
@@ -361,7 +356,7 @@ namespace Unity.Robotics.ROSTCPConnector
             maxX = 0;
             maxY = 0;
             bool result = true;
-            foreach (HUDVisualizationRule window in m_ActiveWindows)
+            foreach (TopicVisualizationState window in m_ActiveWindows)
             {
                 if (window.WindowRect.Overlaps(rect))
                 {
@@ -373,37 +368,31 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-
-        public IVisualizer GetVisualizer(string topic)
+        public IVisualFactory GetVisualizer(string topic)
         {
-            IVisualizer result;
+            IVisualFactory result;
             if (m_TopicVisualizers.TryGetValue(topic, out result))
             {
                 return result;
             }
 
             string rosMessageName = GetMessageNameByTopic(topic);
-            result = VisualizationRegistry.GetVisualizer(topic, rosMessageName);
+            result = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
             m_TopicVisualizers[topic] = result;
             return result;
         }
 
-        public IMessageVisualization GetVisualization(string topic)
+        public TopicVisualizationState GetVisualizationState(string topic, bool subscribe=false)
         {
-            IMessageVisualization result;
-            if (m_TopicVisualizations.TryGetValue(topic, out result))
+            if (s_AllTopics.TryGetValue(topic, out var result) && result != null)
             {
                 return result;
             }
 
-            result = VisualizationRegistry.GetVisualization(topic);
-            if (result != null)
-            {
-                m_TopicVisualizations[topic] = result;
-                return result;
-            }
-
-            return null;
+            string rosMessageName = GetMessageNameByTopic(topic);
+            result = new TopicVisualizationState(topic, rosMessageName, this, subscribe);
+            s_AllTopics[topic] = result;
+            return result;
         }
 
         float m_LastTopicsRequestRealtime = -1;
@@ -423,8 +412,10 @@ namespace Unity.Robotics.ROSTCPConnector
             for (int Idx = 0; Idx < topics.Length; ++Idx)
             {
                 string topic = topics[Idx];
-                if (!m_AllTopics.ContainsKey(topic))
-                    m_AllTopics.Add(topic, null);
+                if (!s_AllTopics.ContainsKey(topic))
+                {
+                    s_AllTopics.Add(topic, null);
+                }
                 s_MessageNamesByTopic[topic] = messageNames[Idx];
             }
             //ResizeTopicsWindow();
@@ -434,16 +425,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         class HUDLayoutSave
         {
-            public HUDVisualizationRule.SaveState[] Rules;
+            public TopicVisualizationState.SaveState[] Rules;
 
-            public void AddRules(IEnumerable<HUDVisualizationRule> rules)
+            public void AddRules(IEnumerable<TopicVisualizationState> rules)
             {
-                List<HUDVisualizationRule.SaveState> topicRuleSaves = new List<HUDVisualizationRule.SaveState>();
-                foreach (HUDVisualizationRule rule in rules)
+                List<TopicVisualizationState.SaveState> topicRuleSaves = new List<TopicVisualizationState.SaveState>();
+                foreach (TopicVisualizationState rule in rules)
                 {
                     if (rule == null)
                         continue;
-                    HUDVisualizationRule.SaveState save = rule.CreateSaveState();
+                    TopicVisualizationState.SaveState save = rule.CreateSaveState();
                     if (save != null)
                         topicRuleSaves.Add(save);
                 }
@@ -468,14 +459,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.BeginHorizontal();
                 m_TopicFilter = GUILayout.TextField(m_TopicFilter);
 
-                if (m_TopicFilter != "" && !hud.AllTopics.ContainsKey(m_TopicFilter))
+                if (m_TopicFilter != "" && !AllTopics.ContainsKey(m_TopicFilter))
                 {
                     if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
                     {
-                        HUDVisualizationRule rule = new HUDVisualizationRule(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), hud);
-                        rule.SetShowWindow(true);
-                        rule.SetShowDrawing(true);
-                        hud.AllTopics.Add(m_TopicFilter, rule);
+                        TopicVisualizationState state = new TopicVisualizationState(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), hud);
+                        state.SetShowWindow(true);
+                        state.SetShowDrawing(true);
+                        AllTopics.Add(m_TopicFilter, state);
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -487,7 +478,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
                 int numTopicsShown = 0;
-                foreach (KeyValuePair<string, HUDVisualizationRule> kv in hud.AllTopics)
+                foreach (KeyValuePair<string, TopicVisualizationState> kv in AllTopics)
                 {
                     bool showWindow = false;
                     bool canShowWindow = false;
@@ -501,18 +492,18 @@ namespace Unity.Robotics.ROSTCPConnector
                     string rosMessageName = GetMessageNameByTopic(title);
 
                     numTopicsShown++;
-                    HUDVisualizationRule rule = kv.Value;
+                    TopicVisualizationState state = kv.Value;
 
-                    if (rule != null)
+                    if (state != null)
                     {
-                        showWindow = rule.ShowWindow;
-                        showDrawing = rule.ShowDrawing;
-                        title = rule.Topic;
+                        showWindow = state.ShowWindow;
+                        showDrawing = state.ShowDrawing;
+                        title = state.Topic;
                     }
 
-                    IVisualizer visualizer = hud.GetVisualizer(kv.Key);
-                    canShowWindow = visualizer != null;
-                    canShowDrawing = visualizer != null ? visualizer.CanShowDrawing : false;
+                    IVisualFactory visualFactory = hud.GetVisualizer(kv.Key);
+                    canShowWindow = visualFactory != null;
+                    canShowDrawing = visualFactory != null ? visualFactory.CanShowDrawing : false;
 
                     bool hasWindow = showWindow;
                     bool hasDrawing = showDrawing;
@@ -552,13 +543,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     if (showWindow != hasWindow || showDrawing != hasDrawing)
                     {
-                        if (rule == null)
+                        if (state == null)
                         {
-                            rule = new HUDVisualizationRule(kv.Key, GetMessageNameByTopic(kv.Key), hud);
-                            hud.AllTopics[kv.Key] = rule;
+                            state = new TopicVisualizationState(kv.Key, GetMessageNameByTopic(kv.Key), hud);
+                            AllTopics[kv.Key] = state;
                         }
-                        rule.SetShowWindow(showWindow);
-                        rule.SetShowDrawing(showDrawing);
+                        state.SetShowWindow(showWindow);
+                        state.SetShowDrawing(showDrawing);
                         break;
                     }
                 }
@@ -566,7 +557,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 if (numTopicsShown == 0)
                 {
-                    if (hud.AllTopics.Count == 0)
+                    if (AllTopics.Count == 0)
                         GUILayout.Label("No topics registered");
                     else
                         GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");

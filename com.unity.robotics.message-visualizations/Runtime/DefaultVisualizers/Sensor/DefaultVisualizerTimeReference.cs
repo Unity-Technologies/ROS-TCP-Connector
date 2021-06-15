@@ -6,9 +6,9 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerTimeReference : BasicVisualizer<MTimeReference>
+public class DefaultVisualizerTimeReference : BasicVisualFactory<MTimeReference>
 {
-    public override Action CreateGUI(MTimeReference message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MTimeReference message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         GUILayout.Label($"Time reference:{message.time_ref.ToTimestampString()}\nSource: {message.source}");

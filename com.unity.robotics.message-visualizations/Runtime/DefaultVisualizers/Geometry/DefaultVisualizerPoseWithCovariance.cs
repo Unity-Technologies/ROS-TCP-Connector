@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseWithCovariance : BasicVisualizer<MPoseWithCovariance>
+public class DefaultVisualizerPoseWithCovariance : BasicVisualFactory<MPoseWithCovariance>
 {
     [SerializeField]
     float m_Size = 0.1f;
@@ -19,7 +19,7 @@ public class DefaultVisualizerPoseWithCovariance : BasicVisualizer<MPoseWithCova
         message.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPoseWithCovariance message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MPoseWithCovariance message, MessageMetadata meta) => () =>
     {
         message.pose.GUI();
         MessageVisualizations.GUIGrid(message.covariance, 6);
