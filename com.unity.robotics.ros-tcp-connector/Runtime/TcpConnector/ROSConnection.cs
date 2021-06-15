@@ -83,7 +83,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         struct SubscriberCallback
         {
-            public Func<MessageDeserializer, Message> messageConstructor;
+            public Func<MessageDeserializer, Message> deserialize;
             public string rosMessageName;
             public List<Action<Message>> callbacks;
         }
@@ -92,7 +92,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         struct UnityServiceImplementation
         {
-            public Func<MessageDeserializer, Message> messageConstructor;
+            public Func<MessageDeserializer, Message> deserialize;
             public string rosMessageName;
             public Func<Message, Message> callback;
         }
@@ -121,7 +121,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 subCallbacks = new SubscriberCallback
                 {
-                    messageConstructor = MessageRegistry.GetConstructor<T>(),
+                    deserialize = MessageRegistry.GetDeserializeFunction<T>(),
                     rosMessageName = rosMessageName,
                     callbacks = new List<Action<Message>> { }
                 };
@@ -139,7 +139,7 @@ namespace Unity.Robotics.ROSTCPConnector
             string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<REQUEST>();
             m_UnityServices[topic] = new UnityServiceImplementation
             {
-                messageConstructor = MessageRegistry.GetConstructor<REQUEST>(),
+                deserialize = MessageRegistry.GetDeserializeFunction<REQUEST>(),
                 rosMessageName = rosMessageName,
                 callback = (Message msg) => callback((REQUEST)msg)
             };
@@ -401,7 +401,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     if (m_Subscribers.TryGetValue(topic, out callback))
                     {
                         m_MessageDeserializer.InitWithBuffer(contents);
-                        Message message = callback.messageConstructor(m_MessageDeserializer);
+                        Message message = callback.deserialize(m_MessageDeserializer);
 
                         if (m_HudPanel != null && !topic.StartsWith("__"))
                             m_HudPanel.SetLastMessageReceived(topic, message);
@@ -453,7 +453,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                             // deserialize the request message
                             m_MessageDeserializer.InitWithBuffer(requestBytes);
-                            Message requestMessage = service.messageConstructor(m_MessageDeserializer);
+                            Message requestMessage = service.deserialize(m_MessageDeserializer);
 
                             // run the actual service
                             Message responseMessage = service.callback(requestMessage);
