@@ -1,4 +1,4 @@
-﻿/*
+/*
 © Siemens AG, 2019  
 Author: Sifan Ye (sifan.ye@siemens.com) 
 Licensed under the Apache License, Version 2.0 (the "License"); 

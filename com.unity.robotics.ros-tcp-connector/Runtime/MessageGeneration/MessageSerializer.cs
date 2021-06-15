@@ -77,6 +77,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return serializedMessage;
         }
 
+        public List<byte[]> GetBytesSequence()
+        {
+            // TODO: check what's faster - copying the list...
+            List<byte[]> result = new List<byte[]>(m_ListOfSerializations);
+            // ...or giving away the old list and making a new one?
+            //List<byte[]> result = m_ListOfSerializations;
+            //m_ListOfSerializations = new List<byte[]>();
+            return result;
+        }
+
         public void SendTo(System.IO.Stream stream)
         {
             foreach (byte[] statement in m_ListOfSerializations)
@@ -293,6 +303,25 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 #else
             // ROS2 strings are 4-byte aligned, and padded with a null byte at the end
             Align(sizeof(int));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length + 1));
+            m_ListOfSerializations.Add(encodedString);
+            m_ListOfSerializations.Add(k_NullByte);
+
+            m_AlignmentOffset += 4 + encodedString.Length + 1;
+#endif
+        }
+
+        public void WriteUnaligned(string inputString)
+        {
+            byte[] encodedString = Encoding.UTF8.GetBytes(inputString);
+
+#if !ROS2
+            m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length));
+            m_ListOfSerializations.Add(encodedString);
+
+            m_AlignmentOffset += 4 + encodedString.Length;
+#else
+            // ROS2 strings are 4-byte aligned, and padded with a null byte at the end
             m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length + 1));
             m_ListOfSerializations.Add(encodedString);
             m_ListOfSerializations.Add(k_NullByte);

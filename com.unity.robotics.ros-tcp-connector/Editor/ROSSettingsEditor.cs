@@ -69,10 +69,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             else
             {
                 m_SelectedProtocol = (RosProtocol)EditorGUILayout.EnumPopup("Protocol", m_SelectedProtocol);
-                if(m_SelectedProtocol == k_AlternateProtocol)
+                if (m_SelectedProtocol == k_AlternateProtocol)
                 {
                     List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
-                    if(m_SelectedProtocol == RosProtocol.ROS1)
+                    if (m_SelectedProtocol == RosProtocol.ROS1)
                         allDefines.Remove("ROS2");
                     else
                         allDefines.Add("ROS2");
@@ -81,11 +81,17 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             }
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
-            ROSConnection.RosIPAddressPref = EditorGUILayout.TextField("ROS IP Address", ROSConnection.RosIPAddressPref);
-            ROSConnection.RosPortPref = EditorGUILayout.IntField("ROS Port", ROSConnection.RosPortPref);
+
+            prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
+            prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+
+            // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
+            HUDPanel.SetIPPref(prefab.RosIPAddress);
+            HUDPanel.SetPortPref(prefab.RosPort);
+
             EditorGUILayout.Space();
 
-            if (!ROSConnection.IPFormatIsCorrect(ROSConnection.RosIPAddressPref))
+            if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
@@ -113,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             if (GUI.changed)
             {
-                EditorUtility.SetDirty(prefabObj);
+                PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
         }
     }
