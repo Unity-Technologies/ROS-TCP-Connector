@@ -27,6 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
+            if (!AssertMessageType(message, meta)) return null;
             return new BasicTextureVisual<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
         }
 
@@ -35,6 +36,17 @@ namespace Unity.Robotics.MessageVisualizers
         public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, Texture2D tex)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
+        }
+        
+        public bool AssertMessageType(Message message, MessageMetadata meta)
+        {
+            if (!(message is TargetMessageType))
+            {
+                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
+                return false;
+            }
+
+            return true;
         }
     }
 }

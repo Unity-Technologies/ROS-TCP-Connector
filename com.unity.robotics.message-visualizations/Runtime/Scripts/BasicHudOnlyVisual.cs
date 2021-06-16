@@ -28,7 +28,10 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void OnGUI()
         {
-            m_GUIAction ??= m_Factory.CreateGUI(message, meta);
+            if (m_GUIAction == null)
+            {
+                m_GUIAction = m_Factory.CreateGUI(message, meta);
+            }
             m_GUIAction();
         }
 
