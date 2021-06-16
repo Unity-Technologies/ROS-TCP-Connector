@@ -28,7 +28,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
-            return new BasicVisualization<TargetMessageType>((TargetMessageType)message, meta, this);
+            return new BasicVisual<TargetMessageType>((TargetMessageType)message, meta, this);
         }
 
         public BasicDrawing CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)

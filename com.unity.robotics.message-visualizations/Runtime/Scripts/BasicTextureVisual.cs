@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicTextureVisualization<TargetMessageType> : ITextureVisual
+    public class BasicTextureVisual<TargetMessageType> : ITextureVisual
         where TargetMessageType : Message
     {
         BasicTextureVisualFactory<TargetMessageType> m_Factory;
@@ -12,7 +12,7 @@ namespace Unity.Robotics.MessageVisualizers
         Action m_GUIAction;
         Texture2D m_Texture2D;
 
-        public BasicTextureVisualization(TargetMessageType newMessage, MessageMetadata newMeta, BasicTextureVisualFactory<TargetMessageType> factory, Texture2D tex)
+        public BasicTextureVisual(TargetMessageType newMessage, MessageMetadata newMeta, BasicTextureVisualFactory<TargetMessageType> factory, Texture2D tex)
         {
             message = newMessage;
             meta = newMeta;
@@ -26,27 +26,15 @@ namespace Unity.Robotics.MessageVisualizers
 
         public MessageMetadata meta { get; }
 
-        public bool hasDrawing
-        {
-            get => false;
-            set
-            {
-                if (!value) DeleteDrawing();
-            }
-        }
-
-        public bool hasAction
-        {
-            get => m_GUIAction != null;
-            set
-            {
-                if (!value) m_GUIAction = null;
-            }
-        }
+        public bool hasDrawing => false;
+        public bool hasAction => m_GUIAction != null;
 
         public void OnGUI()
         {
-            m_GUIAction ??= m_Factory.CreateGUI(message, meta, GetTexture());
+            if (m_GUIAction == null)
+            {
+                m_GUIAction = m_Factory.CreateGUI(message, meta, GetTexture());
+            }
             m_GUIAction();
         }
 
@@ -58,9 +46,8 @@ namespace Unity.Robotics.MessageVisualizers
             }
             return m_Texture2D;
         }
-
+        
         public void CreateDrawing() { }
-
         public void DeleteDrawing() { }
     }
 }

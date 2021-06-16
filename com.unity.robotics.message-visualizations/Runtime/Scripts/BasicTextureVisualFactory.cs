@@ -27,7 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
-            return new BasicTextureVisualization<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
+            return new BasicTextureVisual<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
         }
 
         public abstract Texture2D CreateTexture(TargetMessageType message);

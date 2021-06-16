@@ -105,10 +105,8 @@ namespace Unity.Robotics.ROSTCPConnector
                     m_Contents.ShowDrawing(true);
                 }
                 
-                // if (GetVisual) m_Contents.GetVisual();
                 m_DrawingUpdatedAtFrameIndex = meta.FrameIndex;
             }
-            
         }
 
         public void SetServiceRequest(Message request, MessageMetadata requestMeta, int serviceID)
@@ -307,7 +305,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_Visual != null) m_Visual.DeleteDrawing();
-                    // m_Visual.hasDrawing = false;
                 }
             }
 
@@ -417,10 +414,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     if (m_RequestVisualFactory != null && m_RequestVisual.hasDrawing) m_RequestVisual.DeleteDrawing();
-                    m_RequestVisual.hasDrawing = false;
-
                     if (m_ResponseVisualFactory != null && m_ResponseVisual.hasDrawing) m_ResponseVisual.DeleteDrawing();
-                    m_ResponseVisual.hasDrawing = false;
                 }
             }
 
@@ -457,14 +451,12 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Request = request;
                 m_RequestMeta = requestMeta;
-                m_RequestVisual.hasAction = false;
             }
 
             public void SetResponse(Message response, MessageMetadata responseMeta)
             {
                 m_Response = response;
                 m_ResponseMeta = responseMeta;
-                m_ResponseVisual.hasAction = false;
             }
 
             void DrawWindowContents(int id)

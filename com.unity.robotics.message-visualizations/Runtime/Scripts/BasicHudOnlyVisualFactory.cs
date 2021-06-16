@@ -24,7 +24,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
-            return new BasicHudOnlyVisualization<TargetMessageType>((TargetMessageType)message, meta, this);
+            return new BasicHudOnlyVisual<TargetMessageType>((TargetMessageType)message, meta, this);
         }
 
         public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta)

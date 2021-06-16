@@ -16,8 +16,8 @@ namespace Unity.Robotics.MessageVisualizers
     {
         Message message { get; }
         MessageMetadata meta { get; }
-        bool hasDrawing { get; set; }
-        bool hasAction { get; set; }
+        bool hasDrawing { get; }
+        bool hasAction { get; }
         void DeleteDrawing();
         void OnGUI();
         void CreateDrawing();
@@ -99,7 +99,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             return s_DefaultVisualFactory;
         }
-        
+
         class DefaultVisualizer : IVisualFactory
         {
             public IVisual CreateVisual(Message message, MessageMetadata meta)
@@ -113,19 +113,6 @@ namespace Unity.Robotics.MessageVisualizers
             public void Register(int priority)
             {
                 throw new NotImplementedException();
-            }
-
-            public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
-            {
-                return null;
-            }
-
-            public void DeleteDrawing(object drawing) { }
-
-            public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
-            {
-                var text = message.ToString();
-                return () => { GUILayout.Label(text); };
             }
         }
     }

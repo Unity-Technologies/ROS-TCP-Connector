@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicVisualization<TargetMessageType> : IVisual
+    public class BasicVisual<TargetMessageType> : IVisual
         where TargetMessageType : Message
     {
         public TargetMessageType message { get; }
@@ -19,34 +19,22 @@ namespace Unity.Robotics.MessageVisualizers
         Action m_GUIAction;
         BasicVisualFactory<TargetMessageType> m_Factory;
 
-        public BasicVisualization(TargetMessageType newMessage, MessageMetadata newMeta, BasicVisualFactory<TargetMessageType> factory)
+        public BasicVisual(TargetMessageType newMessage, MessageMetadata newMeta, BasicVisualFactory<TargetMessageType> factory)
         {
             message = newMessage;
             meta = newMeta;
             m_Factory = factory;
         }
 
-        public bool hasDrawing
-        {
-            get => m_BasicDrawing != null;
-            set
-            {
-                if (!value) DeleteDrawing();
-            }
-        }
-
-        public bool hasAction
-        {
-            get => m_GUIAction != null;
-            set
-            {
-                if (!value) m_GUIAction = null;
-            }
-        }
+        public bool hasDrawing => m_BasicDrawing != null;
+        public bool hasAction => m_GUIAction != null;
 
         public void OnGUI()
         {
-            m_GUIAction ??= m_Factory.CreateGUI(message, meta);     
+            if (m_GUIAction == null)
+            {
+                m_GUIAction = m_Factory.CreateGUI(message, meta);    
+            }
             m_GUIAction();
         }
 
