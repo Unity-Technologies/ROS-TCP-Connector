@@ -297,8 +297,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     if (m_VisualFactory != null)
                     {
-                        ClearVisual();
-                        m_Visual = m_VisualFactory.CreateVisual(m_Message, m_Meta);    
+                        RecycleVisual();
                         m_Visual.CreateDrawing();
                     }
                 }
@@ -326,6 +325,15 @@ namespace Unity.Robotics.ROSTCPConnector
                 }   
 
                 return m_Visual;
+            }
+
+            public void RecycleVisual()
+            {
+                var oldVisual = m_Visual;
+                var newVisual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
+                newVisual.Recycle(oldVisual);
+                ClearVisual();
+                m_Visual = newVisual;
             }
 
             public void ClearVisual()

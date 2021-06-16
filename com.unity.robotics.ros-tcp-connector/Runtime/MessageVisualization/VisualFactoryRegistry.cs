@@ -21,6 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
         void DeleteDrawing();
         void OnGUI();
         void CreateDrawing();
+        void Recycle(IVisual oldVisual);
     }
 
     public interface ITextureVisual : IVisual

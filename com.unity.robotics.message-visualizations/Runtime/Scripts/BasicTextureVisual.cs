@@ -46,8 +46,9 @@ namespace Unity.Robotics.MessageVisualizers
             }
             return m_Texture2D;
         }
-        
-        public void CreateDrawing() { }
+     
         public void DeleteDrawing() { }
+        public void CreateDrawing() { }
+        public void Recycle(IVisual oldVisual) { }
     }
 }

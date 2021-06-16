@@ -53,5 +53,18 @@ namespace Unity.Robotics.MessageVisualizers
                 m_BasicDrawing = m_Factory.CreateDrawing(message, meta, null);
             }
         }
+
+        public void Recycle(IVisual oldVisual)
+        {
+            if (oldVisual is BasicVisual<TargetMessageType> v)
+            {
+                m_BasicDrawing = v.m_BasicDrawing;
+                v.m_BasicDrawing = null;
+                if (m_BasicDrawing != null)
+                {
+                    m_BasicDrawing.Clear();
+                }
+            }
+        }
     }
 }

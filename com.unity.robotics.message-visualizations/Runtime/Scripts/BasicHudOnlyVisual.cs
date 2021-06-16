@@ -35,7 +35,8 @@ namespace Unity.Robotics.MessageVisualizers
             m_GUIAction();
         }
 
-        public void CreateDrawing() { }
         public void DeleteDrawing() { }
+        public void CreateDrawing() { }
+        public void Recycle(IVisual oldVisual) { }
     }
 }
