@@ -1,26 +1,20 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCompressedImage : BasicVisualizer<MCompressedImage>
+public class DefaultVisualizerCompressedImage : TextureVisualFactory<MCompressedImage>
 {
-    public Texture2D m_Tex { get; private set; }
-
-    public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, BasicDrawing drawing)
+    public override Texture2D CreateTexture(MCompressedImage message)
     {
-        m_Tex = message.ToTexture2D();
-
-        return () =>
-		{
-            message.header.GUI();
-			// TODO: Rescale/recenter image based on window height/width
-            var origRatio = (float)m_Tex.width / (float)m_Tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), m_Tex);
-            GUILayout.Label($"Format: {message.format}");
-		};
+        return message.ToTexture2D();
     }
+
+    public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, Texture2D tex) => () =>
+    {
+        message.header.GUI();
+        tex.GUITexture();
+        GUILayout.Label($"Format: {message.format}");
+    };
 }

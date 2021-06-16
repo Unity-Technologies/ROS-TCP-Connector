@@ -8,7 +8,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMarker : MonoBehaviour, IVisualizer, IPriority
+public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
 {
     public int Priority { get; set; }
     Dictionary<string, Dictionary<int, BasicDrawing>> m_Drawings = new Dictionary<string, Dictionary<int, BasicDrawing>>();
@@ -16,8 +16,14 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualizer, IPriority
 
     public virtual void Awake()
     {
-        VisualizationRegistry.RegisterTypeVisualizer<MMarker>(this, Priority);
-        VisualizationRegistry.RegisterTypeVisualizer<MMarkerArray>(this, Priority);
+        VisualFactoryRegistry.RegisterTypeVisualizer<MMarker>(this, Priority);
+        VisualFactoryRegistry.RegisterTypeVisualizer<MMarkerArray>(this, Priority);
+    }
+
+    public IVisual CreateVisual(Message message, MessageMetadata meta)
+    {
+        // TODO
+        return null;
     }
 
     public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)

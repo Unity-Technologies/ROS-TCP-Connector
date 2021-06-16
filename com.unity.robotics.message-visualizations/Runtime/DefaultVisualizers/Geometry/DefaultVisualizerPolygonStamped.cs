@@ -8,7 +8,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPolygonStamped : BasicVisualizer<MPolygonStamped>
+    public class DefaultVisualizerPolygonStamped : DrawingVisualFactory<MPolygonStamped>
     {
         [SerializeField]
         float m_Thickness = 0.01f;
@@ -20,7 +20,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.polygon.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
         }
 
-        public override Action CreateGUI(MPolygonStamped message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override Action CreateGUI(MPolygonStamped message, MessageMetadata meta) => () =>
         {
             message.header.GUI();
             message.polygon.GUI();

@@ -310,15 +310,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY, MCameraInfo info=null)
+        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
             var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
             tex.LoadRawTextureData(data);
             tex.Apply();
-            // if (info != null) 
-            //     tex = tex.ApplyCameraInfoProjection(info);
-            // tex.Apply();
             return tex;
         }
 
@@ -574,26 +571,25 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Creates a new Texture2D that grabs a region of interest of a given texture, if applicable. Otherwise, an approximated empty texture with a highlighted region is returned. 
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="tex"></param>
-        /// <param name="height"></param>
-        /// <param name="width"></param>
-        /// <returns></returns>
-        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D tex, int height, int width)
+        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D rawTex, int height=0, int width=0)
         {
-            int x_off = (int)message.x_offset;
-            int y_off = (int)message.y_offset;
             int mWidth = (int)message.width;
             int mHeight = (int)message.height;
+            int x_off = ((int)message.x_offset == mWidth) ? 0 : (int)message.x_offset;
+            int y_off = ((int)message.y_offset == mHeight) ? 0 : (int)message.y_offset;
 
             Texture2D overlay;
-            if (tex == null)
+            if (rawTex == null)
             {
                 // No texture provided, just return approximation
                 if (width == 0 || height == 0)
+                {
                     overlay = new Texture2D(x_off + mWidth + 10, y_off + mHeight + 10);
+                }
                 else 
+                {
                     overlay = new Texture2D(width, height);
+                }
 
                 // Initialize ROI color block 
                 Color[] colors = new Color[mHeight * mWidth];
@@ -607,8 +603,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             else 
             {
                 // Crop out ROI from input texture
-                overlay = new Texture2D(mWidth, mHeight, tex.format, true);
-                overlay.SetPixels(0, 0, mWidth, mHeight, tex.GetPixels(x_off, y_off, mWidth, mHeight));
+                overlay = new Texture2D(mWidth - x_off, mHeight - y_off, rawTex.format, true);
+                overlay.SetPixels(0, 0, overlay.width, overlay.height, rawTex.GetPixels(x_off, 0, mWidth - x_off, mHeight - y_off));
             }
             overlay.Apply();
             return overlay;

@@ -6,9 +6,9 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerBatteryState : BasicVisualizer<MBatteryState>
+public class DefaultVisualizerBatteryState : GuiVisualFactory<MBatteryState>
 {
-    public override Action CreateGUI(MBatteryState message, MessageMetadata meta, BasicDrawing drawing) 
+    public override Action CreateGUI(MBatteryState message, MessageMetadata meta) 
     {
         string voltage = String.Join(", ", message.cell_voltage);
         string temp = String.Join(", ", message.cell_temperature);

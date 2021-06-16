@@ -63,6 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
+        public HUDPanel HUDPanel => m_HudPanel;
 
         ConcurrentQueue<Tuple<string, Message>> m_OutgoingMessages = new ConcurrentQueue<Tuple<string, Message>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
@@ -193,7 +194,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterSubscriber(string topic, string rosMessageName)
         {
             SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
-
         }
 
         public void RegisterPublisher(string topic, string rosMessageName)

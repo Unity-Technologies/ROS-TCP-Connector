@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPose : BasicVisualizer<MPose>
+public class DefaultVisualizerPose : DrawingVisualFactory<MPose>
 {
     [SerializeField]
     float m_Size = 0.1f;
@@ -19,7 +19,7 @@ public class DefaultVisualizerPose : BasicVisualizer<MPose>
         message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPose message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MPose message, MessageMetadata meta) => () =>
     {
         message.GUI();
     };

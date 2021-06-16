@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
+public class DefaultVisualizerJointState : DrawingVisualFactory<MJointState>
 {
     [SerializeField]
     bool m_ShowEffort = false;
@@ -34,7 +34,7 @@ public class DefaultVisualizerJointState : BasicVisualizer<MJointState>
         }
     }
 
-    public override Action CreateGUI(MJointState message, MessageMetadata meta, BasicDrawing drawing) 
+    public override Action CreateGUI(MJointState message, MessageMetadata meta) 
     {
         bool pos = message.position.Length > 0;
         bool vel = message.velocity.Length > 0;
