@@ -12,7 +12,7 @@ public enum ColorMode
     HSV, RGB
 }
 
-public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
+public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
 {
     public PointCloud2VisualizerSettings m_Settings;
     [SerializeField]
@@ -35,7 +35,7 @@ public class DefaultVisualizerPointCloud2 : BasicVisualizer<MPointCloud2>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
     }
 
-    public override Action CreateGUI(MPointCloud2 message, MessageMetadata meta, BasicDrawing drawing)
+    public override Action CreateGUI(MPointCloud2 message, MessageMetadata meta)
     {
         var formatDict = new Dictionary<PointField_Format_Constants, List<string>>();
 

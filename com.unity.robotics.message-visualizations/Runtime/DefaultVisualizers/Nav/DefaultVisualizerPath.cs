@@ -7,7 +7,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPath : BasicVisualizer<MPath>
+public class DefaultVisualizerPath : DrawingVisualFactory<MPath>
 {
     [SerializeField]
     float m_Thickness;
@@ -19,7 +19,7 @@ public class DefaultVisualizerPath : BasicVisualizer<MPath>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 
-    public override Action CreateGUI(MPath message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MPath message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         foreach (MPoseStamped pose in message.poses)

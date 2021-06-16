@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerUInt8MultiArray : BasicHudOnlyVisualizer<MUInt8MultiArray>
+public class DefaultVisualizerUInt8MultiArray : GuiVisualFactory<MUInt8MultiArray>
 {
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MUInt8MultiArray message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MUInt8MultiArray message, MessageMetadata meta) => () =>
     {
         message.layout.GUIMultiArray(message.data, ref m_Tabulate);
     };

@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerRelativeHumidity : BasicVisualizer<MRelativeHumidity>
+public class DefaultVisualizerRelativeHumidity : GuiVisualFactory<MRelativeHumidity>
 {
-    public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta) => () =>
     {
         message.header.GUI();
         GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");

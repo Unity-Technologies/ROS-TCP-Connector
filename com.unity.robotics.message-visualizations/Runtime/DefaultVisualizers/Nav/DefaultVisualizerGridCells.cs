@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerGridCells : BasicVisualizer<MGridCells>
+public class DefaultVisualizerGridCells : DrawingVisualFactory<MGridCells>
 {
     [SerializeField]
     float m_Radius = 0.1f;
@@ -18,7 +18,7 @@ public class DefaultVisualizerGridCells : BasicVisualizer<MGridCells>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Radius);
     }
 
-    public override Action CreateGUI(MGridCells message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MGridCells message, MessageMetadata meta) => () =>
     {
         //message.GUI();
     };

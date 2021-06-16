@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTransform : BasicVisualizer<MTransform>
+    public class DefaultVisualizerTransform : DrawingVisualFactory<MTransform>
     {
         [SerializeField]
         float m_Size = 0.1f;
@@ -25,7 +25,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLabel(SelectLabel(m_Label, meta), message.translation.From<FLU>(), SelectColor(m_Color, meta), m_Size);
         }
 
-        public override System.Action CreateGUI(MTransform message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override System.Action CreateGUI(MTransform message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };
