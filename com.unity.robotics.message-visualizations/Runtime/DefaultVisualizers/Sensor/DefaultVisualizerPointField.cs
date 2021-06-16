@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPointField : BasicVisualFactory<MPointField>
+public class DefaultVisualizerPointField : VisualFactory<MPointField>
 {
     public override Action CreateGUI(MPointField message, MessageMetadata meta) => () =>
     {

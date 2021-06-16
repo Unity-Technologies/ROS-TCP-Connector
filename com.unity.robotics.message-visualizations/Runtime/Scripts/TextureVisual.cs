@@ -4,15 +4,15 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicTextureVisual<TargetMessageType> : ITextureVisual
+    public class TextureVisual<TargetMessageType> : ITextureVisual
         where TargetMessageType : Message
     {
-        BasicTextureVisualFactory<TargetMessageType> m_Factory;
+        TextureVisualFactory<TargetMessageType> m_Factory;
 
         Action m_GUIAction;
         Texture2D m_Texture2D;
 
-        public BasicTextureVisual(TargetMessageType newMessage, MessageMetadata newMeta, BasicTextureVisualFactory<TargetMessageType> factory, Texture2D tex)
+        public TextureVisual(TargetMessageType newMessage, MessageMetadata newMeta, TextureVisualFactory<TargetMessageType> factory, Texture2D tex)
         {
             message = newMessage;
             meta = newMeta;

@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerImage : BasicTextureVisualFactory<MImage>
+public class DefaultVisualizerImage : TextureVisualFactory<MImage>
 {
     bool m_ConvertBgr = true;
     bool m_FlipY = true;
@@ -27,13 +27,7 @@ public class DefaultVisualizerImage : BasicTextureVisualFactory<MImage>
                 GUILayout.EndHorizontal();
             }
         
-            // TODO: Rescale/recenter image based on window height/width
-            if (tex != null)
-            {
-                var origRatio = tex.width / (float)tex.height;
-                GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
-            }
-        
+            tex.GUITexture();
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
         };
     }

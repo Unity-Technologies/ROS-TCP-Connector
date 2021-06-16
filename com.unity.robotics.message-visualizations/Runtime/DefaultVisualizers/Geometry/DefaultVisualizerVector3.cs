@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerVector3 : BasicVisualFactory<MVector3>
+    public class DefaultVisualizerVector3 : VisualFactory<MVector3>
     {
         [SerializeField]
         float m_Radius = 0.01f;

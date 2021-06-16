@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerNavSatFix : BasicVisualFactory<MNavSatFix>
+public class DefaultVisualizerNavSatFix : VisualFactory<MNavSatFix>
 {
     public override Action CreateGUI(MNavSatFix message, MessageMetadata meta) => () =>
     {

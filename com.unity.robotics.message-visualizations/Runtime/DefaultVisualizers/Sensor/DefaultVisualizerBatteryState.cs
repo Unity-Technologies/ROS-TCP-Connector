@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerBatteryState : BasicVisualFactory<MBatteryState>
+public class DefaultVisualizerBatteryState : VisualFactory<MBatteryState>
 {
     public override Action CreateGUI(MBatteryState message, MessageMetadata meta) 
     {

@@ -1,11 +1,10 @@
 using System;
-using System.Security.Cryptography;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicVisual<TargetMessageType> : IVisual
+    public class Visual<TargetMessageType> : IVisual
         where TargetMessageType : Message
     {
         public TargetMessageType message { get; }
@@ -17,9 +16,9 @@ namespace Unity.Robotics.MessageVisualizers
         
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
-        BasicVisualFactory<TargetMessageType> m_Factory;
+        VisualFactory<TargetMessageType> m_Factory;
 
-        public BasicVisual(TargetMessageType newMessage, MessageMetadata newMeta, BasicVisualFactory<TargetMessageType> factory)
+        public Visual(TargetMessageType newMessage, MessageMetadata newMeta, VisualFactory<TargetMessageType> factory)
         {
             message = newMessage;
             meta = newMeta;
@@ -44,6 +43,8 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 m_BasicDrawing.Destroy();
             }
+
+            m_BasicDrawing = null;
         }
         
         public void CreateDrawing()
@@ -56,7 +57,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Recycle(IVisual oldVisual)
         {
-            if (oldVisual is BasicVisual<TargetMessageType> v)
+            if (oldVisual is Visual<TargetMessageType> v)
             {
                 m_BasicDrawing = v.m_BasicDrawing;
                 v.m_BasicDrawing = null;

@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerJoy : BasicVisualFactory<MJoy>
+public class DefaultVisualizerJoy : VisualFactory<MJoy>
 {
     int m_Layout = 0;
     string[] m_SelStrings = {"DS4", "X360 Windows", "X360 Linux", "X360 (Wired)", "F710"};

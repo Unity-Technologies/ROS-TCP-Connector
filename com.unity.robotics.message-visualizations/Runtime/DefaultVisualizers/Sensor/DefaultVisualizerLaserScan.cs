@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerLaserScan : BasicVisualFactory<MLaserScan>
+public class DefaultVisualizerLaserScan : VisualFactory<MLaserScan>
 {
     public LaserScanVisualizerSettings m_Settings;
 

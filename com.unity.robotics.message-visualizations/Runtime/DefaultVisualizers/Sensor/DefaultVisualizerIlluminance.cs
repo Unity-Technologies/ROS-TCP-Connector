@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerIlluminance : BasicVisualFactory<MIlluminance>
+public class DefaultVisualizerIlluminance : VisualFactory<MIlluminance>
 {
     public override Action CreateGUI(MIlluminance message, MessageMetadata meta) => () =>
     {

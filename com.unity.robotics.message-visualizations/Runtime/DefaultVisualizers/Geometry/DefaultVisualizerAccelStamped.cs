@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerAccelStamped : BasicVisualFactory<MAccelStamped>
+public class DefaultVisualizerAccelStamped : VisualFactory<MAccelStamped>
 {
     public float m_Thickness = 0.01f;
     public float m_LengthScale = 1.0f;

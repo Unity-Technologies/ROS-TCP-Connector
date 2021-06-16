@@ -3,14 +3,14 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicHudOnlyVisual<TargetMessageType> : IVisual
+    public class GuiVisual<TargetMessageType> : IVisual
         where TargetMessageType : Message
     {
-        BasicHudOnlyVisualFactory<TargetMessageType> m_Factory;
+        GuiVisualFactory<TargetMessageType> m_Factory;
 
         Action m_GUIAction;
 
-        public BasicHudOnlyVisual(TargetMessageType newMessage, MessageMetadata newMeta, BasicHudOnlyVisualFactory<TargetMessageType> factory)
+        public GuiVisual(TargetMessageType newMessage, MessageMetadata newMeta, GuiVisualFactory<TargetMessageType> factory)
         {
             message = newMessage;
             meta = newMeta;

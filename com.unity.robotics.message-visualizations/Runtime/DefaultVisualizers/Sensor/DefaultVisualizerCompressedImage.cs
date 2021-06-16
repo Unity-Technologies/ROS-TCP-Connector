@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCompressedImage : BasicTextureVisualFactory<MCompressedImage>
+public class DefaultVisualizerCompressedImage : TextureVisualFactory<MCompressedImage>
 {
     public override Texture2D CreateTexture(MCompressedImage message)
     {
@@ -14,9 +14,7 @@ public class DefaultVisualizerCompressedImage : BasicTextureVisualFactory<MCompr
     public override Action CreateGUI(MCompressedImage message, MessageMetadata meta, Texture2D tex) => () =>
     {
         message.header.GUI();
-        // TODO: Rescale/recenter image based on window height/width
-        var origRatio = tex.width / (float)tex.height;
-        GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+        tex.GUITexture();
         GUILayout.Label($"Format: {message.format}");
     };
 }

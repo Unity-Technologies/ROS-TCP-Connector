@@ -6,10 +6,11 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMagneticField : BasicVisualFactory<MMagneticField>
+public class DefaultVisualizerMagneticField : VisualFactory<MMagneticField>
 {
     [SerializeField]
     Color m_Color;
+    bool m_ViewCovariance;
 
     public override void Draw(BasicDrawing drawing, MMagneticField message, MessageMetadata meta)
     {
@@ -20,6 +21,6 @@ public class DefaultVisualizerMagneticField : BasicVisualFactory<MMagneticField>
     {
         message.header.GUI();
         message.magnetic_field.GUI("Magnetic field (Tesla)");
-        MessageVisualizations.GUIGrid(message.magnetic_field_covariance, 3, "Covariance");
+        MessageVisualizations.GUIGrid(message.magnetic_field_covariance, 3, "Covariance", ref m_ViewCovariance);
     };
 }

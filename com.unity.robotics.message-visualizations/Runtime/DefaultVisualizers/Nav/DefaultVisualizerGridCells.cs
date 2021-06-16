@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerGridCells : BasicVisualFactory<MGridCells>
+public class DefaultVisualizerGridCells : VisualFactory<MGridCells>
 {
     [SerializeField]
     float m_Radius = 0.1f;

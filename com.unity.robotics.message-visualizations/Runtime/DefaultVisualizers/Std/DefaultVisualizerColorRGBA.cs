@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerColorRGBA : BasicHudOnlyVisualFactory<MColorRGBA>
+public class DefaultVisualizerColorRGBA : GuiVisualFactory<MColorRGBA>
 {
     public override Action CreateGUI(MColorRGBA message, MessageMetadata meta) => () =>
     {

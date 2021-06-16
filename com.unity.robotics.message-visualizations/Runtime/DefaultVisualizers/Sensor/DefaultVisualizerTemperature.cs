@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerTemperature : BasicVisualFactory<MTemperature>
+public class DefaultVisualizerTemperature : VisualFactory<MTemperature>
 {
     public override Action CreateGUI(MTemperature message, MessageMetadata meta) => () =>
     {

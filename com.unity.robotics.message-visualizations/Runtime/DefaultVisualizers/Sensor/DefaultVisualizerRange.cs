@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerRange : BasicVisualFactory<MRange>
+public class DefaultVisualizerRange : VisualFactory<MRange>
 {
     [SerializeField]
     Color m_Color;

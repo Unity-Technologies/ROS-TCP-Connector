@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerRelativeHumidity : BasicVisualFactory<MRelativeHumidity>
+public class DefaultVisualizerRelativeHumidity : VisualFactory<MRelativeHumidity>
 {
     public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta) => () =>
     {

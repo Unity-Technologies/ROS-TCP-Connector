@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerQuaternion : BasicVisualFactory<MQuaternion>
+    public class DefaultVisualizerQuaternion : VisualFactory<MQuaternion>
     {
         [SerializeField]
         float m_Size = 0.1f;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJoyFeedback : BasicVisualFactory<MJoyFeedback>
+public class DefaultVisualizerJoyFeedback : VisualFactory<MJoyFeedback>
 {
     public override Action CreateGUI(MJoyFeedback message, MessageMetadata meta) => () =>
     {

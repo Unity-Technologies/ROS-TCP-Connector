@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerMultiDOFJointState : BasicVisualFactory<MMultiDOFJointState>
+public class DefaultVisualizerMultiDOFJointState : VisualFactory<MMultiDOFJointState>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;

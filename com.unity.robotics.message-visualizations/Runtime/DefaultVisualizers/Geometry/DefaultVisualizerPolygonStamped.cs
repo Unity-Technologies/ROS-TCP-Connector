@@ -8,7 +8,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPolygonStamped : BasicVisualFactory<MPolygonStamped>
+    public class DefaultVisualizerPolygonStamped : VisualFactory<MPolygonStamped>
     {
         [SerializeField]
         float m_Thickness = 0.01f;

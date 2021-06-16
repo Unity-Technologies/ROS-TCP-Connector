@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class BasicTextureVisualFactory<TargetMessageType> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class GuiVisualFactory<TargetMessageType> : MonoBehaviour, IVisualFactory, IPriority
         where TargetMessageType : Message
     {
         [SerializeField]
@@ -23,17 +23,16 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         public int Priority { get; set; }
+
         public bool CanShowDrawing => false;
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
             if (!AssertMessageType(message, meta)) return null;
-            return new BasicTextureVisual<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
+            return new GuiVisual<TargetMessageType>((TargetMessageType)message, meta, this);
         }
 
-        public abstract Texture2D CreateTexture(TargetMessageType message);
-
-        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, Texture2D tex)
+        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }

@@ -7,7 +7,7 @@ using System.Linq;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointTrajectory : BasicVisualFactory<MJointTrajectory>
+public class DefaultVisualizerJointTrajectory : VisualFactory<MJointTrajectory>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;

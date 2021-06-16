@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMesh : BasicVisualFactory<MMesh>
+public class DefaultVisualizerMesh : VisualFactory<MMesh>
 {
     [SerializeField]
     GameObject m_Origin;

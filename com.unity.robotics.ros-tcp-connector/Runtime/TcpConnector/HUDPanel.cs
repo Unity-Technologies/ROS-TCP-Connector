@@ -79,6 +79,7 @@ namespace Unity.Robotics.ROSTCPConnector
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
+            RequestTopics();
             foreach (TopicVisualizationState.SaveState savedRule in saveState.Rules)
             {
                 s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
@@ -390,8 +391,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             string rosMessageName = GetMessageNameByTopic(topic);
-            result = new TopicVisualizationState(topic, rosMessageName, this, subscribe);
-            s_AllTopics[topic] = result;
+            if (rosMessageName != null)
+            {
+                result = new TopicVisualizationState(topic, rosMessageName, this, subscribe);
+                s_AllTopics[topic] = result;    
+            }
             return result;
         }
 

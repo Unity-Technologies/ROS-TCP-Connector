@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerTimeReference : BasicVisualFactory<MTimeReference>
+public class DefaultVisualizerTimeReference : VisualFactory<MTimeReference>
 {
     public override Action CreateGUI(MTimeReference message, MessageMetadata meta) => () =>
     {

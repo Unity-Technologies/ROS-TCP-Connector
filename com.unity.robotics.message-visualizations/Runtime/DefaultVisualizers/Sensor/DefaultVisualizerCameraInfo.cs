@@ -5,9 +5,12 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCameraInfo : BasicTextureVisualFactory<MCameraInfo>
+public class DefaultVisualizerCameraInfo : TextureVisualFactory<MCameraInfo>
 {
     public string imageTopic;
+    bool m_ViewK;
+    bool m_ViewR;
+    bool m_ViewP;
 
     public override Texture2D CreateTexture(MCameraInfo message)
     {
@@ -32,9 +35,9 @@ public class DefaultVisualizerCameraInfo : BasicTextureVisualFactory<MCameraInfo
         message.header.GUI();
         GUILayout.Label($"Height x Width: {message.height}x{message.width}\nDistortion model: {message.distortion_model}");
         GUILayout.Label($"Distortion parameters: {string.Join(", ", message.D)}");
-        MessageVisualizations.GUIGrid(message.K, 3, "K");
-        MessageVisualizations.GUIGrid(message.R, 3, "R");
-        MessageVisualizations.GUIGrid(message.P, 3, "P");
+        MessageVisualizations.GUIGrid(message.K, 3, "K", ref m_ViewK);
+        MessageVisualizations.GUIGrid(message.R, 3, "R", ref m_ViewR);
+        MessageVisualizations.GUIGrid(message.P, 3, "P", ref m_ViewP);
         GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
         message.roi.GUI(tex);
     };
