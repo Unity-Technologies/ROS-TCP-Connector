@@ -9,15 +9,19 @@ public class DefaultVisualizerCameraInfo : BasicTextureVisualFactory<MCameraInfo
 {
     public string imageTopic;
 
-    protected override Texture2D CreateTexture(MCameraInfo message)
+    public override Texture2D CreateTexture(MCameraInfo message)
     {
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify)
         {
             var imageState = ROSConnection.instance.HUDPanel.GetVisualizationState(imageTopic, true);
-            if (imageState.WindowContents.Visual is ITextureVisual imageVisual)
+            if (imageState.WindowContents != null)
             {
-                return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
+                var imageVisual = imageState.WindowContents.GetVisual() as ITextureVisual;
+                if (imageVisual != null)
+                {
+                    return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
+                }       
             }
         }
         return null;

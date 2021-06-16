@@ -54,19 +54,16 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_BasicDrawing != null)
             {
-                Debug.Log($"Calling destroy on {meta.Topic} drawing");
                 m_BasicDrawing.Destroy();
             }
-            m_BasicDrawing = null;
         }
         
         public void CreateDrawing()
         {
-            if (m_BasicDrawing != null)
+            if (m_BasicDrawing == null)
             {
-                DeleteDrawing();
+                m_BasicDrawing = m_Factory.CreateDrawing(message, meta, null);
             }
-            m_BasicDrawing ??= m_Factory.CreateDrawing(message, meta, null);
         }
     }
 }

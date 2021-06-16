@@ -11,7 +11,7 @@ public class DefaultVisualizerImage : BasicTextureVisualFactory<MImage>
     bool m_PrevConvert = true;
     bool m_PrevFlip = true;
 
-    protected override Texture2D CreateTexture(MImage message)
+    public override Texture2D CreateTexture(MImage message)
     {
         return message.data.Length > 0 ? message.ToTexture2D(m_ConvertBgr, m_FlipY) : null;
     }

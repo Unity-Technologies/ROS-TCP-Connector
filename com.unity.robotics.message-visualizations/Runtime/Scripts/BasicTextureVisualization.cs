@@ -46,12 +46,16 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void OnGUI()
         {
-            m_GUIAction ??= m_Factory.CreateGUI(message, meta, m_Texture2D);
+            m_GUIAction ??= m_Factory.CreateGUI(message, meta, GetTexture());
             m_GUIAction();
         }
 
         public Texture2D GetTexture()
         {
+            if (m_Texture2D == null)
+            {
+                m_Texture2D = m_Factory.CreateTexture(message);
+            }
             return m_Texture2D;
         }
 

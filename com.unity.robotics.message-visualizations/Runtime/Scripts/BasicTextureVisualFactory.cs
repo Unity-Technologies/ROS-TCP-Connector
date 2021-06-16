@@ -30,7 +30,7 @@ namespace Unity.Robotics.MessageVisualizers
             return new BasicTextureVisualization<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
         }
 
-        protected abstract Texture2D CreateTexture(TargetMessageType message);
+        public abstract Texture2D CreateTexture(TargetMessageType message);
 
         public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, Texture2D tex)
         {

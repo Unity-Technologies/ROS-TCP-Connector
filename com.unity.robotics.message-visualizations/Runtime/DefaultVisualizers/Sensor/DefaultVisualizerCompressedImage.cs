@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class DefaultVisualizerCompressedImage : BasicTextureVisualFactory<MCompressedImage>
 {
-    protected override Texture2D CreateTexture(MCompressedImage message)
+    public override Texture2D CreateTexture(MCompressedImage message)
     {
         return message.ToTexture2D();
     }
