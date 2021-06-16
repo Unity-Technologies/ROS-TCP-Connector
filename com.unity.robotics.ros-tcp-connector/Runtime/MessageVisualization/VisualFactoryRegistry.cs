@@ -117,8 +117,7 @@ namespace Unity.Robotics.MessageVisualizers
             public Message message { get; }
             public MessageMetadata meta { get; }
             public bool hasDrawing => false;
-            public bool hasAction => m_GUIAction != null;
-            Action m_GUIAction;
+            public bool hasAction => true;
 
             public DefaultVisual(Message newMessage, MessageMetadata newMeta)
             {
@@ -129,8 +128,7 @@ namespace Unity.Robotics.MessageVisualizers
             public void OnGUI()
             {
                 string text = message.ToString();
-                m_GUIAction = () => { GUILayout.Label(text); };
-                m_GUIAction();
+                GUILayout.Label(text);
             }
 
             public void CreateDrawing() { }
