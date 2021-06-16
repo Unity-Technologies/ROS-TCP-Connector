@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -45,10 +44,10 @@ namespace Unity.Robotics.MessageVisualizers
 
     public static class VisualFactoryRegistry
     {
-        static Dictionary<string, Tuple<IVisualFactory, int>> s_TopicVisualizers = new Dictionary<string, Tuple<IVisualFactory, int>>();
-        static Dictionary<string, Tuple<IVisualFactory, int>> s_TypeVisualizers = new Dictionary<string, Tuple<IVisualFactory, int>>();
+        static Dictionary<string, Tuple<IVisualFactory, int>> s_TopicVisualFactories = new Dictionary<string, Tuple<IVisualFactory, int>>();
+        static Dictionary<string, Tuple<IVisualFactory, int>> s_TypeVisualFactories = new Dictionary<string, Tuple<IVisualFactory, int>>();
 
-        static DefaultVisualizer s_DefaultVisualFactory = new DefaultVisualizer();
+        static DefaultVisualFactory s_DefaultVisualFactory = new DefaultVisualFactory();
 
         public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0) where MsgType : Message
         {
@@ -58,25 +57,25 @@ namespace Unity.Robotics.MessageVisualizers
         public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0)
         {
             Tuple<IVisualFactory, int> currentEntry;
-            if (!s_TypeVisualizers.TryGetValue(rosMessageName, out currentEntry) || currentEntry.Item2 <= priority) s_TypeVisualizers[rosMessageName] = new Tuple<IVisualFactory, int>(visualFactory, priority);
+            if (!s_TypeVisualFactories.TryGetValue(rosMessageName, out currentEntry) || currentEntry.Item2 <= priority) s_TypeVisualFactories[rosMessageName] = new Tuple<IVisualFactory, int>(visualFactory, priority);
         }
 
         public static void RegisterTopicVisualizer(string topic, IVisualFactory visualFactory, int priority = 0)
         {
             Tuple<IVisualFactory, int> currentEntry;
-            if (!s_TopicVisualizers.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority) s_TopicVisualizers[topic] = new Tuple<IVisualFactory, int>(visualFactory, priority);
+            if (!s_TopicVisualFactories.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority) s_TopicVisualFactories[topic] = new Tuple<IVisualFactory, int>(visualFactory, priority);
         }
 
         public static IVisualFactory GetVisualizer(string topic, string rosMessageName=null)
         {
             Tuple<IVisualFactory, int> result;
-            s_TopicVisualizers.TryGetValue(topic, out result);
+            s_TopicVisualFactories.TryGetValue(topic, out result);
             if (result != null)
                 return result.Item1;
 
             if (rosMessageName != null)
             {
-                s_TypeVisualizers.TryGetValue(rosMessageName, out result);
+                s_TypeVisualFactories.TryGetValue(rosMessageName, out result);
                 if (result != null)
                     return result.Item1;
 
@@ -90,31 +89,53 @@ namespace Unity.Robotics.MessageVisualizers
         public static IVisualFactory GetVisualizer(Message message, MessageMetadata meta)
         {
             Tuple<IVisualFactory, int> result;
-            s_TopicVisualizers.TryGetValue(meta.Topic, out result);
+            s_TopicVisualFactories.TryGetValue(meta.Topic, out result);
             if (result != null)
                 return result.Item1;
 
-            s_TypeVisualizers.TryGetValue(message.RosMessageName, out result);
+            s_TypeVisualFactories.TryGetValue(message.RosMessageName, out result);
             if (result != null)
                 return result.Item1;
 
             return s_DefaultVisualFactory;
         }
 
-        class DefaultVisualizer : IVisualFactory
+        class DefaultVisualFactory : IVisualFactory
         {
             public IVisual CreateVisual(Message message, MessageMetadata meta)
             {
-                return null;
+                return new DefaultVisual(message, meta);
             }
-
-            public bool CanShowDrawing => false;
 
             // If you're trying to register the default visualFactory, something has gone extremely wrong...
-            public void Register(int priority)
+            public void Register(int priority) { throw new NotImplementedException(); }
+            public bool CanShowDrawing => false;
+        }
+
+        class DefaultVisual : IVisual
+        {
+            public Message message { get; }
+            public MessageMetadata meta { get; }
+            public bool hasDrawing => false;
+            public bool hasAction => m_GUIAction != null;
+            Action m_GUIAction;
+
+            public DefaultVisual(Message newMessage, MessageMetadata newMeta)
             {
-                throw new NotImplementedException();
+                message = newMessage;
+                meta = newMeta;
             }
+
+            public void OnGUI()
+            {
+                string text = message.ToString();
+                m_GUIAction = () => { GUILayout.Label(text); };
+                m_GUIAction();
+            }
+
+            public void CreateDrawing() { }
+            public void DeleteDrawing() { }
+            public void Recycle(IVisual oldVisual) { }
         }
     }
 }
