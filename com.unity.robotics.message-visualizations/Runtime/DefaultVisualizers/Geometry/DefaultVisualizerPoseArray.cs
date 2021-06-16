@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseArray : VisualFactory<MPoseArray>
+public class DefaultVisualizerPoseArray : DrawingVisualFactory<MPoseArray>
 {
     [SerializeField]
     float m_Size = 0.1f;

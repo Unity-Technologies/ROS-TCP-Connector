@@ -7,7 +7,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPath : VisualFactory<MPath>
+public class DefaultVisualizerPath : DrawingVisualFactory<MPath>
 {
     [SerializeField]
     float m_Thickness;

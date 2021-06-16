@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPlane : VisualFactory<MPlane>
+public class DefaultVisualizerPlane : DrawingVisualFactory<MPlane>
 {
     [SerializeField]
     Color m_Color;

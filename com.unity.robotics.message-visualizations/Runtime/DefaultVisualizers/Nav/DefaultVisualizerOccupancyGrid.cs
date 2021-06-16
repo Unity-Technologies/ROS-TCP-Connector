@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerOccupancyGrid : VisualFactory<MOccupancyGrid>
+public class DefaultVisualizerOccupancyGrid : DrawingVisualFactory<MOccupancyGrid>
 {
     public override void Draw(BasicDrawing drawing, MOccupancyGrid message, MessageMetadata meta)
     {

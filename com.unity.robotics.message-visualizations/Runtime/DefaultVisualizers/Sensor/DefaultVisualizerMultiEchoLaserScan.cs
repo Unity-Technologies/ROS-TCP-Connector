@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMultiEchoLaserScan : VisualFactory<MMultiEchoLaserScan>
+public class DefaultVisualizerMultiEchoLaserScan : DrawingVisualFactory<MMultiEchoLaserScan>
 {
     public MultiEchoLaserScanVisualizerSettings m_Settings;
 

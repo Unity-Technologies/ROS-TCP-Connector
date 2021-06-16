@@ -7,7 +7,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPointCloud : VisualFactory<MPointCloud>
+public class DefaultVisualizerPointCloud : DrawingVisualFactory<MPointCloud>
 {
     public PointCloudVisualizerSettings m_Settings;
     [SerializeField]

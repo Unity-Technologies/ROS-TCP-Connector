@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerInertia : VisualFactory<MInertia>
+public class DefaultVisualizerInertia : DrawingVisualFactory<MInertia>
 {
     public GameObject m_Origin;
     public float m_Radius;

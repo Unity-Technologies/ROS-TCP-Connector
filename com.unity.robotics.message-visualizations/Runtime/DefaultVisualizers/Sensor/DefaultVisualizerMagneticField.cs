@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMagneticField : VisualFactory<MMagneticField>
+public class DefaultVisualizerMagneticField : DrawingVisualFactory<MMagneticField>
 {
     [SerializeField]
     Color m_Color;

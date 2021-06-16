@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerAccelWithCovariance : VisualFactory<MAccelWithCovariance>
+public class DefaultVisualizerAccelWithCovariance : DrawingVisualFactory<MAccelWithCovariance>
 {
     public float m_Thickness = 0.01f;
     public float m_LengthScale = 1.0f;

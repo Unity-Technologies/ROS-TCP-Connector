@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointState : VisualFactory<MJointState>
+public class DefaultVisualizerJointState : DrawingVisualFactory<MJointState>
 {
     [SerializeField]
     bool m_ShowEffort = false;

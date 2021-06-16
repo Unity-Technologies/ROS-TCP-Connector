@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerFluidPressure : VisualFactory<MFluidPressure>
+public class DefaultVisualizerFluidPressure : GuiVisualFactory<MFluidPressure>
 {
     public override Action CreateGUI(MFluidPressure message, MessageMetadata meta) => () =>
     {

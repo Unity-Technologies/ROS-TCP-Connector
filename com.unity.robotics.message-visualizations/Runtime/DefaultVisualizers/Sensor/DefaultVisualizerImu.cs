@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerImu : VisualFactory<MImu>
+public class DefaultVisualizerImu : DrawingVisualFactory<MImu>
 {
     [SerializeField]
     public Color m_Color;

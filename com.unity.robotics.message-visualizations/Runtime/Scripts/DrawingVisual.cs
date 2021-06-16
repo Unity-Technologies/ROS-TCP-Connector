@@ -13,19 +13,30 @@ namespace Unity.Robotics.MessageVisualizers
             get => message;
         }
         public MessageMetadata meta { get; }
-        BasicDrawing m_BasicDrawing;
-        DrawingVisualFactory<TargetMessageType> m_Factory;
         
+        BasicDrawing m_BasicDrawing;
+        Action m_GUIAction;
+        DrawingVisualFactory<TargetMessageType> m_Factory;
+
         public DrawingVisual(TargetMessageType newMessage, MessageMetadata newMeta, DrawingVisualFactory<TargetMessageType> factory)
         {
             message = newMessage;
             meta = newMeta;
             m_Factory = factory;
         }
-        
+
         public bool hasDrawing => m_BasicDrawing != null;
-        public bool hasAction => false;
-        
+        public bool hasAction => m_GUIAction != null;
+
+        public void OnGUI()
+        {
+            if (m_GUIAction == null)
+            {
+                m_GUIAction = m_Factory.CreateGUI(message, meta);    
+            }
+            m_GUIAction();
+        }
+
         public void DeleteDrawing()
         {
             if (m_BasicDrawing != null)
@@ -35,9 +46,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             m_BasicDrawing = null;
         }
-
-        public void OnGUI() { }
-
+        
         public void CreateDrawing()
         {
             if (m_BasicDrawing == null)

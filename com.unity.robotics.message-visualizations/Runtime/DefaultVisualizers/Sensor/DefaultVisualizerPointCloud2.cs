@@ -12,7 +12,7 @@ public enum ColorMode
     HSV, RGB
 }
 
-public class DefaultVisualizerPointCloud2 : VisualFactory<MPointCloud2>
+public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
 {
     public PointCloud2VisualizerSettings m_Settings;
     [SerializeField]
