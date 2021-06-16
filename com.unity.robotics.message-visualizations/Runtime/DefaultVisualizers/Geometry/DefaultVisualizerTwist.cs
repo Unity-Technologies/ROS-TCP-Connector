@@ -8,7 +8,7 @@ using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTwist : BasicVisualizer<MTwist>
+    public class DefaultVisualizerTwist : DrawingVisualFactory<MTwist>
     {
         public float m_Thickness = 0.01f;
         public float m_LengthScale = 1.0f;
@@ -22,7 +22,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin.transform.position, m_LengthScale, m_SphereRadius, m_Thickness);
         }
 
-        public override Action CreateGUI(MTwist message, MessageMetadata meta, BasicDrawing drawing) => () =>
+        public override Action CreateGUI(MTwist message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };
