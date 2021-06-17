@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerMultiDOFJointState : BasicVisualizer<MMultiDOFJointState>
+public class DefaultVisualizerMultiDOFJointState : DrawingVisualFactory<MMultiDOFJointState>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;
@@ -27,7 +27,7 @@ public class DefaultVisualizerMultiDOFJointState : BasicVisualizer<MMultiDOFJoin
         m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
     }
 
-    public override Action CreateGUI(MMultiDOFJointState message, MessageMetadata meta, BasicDrawing drawing)
+    public override Action CreateGUI(MMultiDOFJointState message, MessageMetadata meta)
     {
         bool tr = message.transforms.Length > 0;
         bool tw = message.twist.Length > 0;

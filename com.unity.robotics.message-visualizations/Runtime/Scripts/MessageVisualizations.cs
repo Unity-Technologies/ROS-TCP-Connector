@@ -798,6 +798,16 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
         }
 
+        public static void GUITexture(this Texture2D tex)
+        {
+            // TODO: Rescale/recenter image based on window height/width
+            if (tex != null)
+            {
+                var origRatio = tex.width / (float)tex.height;
+                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+            }
+        }
+
         public static void GUI(this MInertia message)
         {
             GUILayout.Label($"Mass: {message.m}kg");
@@ -924,8 +934,11 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void GUI(this MRegionOfInterest message, Texture2D tex)
         {
-            var ratio = (float)tex.width / (float)tex.height;
-            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
+            if (tex != null) 
+            {
+                var ratio = (float)tex.width / (float)tex.height;
+                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
+            }
             GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
         }
 
@@ -996,8 +1009,11 @@ namespace Unity.Robotics.MessageVisualizers
             message.torque.GUI("Torque");
         }
 
-        public static void GUIGrid<T>(T[] data, int width)
+        public static void GUIGrid<T>(T[] data, int width, ref bool view)
         {
+            view = GUILayout.Toggle(view, "View matrix");
+            if (!view) return;
+            
             int dataIndex = 0;
             while (dataIndex < data.Length)
             {
@@ -1011,8 +1027,11 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUIGrid<T>(T[] data, int width, string name)
+        public static void GUIGrid<T>(T[] data, int width, string name, ref bool view)
         {
+            view = GUILayout.Toggle(view, $"View {name} matrix");
+            if (!view) return;
+            
             int dataIndex = 0;
             GUILayout.Label(name);
             while (dataIndex < data.Length)

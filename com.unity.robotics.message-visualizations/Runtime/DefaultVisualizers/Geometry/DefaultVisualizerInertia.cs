@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerInertia : BasicVisualizer<MInertia>
+public class DefaultVisualizerInertia : DrawingVisualFactory<MInertia>
 {
     public GameObject m_Origin;
     public float m_Radius;
@@ -18,7 +18,7 @@ public class DefaultVisualizerInertia : BasicVisualizer<MInertia>
         message.com.Draw<FLU>(drawing, m_Origin, SelectColor(m_Color, meta), "Center of mass", m_Radius);
     }
 
-    public override Action CreateGUI(MInertia message, MessageMetadata meta, BasicDrawing drawing) => () =>
+    public override Action CreateGUI(MInertia message, MessageMetadata meta) => () =>
     {
         message.GUI();
     };
