@@ -20,6 +20,7 @@ public class DefaultVisualizerGridCells : DrawingVisualFactory<MGridCells>
 
     public override Action CreateGUI(MGridCells message, MessageMetadata meta) => () =>
     {
-        //message.GUI();
+        message.header.GUI();
+        GUILayout.Label($"Cell width x height: {message.cell_width} x {message.cell_height}");
     };
 }
