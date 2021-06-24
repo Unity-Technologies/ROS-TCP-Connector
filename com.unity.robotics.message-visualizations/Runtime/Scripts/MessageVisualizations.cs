@@ -525,7 +525,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
         }
 
-        public static void Draw<C>(this MOdometry message, BasicDrawing drawing, Color color, GameObject origin) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MOdometry message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             // TODO
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -535,7 +535,7 @@ namespace Unity.Robotics.MessageVisualizers
                 pos += origin.transform.position;
             }
             message.pose.pose.Draw<C>(drawing);
-            message.twist.twist.Draw<C>(drawing, color, pos);
+            message.twist.twist.Draw<C>(drawing, color, pos, lengthScale, sphereRadius, thickness);
         }
 
         public static void Draw<C>(this MPath message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
@@ -707,6 +707,12 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawPoint(point, color, size);
             drawing.DrawLabel(label, point, color, size * 1.5f);
         }
+        
+        public static void Draw<C>(this MWrench message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawArrow(origin, origin + message.force.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.torque.From<C>(), origin, color, sphereRadius, thickness);
+        }
 
         public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
@@ -778,7 +784,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this MDiagnosticStatus message)
         {
             string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
-            GUILayout.Label($"Status of {message.name}|{message.hardware_id}: {status}");
+            GUILayout.Label(message.hardware_id.Length > 0 ? $"Status of {message.name}|{message.hardware_id}: {status}" : $"Status of {message.name}: {status}");
             GUILayout.Label(message.message);
             foreach (MKeyValue keyValue in message.values)
             {
@@ -797,6 +803,12 @@ namespace Unity.Robotics.MessageVisualizers
         {
             "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
         };
+
+        public static void GUI(this MGoalID message)
+        {
+            message.stamp.GUI();
+            GUILayout.Label($"ID: {message.id}");
+        }
 
         public static void GUI(this MGoalStatus message)
         {

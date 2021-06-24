@@ -6,13 +6,16 @@ using UnityEngine;
 
 public class DefaultVisualizerOdometry : DrawingVisualFactory<MOdometry>
 {
-    public GameObject m_Origin;
+    public float thickness = 0.01f;
+    public float lengthScale = 1.0f;
+    public float sphereRadius = 1.0f;
+    public GameObject origin;
     [SerializeField]
     Color m_Color;
 
     public override void Draw(BasicDrawing drawing, MOdometry message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(MOdometry message, MessageMetadata meta) => () =>

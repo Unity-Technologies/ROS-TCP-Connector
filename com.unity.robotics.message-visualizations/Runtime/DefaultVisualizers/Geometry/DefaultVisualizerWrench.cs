@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTwist : DrawingVisualFactory<MTwist>
+    public class DefaultVisualizerWrench : DrawingVisualFactory<MWrench>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;
@@ -14,12 +14,12 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
 
-        public override void Draw(BasicDrawing drawing, MTwist message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, MWrench message, MessageMetadata meta)
         {
             message.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 
-        public override Action CreateGUI(MTwist message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(MWrench message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };
