@@ -9,20 +9,35 @@ using UnityEngine;
 
 public class DefaultVisualizerPointCloud : DrawingVisualFactory<MPointCloud>
 {
-    public PointCloudVisualizerSettings m_Settings;
+    public PointCloudVisualizerSettings settings;
     [SerializeField]
     Color m_Color;
+    
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            if (settings.topic == "")
+            {
+                VisualFactoryRegistry.RegisterTypeVisualizer<MPointCloud>(this, Priority);
+            }
+            else
+            {
+                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
+            }       
+        }
+    }
 
     public override void Draw(BasicDrawing drawing, MPointCloud message, MessageMetadata meta)
     {
-        if (m_Settings.channels == null)
-            m_Settings.channels = message.channels;
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
+        if (settings.channels == null)
+            settings.channels = message.channels;
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), settings);
     }
 
     public override Action CreateGUI(MPointCloud message, MessageMetadata meta) 
     {
-        string channelNames = String.Join(", ", message.channels.Select(i => i.name));
+        string channelNames = string.Join(", ", message.channels.Select(i => i.name));
 
         return () =>
         {

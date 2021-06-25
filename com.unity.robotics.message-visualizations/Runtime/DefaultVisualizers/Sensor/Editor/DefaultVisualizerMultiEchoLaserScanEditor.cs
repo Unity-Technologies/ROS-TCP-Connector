@@ -1,23 +1,26 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 #if UNITY_EDITOR
 
 [CustomEditor(typeof(DefaultVisualizerMultiEchoLaserScan))]
 public class MultiEchoLaserScanEditor : Editor
 {
-    MultiEchoLaserScanVisualizerSettings config;
-    string sizeMin = "0";
-    string sizeMax = "1000";
-    float sizeMinVal = 0;
-    float sizeMaxVal = 1000;
+    MultiEchoLaserScanVisualizerSettings m_Config;
+    string m_SizeMax = "1000";
+    float m_SizeMaxVal = 1000;
+    string m_SizeMin = "0";
+    float m_SizeMinVal;
+
+    void Awake()
+    {
+        if (m_Config == null)
+        {
+            ((DefaultVisualizerMultiEchoLaserScan)target).settings = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
+            m_Config = ((DefaultVisualizerMultiEchoLaserScan)target).settings;
+        }
+    }
 
     void CreateMinMaxSlider(ref float[] range, float min, float max)
     {
@@ -37,24 +40,21 @@ public class MultiEchoLaserScanEditor : Editor
         maxS = maxVal.ToString();
     }
 
-    
     public override void OnInspectorGUI()
     {
-        config = (MultiEchoLaserScanVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", config, typeof(MultiEchoLaserScanVisualizerSettings), false);
-        if (config == null)
+        m_Config = (MultiEchoLaserScanVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(MultiEchoLaserScanVisualizerSettings), false);
+        if (m_Config != null)
         {
-            config = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
-        }
-        ((DefaultVisualizerMultiEchoLaserScan)target).m_Settings = config;
+            m_Config.topic = EditorGUILayout.TextField("Topic", m_Config.topic);
+            m_Config.useIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", m_Config.useIntensitySize);
 
-        config.m_UseIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", config.m_UseIntensitySize);
-
-        if (config.m_UseIntensitySize)
-        {
-            MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
-            CreateMinMaxSlider(ref config.m_SizeRange, sizeMinVal, sizeMaxVal);
+            if (m_Config.useIntensitySize)
+            {
+                MinMaxText("size", ref m_SizeMinVal, ref m_SizeMin, ref m_SizeMaxVal, ref m_SizeMax);
+                CreateMinMaxSlider(ref m_Config.sizeRange, m_SizeMinVal, m_SizeMaxVal);
+            }
         }
-   }
+    }
 }
 
 #endif //UNITY_EDITOR

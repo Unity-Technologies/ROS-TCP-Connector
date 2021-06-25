@@ -1,30 +1,27 @@
+using System;
 using RosMessageTypes.Sensor;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
 public class PointCloudVisualizerSettings : ScriptableObject
 {
+    public string topic;
     public ColorMode colorMode;
+    public string rgbChannel = "";
+    public string rChannel = "";
+    public string gChannel = "";
+    public string bChannel = "";
+    public string sizeChannel = "";
+
+    public float[] rgbRange = { 0, 100 };
+    public float[] rRange = { 0, 100 };
+    public float[] gRange = { 0, 100 };
+    public float[] bRange = { 0, 100 };
+    public float[] sizeRange = { 0, 100 };
+    public float size = 0.05f;
+
+    public bool useRgbChannel;
+    public bool useSeparateRgb = true;
+    public bool useSizeChannel;
     public MChannelFloat32[] channels;
-    public string m_RgbChannel = "";
-    public string m_RChannel = "";
-    public string m_GChannel = "";
-    public string m_BChannel = "";
-    public string m_SizeChannel = "";
-
-    public float[] m_RgbRange = new float[] { 0, 100 };
-    public float[] m_RRange = new float[] { 0, 100 };
-    public float[] m_GRange = new float[] { 0, 100 };
-    public float[] m_BRange = new float[] { 0, 100 };
-    public float[] m_SizeRange = new float[] { 0, 100 };
-    public float m_Size = 0.05f;
-
-    public bool m_UseRgbChannel = false;
-    public bool m_UseSeparateRgb = true;
-    public bool m_UseSizeChannel = false;
 }

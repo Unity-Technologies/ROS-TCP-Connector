@@ -115,29 +115,29 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 Vector3 worldPoint = frame.TransformPoint(message.points[i].From<FLU>());
 
-                if (cConfs.m_UseRgbChannel)
+                if (cConfs.useRgbChannel)
                 {
                     switch (cConfs.colorMode)
                     {
                         case ColorMode.HSV:
-                            if (cConfs.m_RgbChannel.Length > 0)
+                            if (cConfs.rgbChannel.Length > 0)
                             {
-                                float colC = message.channels[channelToIdx[cConfs.m_RgbChannel]].values[i];
-                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.m_RgbRange[0], cConfs.m_RgbRange[1], colC), 1, 1);
+                                float colC = message.channels[channelToIdx[cConfs.rgbChannel]].values[i];
+                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.rgbRange[0], cConfs.rgbRange[1], colC), 1, 1);
                             }
                             break;
                         case ColorMode.RGB:
-                            if (cConfs.m_UseSeparateRgb)
+                            if (cConfs.useSeparateRgb)
                             {
-                                if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                                if (cConfs.rChannel.Length > 0 && cConfs.gChannel.Length > 0 && cConfs.bChannel.Length > 0)
                                 {
-                                    var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], message.channels[channelToIdx[cConfs.m_RChannel]].values[i]);
+                                    var colR = Mathf.InverseLerp(cConfs.rRange[0], cConfs.rRange[1], message.channels[channelToIdx[cConfs.rChannel]].values[i]);
                                     var r = Mathf.InverseLerp(0, 1, colR);
 
-                                    var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], message.channels[channelToIdx[cConfs.m_GChannel]].values[i]);
+                                    var colG = Mathf.InverseLerp(cConfs.gRange[0], cConfs.gRange[1], message.channels[channelToIdx[cConfs.gChannel]].values[i]);
                                     var g = Mathf.InverseLerp(0, 1, colG);
                                     
-                                    var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], message.channels[channelToIdx[cConfs.m_BChannel]].values[i]);
+                                    var colB = Mathf.InverseLerp(cConfs.bRange[0], cConfs.bRange[1], message.channels[channelToIdx[cConfs.bChannel]].values[i]);
                                     var b = Mathf.InverseLerp(0, 1, colB);
                                     color = new Color(r, g, b, 1);
                                 }
@@ -145,7 +145,7 @@ namespace Unity.Robotics.MessageVisualizers
                             else
                             {
                                 // uint8 (R,G,B) values packed into the least significant 24 bits, in order.
-                                byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[cConfs.m_RgbChannel]].values[i]);
+                                byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[cConfs.rgbChannel]].values[i]);
 
                                 var r = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 0));
                                 var g = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 8));
@@ -156,11 +156,11 @@ namespace Unity.Robotics.MessageVisualizers
                     }
                 }
 
-                var radius = cConfs.m_Size;
-                if (cConfs.m_UseSizeChannel && cConfs.m_SizeChannel.Length > 0)
+                var radius = cConfs.size;
+                if (cConfs.useSizeChannel && cConfs.sizeChannel.Length > 0)
                 {
-                    var size = message.channels[channelToIdx[cConfs.m_SizeChannel]].values[i];
-                    radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], size);
+                    var size = message.channels[channelToIdx[cConfs.sizeChannel]].values[i];
+                    radius = Mathf.InverseLerp(cConfs.sizeRange[0], cConfs.sizeRange[1], size);
                 }
 
                 pointCloud.AddPoint(worldPoint, color, radius);
@@ -184,14 +184,14 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.SetCapacity((int)(message.data.Length / message.point_step));
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
 
-            int xChannelOffset = (int)message.fields[channelToIdx[cConfs.m_XChannel]].offset;
-            int yChannelOffset = (int)message.fields[channelToIdx[cConfs.m_YChannel]].offset;
-            int zChannelOffset = (int)message.fields[channelToIdx[cConfs.m_ZChannel]].offset;
-            int rgbChannelOffset = (int)message.fields[channelToIdx[cConfs.m_RgbChannel]].offset;
-            int rChannelOffset = (int)message.fields[channelToIdx[cConfs.m_RChannel]].offset;
-            int gChannelOffset = (int)message.fields[channelToIdx[cConfs.m_GChannel]].offset;
-            int bChannelOffset = (int)message.fields[channelToIdx[cConfs.m_BChannel]].offset;
-            int sizeChannelOffset = (int)message.fields[channelToIdx[cConfs.m_SizeChannel]].offset;
+            int xChannelOffset = (int)message.fields[channelToIdx[cConfs.xChannel]].offset;
+            int yChannelOffset = (int)message.fields[channelToIdx[cConfs.yChannel]].offset;
+            int zChannelOffset = (int)message.fields[channelToIdx[cConfs.zChannel]].offset;
+            int rgbChannelOffset = (int)message.fields[channelToIdx[cConfs.rgbChannel]].offset;
+            int rChannelOffset = (int)message.fields[channelToIdx[cConfs.rChannel]].offset;
+            int gChannelOffset = (int)message.fields[channelToIdx[cConfs.gChannel]].offset;
+            int bChannelOffset = (int)message.fields[channelToIdx[cConfs.bChannel]].offset;
+            int sizeChannelOffset = (int)message.fields[channelToIdx[cConfs.sizeChannel]].offset;
             for (int i = 0; i < message.data.Length / message.point_step; i++) 
             {
                 int iPointStep = i * (int)message.point_step;
@@ -202,27 +202,27 @@ namespace Unity.Robotics.MessageVisualizers
                 Vector3 worldPoint = frame.TransformPoint(localRosPoint.toUnity);
 
                 // TODO: Parse type based on PointField?
-                if (cConfs.m_UseRgbChannel)
+                if (cConfs.useRgbChannel)
                 {
                     switch (cConfs.colorMode)
                     {
                         case ColorMode.HSV:
-                            if (cConfs.m_RgbChannel.Length > 0)
+                            if (cConfs.rgbChannel.Length > 0)
                             {
                                 int colC = BitConverter.ToInt16(message.data, (iPointStep + rgbChannelOffset));
-                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.m_RgbRange[0], cConfs.m_RgbRange[1], colC), 1, 1);
+                                color = Color.HSVToRGB(Mathf.InverseLerp(cConfs.rgbRange[0], cConfs.rgbRange[1], colC), 1, 1);
                             }
                             break;
                         case ColorMode.RGB:
-                            if (cConfs.m_RChannel.Length > 0 && cConfs.m_GChannel.Length > 0 && cConfs.m_BChannel.Length > 0)
+                            if (cConfs.rChannel.Length > 0 && cConfs.gChannel.Length > 0 && cConfs.bChannel.Length > 0)
                             {
-                                var colR = Mathf.InverseLerp(cConfs.m_RRange[0], cConfs.m_RRange[1], BitConverter.ToSingle(message.data, iPointStep + rChannelOffset));
+                                var colR = Mathf.InverseLerp(cConfs.rRange[0], cConfs.rRange[1], BitConverter.ToSingle(message.data, iPointStep + rChannelOffset));
                                 var r = Mathf.InverseLerp(0, 1, colR);
 
-                                var colG = Mathf.InverseLerp(cConfs.m_GRange[0], cConfs.m_GRange[1], BitConverter.ToSingle(message.data, iPointStep + gChannelOffset));
+                                var colG = Mathf.InverseLerp(cConfs.gRange[0], cConfs.gRange[1], BitConverter.ToSingle(message.data, iPointStep + gChannelOffset));
                                 var g = Mathf.InverseLerp(0, 1, colG);
                                 
-                                var colB = Mathf.InverseLerp(cConfs.m_BRange[0], cConfs.m_BRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
+                                var colB = Mathf.InverseLerp(cConfs.bRange[0], cConfs.bRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
                                 var b = Mathf.InverseLerp(0, 1, colB);
                                 color = new Color(r, g, b, 1);
                             }
@@ -230,12 +230,12 @@ namespace Unity.Robotics.MessageVisualizers
                     }
                 }
 
-                var radius = cConfs.m_Size;
+                var radius = cConfs.size;
 
-                if (cConfs.m_UseSizeChannel)
+                if (cConfs.useSizeChannel)
                 {
                     var size = BitConverter.ToSingle(message.data, iPointStep + sizeChannelOffset);
-                    radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], size);
+                    radius = Mathf.InverseLerp(cConfs.sizeRange[0], cConfs.sizeRange[1], size);
                 }
 
                 pointCloud.AddPoint(worldPoint, color, radius);
@@ -260,14 +260,14 @@ namespace Unity.Robotics.MessageVisualizers
             float angle = -message.angle_min;
             for (int i = 0; i < message.ranges.Length; i++)
             {
-                var radius = cConfs.m_PointRadius;
+                var radius = cConfs.pointRadius;
                 Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
                 Vector3 worldPoint = frame.TransformPoint(localPoint);
                 Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, message.ranges[i]), 1, 1);
 
-                if (cConfs.m_UseIntensitySize && message.intensities.Length > 0)
+                if (cConfs.useIntensitySize && message.intensities.Length > 0)
                 {
-                    radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], message.intensities[i]);
+                    radius = Mathf.InverseLerp(cConfs.sizeRange[0], cConfs.sizeRange[1], message.intensities[i]);
                 }
                 pointCloud.AddPoint(worldPoint, c, radius);
                 angle -= message.angle_increment;
@@ -479,11 +479,11 @@ namespace Unity.Robotics.MessageVisualizers
                     Vector3 worldPoint = frame.TransformPoint(localPoint);
                     Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
 
-                    var radius = cConfs.m_PointRadius;
+                    var radius = cConfs.pointRadius;
 
-                    if (message.intensities.Length > 0 && cConfs.m_UseIntensitySize)
+                    if (message.intensities.Length > 0 && cConfs.useIntensitySize)
                     {
-                        radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], message.intensities[i].echoes[j]);
+                        radius = Mathf.InverseLerp(cConfs.sizeRange[0], cConfs.sizeRange[1], message.intensities[i].echoes[j]);
                     }
                     
                     pointCloud.AddPoint(worldPoint, c, radius);

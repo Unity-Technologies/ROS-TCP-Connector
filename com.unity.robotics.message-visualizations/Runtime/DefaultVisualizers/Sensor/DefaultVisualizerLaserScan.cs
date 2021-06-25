@@ -1,18 +1,31 @@
 ﻿using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 public class DefaultVisualizerLaserScan : DrawingVisualFactory<MLaserScan>
 {
-    public LaserScanVisualizerSettings m_Settings;
+    public LaserScanVisualizerSettings settings;
+    
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            if (settings.topic == "")
+            {
+                VisualFactoryRegistry.RegisterTypeVisualizer<MLaserScan>(this, Priority);
+            }
+            else
+            {
+                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
+            }       
+        }
+    }
 
     public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Settings);
+        message.Draw<FLU>(drawing, settings);
     }
 
     public override Action CreateGUI(MLaserScan message, MessageMetadata meta) => () =>

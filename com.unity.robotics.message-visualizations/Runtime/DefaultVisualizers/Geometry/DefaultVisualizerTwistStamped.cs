@@ -16,7 +16,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, MTwistStamped message, MessageMetadata meta)
         {
-            message.twist.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
+            var orig = origin == null ? Vector3.zero : origin.transform.position;
+            message.twist.Draw<FLU>(drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
         }
 
         public override Action CreateGUI(MTwistStamped message, MessageMetadata meta) => () =>

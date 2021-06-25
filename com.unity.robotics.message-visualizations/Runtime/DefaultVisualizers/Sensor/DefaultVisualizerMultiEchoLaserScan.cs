@@ -1,18 +1,31 @@
 using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 public class DefaultVisualizerMultiEchoLaserScan : DrawingVisualFactory<MMultiEchoLaserScan>
 {
-    public MultiEchoLaserScanVisualizerSettings m_Settings;
+    public MultiEchoLaserScanVisualizerSettings settings;
+    
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            if (settings.topic == "")
+            {
+                VisualFactoryRegistry.RegisterTypeVisualizer<MMultiEchoLaserScan>(this, Priority);
+            }
+            else
+            {
+                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
+            }       
+        }
+    }
 
     public override void Draw(BasicDrawing drawing, MMultiEchoLaserScan message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Settings);
+        message.Draw<FLU>(drawing, settings);
     }
 
     public override Action CreateGUI(MMultiEchoLaserScan message, MessageMetadata meta) => () =>
