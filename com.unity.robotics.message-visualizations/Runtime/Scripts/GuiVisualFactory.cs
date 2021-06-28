@@ -8,7 +8,7 @@ namespace Unity.Robotics.MessageVisualizers
         where TargetMessageType : Message
     {
         [SerializeField]
-        string m_Topic;
+        protected string m_Topic;
 
         public virtual void Start()
         {

@@ -12,15 +12,9 @@ public class DefaultVisualizerLaserScan : DrawingVisualFactory<MLaserScan>
     {
         if (settings != null)
         {
-            if (settings.topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<MLaserScan>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
-            }       
+            m_Topic = settings.topic;
         }
+        base.Start();
     }
 
     public override void Draw(BasicDrawing drawing, MLaserScan message, MessageMetadata meta)

@@ -22,15 +22,9 @@ public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
     {
         if (settings != null)
         {
-            if (settings.topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<MPointCloud2>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
-            }       
+            m_Topic = settings.topic;
         }
+        base.Start();
     }
     
     public override void Draw(BasicDrawing drawing, MPointCloud2 message, MessageMetadata meta)

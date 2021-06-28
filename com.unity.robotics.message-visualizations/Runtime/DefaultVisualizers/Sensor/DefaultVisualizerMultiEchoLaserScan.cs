@@ -12,15 +12,9 @@ public class DefaultVisualizerMultiEchoLaserScan : DrawingVisualFactory<MMultiEc
     {
         if (settings != null)
         {
-            if (settings.topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<MMultiEchoLaserScan>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(settings.topic, this, Priority);
-            }       
+            m_Topic = settings.topic;
         }
+        base.Start();
     }
 
     public override void Draw(BasicDrawing drawing, MMultiEchoLaserScan message, MessageMetadata meta)
