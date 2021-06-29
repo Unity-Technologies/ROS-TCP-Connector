@@ -211,23 +211,11 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        // public void GetTopicList(Action<string[], string[]> callback)
-        // {
-        //     m_TopicsListCallbacks.Add(callback);
-        //     SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
-        // }
-
         public void GetTopicList(Action<Dictionary<string, string>> callback)
         {
             m_TopicsListCallbacks.Add(callback);
             SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
-
-        // public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
-        // {
-        //     m_TopicsAndTypesListCallbacks.Add(callback);
-        //     SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
-        // }
 
         [Obsolete("Calling Subscribe now implicitly registers a subscriber")]
         public void RegisterSubscriber(string topic, string rosMessageName)
@@ -410,7 +398,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
             }
 
-            m_HudPanel.IsEnabled = m_ShowHUD;
+            m_HudPanel.isEnabled = m_ShowHUD;
         }
 
         Action<string, byte[]> m_SpecialIncomingMessageHandler;
@@ -534,23 +522,12 @@ namespace Unity.Robotics.ROSTCPConnector
                         {
                             Dictionary<string, string> callbackParam = new Dictionary<string, string>();
                             for (int Idx = 0; Idx < topicsResponse.topics.Length; ++Idx)
+                            {
                                 callbackParam[topicsResponse.topics[Idx]] = topicsResponse.types[Idx];
+                            }
                             m_TopicsListCallbacks.ForEach(a => a(callbackParam));
                             m_TopicsListCallbacks.Clear();
                         }
-                        // if (m_TopicsListCallbacks.Count > 0)
-                        // {
-                        //     // Dictionary<string, string> callbackParam = new Dictionary<string, string>();
-                        //     for (int Idx = 0; Idx < topicsResponse.topics.Length; ++Idx)
-                        //     {
-                        //         // callbackParam[topicsResponse.topics[Idx]] = topicsResponse.types[Idx];
-                        //         Debug.Log($"topic {topicsResponse.topics[Idx]} {topicsResponse.types[Idx]}");
-                        //     }
-                        //     m_TopicsListCallbacks.ForEach(a => a(topicsResponse.topics, topicsResponse.types));
-                        //     m_TopicsListCallbacks.Clear();
-                        //     // m_TopicsListCallbacks.ForEach(a => a(topicsResponse.topics, topicsResponse.types));
-                        //     // m_TopicsListCallbacks.Clear();
-                        // }
                     }
                     break;
             }
