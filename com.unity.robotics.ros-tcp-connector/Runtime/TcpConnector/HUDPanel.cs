@@ -23,6 +23,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string PlayerPrefsKey_ROS_TCP_PORT = "ROS_TCP_PORT";
         const float k_TimeBetweenTopicsUpdates = 5.0f;
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
+        public static GUIStyle s_BoldStyle;
         static GUIStyle m_ConnectionArrowStyle;
         static List<IHudTab> s_HUDTabs = new List<IHudTab> { new TopicsHudTab() };
 
@@ -239,7 +240,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public static string GetMessageNameByTopic(string topic)
         {
-            if (!s_MessageNamesByTopic.TryGetValue(topic, out var rosMessageName)) return null;
+            if (!s_MessageNamesByTopic.TryGetValue(topic, out var rosMessageName))
+            {
+                return null;
+            }
 
             return rosMessageName;
         }
@@ -256,12 +260,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void SetLastMessageSent(string topic, Message message)
         {
-            TopicVisualizationState state;
-            if (!AllTopics.TryGetValue(topic, out state)) AllTopics.Add(topic, null);
+            if (!AllTopics.TryGetValue(topic, out var state)) AllTopics.Add(topic, null);
 
             m_LastMessageSent = new MessageViewState { label = "Last Message Sent:", message = message };
             m_LastMessageSentMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
 
         public void SetLastMessageReceived(string topic, Message message)
@@ -272,6 +278,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageReceived = new MessageViewState { label = "Last Message Received:", message = message };
             m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
 
         public static void RegisterTab(IHudTab tab)
@@ -389,6 +398,13 @@ namespace Unity.Robotics.ROSTCPConnector
                 normal = { textColor = Color.white },
                 fixedWidth = 300,
                 wordWrap = true
+            };
+
+            s_BoldStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = Color.white },
+                fontStyle = FontStyle.Bold,
             };
 
             m_ScrollRect = new Rect();
@@ -614,8 +630,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("UI", m_ConnectionArrowStyle, GUILayout.Width(20));
-                GUILayout.Label("Viz", m_ConnectionArrowStyle);
+                GUILayout.Label("UI", s_BoldStyle, GUILayout.Width(20));
+                GUILayout.Label("Viz", s_BoldStyle);
                 GUILayout.EndHorizontal();
 
                 m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);

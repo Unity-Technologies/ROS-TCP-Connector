@@ -89,6 +89,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static IVisualFactory GetVisualizer(Message message, MessageMetadata meta)
         {
+            Debug.Log($"get visualizer {message.GetType()} {meta.Topic} {s_TypeVisualFactories}");
             Tuple<IVisualFactory, int> result;
             s_TopicVisualFactories.TryGetValue(meta.Topic, out result);
             if (result != null)

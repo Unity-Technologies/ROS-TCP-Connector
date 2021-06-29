@@ -10,7 +10,7 @@ namespace RosMessageTypes.Geometry
     [Serializable]
     public class PointMsg : Message
     {
-        public const string k_RosMessageName = "geometry_msgs/Point";
+        public const string k_RosMessageName = "geometry_msgs/msg/Point";
 
         //  This contains the position of a point in free space
         public double x;

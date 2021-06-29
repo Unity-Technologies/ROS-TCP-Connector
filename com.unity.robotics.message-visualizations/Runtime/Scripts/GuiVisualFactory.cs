@@ -36,7 +36,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
-        
+
         public bool AssertMessageType(Message message, MessageMetadata meta)
         {
             if (!(message is TargetMessageType))
