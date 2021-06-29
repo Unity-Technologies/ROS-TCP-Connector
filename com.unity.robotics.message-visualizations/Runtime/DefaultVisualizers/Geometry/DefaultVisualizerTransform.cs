@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+﻿using System;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTransform : DrawingVisualFactory<MTransform>
+    public class DefaultVisualizerTransform : DrawingVisualFactory<TransformMsg>
     {
         [SerializeField]
         float m_Size = 0.1f;
@@ -19,15 +17,18 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, MTransform message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, TransformMsg message, MessageMetadata meta)
         {
             message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), message.translation.From<FLU>(), SelectColor(m_Color, meta), m_Size);
         }
 
-        public override System.Action CreateGUI(MTransform message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(TransformMsg message, MessageMetadata meta)
         {
-            message.GUI();
-        };
+            return () =>
+            {
+                message.GUI();
+            };
+        }
     }
 }

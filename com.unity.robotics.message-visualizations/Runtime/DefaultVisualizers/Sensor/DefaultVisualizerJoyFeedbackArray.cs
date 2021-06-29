@@ -1,17 +1,15 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJoyFeedbackArray : GuiVisualFactory<MJoyFeedbackArray>
+public class DefaultVisualizerJoyFeedbackArray : GuiVisualFactory<JoyFeedbackArrayMsg>
 {
-    public override Action CreateGUI(MJoyFeedbackArray message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(JoyFeedbackArrayMsg message, MessageMetadata meta)
     {
-        foreach (MJoyFeedback m in message.array)
+        return () =>
         {
-            m.GUI();
-        }
-    };
+            foreach (MJoyFeedback m in message.array) m.GUI();
+        };
+    }
 }

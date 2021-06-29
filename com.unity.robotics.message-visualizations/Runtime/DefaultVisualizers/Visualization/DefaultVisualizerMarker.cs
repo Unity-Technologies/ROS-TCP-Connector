@@ -16,8 +16,8 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
 
     public virtual void Awake()
     {
-        VisualFactoryRegistry.RegisterTypeVisualizer<MMarker>(this, Priority);
-        VisualFactoryRegistry.RegisterTypeVisualizer<MMarkerArray>(this, Priority);
+        VisualFactoryRegistry.RegisterTypeVisualizer<MarkerMsg>(this, Priority);
+        VisualFactoryRegistry.RegisterTypeVisualizer<MarkerArrayMsg>(this, Priority);
     }
 
     public IVisual CreateVisual(Message message, MessageMetadata meta)
@@ -28,35 +28,35 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
 
     public object CreateDrawing(Message message, MessageMetadata meta, object oldDrawing)
     {
-        if (message is MMarkerArray)
+        if (message is MarkerArrayMsg)
         {
-            foreach (MMarker marker in ((MMarkerArray)message).markers)
+            foreach (MarkerMsg marker in ((MarkerArrayMsg)message).markers)
             {
                 ProcessMarker(marker);
             }
             return true;
         }
-        else if(message is MMarker)
+        else if(message is MarkerMsg)
         {
-            ProcessMarker((MMarker)message);
+            ProcessMarker((MarkerMsg)message);
             return true;
         }
         return null;
     }
 
-    void ProcessMarker(MMarker marker)
+    void ProcessMarker(MarkerMsg marker)
     {
         Dictionary<int, BasicDrawing> ns;
         BasicDrawing drawing;
         switch (marker.action)
         {
-            case MMarker.DELETEALL:
+            case MarkerMsg.DELETEALL:
                 foreach (Dictionary<int, BasicDrawing> namespaceToDestroy in m_Drawings.Values)
                     foreach(BasicDrawing drawingToDestroy in namespaceToDestroy.Values)
                         drawingToDestroy.Destroy();
                 m_Drawings.Clear();
                 break;
-            case MMarker.ADD:
+            case MarkerMsg.ADD:
                 if(!m_Drawings.TryGetValue(marker.ns, out ns))
                 {
                     ns = new Dictionary<int, BasicDrawing>();
@@ -67,14 +67,14 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
                     drawing = BasicDrawing.Create();
                     ns.Add(marker.id, drawing);
                 }
-                if(marker.lifetime.secs == 0 && marker.lifetime.nsecs == 0)
+                if(marker.lifetime.sec == 0 && marker.lifetime.nanosec == 0)
                     drawing.ClearDuration();
                 else
-                    drawing.SetDuration(marker.lifetime.secs + marker.lifetime.nsecs/1E9f);
+                    drawing.SetDuration(marker.lifetime.sec + marker.lifetime.nanosec/1E9f);
                 drawing.Clear();
                 marker.Draw<FLU>(drawing);
                 break;
-            case MMarker.DELETE:
+            case MarkerMsg.DELETE:
                 if (!m_Drawings.TryGetValue(marker.ns, out ns))
                 {
                     ns = new Dictionary<int, BasicDrawing>();
@@ -91,14 +91,14 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
 
     public Action CreateGUI(Message message, MessageMetadata meta, object drawing)
     {
-        if (message is MMarkerArray)
+        if (message is MarkerArrayMsg)
         {
             return () =>
             {
 
             };
         }
-        else if (message is MMarker)
+        else if (message is MarkerMsg)
         {
             return () =>
             {

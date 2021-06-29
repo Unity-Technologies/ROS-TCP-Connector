@@ -1,12 +1,10 @@
-﻿using RosMessageTypes.Geometry;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<MPoseWithCovarianceStamped>
+public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<PoseWithCovarianceStampedMsg>
 {
     [SerializeField]
     float m_Size = 0.1f;
@@ -15,15 +13,18 @@ public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<M
     bool m_DrawUnityAxes;
     bool m_ViewCovariance;
 
-    public override void Draw(BasicDrawing drawing, MPoseWithCovarianceStamped message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
         message.pose.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPoseWithCovarianceStamped message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        message.pose.pose.GUI();
-        MessageVisualizations.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
-    };
+        return () =>
+        {
+            message.header.GUI();
+            message.pose.pose.GUI();
+            MessageVisualizations.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
+        };
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
 using RosMessageTypes.Tf2;
+using RosMessageTypes.BuiltinInterfaces;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,8 +25,8 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.instance.RegisterSubscriber("/tf", MTFMessage.k_RosMessageName);
-            ROSConnection.instance.Subscribe<MTFMessage>("/tf", instance.ReceiveTF);
+            ROSConnection.instance.RegisterSubscriber("/tf", TFMessageMsg.k_RosMessageName);
+            ROSConnection.instance.Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
         }
     }
 
@@ -50,7 +51,7 @@ public class TFSystem
             s_Visualizer.OnChanged(stream);
     }
 
-    public TFFrame GetTransform(MHeader header)
+    public TFFrame GetTransform(HeaderMsg header)
     {
         return GetTransform(header.frame_id, header.stamp.ToLongTime());
     }
@@ -64,7 +65,7 @@ public class TFSystem
             return TFFrame.identity;
     }
 
-    public TFFrame GetTransform(string frame_id, MTime time)
+    public TFFrame GetTransform(string frame_id, TimeMsg time)
     {
         return GetTransform(frame_id, time.ToLongTime());
     }
@@ -102,7 +103,7 @@ public class TFSystem
         return tf;
     }
 
-    void ReceiveTF(MTFMessage message)
+    void ReceiveTF(TFMessageMsg message)
     {
         foreach (MTransformStamped tf_message in message.transforms)
         {

@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Geometry/DefaultVisualizerAccelStamped.cs.meta
 guid: 67c032e5682c70440a684a13df04044e
-=======
-guid: d0e0d908abf7adb4c8100dfeebafd18c
->>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/TcpConnector/TaskPauser.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2

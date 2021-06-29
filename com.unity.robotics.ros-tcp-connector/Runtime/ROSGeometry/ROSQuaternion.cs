@@ -31,9 +31,14 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public Quaternion toUnity => coordinateSpace.ConvertToRUF(internalQuat);
 
-        public static implicit operator MQuaternion(Quaternion<C> quat) => new MQuaternion(quat.x, quat.y, quat.z, quat.w);
+        public static implicit operator QuaternionMsg(Quaternion<C> quat) => new QuaternionMsg(quat.x, quat.y, quat.z, quat.w);
         public static explicit operator Quaternion<C>(Quaternion quat) => new Quaternion<C>(quat);
         public static explicit operator Quaternion(Quaternion<C> rquat) => rquat.toUnity;
+
+#pragma warning disable 0618
+        [Obsolete]
+        public static implicit operator MQuaternion(Quaternion<C> rvec) => throw new NotImplementedException();
+#pragma warning restore 0618
 
         public Quaternion<C2> To<C2>() where C2 : ICoordinateSpace, new()
         {

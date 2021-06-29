@@ -1,12 +1,10 @@
-﻿using RosMessageTypes.Geometry;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerInertiaStamped : DrawingVisualFactory<MInertiaStamped>
+public class DefaultVisualizerInertiaStamped : DrawingVisualFactory<InertiaStampedMsg>
 {
     public GameObject m_Origin;
     public float m_Radius;
@@ -15,14 +13,17 @@ public class DefaultVisualizerInertiaStamped : DrawingVisualFactory<MInertiaStam
     [SerializeField]
     string m_Label = "Center of mass";
 
-    public override void Draw(BasicDrawing drawing, MInertiaStamped message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, InertiaStampedMsg message, MessageMetadata meta)
     {
         message.inertia.com.Draw<FLU>(drawing, m_Origin, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
     }
 
-    public override Action CreateGUI(MInertiaStamped message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(InertiaStampedMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        message.inertia.GUI();
-    };
+        return () =>
+        {
+            message.header.GUI();
+            message.inertia.GUI();
+        };
+    }
 }

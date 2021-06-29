@@ -4,6 +4,7 @@ using RosMessageTypes.Geometry;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RosMessageTypes.BuiltinInterfaces;
 using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
@@ -56,8 +57,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         XB360Wired = 3,
         F710 = 4
     };
-    
-    public enum JoyRegion 
+
+    public enum JoyRegion
     {
         BSouth = 0,
         BEast = 1,
@@ -69,8 +70,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         Start = 7,
         Power = 8,
         LPress = 9,
-        RPress = 10, 
-        LStick, RStick, LT, RT, DPad, lAxisX, lAxisY, 
+        RPress = 10,
+        LStick, RStick, LT, RT, DPad, lAxisX, lAxisY,
         rAxisX, rAxisY, ltAxis, rtAxis, dAxisX, dAxisY
     };
 
@@ -119,45 +120,45 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
     // Convenience functions for built-in message types
     public static class MessageExtensions
     {
-        public static string ToTimestampString(this MTime message)
+        public static string ToTimestampString(this TimeMsg message)
         {
             // G: format using short date and long time
-            return message.ToDateTime().ToString("G") + $"(+{message.nsecs})";
+            return message.ToDateTime().ToString("G") + $"(+{message.nanosec})";
         }
 
-        public static long ToLongTime(this MTime message)
+        public static long ToLongTime(this TimeMsg message)
         {
-            return (long)message.secs << 32 | message.nsecs;
+            return (long)message.sec << 32 | message.nanosec;
         }
 
-        public static DateTime ToDateTime(this MTime message)
+        public static DateTime ToDateTime(this TimeMsg message)
         {
-            DateTime time = new DateTime(message.secs);
-            time = time.AddMilliseconds(message.nsecs / 1E6);
+            DateTime time = new DateTime(message.sec);
+            time = time.AddMilliseconds(message.nanosec / 1E6);
             return time;
         }
 
-        public static MTime ToMTime(this DateTime dateTime, uint nsecs = 0)
-        {
-            return new MTime { secs = (uint)dateTime.Ticks, nsecs = (uint)(dateTime.Millisecond * 1E6) };
-        }
+        // public static TimeMsg TimeMsg(this DateTime dateTime)
+        // {
+        //     return new TimeMsg { sec = Convert.ToUInt32(dateTime.Ticks), nanosec = Convert.ToUInt32(dateTime.Millisecond * 1E6) };
+        // }
 
-        public static Color ToUnityColor(this MColorRGBA message)
+        public static Color ToUnityColor(this ColorRGBAMsg message)
         {
             return new Color(message.r, message.g, message.b, message.a);
         }
 
-        public static MColorRGBA ToMColorRGBA(this Color color)
+        public static ColorRGBAMsg ColorRGBAMsg(this Color color)
         {
-            return new MColorRGBA(color.r, color.g, color.b, color.a);
+            return new ColorRGBAMsg(color.r, color.g, color.b, color.a);
         }
 
-        static Dictionary<int, int> channelConversion = new Dictionary<int, int>() 
+        static Dictionary<int, int> channelConversion = new Dictionary<int, int>()
         {
-            { 0, 2 }, // B -> R 
+            { 0, 2 }, // B -> R
             { 1, 1 }, // G -> G
             { 2, 0 }, // R -> B
-            { 3, 3 }  // A -> A  
+            { 3, 3 }  // A -> A
         };
 
         /// <summary>
@@ -303,14 +304,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return TextureFormat.RGB24;
         }
 
-        public static Texture2D ToTexture2D(this MCompressedImage message)
+        public static Texture2D ToTexture2D(this CompressedImageMsg message)
         {
             var tex = new Texture2D(1, 1);
             tex.LoadImage(message.data);
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this MImage message, bool convert, bool flipY)
+        public static Texture2D ToTexture2D(this ImageMsg message, bool convert, bool flipY)
         {
             var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
             var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
@@ -331,51 +332,51 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <param name="P">Projection matrix (3x4)</param>
         /// <param name="K">Camera intrinsics (3x3)</param>
         /// <returns></returns>
-        static MPoint FindPixelProjection(int x, int y, double[] P, double[][] invK)
+        static PointMsg FindPixelProjection(int x, int y, double[] P, double[][] invK)
         {
-            MPoint worldCoord = new MPoint(x, y, 1);
+            PointMsg worldCoord = new PointMsg(x, y, 1);
 
-            return new MPoint((float)invK[0][0]*worldCoord.x + (float)invK[0][1]*worldCoord.y + (float)invK[0][2]*worldCoord.z, (float)invK[1][0]*worldCoord.x + (float)invK[1][1]*worldCoord.y + (float)invK[1][2]*worldCoord.z, (float)invK[2][0]*worldCoord.x + (float)invK[2][1]*worldCoord.y + (float)invK[2][2]*worldCoord.z);
+            return new PointMsg((float)invK[0][0]*worldCoord.x + (float)invK[0][1]*worldCoord.y + (float)invK[0][2]*worldCoord.z, (float)invK[1][0]*worldCoord.x + (float)invK[1][1]*worldCoord.y + (float)invK[1][2]*worldCoord.z, (float)invK[2][0]*worldCoord.x + (float)invK[2][1]*worldCoord.y + (float)invK[2][2]*worldCoord.z);
         }
 
-        public static MPoint[] GetPixelsInWorld(this MCameraInfo cameraInfo)
+        public static PointMsg[] GetPixelsInWorld(this CameraInfoMsg cameraInfo)
         {
-            List<MPoint> res = new List<MPoint>();
+            List<PointMsg> res = new List<PointMsg>();
 
             double[][] formatK = new double[][] {
-                new double[] { cameraInfo.K[0], cameraInfo.K[1], cameraInfo.K[2] },
-                new double[] { cameraInfo.K[3], cameraInfo.K[4], cameraInfo.K[5] },
-                new double[] { cameraInfo.K[6], cameraInfo.K[7], cameraInfo.K[8] },
+                new double[] { cameraInfo.k[0], cameraInfo.k[1], cameraInfo.k[2] },
+                new double[] { cameraInfo.k[3], cameraInfo.k[4], cameraInfo.k[5] },
+                new double[] { cameraInfo.k[6], cameraInfo.k[7], cameraInfo.k[8] },
             };
 
             var inverseK = MatrixExtensions.MatrixInverse(formatK);
 
-            for (int i = 0; i < cameraInfo.width; i++) 
+            for (int i = 0; i < cameraInfo.width; i++)
             {
                 for (int j = 0; j < cameraInfo.height; j++)
                 {
-                    res.Add(FindPixelProjection(i, j, cameraInfo.P, inverseK));
+                    res.Add(FindPixelProjection(i, j, cameraInfo.p, inverseK));
                 }
             }
 
             return res.ToArray();
         }
 
-        public static Texture2D ApplyCameraInfoProjection(this Texture2D tex, MCameraInfo cameraInfo) {
+        public static Texture2D ApplyCameraInfoProjection(this Texture2D tex, CameraInfoMsg cameraInfo) {
             var newTex = new Texture2D(tex.width, tex.height);
 
             double[][] formatK = new double[][] {
-                new double[] { cameraInfo.K[0], cameraInfo.K[1], cameraInfo.K[2] },
-                new double[] { cameraInfo.K[3], cameraInfo.K[4], cameraInfo.K[5] },
-                new double[] { cameraInfo.K[6], cameraInfo.K[7], cameraInfo.K[8] },
+                new double[] { cameraInfo.k[0], cameraInfo.k[1], cameraInfo.k[2] },
+                new double[] { cameraInfo.k[3], cameraInfo.k[4], cameraInfo.k[5] },
+                new double[] { cameraInfo.k[6], cameraInfo.k[7], cameraInfo.k[8] },
             };
 
             var inverseK = MatrixExtensions.MatrixInverse(formatK);
-            for (int i = 0; i < tex.width; i++) 
+            for (int i = 0; i < tex.width; i++)
             {
                 for (int j = 0; j < tex.height; j++)
                 {
-                    var newPix = FindPixelProjection(i, j, cameraInfo.P, inverseK);
+                    var newPix = FindPixelProjection(i, j, cameraInfo.p, inverseK);
                     var color = tex.GetPixel((int)newPix.x, (int)newPix.y);
                     newTex.SetPixel(i, j, color);
                 }
@@ -385,19 +386,19 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static MCompressedImage ToMCompressedImage(this Texture2D tex, string format="jpeg")
+        public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format="jpeg")
         {
             var data = tex.GetRawTextureData();
-            return new MCompressedImage(new MHeader(), format, data);
+            return new CompressedImageMsg(new MHeader(), format, data);
         }
 
-        public static MImage ToMImage(this Texture2D tex, string encoding="RGBA", byte isBigEndian=0, uint step=4)
+        public static ImageMsg ImageMsg(this Texture2D tex, string encoding="RGBA", byte isBigEndian=0, uint step=4)
         {
             var data = tex.GetRawTextureData();
-            return new MImage(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
+            return new ImageMsg(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
         }
 
-        static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>() 
+        static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>()
         {
             { JoyRegion.BSouth, 0 }, { JoyRegion.BEast, 1 },
             { JoyRegion.BWest, 3 }, { JoyRegion.BNorth, 2 },
@@ -412,7 +413,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
         };
 
-        static Dictionary<JoyRegion, int> joyXB360Windows = new Dictionary<JoyRegion, int>() 
+        static Dictionary<JoyRegion, int> joyXB360Windows = new Dictionary<JoyRegion, int>()
         {
             { JoyRegion.BSouth, (int)JoyRegion.BSouth },
             { JoyRegion.BEast, (int)JoyRegion.BEast },
@@ -431,7 +432,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
         };
 
-        static Dictionary<JoyRegion, int> joyXB360Linux = new Dictionary<JoyRegion, int>() 
+        static Dictionary<JoyRegion, int> joyXB360Linux = new Dictionary<JoyRegion, int>()
         {
             { JoyRegion.BSouth, (int)JoyRegion.BSouth },
             { JoyRegion.BEast, (int)JoyRegion.BEast },
@@ -450,7 +451,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
         };
 
-        static Dictionary<JoyRegion, int> joyXB360Wired = new Dictionary<JoyRegion, int>() 
+        static Dictionary<JoyRegion, int> joyXB360Wired = new Dictionary<JoyRegion, int>()
         {
             { JoyRegion.BSouth, (int)JoyRegion.BSouth },
             { JoyRegion.BEast, (int)JoyRegion.BEast },
@@ -469,7 +470,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             { JoyRegion.dAxisX, 6 }, { JoyRegion.dAxisY, 7 },
         };
 
-        static Dictionary<JoyRegion, int> joyF710 = new Dictionary<JoyRegion, int>() 
+        static Dictionary<JoyRegion, int> joyF710 = new Dictionary<JoyRegion, int>()
         {
             { JoyRegion.BSouth, 1 }, { JoyRegion.BEast, 2 },
             { JoyRegion.BWest, 0 }, { JoyRegion.BNorth, 3 },
@@ -494,10 +495,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         };
 
         /// <summary>
-        /// Creates a new Texture2D that displays the current input values of a region of the MJoy message
+        /// Creates a new Texture2D that displays the current input values of a region of the JoyMsg message
         /// </summary>
         /// <returns>Texture2D corresponding to this region and layout</returns>
-        public static Texture2D TextureFromJoy(this MJoy message, JoyRegion region, int layout=0) 
+        public static Texture2D TextureFromJoy(this JoyMsg message, JoyRegion region, int layout=0)
         {
             Color[] colorHighlight = new Color[100];
             for (int i = 0; i < colorHighlight.Length; i++)
@@ -516,7 +517,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             int y = 0;
             var layoutMap = layoutToMap[(JoyLayout)layout];
 
-            if ((int)region <= 10) 
+            if ((int)region <= 10)
             {
                 // Define small button context
                 tex = new Texture2D(10, 10);
@@ -569,9 +570,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         }
 
         /// <summary>
-        /// Creates a new Texture2D that grabs a region of interest of a given texture, if applicable. Otherwise, an approximated empty texture with a highlighted region is returned. 
+        /// Creates a new Texture2D that grabs a region of interest of a given texture, if applicable. Otherwise, an approximated empty texture with a highlighted region is returned.
         /// </summary>
-        public static Texture2D RegionOfInterestTexture(this MRegionOfInterest message, Texture2D rawTex, int height=0, int width=0)
+        public static Texture2D RegionOfInterestTexture(this RegionOfInterestMsg message, Texture2D rawTex, int height=0, int width=0)
         {
             int mWidth = (int)message.width;
             int mHeight = (int)message.height;
@@ -586,12 +587,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 {
                     overlay = new Texture2D(x_off + mWidth + 10, y_off + mHeight + 10);
                 }
-                else 
+                else
                 {
                     overlay = new Texture2D(width, height);
                 }
 
-                // Initialize ROI color block 
+                // Initialize ROI color block
                 Color[] colors = new Color[mHeight * mWidth];
                 for (int i = 0; i < colors.Length; i++)
                 {
@@ -600,7 +601,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 overlay.SetPixels(x_off, y_off, mWidth, mHeight, colors);
             }
-            else 
+            else
             {
                 // Crop out ROI from input texture
                 overlay = new Texture2D(mWidth - x_off, mHeight - y_off, rawTex.format, true);
@@ -610,7 +611,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return overlay;
         }
 
-        public static string ToLatLongString(this MNavSatFix message)
+        public static string ToLatLongString(this NavSatFixMsg message)
         {
             string lat = (message.latitude > 0) ? "ºN" : "ºS";
             string lon = (message.longitude > 0) ? "ºE" : "ºW";
