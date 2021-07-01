@@ -108,8 +108,8 @@ namespace Unity.Robotics.ROSTCPConnector
         Dictionary<string, string> m_RosServices = new Dictionary<string, string>();
         MessageSerializer m_MessageSerializer = new MessageSerializer();
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
-        List<Action<Dictionary<string, string>>> m_TopicsListCallbacks = new List<Action<Dictionary<string, string>>>();
-        // List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
+        List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
+        List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
@@ -212,9 +212,15 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        public void GetTopicList(Action<Dictionary<string, string>> callback)
+        public void GetTopicList(Action<string[]> callback)
         {
             m_TopicsListCallbacks.Add(callback);
+            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+        }
+
+        public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
+        {
+            m_TopicsAndTypesListCallbacks.Add(callback);
             SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
@@ -519,14 +525,17 @@ namespace Unity.Robotics.ROSTCPConnector
                 case k_SysCommand_TopicList:
                     {
                         var topicsResponse = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
-                        if (m_TopicsListCallbacks.Count > 0)
+                        if (m_TopicsAndTypesListCallbacks.Count > 0)
                         {
                             Dictionary<string, string> callbackParam = new Dictionary<string, string>();
-                            for (int Idx = 0; Idx < topicsResponse.topics.Length; ++Idx)
-                            {
-                                callbackParam[topicsResponse.topics[Idx]] = topicsResponse.types[Idx];
-                            }
-                            m_TopicsListCallbacks.ForEach(a => a(callbackParam));
+                            for (int idx = 0; idx < topicsResponse.topics.Length; ++idx)
+                                callbackParam[topicsResponse.topics[idx]] = topicsResponse.types[idx];
+                            m_TopicsAndTypesListCallbacks.ForEach(a => a(callbackParam));
+                            m_TopicsAndTypesListCallbacks.Clear();
+                        }
+                        if (m_TopicsListCallbacks.Count > 0)
+                        {
+                            m_TopicsListCallbacks.ForEach(a => a(topicsResponse.topics));
                             m_TopicsListCallbacks.Clear();
                         }
                     }

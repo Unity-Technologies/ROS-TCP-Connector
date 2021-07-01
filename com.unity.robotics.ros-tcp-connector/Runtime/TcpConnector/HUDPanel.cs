@@ -35,9 +35,6 @@ namespace Unity.Robotics.ROSTCPConnector
         MessageViewState lastCompletedServiceRequest;
         MessageViewState lastCompletedServiceResponse;
 
-        // // ROS Message variables
-        // string m_RosConnectAddress = "";
-
         List<TopicVisualizationState> m_ActiveWindows = new List<TopicVisualizationState>();
         GUIStyle m_ContentStyle;
         int m_CurrentFrameIndex;
@@ -67,7 +64,8 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ViewSrvs;
         int nextServiceID = 101;
 
-        public static SortedList<string, TopicVisualizationState> AllTopics { get; } = new SortedList<string, TopicVisualizationState>();
+        static SortedList<string, TopicVisualizationState> s_AllTopics = new SortedList<string, TopicVisualizationState>();
+        public static SortedList<string, TopicVisualizationState> AllTopics => s_AllTopics;
 
         public static string RosIPAddressPref => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
 
@@ -109,7 +107,7 @@ namespace Unity.Robotics.ROSTCPConnector
 #if ROS2
             string protocolName = "ROS2";
 #else
-            var protocolName = "ROS";
+            string protocolName = "ROS";
 #endif
 
             GUILayout.Space(30);
@@ -258,31 +256,6 @@ namespace Unity.Robotics.ROSTCPConnector
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
         }
 
-        public void SetLastMessageSent(string topic, Message message)
-        {
-            if (!AllTopics.TryGetValue(topic, out var state)) AllTopics.Add(topic, null);
-
-            m_LastMessageSent = new MessageViewState { label = "Last Message Sent:", message = message };
-            m_LastMessageSentMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
-            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
-
-            if (state != null)
-                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
-        }
-
-        public void SetLastMessageReceived(string topic, Message message)
-        {
-            TopicVisualizationState state;
-            if (!AllTopics.TryGetValue(topic, out state)) AllTopics.Add(topic, null);
-
-            m_LastMessageReceived = new MessageViewState { label = "Last Message Received:", message = message };
-            m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
-            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
-
-            if (state != null)
-                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
-        }
-
         public static void RegisterTab(IHudTab tab)
         {
             s_HUDTabs.Add(tab);
@@ -307,7 +280,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RequestTopics();
             foreach (var savedRule in saveState.Rules)
             {
-                AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
+                s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
             }
         }
 
@@ -328,13 +301,39 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
+        public void SetLastMessageSent(string topic, Message message)
+        {
+            m_LastMessageSent = new MessageViewState { label = "Last Message Sent:", message = message };
+            m_LastMessageSentMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
+            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+
+            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
+        }
+
+        public void SetLastMessageReceived(string topic, Message message)
+        {
+            m_LastMessageReceived = new MessageViewState { label = "Last Message Received:", message = message };
+            m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
+            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+
+            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (state != null)
+                state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
+        }
+
         public int AddServiceRequest(string topic, Message request)
         {
             var serviceID = nextServiceID;
             nextServiceID++;
 
-            TopicVisualizationState state;
-            if (!AllTopics.TryGetValue(topic, out state)) AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (state != null)
+            {
+                m_PendingServiceRequests.Add(serviceID, state);
+                state.SetServiceRequest(request, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
+            }
             activeServices.Add(new MessageViewState
             {
                 serviceID = serviceID,
@@ -349,12 +348,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void AddServiceResponse(int serviceID, Message response)
         {
-            TopicVisualizationState state;
-            if (!m_PendingServiceRequests.TryGetValue(serviceID, out state))
+            if (!m_PendingServiceRequests.TryGetValue(serviceID, out var state))
                 return; // don't know what happened there, but that's not a request I recognize
 
             lastCompletedServiceRequest = activeServices.Find(s => s.serviceID == serviceID);
             activeServices.Remove(lastCompletedServiceRequest);
+            m_PendingServiceRequests.Remove(serviceID);
+            if (state != null)
+            {
+                state.SetServiceResponse(response, new MessageMetadata(state.Topic, m_CurrentFrameIndex, DateTime.Now), serviceID);
+            }
 
             lastCompletedServiceResponse = new MessageViewState
             {
@@ -532,13 +535,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public TopicVisualizationState GetVisualizationState(string topic, bool subscribe = false)
         {
-            if (AllTopics.TryGetValue(topic, out var result) && result != null) return result;
+            if (s_AllTopics.TryGetValue(topic, out var result) && result != null) return result;
 
             var rosMessageName = GetMessageNameByTopic(topic);
             if (rosMessageName != null)
             {
                 result = new TopicVisualizationState(topic, rosMessageName, this, subscribe);
-                AllTopics[topic] = result;
+                s_AllTopics[topic] = result;
             }
 
             return result;
@@ -548,7 +551,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (m_LastTopicsRequestRealtime == -1 || Time.realtimeSinceStartup - m_LastTopicsRequestRealtime > k_TimeBetweenTopicsUpdates)
             {
-                ROSConnection.instance.GetTopicList(RegisterTopics);
+                ROSConnection.instance.GetTopicAndTypeList(RegisterTopics);
                 m_LastTopicsRequestRealtime = Time.realtimeSinceStartup;
             }
         }
@@ -559,7 +562,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 var topic = c.Key;
                 var type = c.Value;
-                if (!AllTopics.ContainsKey(topic)) AllTopics.Add(topic, null);
+                if (!s_AllTopics.ContainsKey(topic)) s_AllTopics.Add(topic, null);
                 s_MessageNamesByTopic[topic] = type;
             }
 
@@ -618,14 +621,16 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.BeginHorizontal();
                 m_TopicFilter = GUILayout.TextField(m_TopicFilter);
 
-                if (m_TopicFilter != "" && !AllTopics.ContainsKey(m_TopicFilter))
+                if (m_TopicFilter != "" && !s_AllTopics.ContainsKey(m_TopicFilter))
+                {
                     if (GUILayout.Button($"Subscribe to \"{m_TopicFilter}\""))
                     {
                         var state = new TopicVisualizationState(m_TopicFilter, GetMessageNameByTopic(m_TopicFilter), hud);
                         state.SetShowWindow(true);
                         state.SetShowDrawing(true);
-                        AllTopics.Add(m_TopicFilter, state);
+                        s_AllTopics.Add(m_TopicFilter, state);
                     }
+                }
 
                 GUILayout.EndHorizontal();
 
@@ -636,7 +641,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
                 var numTopicsShown = 0;
-                foreach (var kv in AllTopics)
+                foreach (var kv in s_AllTopics)
                 {
                     var showWindow = false;
                     var canShowWindow = false;
