@@ -8,7 +8,6 @@ public class DefaultVisualizerNavSatFix : GuiVisualFactory<NavSatFixMsg>
 {
     public override Action CreateGUI(NavSatFixMsg message, MessageMetadata meta)
     {
-        Debug.Log("creating gui!");
         return () =>
         {
             message.header.GUI();

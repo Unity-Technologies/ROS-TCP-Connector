@@ -305,7 +305,10 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_ActiveWindows.Clear();
             RequestTopics();
-            foreach (var savedRule in saveState.Rules) AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
+            foreach (var savedRule in saveState.Rules)
+            {
+                AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
+            }
         }
 
         public void AddWindow(TopicVisualizationState window)
@@ -550,8 +553,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        // void RegisterTopics(string[] topics, string[] messageNames)
-        // List<Action<Dictionary<string, string>>>
         void RegisterTopics(Dictionary<string, string> callback)
         {
             foreach (var c in callback)
@@ -559,7 +560,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 var topic = c.Key;
                 var type = c.Value;
                 if (!AllTopics.ContainsKey(topic)) AllTopics.Add(topic, null);
-
                 s_MessageNamesByTopic[topic] = type;
             }
 

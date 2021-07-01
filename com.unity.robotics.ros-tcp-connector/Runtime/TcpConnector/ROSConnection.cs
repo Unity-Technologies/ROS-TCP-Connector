@@ -153,6 +153,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 subCallbacks = new SubscriberCallback
                 {
                     deserialize = constructor,
+                    rosMessageName = rosMessageName,
                     callbacks = new List<Action<Message>> { }
                 };
                 m_Subscribers.Add(topic, subCallbacks);
@@ -638,7 +639,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    //Debug.Log($"Message {content.Item1} received");
+                    // Debug.Log($"Message {content.Item1} received");
                     ROSConnection.m_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
