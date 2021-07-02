@@ -160,6 +160,9 @@ namespace Unity.Robotics.ROSTCPConnector
             };
 
             subCallbacks.callbacks.Add(callback);
+
+            if (HasConnectionThread)
+                SendSubscriberRegistration(topic, rosMessageName);
         }
 
         public void ImplementService<REQUEST>(string topic, Func<REQUEST, Message> callback) where REQUEST : Message
