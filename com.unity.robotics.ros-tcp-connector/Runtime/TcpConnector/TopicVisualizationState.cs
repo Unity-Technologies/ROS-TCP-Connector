@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -35,14 +35,13 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!ROSConnection.instance.HasSubscriber(Topic))
             {
                 ROSConnection.instance.SubscribeByMessageName(Topic, saveState.RosMessageName, Message => { });
-                ROSConnection.instance.RegisterSubscriber(Topic, saveState.RosMessageName);
             }
 
             SetShowWindow(saveState.ShowWindow);
             SetShowDrawing(saveState.ShowDrawing);
         }
 
-        public TopicVisualizationState(string topic, string rosMessageName, HUDPanel hud, bool subscribe=false)
+        public TopicVisualizationState(string topic, string rosMessageName, HUDPanel hud, bool subscribe = false)
         {
             m_Hud = hud;
             m_WindowRect = HUDPanel.GetDefaultWindowRect();
@@ -55,7 +54,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (!ROSConnection.instance.HasSubscriber(Topic))
                 {
                     ROSConnection.instance.SubscribeByMessageName(Topic, RosMessageName, Message => { });
-                    ROSConnection.instance.RegisterSubscriber(Topic, RosMessageName);
                 }
 
                 SetShowWindow(false);
@@ -199,8 +197,6 @@ namespace Unity.Robotics.ROSTCPConnector
                     Debug.LogError("No known message class for " + rosMessageName);
                     return false;
                 }
-
-                ROSConnection.instance.RegisterSubscriber(Topic, rosMessageName);
 
                 // TODO: this should not be necessary
                 ROSConnection.instance.SubscribeByMessageName(Topic, rosMessageName, m => { });

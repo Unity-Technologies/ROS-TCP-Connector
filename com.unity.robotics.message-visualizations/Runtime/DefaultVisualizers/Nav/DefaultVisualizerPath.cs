@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
@@ -22,7 +22,7 @@ public class DefaultVisualizerPath : DrawingVisualFactory<PathMsg>
         return () =>
         {
             message.header.GUI();
-            foreach (MPoseStamped pose in message.poses)
+            foreach (PoseStampedMsg pose in message.poses)
             {
                 pose.header.GUI();
                 pose.pose.GUI();

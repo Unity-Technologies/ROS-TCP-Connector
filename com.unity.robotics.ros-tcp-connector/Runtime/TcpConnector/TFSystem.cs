@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Std;
@@ -24,7 +24,6 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.instance.RegisterSubscriber("/tf", TFMessageMsg.k_RosMessageName);
             ROSConnection.instance.Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
         }
     }

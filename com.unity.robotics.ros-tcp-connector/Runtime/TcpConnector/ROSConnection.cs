@@ -62,6 +62,10 @@ namespace Unity.Robotics.ROSTCPConnector
         const string k_SysCommand_RosService = "__ros_service";
         const string k_SysCommand_UnityService = "__unity_service";
         const string k_SysCommand_TopicList = "__topic_list";
+        const string k_SysCommand_RemoveSubscriber = "__remove_subscriber";
+        const string k_SysCommand_RemovePublisher = "__remove_publisher";
+        const string k_SysCommand_RemoveRosService = "__remove_ros_service";
+        const string k_SysCommand_RemoveUnityService = "__remove_unity_service";
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
@@ -118,6 +122,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (HasConnectionThread)
                 SendSubscriberRegistration(topic, rosMessageName);
+        }
+
+        public void RemoveSubscriber<T>(string topic) where T : Message
+        {
+            m_Subscribers.Remove(topic);
+
+            if (HasConnectionThread)
+                SendSubscriberUnregistration(topic);
         }
 
         void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T : Message
@@ -280,6 +292,26 @@ namespace Unity.Robotics.ROSTCPConnector
         void SendUnityServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
             SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+        }
+
+        void SendSubscriberUnregistration(string topic, NetworkStream stream = null)
+        {
+            SendSysCommand(k_SysCommand_RemoveSubscriber, new SysCommand_Topic { topic = topic }, stream);
+        }
+
+        void SendPublisherUnregistration(string topic, NetworkStream stream = null)
+        {
+            SendSysCommand(k_SysCommand_RemovePublisher, new SysCommand_Topic { topic = topic }, stream);
+        }
+
+        void SendRosServiceUnregistration(string topic, NetworkStream stream = null)
+        {
+            SendSysCommand(k_SysCommand_RemoveRosService, new SysCommand_Topic { topic = topic }, stream);
+        }
+
+        void SendUnityServiceUnregistration(string topic, NetworkStream stream = null)
+        {
+            SendSysCommand(k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, stream);
         }
 
         private static ROSConnection _instance;
@@ -719,6 +751,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             public string topic;
             public string message_name;
+        }
+
+        public struct SysCommand_Topic
+        {
+            public string topic;
         }
 
         struct SysCommand_Log

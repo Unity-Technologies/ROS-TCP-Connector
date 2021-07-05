@@ -59,9 +59,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         IHudTab m_SelectedTab;
         Dictionary<string, IVisualFactory> m_TopicVisualizers = new Dictionary<string, IVisualFactory>();
-        bool m_ViewRecv;
-        bool m_ViewSent;
-        bool m_ViewSrvs;
         int nextServiceID = 101;
 
         static SortedList<string, TopicVisualizationState> s_AllTopics = new SortedList<string, TopicVisualizationState>();
@@ -138,27 +135,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.EndHorizontal();
             }
 
-            // Last message sent
-            GUILayout.Label("Last Message Sent:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageSentMeta, m_ContentStyle);
-            if (m_LastMessageSent != null)
-                m_ViewSent = GUILayout.Toggle(m_ViewSent, "View contents");
-
-            // Last message received
-            GUILayout.Label("Last Message Received:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageReceivedMeta, m_ContentStyle);
-            if (m_LastMessageReceived != null)
-                m_ViewRecv = GUILayout.Toggle(m_ViewRecv, "View contents");
-
-            GUILayout.Label($"{activeServices.Count} Active Service Requests:", m_LabelStyle);
-            if (activeServices.Count > 0)
-            {
-                var dots = new string('.', (int)Time.time % 4);
-                GUILayout.Label($"Waiting for service response{dots}", m_ContentStyle);
-            }
-
-            m_ViewSrvs = GUILayout.Toggle(m_ViewSrvs, "View services status");
-
             GUILayout.BeginHorizontal();
             foreach (var tab in s_HUDTabs)
             {
@@ -186,23 +162,6 @@ namespace Unity.Robotics.ROSTCPConnector
             // Update length of scroll
             if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
                 m_ScrollRect = GUILayoutUtility.GetLastRect();
-
-            // Optionally show message contents
-            var y = m_ScrollRect.yMax;
-            if (m_ViewSent) y = ShowMessage(m_LastMessageSent, y);
-
-            if (m_ViewRecv) y = ShowMessage(m_LastMessageReceived, y);
-
-            if (m_ViewSrvs)
-            {
-                foreach (var service in activeServices) y = ShowMessage(service, y, true);
-
-                if (lastCompletedServiceRequest != null && lastCompletedServiceResponse != null)
-                {
-                    y = ShowMessage(lastCompletedServiceRequest, y);
-                    y = ShowMessage(lastCompletedServiceResponse, y);
-                }
-            }
 
             // Draggable windows
             var current = Event.current;

@@ -253,7 +253,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this LaserScanMsg message, PointCloudDrawing pointCloud, LaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this LaserScanMsg message, PointCloudDrawing pointCloud, LaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -320,7 +320,7 @@ namespace Unity.Robotics.MessageVisualizers
                     drawing.transform.rotation = marker.pose.orientation.From<C>();
                     if (marker.colors.Length == marker.points.Length)
                     {
-                        drawing.DrawLineStrip(marker.points.Select(p => p.From<C>()).ToArray(), marker.colors.Select(c=>(Color32)c.ToUnityColor()).ToArray(), (float)marker.scale.x);
+                        drawing.DrawLineStrip(marker.points.Select(p => p.From<C>()).ToArray(), marker.colors.Select(c => (Color32)c.ToUnityColor()).ToArray(), (float)marker.scale.x);
                     }
                     else
                     {
@@ -391,7 +391,7 @@ namespace Unity.Robotics.MessageVisualizers
                         float radius = (float)marker.scale.x;
                         if (marker.colors.Length == marker.points.Length)
                         {
-                            for(int Idx = 0; Idx < marker.points.Length; ++Idx)
+                            for (int Idx = 0; Idx < marker.points.Length; ++Idx)
                             {
                                 cloud.AddPoint(marker.points[Idx].From<C>(), marker.colors[Idx].ToUnityColor(), radius);
                             }
@@ -419,7 +419,7 @@ namespace Unity.Robotics.MessageVisualizers
                         float radius = (float)marker.scale.x;
                         if (marker.colors.Length == marker.points.Length)
                         {
-                            for (int Idx = 2; Idx < marker.points.Length; Idx+=3)
+                            for (int Idx = 2; Idx < marker.points.Length; Idx += 3)
                             {
                                 drawing.DrawTriangle(
                                     marker.points[Idx - 2].From<C>(),
@@ -433,11 +433,11 @@ namespace Unity.Robotics.MessageVisualizers
                         else
                         {
                             Color32 color = marker.color.ToUnityColor();
-                            for (int Idx = 2; Idx < marker.points.Length; Idx+=3)
+                            for (int Idx = 2; Idx < marker.points.Length; Idx += 3)
                             {
                                 drawing.DrawTriangle(
-                                    marker.points[Idx-2].From<C>(),
-                                    marker.points[Idx-1].From<C>(),
+                                    marker.points[Idx - 2].From<C>(),
+                                    marker.points[Idx - 1].From<C>(),
                                     marker.points[Idx].From<C>(),
                                     color);
                             }
@@ -463,7 +463,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -762,7 +762,7 @@ namespace Unity.Robotics.MessageVisualizers
             string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
             GUILayout.Label($"Status of {message.name}|{message.hardware_id}: {status}");
             GUILayout.Label(message.message);
-            foreach (MKeyValue keyValue in message.values)
+            foreach (KeyValueMsg keyValue in message.values)
             {
                 GUILayout.Label($"   {keyValue.key}: {keyValue.value}");
             }
@@ -966,11 +966,11 @@ namespace Unity.Robotics.MessageVisualizers
                 case SolidPrimitiveMsg.SPHERE:
                     GUILayout.Label($"SolidPrimitive SPHERE\nRadius: {message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]}");
                     break;
-                case MSolidPrimitive.CYLINDER:
-                    GUILayout.Label($"SolidPrimitive CYLINDER\nHeight: {message.dimensions[MSolidPrimitive.CYLINDER_HEIGHT]}\nRadius: {message.dimensions[MSolidPrimitive.CYLINDER_RADIUS]}");
+                case SolidPrimitiveMsg.CYLINDER:
+                    GUILayout.Label($"SolidPrimitive CYLINDER\nHeight: {message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT]}\nRadius: {message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]}");
                     break;
-                case MSolidPrimitive.CONE:
-                    GUILayout.Label($"SolidPrimitive CONE\nHeight: {message.dimensions[MSolidPrimitive.CONE_HEIGHT]}\nRadius: {message.dimensions[MSolidPrimitive.CONE_RADIUS]}");
+                case SolidPrimitiveMsg.CONE:
+                    GUILayout.Label($"SolidPrimitive CONE\nHeight: {message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT]}\nRadius: {message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]}");
                     break;
                 default:
                     GUILayout.Label($"INVALID shape {message.type}!?");
