@@ -1,4 +1,4 @@
-﻿using RosMessageTypes.Sensor;
+using RosMessageTypes.Sensor;
 using RosMessageTypes.Trajectory;
 using RosSharp.Urdf;
 using System;
@@ -170,7 +170,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             for (int pathIdx = 1; pathIdx < jointPlacements.Length; ++pathIdx)
             {
-                JointPlacement[] pose1 = jointPlacements[pathIdx-1];
+                JointPlacement[] pose1 = jointPlacements[pathIdx - 1];
                 JointPlacement[] pose2 = jointPlacements[pathIdx];
                 for (int jointIdx = 0; jointIdx < pose1.Length; ++jointIdx)
                 {
@@ -232,7 +232,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color)
         {
-            foreach(JointPlacement jointPlacement in placements)
+            foreach (JointPlacement jointPlacement in placements)
             {
                 UrdfJoint joint = jointPlacement.Joint;
                 int numChildren = joint.transform.childCount;

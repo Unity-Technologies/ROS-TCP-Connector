@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -536,7 +536,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             for (int Idx = 1; Idx < pointPairs.Length; Idx += 2)
             {
-                DrawLine(pointPairs[Idx - 1], pointPairs[Idx], colorPairs[Idx-1], colorPairs[Idx], thickness);
+                DrawLine(pointPairs[Idx - 1], pointPairs[Idx], colorPairs[Idx - 1], colorPairs[Idx], thickness);
             }
         }
 
@@ -552,7 +552,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             for (int Idx = 1; Idx < stripPoints.Length; ++Idx)
             {
-                DrawLine(stripPoints[Idx - 1], stripPoints[Idx], stripColors[Idx-1], stripColors[Idx], thickness);
+                DrawLine(stripPoints[Idx - 1], stripPoints[Idx], stripColors[Idx - 1], stripColors[Idx], thickness);
             }
         }
 

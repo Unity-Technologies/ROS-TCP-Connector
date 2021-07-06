@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RosMessageTypes.BuiltinInterfaces;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;

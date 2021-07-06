@@ -10,7 +10,7 @@ public class DefaultVisualizerPointCloud : DrawingVisualFactory<PointCloudMsg>
     public PointCloudVisualizerSettings settings;
     [SerializeField]
     Color m_Color;
-    
+
     public override void Start()
     {
         if (settings != null)

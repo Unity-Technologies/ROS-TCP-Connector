@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
@@ -67,7 +67,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (!s_TopicVisualFactories.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority) s_TopicVisualFactories[topic] = new Tuple<IVisualFactory, int>(visualFactory, priority);
         }
 
-        public static IVisualFactory GetVisualizer(string topic, string rosMessageName=null)
+        public static IVisualFactory GetVisualizer(string topic, string rosMessageName = null)
         {
             Tuple<IVisualFactory, int> result;
             s_TopicVisualFactories.TryGetValue(topic, out result);

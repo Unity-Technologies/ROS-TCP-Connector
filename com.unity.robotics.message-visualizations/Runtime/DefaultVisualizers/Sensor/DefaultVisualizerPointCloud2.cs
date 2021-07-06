@@ -31,7 +31,7 @@ public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<PointCloud2Msg>
     {
         if (settings.channels == null)
             settings.channels = message.fields;
-        
+
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), settings);
     }
 

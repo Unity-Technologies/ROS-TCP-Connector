@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
@@ -7,7 +7,7 @@ using UnityEngine;
 public class DefaultVisualizerLaserScan : DrawingVisualFactory<LaserScanMsg>
 {
     public LaserScanVisualizerSettings settings;
-    
+
     public override void Start()
     {
         if (settings != null)

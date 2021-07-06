@@ -7,7 +7,7 @@ using UnityEngine;
 public class DefaultVisualizerMultiEchoLaserScan : DrawingVisualFactory<MultiEchoLaserScanMsg>
 {
     public MultiEchoLaserScanVisualizerSettings settings;
-    
+
     public override void Start()
     {
         if (settings != null)
