@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -42,7 +42,7 @@ namespace Unity.Robotics.ROSTCPConnector
             SetShowDrawing(saveState.ShowDrawing);
         }
 
-        public TopicVisualizationState(string topic, string rosMessageName, HUDPanel hud, bool subscribe=false)
+        public TopicVisualizationState(string topic, string rosMessageName, HUDPanel hud, bool subscribe = false)
         {
             m_Hud = hud;
             m_WindowRect = HUDPanel.GetDefaultWindowRect();

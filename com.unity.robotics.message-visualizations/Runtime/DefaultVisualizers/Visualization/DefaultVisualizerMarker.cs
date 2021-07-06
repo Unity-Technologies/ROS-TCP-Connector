@@ -1,4 +1,4 @@
-﻿using RosMessageTypes.Visualization;
+using RosMessageTypes.Visualization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
             }
             return true;
         }
-        else if(message is MarkerMsg)
+        else if (message is MarkerMsg)
         {
             ProcessMarker((MarkerMsg)message);
             return true;
@@ -52,25 +52,25 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
         {
             case MarkerMsg.DELETEALL:
                 foreach (Dictionary<int, BasicDrawing> namespaceToDestroy in m_Drawings.Values)
-                    foreach(BasicDrawing drawingToDestroy in namespaceToDestroy.Values)
+                    foreach (BasicDrawing drawingToDestroy in namespaceToDestroy.Values)
                         drawingToDestroy.Destroy();
                 m_Drawings.Clear();
                 break;
             case MarkerMsg.ADD:
-                if(!m_Drawings.TryGetValue(marker.ns, out ns))
+                if (!m_Drawings.TryGetValue(marker.ns, out ns))
                 {
                     ns = new Dictionary<int, BasicDrawing>();
                     m_Drawings.Add(marker.ns, ns);
                 }
-                if(!ns.TryGetValue(marker.id, out drawing))
+                if (!ns.TryGetValue(marker.id, out drawing))
                 {
                     drawing = BasicDrawing.Create();
                     ns.Add(marker.id, drawing);
                 }
-                if(marker.lifetime.sec == 0 && marker.lifetime.nanosec == 0)
+                if (marker.lifetime.sec == 0 && marker.lifetime.nanosec == 0)
                     drawing.ClearDuration();
                 else
-                    drawing.SetDuration(marker.lifetime.sec + marker.lifetime.nanosec/1E9f);
+                    drawing.SetDuration(marker.lifetime.sec + marker.lifetime.nanosec / 1E9f);
                 drawing.Clear();
                 marker.Draw<FLU>(drawing);
                 break;

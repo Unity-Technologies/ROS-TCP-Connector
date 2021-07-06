@@ -16,8 +16,8 @@ namespace Unity.Robotics.MessageVisualizers
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
         }
 
-        void IHudTab.OnGUI(HUDPanel hud) 
-        { 
+        void IHudTab.OnGUI(HUDPanel hud)
+        {
             // Save/Load layout files
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Export layout"))

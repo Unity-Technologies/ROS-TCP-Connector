@@ -25,7 +25,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
         public static GUIStyle s_BoldStyle;
         static GUIStyle m_ConnectionArrowStyle;
-        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { {(int)HudTabIndices.Topics, new TopicsHudTab()} };
+        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { { (int)HudTabIndices.Topics, new TopicsHudTab() } };
         public enum HudTabIndices
         {
             Topics = -3,
@@ -166,7 +166,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ViewSrvs = GUILayout.Toggle(m_ViewSrvs, "View services status");
 
             GUILayout.BeginHorizontal();
-            foreach(IHudTab tab in s_HUDTabs.Values)
+            foreach (IHudTab tab in s_HUDTabs.Values)
             {
                 var wasSelected = tab == m_SelectedTab;
                 var selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
@@ -262,7 +262,7 @@ namespace Unity.Robotics.ROSTCPConnector
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
         }
 
-        public static void RegisterTab(IHudTab tab, int index=0)
+        public static void RegisterTab(IHudTab tab, int index = 0)
         {
             if (s_HUDTabs.ContainsKey(index))
             {
@@ -273,7 +273,7 @@ namespace Unity.Robotics.ROSTCPConnector
             s_HUDTabs.Add(index, tab);
         }
 
-        public void SaveLayout(string path="")
+        public void SaveLayout(string path = "")
         {
             // Print filepath if saving to user-input path; default to persistentDataPath
             if (path.Length > 0)
@@ -290,7 +290,7 @@ namespace Unity.Robotics.ROSTCPConnector
             File.WriteAllText(path, JsonUtility.ToJson(saveState));
         }
 
-        public void LoadLayout(string path="")
+        public void LoadLayout(string path = "")
         {
             if (path.Length > 0)
             {
@@ -495,18 +495,18 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             GUILayout.BeginHorizontal();
-            foreach(IHudTab tab in s_HUDTabs.Values)
+            foreach (IHudTab tab in s_HUDTabs.Values)
             {
                 bool wasSelected = tab == m_SelectedTab;
                 bool selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
-                if(selected != wasSelected)
+                if (selected != wasSelected)
                 {
-                    if(m_SelectedTab != null)
+                    if (m_SelectedTab != null)
                         m_SelectedTab.OnDeselected();
 
-                    m_SelectedTab = selected? tab: null;
+                    m_SelectedTab = selected ? tab : null;
 
-                    if(m_SelectedTab != null)
+                    if (m_SelectedTab != null)
                         m_SelectedTab.OnSelected();
                 }
             }

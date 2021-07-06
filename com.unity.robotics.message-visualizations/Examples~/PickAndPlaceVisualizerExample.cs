@@ -21,7 +21,7 @@ public class PickAndPlaceVisualizerExample : BasicVisualizer<MMoverServiceRespon
     public override void Draw(DebugDraw.Drawing drawing, MMoverServiceResponse message, MessageMetadata meta, Color color, string label)
     {
         int Idx = 1;
-        foreach(MRobotTrajectory trajectory in message.trajectories)
+        foreach (MRobotTrajectory trajectory in message.trajectories)
         {
             RobotVisualization.JointPlacement[][] jointPlacements = robotVisualization.GetJointPlacements(trajectory.joint_trajectory);
             RobotVisualization.JointPlacement[] finalPose = jointPlacements[jointPlacements.Length - 1];

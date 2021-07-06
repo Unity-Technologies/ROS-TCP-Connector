@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -74,12 +74,12 @@ namespace Unity.Robotics.MessageVisualizers
             return newDrawing;
         }
 
-        
+
         void LateUpdate()
         {
             foreach (BasicDrawing drawing in m_Dirty)
             {
-                if(drawing != null)
+                if (drawing != null)
                     drawing.Refresh();
             }
             m_Dirty.Clear();
@@ -89,8 +89,8 @@ namespace Unity.Robotics.MessageVisualizers
         {
             Color oldColor = GUI.color;
 
-            int Idx = 0; 
-            while(Idx < m_Drawings.Count)
+            int Idx = 0;
+            while (Idx < m_Drawings.Count)
             {
                 if (m_Drawings[Idx] == null)
                     m_Drawings.RemoveAt(Idx);

@@ -1,4 +1,4 @@
-﻿using RosMessageTypes.Sensor;
+using RosMessageTypes.Sensor;
 using RosMessageTypes.Std;
 using RosMessageTypes.Geometry;
 using System;
@@ -44,7 +44,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
     public enum JoyFeedback_Type_Constants
     {
-        LED    = 0,
+        LED = 0,
         RUMBLE = 1,
         BUZZER = 2,
     };
@@ -77,15 +77,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
     public enum NavSatStatus_Type_Constants
     {
-        NO_FIX =  -1,        // unable to fix position
-        FIX =      0,        // unaugmented fix
+        NO_FIX = -1,        // unable to fix position
+        FIX = 0,        // unaugmented fix
         SBAS_FIX = 1,        // with satellite-based augmentation
         GBAS_FIX = 2         // with ground-based augmentation
     };
 
     public enum NavSatStatus_Service_Constants
     {
-        GPS =     1,
+        GPS = 1,
         GLONASS = 2,
         COMPASS = 4,      // includes BeiDou.
         GALILEO = 8
@@ -107,12 +107,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
     public enum PointField_Format_Constants
     {
-        INT8    = 1,
-        UINT8   = 2,
-        INT16   = 3,
-        UINT16  = 4,
-        INT32   = 5,
-        UINT32  = 6,
+        INT8 = 1,
+        UINT8 = 2,
+        INT16 = 3,
+        UINT16 = 4,
+        INT32 = 5,
+        UINT32 = 6,
         FLOAT32 = 7,
         FLOAT64 = 8
     }
@@ -336,7 +336,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             PointMsg worldCoord = new PointMsg(x, y, 1);
 
-            return new PointMsg((float)invK[0][0]*worldCoord.x + (float)invK[0][1]*worldCoord.y + (float)invK[0][2]*worldCoord.z, (float)invK[1][0]*worldCoord.x + (float)invK[1][1]*worldCoord.y + (float)invK[1][2]*worldCoord.z, (float)invK[2][0]*worldCoord.x + (float)invK[2][1]*worldCoord.y + (float)invK[2][2]*worldCoord.z);
+            return new PointMsg((float)invK[0][0] * worldCoord.x + (float)invK[0][1] * worldCoord.y + (float)invK[0][2] * worldCoord.z, (float)invK[1][0] * worldCoord.x + (float)invK[1][1] * worldCoord.y + (float)invK[1][2] * worldCoord.z, (float)invK[2][0] * worldCoord.x + (float)invK[2][1] * worldCoord.y + (float)invK[2][2] * worldCoord.z);
         }
 
         public static PointMsg[] GetPixelsInWorld(this CameraInfoMsg cameraInfo)
@@ -362,7 +362,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return res.ToArray();
         }
 
-        public static Texture2D ApplyCameraInfoProjection(this Texture2D tex, CameraInfoMsg cameraInfo) {
+        public static Texture2D ApplyCameraInfoProjection(this Texture2D tex, CameraInfoMsg cameraInfo)
+        {
             var newTex = new Texture2D(tex.width, tex.height);
 
             double[][] formatK = new double[][] {
@@ -386,13 +387,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format="jpeg")
+        public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format = "jpeg")
         {
             var data = tex.GetRawTextureData();
             return new CompressedImageMsg(new MHeader(), format, data);
         }
 
-        public static ImageMsg ImageMsg(this Texture2D tex, string encoding="RGBA", byte isBigEndian=0, uint step=4)
+        public static ImageMsg ImageMsg(this Texture2D tex, string encoding = "RGBA", byte isBigEndian = 0, uint step = 4)
         {
             var data = tex.GetRawTextureData();
             return new ImageMsg(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
@@ -498,7 +499,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// Creates a new Texture2D that displays the current input values of a region of the JoyMsg message
         /// </summary>
         /// <returns>Texture2D corresponding to this region and layout</returns>
-        public static Texture2D TextureFromJoy(this JoyMsg message, JoyRegion region, int layout=0)
+        public static Texture2D TextureFromJoy(this JoyMsg message, JoyRegion region, int layout = 0)
         {
             Color[] colorHighlight = new Color[100];
             for (int i = 0; i < colorHighlight.Length; i++)
@@ -524,7 +525,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 if (message.buttons[layoutMap[region]] == 1)
                     tex.SetPixels(0, 0, 10, 10, colorHighlight);
             }
-            else {
+            else
+            {
                 // Axes
                 switch (region)
                 {
@@ -561,7 +563,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                         tex.SetPixels(0, y - 2, 25, 4, colorHighlight);
                         break;
                     default:
-                        tex = new Texture2D(1,1);
+                        tex = new Texture2D(1, 1);
                         break;
                 }
             }
@@ -572,7 +574,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Creates a new Texture2D that grabs a region of interest of a given texture, if applicable. Otherwise, an approximated empty texture with a highlighted region is returned.
         /// </summary>
-        public static Texture2D RegionOfInterestTexture(this RegionOfInterestMsg message, Texture2D rawTex, int height=0, int width=0)
+        public static Texture2D RegionOfInterestTexture(this RegionOfInterestMsg message, Texture2D rawTex, int height = 0, int width = 0)
         {
             int mWidth = (int)message.width;
             int mHeight = (int)message.height;

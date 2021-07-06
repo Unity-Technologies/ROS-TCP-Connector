@@ -31,7 +31,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             int n = rows; // convenience
 
-            double[][] result = MatrixDuplicate(matrix); 
+            double[][] result = MatrixDuplicate(matrix);
 
             perm = new int[n]; // set up row permutation result
             for (int i = 0; i < n; ++i) { perm[i] = i; }
@@ -53,27 +53,27 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 //}
 
                 // reader Matt V needed this:
-                for (int i = j + 1; i < n; ++i) 
+                for (int i = j + 1; i < n; ++i)
                 {
-                if (Math.Abs(result[i][j]) > colMax)
-                {
-                    colMax = Math.Abs(result[i][j]);
-                    pRow = i;
-                }
+                    if (Math.Abs(result[i][j]) > colMax)
+                    {
+                        colMax = Math.Abs(result[i][j]);
+                        pRow = i;
+                    }
                 }
                 // Not sure if this approach is needed always, or not.
 
                 if (pRow != j) // if largest value not on pivot, swap rows
                 {
-                double[] rowPtr = result[pRow];
-                result[pRow] = result[j];
-                result[j] = rowPtr;
+                    double[] rowPtr = result[pRow];
+                    result[pRow] = result[j];
+                    result[j] = rowPtr;
 
-                int tmp = perm[pRow]; // and swap perm info
-                perm[pRow] = perm[j];
-                perm[j] = tmp;
+                    int tmp = perm[pRow]; // and swap perm info
+                    perm[pRow] = perm[j];
+                    perm[j] = tmp;
 
-                toggle = -toggle; // adjust the row-swap toggle
+                    toggle = -toggle; // adjust the row-swap toggle
                 }
 
                 // --------------------------------------------------
@@ -86,27 +86,27 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 if (result[j][j] == 0.0)
                 {
-                // find a good row to swap
-                int goodRow = -1;
-                for (int row = j + 1; row < n; ++row)
-                {
-                    if (result[row][j] != 0.0)
-                    goodRow = row;
-                }
+                    // find a good row to swap
+                    int goodRow = -1;
+                    for (int row = j + 1; row < n; ++row)
+                    {
+                        if (result[row][j] != 0.0)
+                            goodRow = row;
+                    }
 
-                if (goodRow == -1)
-                    throw new Exception("Cannot use Doolittle's method");
+                    if (goodRow == -1)
+                        throw new Exception("Cannot use Doolittle's method");
 
-                // swap rows so 0.0 no longer on diagonal
-                double[] rowPtr = result[goodRow];
-                result[goodRow] = result[j];
-                result[j] = rowPtr;
+                    // swap rows so 0.0 no longer on diagonal
+                    double[] rowPtr = result[goodRow];
+                    result[goodRow] = result[j];
+                    result[j] = rowPtr;
 
-                int tmp = perm[goodRow]; // and swap perm info
-                perm[goodRow] = perm[j];
-                perm[j] = tmp;
+                    int tmp = perm[goodRow]; // and swap perm info
+                    perm[goodRow] = perm[j];
+                    perm[j] = tmp;
 
-                toggle = -toggle; // adjust the row-swap toggle
+                    toggle = -toggle; // adjust the row-swap toggle
                 }
                 // --------------------------------------------------
                 // if diagonal after swap is zero . .
@@ -115,11 +115,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 for (int i = j + 1; i < n; ++i)
                 {
-                result[i][j] /= result[j][j];
-                for (int k = j + 1; k < n; ++k)
-                {
-                    result[i][k] -= result[i][j] * result[j][k];
-                }
+                    result[i][j] /= result[j][j];
+                    for (int k = j + 1; k < n; ++k)
+                    {
+                        result[i][k] -= result[i][j] * result[j][k];
+                    }
                 }
 
 
@@ -134,7 +134,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             double[][] result = MatrixCreate(matrix.Length, matrix[0].Length);
             for (int i = 0; i < matrix.Length; ++i) // copy the values
                 for (int j = 0; j < matrix[i].Length; ++j)
-                result[i][j] = matrix[i][j];
+                    result[i][j] = matrix[i][j];
             return result;
         }
 
@@ -155,16 +155,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {
                 for (int j = 0; j < n; ++j)
                 {
-                if (i == perm[j])
-                    b[j] = 1.0;
-                else
-                    b[j] = 0.0;
+                    if (i == perm[j])
+                        b[j] = 1.0;
+                    else
+                        b[j] = 0.0;
                 }
 
                 double[] x = HelperSolve(lum, b); // 
 
                 for (int j = 0; j < n; ++j)
-                result[j][i] = x[j];
+                    result[j][i] = x[j];
             }
             return result;
         }
@@ -181,7 +181,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {
                 double sum = x[i];
                 for (int j = 0; j < i; ++j)
-                sum -= luMatrix[i][j] * x[j];
+                    sum -= luMatrix[i][j] * x[j];
                 x[i] = sum;
             }
 
@@ -190,7 +190,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             {
                 double sum = x[i];
                 for (int j = i + 1; j < n; ++j)
-                sum -= luMatrix[i][j] * x[j];
+                    sum -= luMatrix[i][j] * x[j];
                 x[i] = sum / luMatrix[i][i];
             }
 
