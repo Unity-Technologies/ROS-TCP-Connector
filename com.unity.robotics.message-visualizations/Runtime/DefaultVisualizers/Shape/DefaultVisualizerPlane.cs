@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RosMessageTypes.Shape;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;

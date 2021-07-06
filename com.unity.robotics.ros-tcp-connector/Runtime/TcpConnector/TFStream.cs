@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.MessageVisualizers;
 
@@ -66,7 +66,7 @@ public class TFStream
 
     public void Add(long timestamp, Vector3 translation, Quaternion rotation)
     {
-        TFFrame newEntry = new TFFrame( translation, rotation );
+        TFFrame newEntry = new TFFrame(translation, rotation);
         // most likely case: we're just adding a newer transform to the end of the list
         if (m_Timestamps.Count == 0 || m_Timestamps[m_Timestamps.Count - 1] < timestamp)
         {
@@ -76,7 +76,7 @@ public class TFStream
         else
         {
             int index = m_Timestamps.BinarySearch(timestamp);
-            if(index < 0)
+            if (index < 0)
             {
                 // no preexisting entry, but ~index gives us the position to insert the new entry
                 m_Timestamps.Insert(~index, timestamp);

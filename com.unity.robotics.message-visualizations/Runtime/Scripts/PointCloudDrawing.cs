@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -90,8 +90,8 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Colors32.Add(color);
             }
 
-            m_UVRs.Add(new Vector3(0.5f- k_SqrtPointFive, 0.5f, radius));
-            m_UVRs.Add(new Vector3(1, 1.5f+ k_SqrtPointFive, radius));
+            m_UVRs.Add(new Vector3(0.5f - k_SqrtPointFive, 0.5f, radius));
+            m_UVRs.Add(new Vector3(1, 1.5f + k_SqrtPointFive, radius));
             m_UVRs.Add(new Vector3(1, -0.5f - k_SqrtPointFive, radius));
 
             m_Triangles.Add(start + 0);

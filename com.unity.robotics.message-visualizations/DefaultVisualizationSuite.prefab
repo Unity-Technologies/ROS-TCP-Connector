@@ -247,6 +247,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3885009520023495739}
   - component: {fileID: 8652144247881302430}
+  - component: {fileID: 4505490672943639900}
   m_Layer: 0
   m_Name: DefaultVisualizationSuite
   m_TagString: Untagged
@@ -288,6 +289,18 @@ MonoBehaviour:
   axesScale: 0.1
   lineThickness: 0.01
   color: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &4505490672943639900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aff7c974a44ec46aba7f7125ea52977b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7636441891634033707
 GameObject:
   m_ObjectHideFlags: 0

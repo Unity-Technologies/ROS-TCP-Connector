@@ -13,7 +13,7 @@ namespace Unity.Robotics.MessageVisualizers
             get => message;
         }
         public MessageMetadata meta { get; }
-        
+
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
         DrawingVisualFactory<TargetMessageType> m_Factory;
@@ -32,7 +32,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_GUIAction == null)
             {
-                m_GUIAction = m_Factory.CreateGUI(message, meta);    
+                m_GUIAction = m_Factory.CreateGUI(message, meta);
             }
             m_GUIAction();
         }
@@ -46,7 +46,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             m_BasicDrawing = null;
         }
-        
+
         public void CreateDrawing()
         {
             if (m_BasicDrawing == null)

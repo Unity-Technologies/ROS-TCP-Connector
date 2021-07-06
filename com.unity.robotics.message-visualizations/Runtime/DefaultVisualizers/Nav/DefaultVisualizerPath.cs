@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
