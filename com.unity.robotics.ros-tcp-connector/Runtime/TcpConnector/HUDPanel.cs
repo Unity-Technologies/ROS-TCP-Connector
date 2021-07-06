@@ -25,7 +25,13 @@ namespace Unity.Robotics.ROSTCPConnector
         static Dictionary<string, string> s_MessageNamesByTopic = new Dictionary<string, string>();
         public static GUIStyle s_BoldStyle;
         static GUIStyle m_ConnectionArrowStyle;
-        static List<IHudTab> s_HUDTabs = new List<IHudTab> { new TopicsHudTab() };
+        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab> { { (int)HudTabIndices.Topics, new TopicsHudTab() } };
+        public enum HudTabIndices
+        {
+            Topics = -3,
+            TF = -2,
+            Settings = -1
+        }
 
         List<MessageViewState> activeServices = new List<MessageViewState>();
         internal string host;
@@ -160,7 +166,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ViewSrvs = GUILayout.Toggle(m_ViewSrvs, "View services status");
 
             GUILayout.BeginHorizontal();
-            foreach (var tab in s_HUDTabs)
+            foreach (IHudTab tab in s_HUDTabs.Values)
             {
                 var wasSelected = tab == m_SelectedTab;
                 var selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
@@ -256,22 +262,49 @@ namespace Unity.Robotics.ROSTCPConnector
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
         }
 
-        public static void RegisterTab(IHudTab tab)
+        public static void RegisterTab(IHudTab tab, int index = 0)
         {
-            s_HUDTabs.Add(tab);
+            if (s_HUDTabs.ContainsKey(index))
+            {
+                Debug.LogWarning($"HUDPanel already contains a tab registered at index {index}! Registering at index {s_HUDTabs.Count} instead.");
+                index = s_HUDTabs.Count;
+            }
+
+            s_HUDTabs.Add(index, tab);
         }
 
-        void SaveLayout()
+        public void SaveLayout(string path = "")
         {
-            var saveState = new HUDLayoutSave();
-            saveState.AddRules(AllTopics.Values);
-            File.WriteAllText(LayoutFilePath, JsonUtility.ToJson(saveState));
+            // Print filepath if saving to user-input path; default to persistentDataPath
+            if (path.Length > 0)
+            {
+                Debug.Log($"Saved visualizations layout to {path}");
+            }
+            else
+            {
+                path = LayoutFilePath;
+            }
+
+            HUDLayoutSave saveState = new HUDLayoutSave { };
+            saveState.AddRules(s_AllTopics.Values);
+            File.WriteAllText(path, JsonUtility.ToJson(saveState));
         }
 
-        void LoadLayout()
+        public void LoadLayout(string path = "")
         {
-            if (File.Exists(LayoutFilePath))
-                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(LayoutFilePath)));
+            if (path.Length > 0)
+            {
+                Debug.Log($"Loaded visualizations layout from {path}");
+            }
+            else
+            {
+                path = LayoutFilePath;
+            }
+
+            if (File.Exists(path))
+            {
+                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(File.ReadAllText(path)));
+            }
         }
 
         void LoadLayout(HUDLayoutSave saveState)
@@ -457,8 +490,30 @@ namespace Unity.Robotics.ROSTCPConnector
             if (showElapsedTime)
                 GUILayout.Label($"{msgView.label} ({Time.time - msgView.timestamp})", m_LabelStyle);
             else
+            {
                 GUILayout.Label(msgView.label, m_LabelStyle);
-            GUILayout.Label(msgView.message.ToString(), m_MessageStyle);
+            }
+
+            GUILayout.BeginHorizontal();
+            foreach (IHudTab tab in s_HUDTabs.Values)
+            {
+                bool wasSelected = tab == m_SelectedTab;
+                bool selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
+                if (selected != wasSelected)
+                {
+                    if (m_SelectedTab != null)
+                        m_SelectedTab.OnDeselected();
+
+                    m_SelectedTab = selected ? tab : null;
+
+                    if (m_SelectedTab != null)
+                        m_SelectedTab.OnSelected();
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            if (m_SelectedTab != null)
+                m_SelectedTab.OnGUI(this);
 
             GUILayout.EndVertical();
             GUI.EndScrollView();

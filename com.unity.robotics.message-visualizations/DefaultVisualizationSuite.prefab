@@ -377,6 +377,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3885009520023495739}
   - component: {fileID: 8652144247881302430}
+  - component: {fileID: 8743346950228841426}
   m_Layer: 0
   m_Name: DefaultVisualizationSuite
   m_TagString: Untagged
@@ -424,6 +425,18 @@ MonoBehaviour:
   axesScale: 0.1
   lineThickness: 0.01
   color: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &8743346950228841426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3885009520023495737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aff7c974a44ec46aba7f7125ea52977b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5021183695555063441
 GameObject:
   m_ObjectHideFlags: 0
@@ -857,7 +870,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 11400000, guid: f53165fb8c4d340e3ad973ec7784242e, type: 2}
+  settings: {fileID: 0}
 --- !u!114 &5076905229583966791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -900,7 +913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 11400000, guid: 1d15599f177254e03b3698260c33d600, type: 2}
+  settings: {fileID: 0}
 --- !u!114 &6838279059595972066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -940,7 +953,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 11400000, guid: 1b7359921b91a4830ae57b1c5b22caeb, type: 2}
+  settings: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &7706973890697128904
 MonoBehaviour:
@@ -955,7 +968,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 11400000, guid: f1d2df8bcd83d4410b03e8a6ddd5eac4, type: 2}
+  settings: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &8415320985331918883
 MonoBehaviour:
