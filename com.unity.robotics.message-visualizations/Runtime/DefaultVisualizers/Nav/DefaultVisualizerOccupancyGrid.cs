@@ -1,21 +1,22 @@
-﻿using RosMessageTypes.Nav;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerOccupancyGrid : DrawingVisualFactory<MOccupancyGrid>
+public class DefaultVisualizerOccupancyGrid : DrawingVisualFactory<OccupancyGridMsg>
 {
-    public override void Draw(BasicDrawing drawing, MOccupancyGrid message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, OccupancyGridMsg message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing);
     }
 
-    public override Action CreateGUI(MOccupancyGrid message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(OccupancyGridMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        message.info.GUI();
-    };
+        return () =>
+        {
+            message.header.GUI();
+            message.info.GUI();
+        };
+    }
 }

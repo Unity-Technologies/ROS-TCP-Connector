@@ -1,15 +1,16 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerTemperature : GuiVisualFactory<MTemperature>
+public class DefaultVisualizerTemperature : GuiVisualFactory<TemperatureMsg>
 {
-    public override Action CreateGUI(MTemperature message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(TemperatureMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
-    };
+        return () =>
+        {
+            message.header.GUI();
+            GUILayout.Label($"Temperature: {message.temperature} (ºC)\nVariance: {message.variance}");
+        };
+    }
 }

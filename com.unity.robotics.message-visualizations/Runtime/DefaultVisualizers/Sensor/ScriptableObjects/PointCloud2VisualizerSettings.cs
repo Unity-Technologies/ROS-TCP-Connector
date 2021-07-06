@@ -26,5 +26,5 @@ public class PointCloud2VisualizerSettings : ScriptableObject
 
     public bool useRgbChannel;
     public bool useSizeChannel;
-    public MPointField[] channels;
+    public PointFieldMsg[] channels;
 }

@@ -10,7 +10,7 @@ The ROSGeometry namespace contains code to make it easier to work with these var
 For example, if you need to convert an object's position into the FLU coordinate frame, you might write:
 
     Vector3<FLU> rosPos = obj.transform.position.To<FLU>();
-   
+
 An explicit cast, or calling the constructor, would also produce the same result.
 
     Vector3<FLU> rosPos2 = (Vector3<FLU>)obj.transform.position;

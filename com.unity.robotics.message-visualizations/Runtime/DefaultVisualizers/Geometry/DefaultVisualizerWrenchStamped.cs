@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerWrenchStamped : DrawingVisualFactory<MWrenchStamped>
+    public class DefaultVisualizerWrenchStamped : DrawingVisualFactory<WrenchStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;
@@ -14,12 +14,12 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
 
-        public override void Draw(BasicDrawing drawing, MWrenchStamped message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, WrenchStampedMsg message, MessageMetadata meta)
         {
             message.wrench.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 
-        public override Action CreateGUI(MWrenchStamped message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(WrenchStampedMsg message, MessageMetadata meta) => () =>
         {
             message.header.GUI();
             message.wrench.GUI();

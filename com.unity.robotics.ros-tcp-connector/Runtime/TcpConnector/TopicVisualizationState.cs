@@ -104,7 +104,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     m_Contents.ShowDrawing(true);
                 }
-                
+
                 m_DrawingUpdatedAtFrameIndex = meta.FrameIndex;
             }
         }
@@ -141,7 +141,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
             }
         }
-        
+
         public void DrawWindow()
         {
             if (m_Contents != null)
@@ -193,7 +193,7 @@ namespace Unity.Robotics.ROSTCPConnector
             var rosMessageName = HUDPanel.GetMessageNameByTopic(Topic);
             if (!ROSConnection.instance.HasSubscriber(Topic))
             {
-                var messageConstructor = MessageRegistry.GetConstructor(rosMessageName);
+                var messageConstructor = MessageRegistry.GetDeserializeFunction(rosMessageName);
                 if (messageConstructor == null)
                 {
                     Debug.LogError("No known message class for " + rosMessageName);
@@ -322,7 +322,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         m_Visual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
                     }
-                }   
+                }
 
                 return m_Visual;
             }

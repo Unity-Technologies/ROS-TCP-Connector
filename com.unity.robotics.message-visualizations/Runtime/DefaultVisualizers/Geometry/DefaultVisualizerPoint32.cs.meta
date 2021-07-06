@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Geometry/DefaultVisualizerPoint32.cs.meta
 guid: ca06d2332e51924479738a34919115b6
-=======
-guid: 0400bf0ca34bd204bb4239323d32585b
->>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/Diagnostic/msg/MDiagnosticArray.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2

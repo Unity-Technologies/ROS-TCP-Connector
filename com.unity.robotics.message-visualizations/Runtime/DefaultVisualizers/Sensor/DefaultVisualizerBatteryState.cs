@@ -1,17 +1,15 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerBatteryState : GuiVisualFactory<MBatteryState>
+public class DefaultVisualizerBatteryState : GuiVisualFactory<BatteryStateMsg>
 {
-    public override Action CreateGUI(MBatteryState message, MessageMetadata meta) 
+    public override Action CreateGUI(BatteryStateMsg message, MessageMetadata meta)
     {
-        string voltage = String.Join(", ", message.cell_voltage);
-        string temp = String.Join(", ", message.cell_temperature);
+        var voltage = string.Join(", ", message.cell_voltage);
+        var temp = string.Join(", ", message.cell_temperature);
 
         return () =>
         {

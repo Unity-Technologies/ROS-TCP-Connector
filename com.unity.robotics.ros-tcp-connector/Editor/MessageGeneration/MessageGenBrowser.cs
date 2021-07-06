@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
@@ -269,7 +269,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
             if (numActions > 0)
                 buildStrings.Add(numActions + " action" + (numActions > 1 ? "s" : ""));
 
-            if(buildStrings.Count > 0)
+            if (buildStrings.Count > 0)
                 buildLabel = "Build " + string.Join(", ", buildStrings.Select(x => x.ToString()));
 
             return new CachedEntry()
@@ -294,7 +294,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
                 case ".action":
                     string[] builtActionPaths = ActionAutoGen.GetActionClassPaths(path, MessageGenBrowserSettings.Get().outputPath);
                     return builtActionPaths.All(file => File.Exists(file)) ? CachedEntryStatus.BuiltActionFile : CachedEntryStatus.UnbuiltActionFile;
-                  }
+            }
 
             return CachedEntryStatus.Ignored;
         }

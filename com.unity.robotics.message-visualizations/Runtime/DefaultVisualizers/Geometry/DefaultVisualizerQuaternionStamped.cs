@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerQuaternionStamped : DrawingVisualFactory<MQuaternionStamped>
+    public class DefaultVisualizerQuaternionStamped : DrawingVisualFactory<QuaternionStampedMsg>
     {
         [SerializeField]
         float m_Size = 0.01f;
@@ -22,16 +19,19 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, MQuaternionStamped message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, QuaternionStampedMsg message, MessageMetadata meta)
         {
             message.quaternion.Draw<FLU>(drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), transform.position, SelectColor(m_Color, meta), m_Size);
         }
 
-        public override Action CreateGUI(MQuaternionStamped message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(QuaternionStampedMsg message, MessageMetadata meta)
         {
-            message.header.GUI();
-            message.quaternion.GUI();
-        };
+            return () =>
+            {
+                message.header.GUI();
+                message.quaternion.GUI();
+            };
+        }
     }
 }

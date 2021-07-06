@@ -1,12 +1,10 @@
-﻿using RosMessageTypes.Geometry;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseArray : DrawingVisualFactory<MPoseArray>
+public class DefaultVisualizerPoseArray : DrawingVisualFactory<PoseArrayMsg>
 {
     [SerializeField]
     float m_Size = 0.1f;
@@ -14,13 +12,16 @@ public class DefaultVisualizerPoseArray : DrawingVisualFactory<MPoseArray>
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
 
-    public override void Draw(BasicDrawing drawing, MPoseArray message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, PoseArrayMsg message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public override Action CreateGUI(MPoseArray message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(PoseArrayMsg message, MessageMetadata meta)
     {
-        message.GUI();
-    };
+        return () =>
+        {
+            message.GUI();
+        };
+    }
 }

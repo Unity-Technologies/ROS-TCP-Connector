@@ -1,14 +1,15 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerNavSatStatus : GuiVisualFactory<MNavSatStatus>
+public class DefaultVisualizerNavSatStatus : GuiVisualFactory<NavSatStatusMsg>
 {
-    public override Action CreateGUI(MNavSatStatus message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(NavSatStatusMsg message, MessageMetadata meta)
     {
-        message.GUI();
-    };
+        return () =>
+        {
+            message.GUI();
+        };
+    }
 }

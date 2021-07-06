@@ -48,7 +48,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration
             if (!fullPath.StartsWith(dataPath))
                 return "";
 
-            return fullPath.Substring(dataPath.Length+1);
+            return fullPath.Substring(dataPath.Length + 1);
         }
     }
 }

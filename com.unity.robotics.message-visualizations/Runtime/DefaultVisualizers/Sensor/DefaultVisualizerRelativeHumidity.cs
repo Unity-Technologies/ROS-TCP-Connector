@@ -1,15 +1,16 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerRelativeHumidity : GuiVisualFactory<MRelativeHumidity>
+public class DefaultVisualizerRelativeHumidity : GuiVisualFactory<RelativeHumidityMsg>
 {
-    public override Action CreateGUI(MRelativeHumidity message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(RelativeHumidityMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");
-    };
+        return () =>
+        {
+            message.header.GUI();
+            GUILayout.Label($"Relative Humidity: {message.relative_humidity}\nVariance: {message.variance}");
+        };
+    }
 }

@@ -9,6 +9,7 @@ using RosMessageTypes.Visualization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RosMessageTypes.BuiltinInterfaces;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
@@ -32,7 +33,7 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
-        public static void DrawAxisVectors<C>(BasicDrawing drawing, MVector3 position, MQuaternion rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
+        public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();
             Quaternion unityRotation = rotation.From<C>();
@@ -54,24 +55,24 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static void Draw<C>(this MAccel message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this AccelMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
             drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
             DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
         }
 
-        public static void Draw<C>(this MGridCells message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             DrawPointCloud<C>(message.cells, drawing, color, radius);
         }
 
-        public static void Draw<C>(this MImage message, BasicDrawing drawing, Color color, MPoint[] points, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this ImageMsg message, BasicDrawing drawing, Color color, PointMsg[] points, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             DrawPointCloud<C>(points, drawing, color, radius);
         }
 
-        public static void Draw<C>(this MImu message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
             message.orientation.Draw<C>(drawing, frame.translation);
@@ -79,28 +80,28 @@ namespace Unity.Robotics.MessageVisualizers
             DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
         }
 
-        public static void DrawPointCloud<C>(MPoint[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
-            foreach (MPoint p in points)
+            foreach (PointMsg p in points)
                 pointCloud.AddPoint(p.From<C>(), color, radius);
             pointCloud.Bake();
         }
 
-        public static void DrawPointCloud<C>(MPoint32[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void DrawPointCloud<C>(Point32Msg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
-            foreach (MPoint32 p in points)
+            foreach (Point32Msg p in points)
                 pointCloud.AddPoint(p.From<C>(), color, radius);
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MPointCloud message, BasicDrawing drawing, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointCloudMsg message, BasicDrawing drawing, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud(message.points.Length), color, cConfs);
         }
 
-        public static void Draw<C>(this MPointCloud message, PointCloudDrawing pointCloud, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointCloudMsg message, PointCloudDrawing pointCloud, Color color, PointCloudVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.points.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -136,7 +137,7 @@ namespace Unity.Robotics.MessageVisualizers
 
                                     var colG = Mathf.InverseLerp(cConfs.gRange[0], cConfs.gRange[1], message.channels[channelToIdx[cConfs.gChannel]].values[i]);
                                     var g = Mathf.InverseLerp(0, 1, colG);
-                                    
+
                                     var colB = Mathf.InverseLerp(cConfs.bRange[0], cConfs.bRange[1], message.channels[channelToIdx[cConfs.bChannel]].values[i]);
                                     var b = Mathf.InverseLerp(0, 1, colB);
                                     color = new Color(r, g, b, 1);
@@ -168,12 +169,12 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MPointCloud2 message, BasicDrawing drawing, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointCloud2Msg message, BasicDrawing drawing, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud((int)(message.data.Length / message.point_step)), color, cConfs);
         }
 
-        public static void Draw<C>(this MPointCloud2 message, PointCloudDrawing pointCloud, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointCloud2Msg message, PointCloudDrawing pointCloud, Color color, PointCloud2VisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
             for (int i = 0; i < message.fields.Length; i++)
@@ -192,7 +193,7 @@ namespace Unity.Robotics.MessageVisualizers
             int gChannelOffset = (int)message.fields[channelToIdx[cConfs.gChannel]].offset;
             int bChannelOffset = (int)message.fields[channelToIdx[cConfs.bChannel]].offset;
             int sizeChannelOffset = (int)message.fields[channelToIdx[cConfs.sizeChannel]].offset;
-            for (int i = 0; i < message.data.Length / message.point_step; i++) 
+            for (int i = 0; i < message.data.Length / message.point_step; i++)
             {
                 int iPointStep = i * (int)message.point_step;
                 var x = BitConverter.ToSingle(message.data, iPointStep + xChannelOffset);
@@ -221,7 +222,7 @@ namespace Unity.Robotics.MessageVisualizers
 
                                 var colG = Mathf.InverseLerp(cConfs.gRange[0], cConfs.gRange[1], BitConverter.ToSingle(message.data, iPointStep + gChannelOffset));
                                 var g = Mathf.InverseLerp(0, 1, colG);
-                                
+
                                 var colB = Mathf.InverseLerp(cConfs.bRange[0], cConfs.bRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
                                 var b = Mathf.InverseLerp(0, 1, colB);
                                 color = new Color(r, g, b, 1);
@@ -243,16 +244,16 @@ namespace Unity.Robotics.MessageVisualizers
             //pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MMagneticField message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MagneticFieldMsg message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
         }
-        public static void Draw<C>(this MLaserScan message, BasicDrawing drawing, LaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this LaserScanMsg message, BasicDrawing drawing, LaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MLaserScan message, PointCloudDrawing pointCloud, LaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this LaserScanMsg message, PointCloudDrawing pointCloud, LaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -275,11 +276,11 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void Draw<C>(this MMarker marker, BasicDrawing drawing) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MarkerMsg marker, BasicDrawing drawing) where C : ICoordinateSpace, new()
         {
             switch (marker.type)
             {
-                case MMarker.ARROW:
+                case MarkerMsg.ARROW:
                     Vector3 startPoint;
                     Vector3 endPoint;
                     if (marker.points.Length >= 2)
@@ -302,19 +303,19 @@ namespace Unity.Robotics.MessageVisualizers
                         drawing.DrawArrow(startPoint, endPoint, marker.color.ToUnityColor(), (float)marker.scale.y);
                     }
                     break;
-                case MMarker.CUBE:
+                case MarkerMsg.CUBE:
                     drawing.DrawCuboid(marker.pose.position.From<C>(), marker.scale.From<C>() * 0.5f, marker.pose.orientation.From<C>(), marker.color.ToUnityColor());
                     break;
-                case MMarker.SPHERE:
+                case MarkerMsg.SPHERE:
                     drawing.DrawSpheroid(marker.pose.position.From<C>(), marker.scale.From<C>() * 0.5f, marker.pose.orientation.From<C>(), marker.color.ToUnityColor());
                     break;
-                case MMarker.CYLINDER:
+                case MarkerMsg.CYLINDER:
                     drawing.transform.position = marker.pose.position.From<C>();
                     drawing.transform.rotation = marker.pose.orientation.From<C>();
                     drawing.transform.localScale = marker.scale.From<C>();
                     drawing.DrawCylinder(new Vector3(0, -0.5f, 0), new Vector3(0, 0.5f, 0), marker.color.ToUnityColor(), 0.5f);
                     break;
-                case MMarker.LINE_STRIP:
+                case MarkerMsg.LINE_STRIP:
                     drawing.transform.position = marker.pose.position.From<C>();
                     drawing.transform.rotation = marker.pose.orientation.From<C>();
                     if (marker.colors.Length == marker.points.Length)
@@ -326,7 +327,7 @@ namespace Unity.Robotics.MessageVisualizers
                         drawing.DrawLineStrip(marker.points.Select(p => p.From<C>()).ToArray(), marker.color.ToUnityColor(), (float)marker.scale.x);
                     }
                     break;
-                case MMarker.LINE_LIST:
+                case MarkerMsg.LINE_LIST:
                     drawing.transform.position = marker.pose.position.From<C>();
                     drawing.transform.rotation = marker.pose.orientation.From<C>();
                     if (marker.colors.Length == marker.points.Length)
@@ -338,7 +339,7 @@ namespace Unity.Robotics.MessageVisualizers
                         drawing.DrawLines(marker.points.Select(p => p.From<C>()).ToArray(), marker.color.ToUnityColor(), (float)marker.scale.x);
                     }
                     break;
-                case MMarker.CUBE_LIST:
+                case MarkerMsg.CUBE_LIST:
                     {
                         drawing.transform.position = marker.pose.position.From<C>();
                         drawing.transform.rotation = marker.pose.orientation.From<C>();
@@ -360,7 +361,7 @@ namespace Unity.Robotics.MessageVisualizers
                         }
                     }
                     break;
-                case MMarker.SPHERE_LIST:
+                case MarkerMsg.SPHERE_LIST:
                     {
                         drawing.transform.position = marker.pose.position.From<C>();
                         drawing.transform.rotation = marker.pose.orientation.From<C>();
@@ -382,7 +383,7 @@ namespace Unity.Robotics.MessageVisualizers
                         }
                     }
                     break;
-                case MMarker.POINTS:
+                case MarkerMsg.POINTS:
                     {
                         PointCloudDrawing cloud = drawing.AddPointCloud(marker.points.Length);
                         cloud.transform.position = marker.pose.position.From<C>();
@@ -406,12 +407,12 @@ namespace Unity.Robotics.MessageVisualizers
                         cloud.Bake();
                     }
                     break;
-                case MMarker.TEXT_VIEW_FACING:
+                case MarkerMsg.TEXT_VIEW_FACING:
                     drawing.DrawLabel(marker.text, marker.pose.position.From<C>(), marker.color.ToUnityColor());
                     break;
-                case MMarker.MESH_RESOURCE:
+                case MarkerMsg.MESH_RESOURCE:
                     break;
-                case MMarker.TRIANGLE_LIST:
+                case MarkerMsg.TRIANGLE_LIST:
                     {
                         drawing.transform.position = marker.pose.position.From<C>();
                         drawing.transform.rotation = marker.pose.orientation.From<C>();
@@ -446,7 +447,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this MMesh message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MeshMsg message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
         {
             Mesh mesh = new Mesh();
             mesh.vertices = message.vertices.Select(v => v.From<C>()).ToArray();
@@ -457,12 +458,12 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
         }
 
-        public static void Draw<C>(this MMultiEchoLaserScan message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MultiEchoLaserScanMsg message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MMultiEchoLaserScan message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
+        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C: ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -485,7 +486,7 @@ namespace Unity.Robotics.MessageVisualizers
                     {
                         radius = Mathf.InverseLerp(cConfs.sizeRange[0], cConfs.sizeRange[1], message.intensities[i].echoes[j]);
                     }
-                    
+
                     pointCloud.AddPoint(worldPoint, c, radius);
                 }
                 angle -= message.angle_increment;
@@ -496,7 +497,7 @@ namespace Unity.Robotics.MessageVisualizers
         static Mesh s_OccupancyGridMesh;
         static Material s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/Color"));
 
-        public static void Draw<C>(this MOccupancyGrid message, BasicDrawing drawing) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this OccupancyGridMsg message, BasicDrawing drawing) where C : ICoordinateSpace, new()
         {
             Vector3 origin = message.info.origin.position.From<C>();
             Quaternion rotation = message.info.origin.orientation.From<C>();
@@ -525,7 +526,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
         }
 
-        public static void Draw<C>(this MOdometry message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             // TODO
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -538,17 +539,17 @@ namespace Unity.Robotics.MessageVisualizers
             message.twist.twist.Draw<C>(drawing, color, pos, lengthScale, sphereRadius, thickness);
         }
 
-        public static void Draw<C>(this MPath message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
         }
 
-        public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PlaneMsg message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing, color, (center != null) ? center.transform.position : Vector3.zero, size);
         }
 
-        public static void Draw<C>(this MPlane message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PlaneMsg message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
         {
             Vector3 normal = new Vector3<C>((float)message.coef[0], (float)message.coef[1], (float)message.coef[2]).toUnity;
             float d = (float)message.coef[3];
@@ -563,32 +564,32 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawQuad(center - diagonalA, center + diagonalB, center + diagonalA, center - diagonalB, color, true);
         }
 
-        public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointMsg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MPoint message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PointMsg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
 
-        public static void Draw<C>(this MPoint32 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this Point32Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MPoint32 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this Point32Msg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
 
-        public static void Draw<C>(this MPolygon message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PolygonMsg message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 prevPos = message.points[message.points.Length - 1].From<C>();
-            foreach (MPoint32 p in message.points)
+            foreach (Point32Msg p in message.points)
             {
                 Vector3 curPos = p.From<C>();
                 drawing.DrawLine(prevPos, curPos, color, thickness);
@@ -596,39 +597,39 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this MPose message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PoseMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             DrawAxisVectors<C>(
                 drawing,
-                new MVector3(message.position.x, message.position.y, message.position.z),
+                new Vector3Msg(message.position.x, message.position.y, message.position.z),
                 message.orientation,
                 size,
                 drawUnityAxes
             );
         }
 
-        public static void Draw<C>(this MPoseArray message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this PoseArrayMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
-            foreach (MPose pose in message.poses)
+            foreach (PoseMsg pose in message.poses)
             {
                 pose.Draw<C>(drawing, size, drawUnityAxes);
             }
         }
 
-        public static void Draw<C>(this MQuaternion message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
+        public static void Draw<C>(this QuaternionMsg message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
     where C : ICoordinateSpace, new()
         {
             Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
-        public static void Draw<C>(this MQuaternion message, BasicDrawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
+        public static void Draw<C>(this QuaternionMsg message, BasicDrawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
             DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
-        public static void Draw<C>(this MRange message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
+        public static void Draw<C>(this RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -644,62 +645,62 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
         }
 
-        public static void Draw<C>(this MSolidPrimitive message, BasicDrawing drawing, Color color, GameObject origin = null)
+        public static void Draw<C>(this SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)
             where C : ICoordinateSpace, new()
         {
             Vector3 originPosition = origin != null ? origin.transform.position : Vector3.zero;
             Quaternion originRotation = origin != null ? origin.transform.rotation : Quaternion.identity;
             switch (message.type)
             {
-                case MSolidPrimitive.BOX:
+                case SolidPrimitiveMsg.BOX:
                     drawing.DrawCuboid(
                         originPosition,
                         new Vector3<C>(
-                            (float)message.dimensions[MSolidPrimitive.BOX_X] * 0.5f,
-                            (float)message.dimensions[MSolidPrimitive.BOX_Y] * 0.5f,
-                            (float)message.dimensions[MSolidPrimitive.BOX_Z] * 0.5f).toUnity,
+                            (float)message.dimensions[SolidPrimitiveMsg.BOX_X] * 0.5f,
+                            (float)message.dimensions[SolidPrimitiveMsg.BOX_Y] * 0.5f,
+                            (float)message.dimensions[SolidPrimitiveMsg.BOX_Z] * 0.5f).toUnity,
                         originRotation,
                         color
                     );
                     break;
-                case MSolidPrimitive.SPHERE:
-                    drawing.DrawSphere(originPosition, color, (float)message.dimensions[MSolidPrimitive.SPHERE_RADIUS]);
+                case SolidPrimitiveMsg.SPHERE:
+                    drawing.DrawSphere(originPosition, color, (float)message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]);
                     break;
-                case MSolidPrimitive.CYLINDER:
-                    Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[MSolidPrimitive.CYLINDER_HEIGHT] * 0.5f;
-                    drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[MSolidPrimitive.CYLINDER_RADIUS]);
+                case SolidPrimitiveMsg.CYLINDER:
+                    Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT] * 0.5f;
+                    drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]);
                     break;
-                case MSolidPrimitive.CONE:
-                    Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[MSolidPrimitive.CONE_HEIGHT] * 0.5f;
-                    drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[MSolidPrimitive.CONE_RADIUS]);
+                case SolidPrimitiveMsg.CONE:
+                    Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT] * 0.5f;
+                    drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
                     break;
             }
         }
 
-        public static void Draw<C>(this MTransform transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this TransformMsg transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
 
-        public static void Draw<C>(this MTwist message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this TwistMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(origin, origin + message.linear.From<C>() * lengthScale, color, thickness);
             DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
         }
 
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 point = message.From<C>();
             drawing.DrawPoint(point, color, size);
             drawing.DrawLabel(label, point, color, size * 1.5f);
         }
 
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }
 
-        public static void Draw<C>(this MVector3 message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 point = message.From<C>();
             if (origin != null)
@@ -707,8 +708,8 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawPoint(point, color, size);
             drawing.DrawLabel(label, point, color, size * 1.5f);
         }
-        
-        public static void Draw<C>(this MWrench message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+
+        public static void Draw<C>(this WrenchMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(origin, origin + message.force.From<C>() * lengthScale, color, thickness);
             DrawAngularVelocityArrow(drawing, message.torque.From<C>(), origin, color, sphereRadius, thickness);
@@ -757,13 +758,13 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawArrow(points[points.Count - 1], sphereCenter + currentRotation * Vector3.forward * sphereRadius, color, arrowThickness);
         }
 
-        public static void GUI(this MAccel message)
+        public static void GUI(this AccelMsg message)
         {
             message.linear.GUI("Linear");
             message.angular.GUI("Angular");
         }
 
-        public static void GUI(this MColorRGBA message, bool withText = true)
+        public static void GUI(this ColorRGBAMsg message, bool withText = true)
         {
             Color oldBackgroundColor = UnityEngine.GUI.color;
 
@@ -781,7 +782,7 @@ namespace Unity.Robotics.MessageVisualizers
             "OK","WARN","ERROR","STALE"
         };
 
-        public static void GUI(this MDiagnosticStatus message)
+        public static void GUI(this DiagnosticStatusMsg message)
         {
             string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
             GUILayout.Label(message.hardware_id.Length > 0 ? $"Status of {message.name}|{message.hardware_id}: {status}" : $"Status of {message.name}: {status}");
@@ -792,10 +793,10 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUI(this MDiagnosticArray message)
+        public static void GUI(this DiagnosticArrayMsg message)
         {
             message.header.GUI();
-            foreach (MDiagnosticStatus status in message.status)
+            foreach (DiagnosticStatusMsg status in message.status)
                 status.GUI();
         }
 
@@ -804,29 +805,34 @@ namespace Unity.Robotics.MessageVisualizers
             "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
         };
 
-        public static void GUI(this MGoalID message)
+        public static void GUI(this GoalIDMsg message)
         {
             message.stamp.GUI();
             GUILayout.Label($"ID: {message.id}");
         }
 
-        public static void GUI(this MGoalStatus message)
+        public static void GUI(this GoalStatusMsg message)
         {
             string status = (message.status >= 0 && message.status < s_GoalStatusTable.Length) ? s_GoalStatusTable[message.status] : $"INVALID({message.status})";
             GUILayout.Label($"Status: {message.goal_id} = {status}");
             GUILayout.Label(message.text);
         }
 
-        public static void GUI(this MGoalStatusArray message)
+        public static void GUI(this GoalStatusArrayMsg message)
         {
             message.header.GUI();
-            foreach (MGoalStatus status in message.status_list)
+            foreach (GoalStatusMsg status in message.status_list)
                 status.GUI();
         }
 
-        public static void GUI(this MHeader message)
+        public static void GUI(this HeaderMsg message)
         {
+#if !ROS2
             GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
+#else
+            GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString()}>");
+#endif
+
         }
 
         public static void GUITexture(this Texture2D tex)
@@ -839,7 +845,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUI(this MInertia message)
+        public static void GUI(this InertiaMsg message)
         {
             GUILayout.Label($"Mass: {message.m}kg");
             message.com.GUI();
@@ -860,12 +866,12 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        public static void GUI(this MJoyFeedback message)
+        public static void GUI(this JoyFeedbackMsg message)
         {
             GUILayout.Label($"Type: {(JoyFeedback_Type_Constants)message.type}\nID: {message.id}\nIntensity: {message.intensity}");
         }
 
-        public static void GUI(this MMapMetaData message)
+        public static void GUI(this MapMetaDataMsg message)
         {
             GUILayout.Label($"Load time: {message.map_load_time.ToTimestampString()}");
             GUILayout.Label($"Resolution: {message.resolution}");
@@ -873,26 +879,26 @@ namespace Unity.Robotics.MessageVisualizers
             message.origin.GUI();
         }
 
-        public static void GUI(this MMesh message)
+        public static void GUI(this MeshMsg message)
         {
-            foreach (MPoint p in message.vertices)
+            foreach (PointMsg p in message.vertices)
                 p.GUI();
-            foreach (MMeshTriangle tri in message.triangles)
+            foreach (MeshTriangleMsg tri in message.triangles)
                 tri.GUI();
         }
 
-        public static void GUI(this MMeshTriangle message)
+        public static void GUI(this MeshTriangleMsg message)
         {
             string text = "[" + String.Join(", ", message.vertex_indices.Select(i => i.ToString()).ToArray()) + "]";
             GUILayout.Label(text);
         }
 
-        public static void GUI(this MNavSatStatus message)
+        public static void GUI(this NavSatStatusMsg message)
         {
             GUILayout.Label($"Status: {(NavSatStatus_Type_Constants)message.status}\nService: {(NavSatStatus_Service_Constants)message.service}");
         }
 
-        public static void GUI(this MPoint message, string name)
+        public static void GUI(this PointMsg message, string name)
         {
             string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
             if (name == null || name == "")
@@ -901,12 +907,12 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"{name}: {body}");
         }
 
-        public static void GUI(this MPoint message)
+        public static void GUI(this PointMsg message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void GUI(this MPoint32 message, string name)
+        public static void GUI(this Point32Msg message, string name)
         {
             string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
             if (name == null || name == "")
@@ -915,26 +921,26 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"{name}: {body}");
         }
 
-        public static void GUI(this MPoint32 message)
+        public static void GUI(this Point32Msg message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void GUI(this MPointField message)
+        public static void GUI(this PointFieldMsg message)
         {
             GUILayout.Label($"Name: {message.name}\nDatatype: {(PointField_Format_Constants)message.datatype}");
-            if (message.count > 1) 
+            if (message.count > 1)
                 GUILayout.Label($"Count: {message.count}");
         }
 
-        public static void GUI(this MPolygon message)
+        public static void GUI(this PolygonMsg message)
         {
             GUILayout.Label($"({message.points.Length} points):");
-            foreach (MPoint32 p in message.points)
+            foreach (Point32Msg p in message.points)
                 GUI(p);
         }
 
-        public static void GUI(this MPose message, string name="")
+        public static void GUI(this PoseMsg message, string name="")
         {
             if (name.Length > 0)
             {
@@ -944,32 +950,32 @@ namespace Unity.Robotics.MessageVisualizers
             message.orientation.GUI("Orientation");
         }
 
-        public static void GUI(this MPoseArray message)
+        public static void GUI(this PoseArrayMsg message)
         {
             GUI(message.header);
             for (int Idx = 0; Idx < message.poses.Length; ++Idx)
             {
-                MPose pose = message.poses[Idx];
+                PoseMsg pose = message.poses[Idx];
                 pose.position.GUI($"[{Idx}] Position");
                 pose.orientation.GUI("Orientation");
             }
         }
 
-        public static void GUI(this MQuaternion message, string label)
+        public static void GUI(this QuaternionMsg message, string label)
         {
             if (label != "" && label != null)
                 label += ": ";
             GUILayout.Label($"{label}[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void GUI(this MQuaternion message)
+        public static void GUI(this QuaternionMsg message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void GUI(this MRegionOfInterest message, Texture2D tex)
+        public static void GUI(this RegionOfInterestMsg message, Texture2D tex)
         {
-            if (tex != null) 
+            if (tex != null)
             {
                 var ratio = (float)tex.width / (float)tex.height;
                 UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(ratio), tex);
@@ -977,23 +983,23 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"x_offset: {message.x_offset}\ny_offset: {message.y_offset}\nHeight: {message.height}\nWidth: {message.width}\nDo rectify: {message.do_rectify}");
         }
 
-        public static void GUI(this MSelfTestResponse message)
+        public static void GUI(this SelfTestResponse message)
         {
             string pass = message.passed != 0 ? "OK" : "FAIL";
             GUILayout.Label($"Self test {message.id}: {pass}");
-            foreach (MDiagnosticStatus status in message.status)
+            foreach (DiagnosticStatusMsg status in message.status)
                 status.GUI();
         }
 
-        public static void GUI(this MSolidPrimitive message)
+        public static void GUI(this SolidPrimitiveMsg message)
         {
             switch (message.type)
             {
-                case MSolidPrimitive.BOX:
-                    GUILayout.Label($"SolidPrimitive BOX\n[X:{message.dimensions[MSolidPrimitive.BOX_X]}, Y:{message.dimensions[MSolidPrimitive.BOX_Y]}, Z:{message.dimensions[MSolidPrimitive.BOX_Z]}]");
+                case SolidPrimitiveMsg.BOX:
+                    GUILayout.Label($"SolidPrimitive BOX\n[X:{message.dimensions[SolidPrimitiveMsg.BOX_X]}, Y:{message.dimensions[SolidPrimitiveMsg.BOX_Y]}, Z:{message.dimensions[SolidPrimitiveMsg.BOX_Z]}]");
                     break;
-                case MSolidPrimitive.SPHERE:
-                    GUILayout.Label($"SolidPrimitive SPHERE\nRadius: {message.dimensions[MSolidPrimitive.SPHERE_RADIUS]}");
+                case SolidPrimitiveMsg.SPHERE:
+                    GUILayout.Label($"SolidPrimitive SPHERE\nRadius: {message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]}");
                     break;
                 case MSolidPrimitive.CYLINDER:
                     GUILayout.Label($"SolidPrimitive CYLINDER\nHeight: {message.dimensions[MSolidPrimitive.CYLINDER_HEIGHT]}\nRadius: {message.dimensions[MSolidPrimitive.CYLINDER_RADIUS]}");
@@ -1007,18 +1013,18 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void GUI(this MTime message)
+        public static void GUI(this TimeMsg message)
         {
             GUILayout.Label(message.ToTimestampString());
         }
 
-        public static void GUI(this MTransform message)
+        public static void GUI(this TransformMsg message)
         {
             message.translation.GUI("Translation");
             message.rotation.GUI("Rotation");
         }
 
-        public static void GUI(this MTwist message, string name="")
+        public static void GUI(this TwistMsg message, string name="")
         {
             if (name.Length > 0)
             {
@@ -1028,7 +1034,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.angular.GUI("Angular");
         }
 
-        public static void GUI(this MVector3 message, string name)
+        public static void GUI(this Vector3Msg message, string name)
         {
             string body = $"[{message.x:F2}, {message.y:F2}, {message.z:F2}]";
             if (name == null || name == "")
@@ -1037,12 +1043,12 @@ namespace Unity.Robotics.MessageVisualizers
                 GUILayout.Label($"{name}: {body}");
         }
 
-        public static void GUI(this MVector3 message)
+        public static void GUI(this Vector3Msg message)
         {
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}]");
         }
 
-        public static void GUI(this MWrench message)
+        public static void GUI(this WrenchMsg message)
         {
             message.force.GUI("Force");
             message.torque.GUI("Torque");
@@ -1052,7 +1058,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             view = GUILayout.Toggle(view, "View matrix");
             if (!view) return;
-            
+
             int dataIndex = 0;
             while (dataIndex < data.Length)
             {
@@ -1070,7 +1076,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             view = GUILayout.Toggle(view, $"View {name} matrix");
             if (!view) return;
-            
+
             int dataIndex = 0;
             GUILayout.Label(name);
             while (dataIndex < data.Length)
@@ -1092,7 +1098,7 @@ namespace Unity.Robotics.MessageVisualizers
             fixedHeight = 25
         };
 
-        public static void GUIMultiArray<T>(this MMultiArrayLayout layout, T[] data, ref bool tabulate)
+        public static void GUIMultiArray<T>(this MultiArrayLayoutMsg layout, T[] data, ref bool tabulate)
         {
             tabulate = GUILayout.Toggle(tabulate, "Table view");
             GUIMultiArray(layout, data, tabulate);
@@ -1100,7 +1106,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         static GUIStyle s_ArrayContainerStyle;
 
-        public static void GUIMultiArray<T>(this MMultiArrayLayout layout, T[] data, bool tabulate = true)
+        public static void GUIMultiArray<T>(this MultiArrayLayoutMsg layout, T[] data, bool tabulate = true)
         {
             if (s_ArrayContainerStyle == null)
             {
@@ -1109,7 +1115,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUIMultiArrayLevel(data, layout, layout.data_offset, 0, tabulate);
         }
 
-        static void GUIMultiArrayLevel<T>(T[] data, MMultiArrayLayout layout, uint dataIndex, int depth, bool tabulate)
+        static void GUIMultiArrayLevel<T>(T[] data, MultiArrayLayoutMsg layout, uint dataIndex, int depth, bool tabulate)
         {
             uint size = layout.dim[depth].size;
             if (layout.dim.Length > depth + 1)

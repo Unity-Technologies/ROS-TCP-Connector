@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerGoalID : GuiVisualFactory<MGoalID>
+    public class DefaultVisualizerGoalID : GuiVisualFactory<GoalIDMsg>
     {
-        public override Action CreateGUI(MGoalID message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(GoalIDMsg message, MessageMetadata meta) => () =>
         {
             message.GUI();
         };

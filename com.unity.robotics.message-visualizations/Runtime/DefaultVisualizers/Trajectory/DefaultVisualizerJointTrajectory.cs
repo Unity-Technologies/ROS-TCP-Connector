@@ -1,13 +1,10 @@
-﻿using RosMessageTypes.Trajectory;
+﻿using System;
+using RosMessageTypes.Trajectory;
 using RosSharp.Urdf;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<MJointTrajectory>
+public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<JointTrajectoryMsg>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;
@@ -21,11 +18,13 @@ public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<MJointTraje
     public override void Start()
     {
         base.Start();
-        if(m_UrdfRobot != null)
+        if (m_UrdfRobot != null)
+        {
             m_RobotData = new RobotVisualization(m_UrdfRobot);
+        }
     }
 
-    public override void Draw(BasicDrawing drawing, MJointTrajectory message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
     }

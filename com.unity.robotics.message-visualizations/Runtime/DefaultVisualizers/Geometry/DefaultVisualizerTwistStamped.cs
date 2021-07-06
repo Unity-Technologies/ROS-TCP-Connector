@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTwistStamped : DrawingVisualFactory<MTwistStamped>
+    public class DefaultVisualizerTwistStamped : DrawingVisualFactory<TwistStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;
@@ -14,13 +14,13 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
 
-        public override void Draw(BasicDrawing drawing, MTwistStamped message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, TwistStampedMsg message, MessageMetadata meta)
         {
             var orig = origin == null ? Vector3.zero : origin.transform.position;
             message.twist.Draw<FLU>(drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
         }
 
-        public override Action CreateGUI(MTwistStamped message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(TwistStampedMsg message, MessageMetadata meta) => () =>
         {
             message.header.GUI();
             message.twist.GUI();

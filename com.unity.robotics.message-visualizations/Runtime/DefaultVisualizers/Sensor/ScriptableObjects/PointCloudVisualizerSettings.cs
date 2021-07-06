@@ -23,5 +23,5 @@ public class PointCloudVisualizerSettings : ScriptableObject
     public bool useRgbChannel;
     public bool useSeparateRgb = true;
     public bool useSizeChannel;
-    public MChannelFloat32[] channels;
+    public ChannelFloat32Msg[] channels;
 }

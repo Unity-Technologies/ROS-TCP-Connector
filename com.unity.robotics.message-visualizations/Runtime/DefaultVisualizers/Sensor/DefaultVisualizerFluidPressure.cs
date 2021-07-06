@@ -1,15 +1,16 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerFluidPressure : GuiVisualFactory<MFluidPressure>
+public class DefaultVisualizerFluidPressure : GuiVisualFactory<FluidPressureMsg>
 {
-    public override Action CreateGUI(MFluidPressure message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(FluidPressureMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        GUILayout.Label($"Fluid Pressure: {message.fluid_pressure} (Pascals)\nVariance: {message.variance}");
-    };
+        return () =>
+        {
+            message.header.GUI();
+            GUILayout.Label($"Fluid Pressure: {message.fluid_pressure} (Pascals)\nVariance: {message.variance}");
+        };
+    }
 }

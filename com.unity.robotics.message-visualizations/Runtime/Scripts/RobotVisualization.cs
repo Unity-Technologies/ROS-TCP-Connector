@@ -38,7 +38,7 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         // Returns the positions of the selected joint across the whole trajectory
-        public Vector3[] GetJointPath(int jointIndex, string[] jointNames, MJointTrajectoryPoint[] point)
+        public Vector3[] GetJointPath(int jointIndex, string[] jointNames, JointTrajectoryPointMsg[] point)
         {
             Vector3[] result = new Vector3[point.Length];
             for (int Idx = 0; Idx < point.Length; ++Idx)
@@ -50,7 +50,7 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         // Returns a 2d array: JointPlacement[index of JointTrajectoryPoint][index of joint]
-        public JointPlacement[][] GetJointPlacements(MJointTrajectory trajectory)
+        public JointPlacement[][] GetJointPlacements(JointTrajectoryMsg trajectory)
         {
             JointPlacement[][] result = new JointPlacement[trajectory.points.Length][];
             for (int Idx = 0; Idx < trajectory.points.Length; ++Idx)
@@ -60,7 +60,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result;
         }
 
-        public JointPlacement[] GetJointPlacements(MJointState jointState)
+        public JointPlacement[] GetJointPlacements(JointStateMsg jointState)
         {
             Quaternion lastWorldRotation = m_Robot.transform.rotation;
             Vector3 lastWorldPosition = m_Robot.transform.position;
@@ -89,7 +89,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result;
         }
 
-        public JointPlacement[] GetJointPlacements(MMultiDOFJointState jointState)
+        public JointPlacement[] GetJointPlacements(MultiDOFJointStateMsg jointState)
         {
             Quaternion lastWorldRotation = m_Robot.transform.rotation;
             Vector3 lastWorldPosition = m_Robot.transform.position;
@@ -117,7 +117,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result;
         }
 
-        public JointPlacement[] GetJointPlacements(MJointTrajectoryPoint point, string[] jointNames)
+        public JointPlacement[] GetJointPlacements(JointTrajectoryPointMsg point, string[] jointNames)
         {
             Quaternion lastWorldRotation = m_Robot.transform.rotation;
             Vector3 lastWorldPosition = m_Robot.transform.position;
@@ -157,7 +157,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result.Joint;
         }
 
-        public void DrawJointPaths(BasicDrawing drawing, MJointTrajectory message, Color color, float pathThickness)
+        public void DrawJointPaths(BasicDrawing drawing, JointTrajectoryMsg message, Color color, float pathThickness)
         {
             JointPlacement[][] jointPlacements = GetJointPlacements(message);
             for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
@@ -179,25 +179,25 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawJointPath(BasicDrawing drawing, MJointTrajectory message, int jointIndex, Color color, float pathThickness)
+        public void DrawJointPath(BasicDrawing drawing, JointTrajectoryMsg message, int jointIndex, Color color, float pathThickness)
         {
             DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
         }
 
-        public void DrawEffort(BasicDrawing drawing, MJointState message, Color color) 
+        public void DrawEffort(BasicDrawing drawing, JointStateMsg message, Color color)
         {
             if (message.effort.Length > 0)
             {
                 DrawEffort(drawing, GetJointPlacements(message), color, message.effort);
             }
-            else 
+            else
             {
                 Debug.Log("This JointState message contains no Effort data!");
                 return;
             }
         }
 
-        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, double[] radii) 
+        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, double[] radii)
         {
             for (int i = 0; i < placements.Length; i++)
             {
@@ -205,22 +205,22 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawGhost(BasicDrawing drawing, MJointTrajectory message, int pointIndex, Color color)
+        public void DrawGhost(BasicDrawing drawing, JointTrajectoryMsg message, int pointIndex, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, MJointTrajectoryPoint message, string[] jointNames, Color color)
+        public void DrawGhost(BasicDrawing drawing, JointTrajectoryPointMsg message, string[] jointNames, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message, jointNames), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, MJointState message, Color color)
+        public void DrawGhost(BasicDrawing drawing, JointStateMsg message, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, MMultiDOFJointState message, Color color)
+        public void DrawGhost(BasicDrawing drawing, MultiDOFJointStateMsg message, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message), color);
         }

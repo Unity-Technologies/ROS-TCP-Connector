@@ -1,18 +1,18 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 public enum ColorMode
 {
-    HSV, RGB
+    HSV,
+    RGB
 }
 
-public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
+public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<PointCloud2Msg>
 {
     public PointCloud2VisualizerSettings settings;
     [SerializeField]
@@ -26,8 +26,8 @@ public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
         }
         base.Start();
     }
-    
-    public override void Draw(BasicDrawing drawing, MPointCloud2 message, MessageMetadata meta)
+
+    public override void Draw(BasicDrawing drawing, PointCloud2Msg message, MessageMetadata meta)
     {
         if (settings.channels == null)
             settings.channels = message.fields;
@@ -35,24 +35,20 @@ public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<MPointCloud2>
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), settings);
     }
 
-    public override Action CreateGUI(MPointCloud2 message, MessageMetadata meta)
+    public override Action CreateGUI(PointCloud2Msg message, MessageMetadata meta)
     {
         var formatDict = new Dictionary<PointField_Format_Constants, List<string>>();
 
-        foreach (MPointField field in message.fields)
-        {
+        foreach (var field in message.fields)
             if (formatDict.ContainsKey((PointField_Format_Constants)field.datatype))
                 formatDict[(PointField_Format_Constants)field.datatype].Add(field.name);
-            else 
-                formatDict.Add((PointField_Format_Constants)field.datatype, new List<string>() { field.name });
-        }
+            else
+                formatDict.Add((PointField_Format_Constants)field.datatype, new List<string> { field.name });
 
-        string formats = "";
+        var formats = "";
         foreach (var f in formatDict)
-        {
             if (f.Value.Count > 0)
-                formats += $"{f.Key}: {String.Join(", ", f.Value)}\n";
-        }
+                formats += $"{f.Key}: {string.Join(", ", f.Value)}\n";
 
         return () =>
         {
