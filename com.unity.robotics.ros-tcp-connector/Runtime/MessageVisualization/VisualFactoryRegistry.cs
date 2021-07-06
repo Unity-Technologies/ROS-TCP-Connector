@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -51,7 +52,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0) where MsgType : Message
         {
-            RegisterTypeVisualizer(MessageRegistry.GetMessageName<MsgType>(), visualFactory, priority);
+            RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<MsgType>(), visualFactory, priority);
         }
 
         public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0)
@@ -79,7 +80,7 @@ namespace Unity.Robotics.MessageVisualizers
                 if (result != null)
                     return result.Item1;
 
-                if (MessageRegistry.GetConstructor(rosMessageName) != null)
+                if (MessageRegistry.GetDeserializeFunction(rosMessageName) != null)
                     return s_DefaultVisualFactory;
             }
 
@@ -93,7 +94,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (result != null)
                 return result.Item1;
 
-            s_TypeVisualFactories.TryGetValue(message.RosMessageName, out result);
+            s_TypeVisualFactories.TryGetValue(HUDPanel.GetMessageNameByTopic(meta.Topic), out result);
             if (result != null)
                 return result.Item1;
 

@@ -1,14 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+﻿using System;
+using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
-using RosMessageTypes.Geometry;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPoint : DrawingVisualFactory<MPoint>
+    public class DefaultVisualizerPoint : DrawingVisualFactory<PointMsg>
     {
         [SerializeField]
         float m_Radius = 0.01f;
@@ -17,14 +14,17 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, MPoint message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, PointMsg message, MessageMetadata meta)
         {
             message.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
-        public override System.Action CreateGUI(MPoint message, MessageMetadata meta) => () =>
+        public override Action CreateGUI(PointMsg message, MessageMetadata meta)
         {
-            message.GUI();
-        };
+            return () =>
+            {
+                message.GUI();
+            };
+        }
     }
 }

@@ -1,17 +1,18 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerNavSatFix : GuiVisualFactory<MNavSatFix>
+public class DefaultVisualizerNavSatFix : GuiVisualFactory<NavSatFixMsg>
 {
-    public override Action CreateGUI(MNavSatFix message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(NavSatFixMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        message.status.GUI();
-        GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {String.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFix_Covariance_Constants)message.position_covariance_type}");
-    };
+        return () =>
+        {
+            message.header.GUI();
+            message.status.GUI();
+            GUILayout.Label($"Coordinates: {message.ToLatLongString()}\nAltitude: {message.altitude} (m)\nPosition covariance: {string.Join(", ", message.position_covariance)} (m^2)\nPosition covariance type: {(NavSatFix_Covariance_Constants)message.position_covariance_type}");
+        };
+    }
 }

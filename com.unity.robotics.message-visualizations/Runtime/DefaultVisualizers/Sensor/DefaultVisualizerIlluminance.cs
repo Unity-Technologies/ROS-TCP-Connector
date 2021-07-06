@@ -1,15 +1,16 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerIlluminance : GuiVisualFactory<MIlluminance>
+public class DefaultVisualizerIlluminance : GuiVisualFactory<IlluminanceMsg>
 {
-    public override Action CreateGUI(MIlluminance message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(IlluminanceMsg message, MessageMetadata meta)
     {
-        message.header.GUI();
-        GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
-    };
+        return () =>
+        {
+            message.header.GUI();
+            GUILayout.Label($"Illuminance: {message.illuminance} (Lux)\nVariance: {message.variance}");
+        };
+    }
 }

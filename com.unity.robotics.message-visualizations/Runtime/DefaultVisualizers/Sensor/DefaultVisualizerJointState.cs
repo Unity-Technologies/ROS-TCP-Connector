@@ -1,47 +1,42 @@
+using System;
 using RosMessageTypes.Sensor;
 using RosSharp.Urdf;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointState : DrawingVisualFactory<MJointState>
+public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
 {
     [SerializeField]
-    bool m_ShowEffort = false;
+    bool m_ShowEffort;
     [SerializeField]
     UrdfRobot m_UrdfRobot;
     [SerializeField]
-    RobotVisualization m_RobotData;
-    [SerializeField]
     Color m_Color;
+    [SerializeField]
+    RobotVisualization m_RobotData;
 
     public override void Start()
     {
         base.Start();
-        if(m_UrdfRobot != null)
+        if (m_UrdfRobot != null)
             m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
-    public override void Draw(BasicDrawing drawing, MJointState message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, JointStateMsg message, MessageMetadata meta)
     {
-        Color color = SelectColor(m_Color, meta);
+        var color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
-        if (m_ShowEffort)
-        {
-            m_RobotData.DrawEffort(drawing, message, color);
-        }
+        if (m_ShowEffort) m_RobotData.DrawEffort(drawing, message, color);
     }
 
-    public override Action CreateGUI(MJointState message, MessageMetadata meta) 
+    public override Action CreateGUI(JointStateMsg message, MessageMetadata meta)
     {
-        bool pos = message.position.Length > 0;
-        bool vel = message.velocity.Length > 0;
-        bool eff = message.effort.Length > 0;
-        string s = "";
+        var pos = message.position.Length > 0;
+        var vel = message.velocity.Length > 0;
+        var eff = message.effort.Length > 0;
+        var s = "";
 
-        for (int i = 0; i < message.name.Length; i++)
+        for (var i = 0; i < message.name.Length; i++)
         {
             if (s.Length > 0) s += "\n";
             s += $"{message.name[i]}:";
@@ -50,7 +45,7 @@ public class DefaultVisualizerJointState : DrawingVisualFactory<MJointState>
             if (eff) s += $"\nEffort: {message.effort[i]}";
         }
 
-        return () => 
+        return () =>
         {
             message.header.GUI();
             GUILayout.Label(s);

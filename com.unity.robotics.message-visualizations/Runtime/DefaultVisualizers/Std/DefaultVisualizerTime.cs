@@ -1,14 +1,15 @@
-﻿using RosMessageTypes.Std;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.BuiltinInterfaces;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerTime : GuiVisualFactory<MTime>
+public class DefaultVisualizerTime : GuiVisualFactory<TimeMsg>
 {
-    public override Action CreateGUI(MTime message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(TimeMsg message, MessageMetadata meta)
     {
-        message.GUI();
-    };
+        return () =>
+        {
+            message.GUI();
+        };
+    }
 }

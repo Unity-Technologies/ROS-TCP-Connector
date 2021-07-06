@@ -1,18 +1,18 @@
-﻿using RosMessageTypes.Std;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Std;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerFloat64MultiArray : GuiVisualFactory<MFloat64MultiArray>
+public class DefaultVisualizerFloat64MultiArray : GuiVisualFactory<Float64MultiArrayMsg>
 {
     [SerializeField]
     bool m_Tabulate = true;
 
-    public override Action CreateGUI(MFloat64MultiArray message, MessageMetadata meta) => () =>
+    public override Action CreateGUI(Float64MultiArrayMsg message, MessageMetadata meta)
     {
-        message.layout.GUIMultiArray(message.data, ref m_Tabulate);
-    };
-
+        return () =>
+        {
+            message.layout.GUIMultiArray(message.data, ref m_Tabulate);
+        };
+    }
 }

@@ -1,48 +1,39 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 #if UNITY_EDITOR
 
 [CustomEditor(typeof(DefaultVisualizerPointCloud))]
 public class PointCloudEditor : Editor
 {
-    PointCloudVisualizerSettings pclConfig;
-    string colorMin = "0";
     string colorMax = "1000";
-    float colorMinVal = 0;
     float colorMaxVal = 1000;
-    string sizeMin = "0";
+    string colorMin = "0";
+    float colorMinVal;
+    PointCloudVisualizerSettings pclConfig;
     string sizeMax = "1000";
-    float sizeMinVal = 0;
     float sizeMaxVal = 1000;
+    string sizeMin = "0";
+    float sizeMinVal;
 
     void CreateNewDropdown(string label, string channel, Action<string> action)
     {
-        if (pclConfig.channels == null)
-        {
-            return;
-        }
+        if (pclConfig.channels == null) return;
 
         GUILayout.BeginHorizontal();
         GUILayout.Label(label);
         if (EditorGUILayout.DropdownButton(new GUIContent(channel), FocusType.Keyboard))
         {
-            GenericMenu menu = new GenericMenu();
+            var menu = new GenericMenu();
             foreach (var c in pclConfig.channels)
-            {
-                menu.AddItem(new GUIContent(c.name), c.name == channel, () => { 
+                menu.AddItem(new GUIContent(c.name), c.name == channel, () =>
+                {
                     action(c.name);
                 });
-            }
             menu.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
         }
+
         GUILayout.EndHorizontal();
     }
 
@@ -64,14 +55,10 @@ public class PointCloudEditor : Editor
         maxS = maxVal.ToString();
     }
 
-    
     public override void OnInspectorGUI()
     {
         pclConfig = (PointCloudVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", pclConfig, typeof(PointCloudVisualizerSettings), false);
-        if (pclConfig == null)
-        {
-            pclConfig = (PointCloudVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloudVisualizerSettings.asset", typeof(PointCloudVisualizerSettings));
-        }
+        if (pclConfig == null) pclConfig = (PointCloudVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloudVisualizerSettings.asset", typeof(PointCloudVisualizerSettings));
         ((DefaultVisualizerPointCloud)target).m_Settings = pclConfig;
 
         pclConfig.m_UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", pclConfig.m_UseSizeChannel);
@@ -79,7 +66,7 @@ public class PointCloudEditor : Editor
         if (pclConfig.m_UseSizeChannel)
         {
             MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
-            CreateNewDropdown("Size channel name:", pclConfig.m_SizeChannel, (newChannel) => { pclConfig.m_SizeChannel = newChannel; });
+            CreateNewDropdown("Size channel name:", pclConfig.m_SizeChannel, newChannel => { pclConfig.m_SizeChannel = newChannel; });
             CreateMinMaxSlider(ref pclConfig.m_SizeRange, sizeMinVal, sizeMaxVal);
         }
 
@@ -94,7 +81,7 @@ public class PointCloudEditor : Editor
             switch (pclConfig.colorMode)
             {
                 case ColorMode.HSV:
-                    CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, (newChannel) => { pclConfig.m_RgbChannel = newChannel; });
+                    CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, newChannel => { pclConfig.m_RgbChannel = newChannel; });
                     CreateMinMaxSlider(ref pclConfig.m_RgbRange, colorMinVal, colorMaxVal);
                     break;
                 case ColorMode.RGB:
@@ -102,23 +89,24 @@ public class PointCloudEditor : Editor
 
                     if (pclConfig.m_UseSeparateRgb)
                     {
-                        CreateNewDropdown("R channel name:", pclConfig.m_RChannel, (newChannel) => { pclConfig.m_RChannel = newChannel; });
+                        CreateNewDropdown("R channel name:", pclConfig.m_RChannel, newChannel => { pclConfig.m_RChannel = newChannel; });
                         CreateMinMaxSlider(ref pclConfig.m_RRange, colorMinVal, colorMaxVal);
 
-                        CreateNewDropdown("G channel name:", pclConfig.m_GChannel, (newChannel) => { pclConfig.m_GChannel = newChannel; });
+                        CreateNewDropdown("G channel name:", pclConfig.m_GChannel, newChannel => { pclConfig.m_GChannel = newChannel; });
                         CreateMinMaxSlider(ref pclConfig.m_GRange, colorMinVal, colorMaxVal);
 
-                        CreateNewDropdown("B channel name:", pclConfig.m_BChannel, (newChannel) => { pclConfig.m_BChannel = newChannel; });
+                        CreateNewDropdown("B channel name:", pclConfig.m_BChannel, newChannel => { pclConfig.m_BChannel = newChannel; });
                         CreateMinMaxSlider(ref pclConfig.m_BRange, colorMinVal, colorMaxVal);
                     }
                     else
                     {
-                        CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, (newChannel) => { pclConfig.m_RgbChannel = newChannel; });
+                        CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, newChannel => { pclConfig.m_RgbChannel = newChannel; });
                     }
+
                     break;
             }
         }
-   }
+    }
 }
 
 #endif //UNITY_EDITOR

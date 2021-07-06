@@ -1,26 +1,24 @@
-﻿using RosMessageTypes.Shape;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using RosMessageTypes.Shape;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerMesh : DrawingVisualFactory<MMesh>
+public class DefaultVisualizerMesh : DrawingVisualFactory<MeshMsg>
 {
     [SerializeField]
     GameObject m_Origin;
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MMesh message, MessageMetadata meta)
+    public override void Draw(BasicDrawing drawing, MeshMsg message, MessageMetadata meta)
     {
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin);
     }
 
-    public override Action CreateGUI(MMesh message, MessageMetadata meta)
+    public override Action CreateGUI(MeshMsg message, MessageMetadata meta)
     {
-        bool showTriangles = false;
+        var showTriangles = false;
         return () =>
         {
             showTriangles = GUILayout.Toggle(showTriangles, $"Show {message.vertices.Length} vertices");

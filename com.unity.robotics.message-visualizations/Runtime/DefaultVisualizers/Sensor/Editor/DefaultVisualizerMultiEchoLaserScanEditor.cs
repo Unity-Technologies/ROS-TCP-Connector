@@ -1,12 +1,6 @@
-using RosMessageTypes.Sensor;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
-using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 #if UNITY_EDITOR
 
@@ -14,10 +8,10 @@ using UnityEditor;
 public class MultiEchoLaserScanEditor : Editor
 {
     MultiEchoLaserScanVisualizerSettings config;
-    string sizeMin = "0";
     string sizeMax = "1000";
-    float sizeMinVal = 0;
     float sizeMaxVal = 1000;
+    string sizeMin = "0";
+    float sizeMinVal;
 
     void CreateMinMaxSlider(ref float[] range, float min, float max)
     {
@@ -37,14 +31,10 @@ public class MultiEchoLaserScanEditor : Editor
         maxS = maxVal.ToString();
     }
 
-    
     public override void OnInspectorGUI()
     {
         config = (MultiEchoLaserScanVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", config, typeof(MultiEchoLaserScanVisualizerSettings), false);
-        if (config == null)
-        {
-            config = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
-        }
+        if (config == null) config = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
         ((DefaultVisualizerMultiEchoLaserScan)target).m_Settings = config;
 
         config.m_UseIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", config.m_UseIntensitySize);
@@ -54,7 +44,7 @@ public class MultiEchoLaserScanEditor : Editor
             MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
             CreateMinMaxSlider(ref config.m_SizeRange, sizeMinVal, sizeMaxVal);
         }
-   }
+    }
 }
 
 #endif //UNITY_EDITOR

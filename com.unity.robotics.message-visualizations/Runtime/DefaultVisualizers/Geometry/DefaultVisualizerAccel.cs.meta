@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Geometry/DefaultVisualizerAccel.cs.meta
 guid: 7d5d9a44a1314c64bb8c0ef2cc5bb27f
-=======
-guid: 948d826c167dec548b1ac5e0c8393d86
->>>>>>> dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/RosTcpEndpoint/msg/MRosUnitySrvMessage.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2

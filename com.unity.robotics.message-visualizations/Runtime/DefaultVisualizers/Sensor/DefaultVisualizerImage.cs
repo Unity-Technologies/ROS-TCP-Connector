@@ -4,17 +4,17 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerImage : TextureVisualFactory<MImage>
+public class DefaultVisualizerImage : TextureVisualFactory<ImageMsg>
 {
     bool m_ConvertBgr = true;
     bool m_FlipY = true;
 
-    public override Texture2D CreateTexture(MImage message)
+    public override Texture2D CreateTexture(ImageMsg message)
     {
         return message.data.Length > 0 ? message.ToTexture2D(m_ConvertBgr, m_FlipY) : null;
     }
 
-    public override Action CreateGUI(MImage message, MessageMetadata meta, Texture2D tex)
+    public override Action CreateGUI(ImageMsg message, MessageMetadata meta, Texture2D tex)
     {
         return () =>
         {
@@ -26,7 +26,7 @@ public class DefaultVisualizerImage : TextureVisualFactory<MImage>
                 m_FlipY = GUILayout.Toggle(m_FlipY, "Flip Y");
                 GUILayout.EndHorizontal();
             }
-        
+
             tex.GUITexture();
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
         };
