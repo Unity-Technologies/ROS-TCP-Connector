@@ -14,22 +14,25 @@ public enum ColorMode
 
 public class DefaultVisualizerPointCloud2 : DrawingVisualFactory<PointCloud2Msg>
 {
-    public PointCloud2VisualizerSettings m_Settings;
+    public PointCloud2VisualizerSettings settings;
     [SerializeField]
     Color m_Color;
 
     public override void Start()
     {
-        if (m_Settings == null) Debug.Log("Visualizer settings were null!");
+        if (settings != null)
+        {
+            m_Topic = settings.topic;
+        }
         base.Start();
     }
 
     public override void Draw(BasicDrawing drawing, PointCloud2Msg message, MessageMetadata meta)
     {
-        if (m_Settings.channels == null)
-            m_Settings.channels = message.fields;
+        if (settings.channels == null)
+            settings.channels = message.fields;
 
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), settings);
     }
 
     public override Action CreateGUI(PointCloud2Msg message, MessageMetadata meta)

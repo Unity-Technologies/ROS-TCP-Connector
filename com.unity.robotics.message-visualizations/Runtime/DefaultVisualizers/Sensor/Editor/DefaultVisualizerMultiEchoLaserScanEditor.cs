@@ -7,11 +7,20 @@ using UnityEngine;
 [CustomEditor(typeof(DefaultVisualizerMultiEchoLaserScan))]
 public class MultiEchoLaserScanEditor : Editor
 {
-    MultiEchoLaserScanVisualizerSettings config;
-    string sizeMax = "1000";
-    float sizeMaxVal = 1000;
-    string sizeMin = "0";
-    float sizeMinVal;
+    MultiEchoLaserScanVisualizerSettings m_Config;
+    string m_SizeMax = "1000";
+    float m_SizeMaxVal = 1000;
+    string m_SizeMin = "0";
+    float m_SizeMinVal;
+
+    void Awake()
+    {
+        if (m_Config == null)
+        {
+            ((DefaultVisualizerMultiEchoLaserScan)target).settings = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
+            m_Config = ((DefaultVisualizerMultiEchoLaserScan)target).settings;
+        }
+    }
 
     void CreateMinMaxSlider(ref float[] range, float min, float max)
     {
@@ -33,16 +42,17 @@ public class MultiEchoLaserScanEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        config = (MultiEchoLaserScanVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", config, typeof(MultiEchoLaserScanVisualizerSettings), false);
-        if (config == null) config = (MultiEchoLaserScanVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/MultiEchoLaserScanVisualizerSettings.asset", typeof(MultiEchoLaserScanVisualizerSettings));
-        ((DefaultVisualizerMultiEchoLaserScan)target).m_Settings = config;
-
-        config.m_UseIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", config.m_UseIntensitySize);
-
-        if (config.m_UseIntensitySize)
+        m_Config = (MultiEchoLaserScanVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(MultiEchoLaserScanVisualizerSettings), false);
+        if (m_Config != null)
         {
-            MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
-            CreateMinMaxSlider(ref config.m_SizeRange, sizeMinVal, sizeMaxVal);
+            m_Config.topic = EditorGUILayout.TextField("Topic", m_Config.topic);
+            m_Config.useIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", m_Config.useIntensitySize);
+
+            if (m_Config.useIntensitySize)
+            {
+                MinMaxText("size", ref m_SizeMinVal, ref m_SizeMin, ref m_SizeMaxVal, ref m_SizeMax);
+                CreateMinMaxSlider(ref m_Config.sizeRange, m_SizeMinVal, m_SizeMaxVal);
+            }
         }
     }
 }

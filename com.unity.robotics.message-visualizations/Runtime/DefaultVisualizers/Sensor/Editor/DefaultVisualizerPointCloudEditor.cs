@@ -7,26 +7,35 @@ using UnityEngine;
 [CustomEditor(typeof(DefaultVisualizerPointCloud))]
 public class PointCloudEditor : Editor
 {
-    string colorMax = "1000";
-    float colorMaxVal = 1000;
-    string colorMin = "0";
-    float colorMinVal;
-    PointCloudVisualizerSettings pclConfig;
-    string sizeMax = "1000";
-    float sizeMaxVal = 1000;
-    string sizeMin = "0";
-    float sizeMinVal;
+    string m_ColorMax = "1000";
+    float m_ColorMaxVal = 1000;
+    string m_ColorMin = "0";
+    float m_ColorMinVal;
+    PointCloudVisualizerSettings m_Config;
+    string m_SizeMax = "1000";
+    float m_SizeMaxVal = 1000;
+    string m_SizeMin = "0";
+    float m_SizeMinVal;
+
+    void Awake()
+    {
+        if (m_Config == null)
+        {
+            ((DefaultVisualizerPointCloud)target).settings = (PointCloudVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloudVisualizerSettings.asset", typeof(PointCloudVisualizerSettings));
+            m_Config = ((DefaultVisualizerPointCloud)target).settings;
+        }
+    }
 
     void CreateNewDropdown(string label, string channel, Action<string> action)
     {
-        if (pclConfig.channels == null) return;
+        if (m_Config.channels == null) return;
 
         GUILayout.BeginHorizontal();
         GUILayout.Label(label);
         if (EditorGUILayout.DropdownButton(new GUIContent(channel), FocusType.Keyboard))
         {
             var menu = new GenericMenu();
-            foreach (var c in pclConfig.channels)
+            foreach (var c in m_Config.channels)
                 menu.AddItem(new GUIContent(c.name), c.name == channel, () =>
                 {
                     action(c.name);
@@ -57,53 +66,54 @@ public class PointCloudEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        pclConfig = (PointCloudVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", pclConfig, typeof(PointCloudVisualizerSettings), false);
-        if (pclConfig == null) pclConfig = (PointCloudVisualizerSettings)AssetDatabase.LoadAssetAtPath("Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/PointCloudVisualizerSettings.asset", typeof(PointCloudVisualizerSettings));
-        ((DefaultVisualizerPointCloud)target).m_Settings = pclConfig;
-
-        pclConfig.m_UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", pclConfig.m_UseSizeChannel);
-
-        if (pclConfig.m_UseSizeChannel)
+        m_Config = (PointCloudVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(PointCloudVisualizerSettings), false);
+        if (m_Config != null)
         {
-            MinMaxText("size", ref sizeMinVal, ref sizeMin, ref sizeMaxVal, ref sizeMax);
-            CreateNewDropdown("Size channel name:", pclConfig.m_SizeChannel, newChannel => { pclConfig.m_SizeChannel = newChannel; });
-            CreateMinMaxSlider(ref pclConfig.m_SizeRange, sizeMinVal, sizeMaxVal);
-        }
+            m_Config.topic = EditorGUILayout.TextField("Topic", m_Config.topic);
+            m_Config.useSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", m_Config.useSizeChannel);
 
-        pclConfig.m_UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", pclConfig.m_UseRgbChannel);
-
-        if (pclConfig.m_UseRgbChannel)
-        {
-            pclConfig.colorMode = (ColorMode)EditorGUILayout.EnumPopup("Color mode", pclConfig.colorMode);
-
-            MinMaxText("color", ref colorMinVal, ref colorMin, ref colorMaxVal, ref colorMax);
-
-            switch (pclConfig.colorMode)
+            if (m_Config.useSizeChannel)
             {
-                case ColorMode.HSV:
-                    CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, newChannel => { pclConfig.m_RgbChannel = newChannel; });
-                    CreateMinMaxSlider(ref pclConfig.m_RgbRange, colorMinVal, colorMaxVal);
-                    break;
-                case ColorMode.RGB:
-                    pclConfig.m_UseSeparateRgb = EditorGUILayout.ToggleLeft("Separate R, G, B channels?", pclConfig.m_UseSeparateRgb);
+                MinMaxText("size", ref m_SizeMinVal, ref m_SizeMin, ref m_SizeMaxVal, ref m_SizeMax);
+                CreateNewDropdown("Size channel name:", m_Config.sizeChannel, newChannel => { m_Config.sizeChannel = newChannel; });
+                CreateMinMaxSlider(ref m_Config.sizeRange, m_SizeMinVal, m_SizeMaxVal);
+            }
 
-                    if (pclConfig.m_UseSeparateRgb)
-                    {
-                        CreateNewDropdown("R channel name:", pclConfig.m_RChannel, newChannel => { pclConfig.m_RChannel = newChannel; });
-                        CreateMinMaxSlider(ref pclConfig.m_RRange, colorMinVal, colorMaxVal);
+            m_Config.useRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", m_Config.useRgbChannel);
 
-                        CreateNewDropdown("G channel name:", pclConfig.m_GChannel, newChannel => { pclConfig.m_GChannel = newChannel; });
-                        CreateMinMaxSlider(ref pclConfig.m_GRange, colorMinVal, colorMaxVal);
+            if (m_Config.useRgbChannel)
+            {
+                m_Config.colorMode = (ColorMode)EditorGUILayout.EnumPopup("Color mode", m_Config.colorMode);
 
-                        CreateNewDropdown("B channel name:", pclConfig.m_BChannel, newChannel => { pclConfig.m_BChannel = newChannel; });
-                        CreateMinMaxSlider(ref pclConfig.m_BRange, colorMinVal, colorMaxVal);
-                    }
-                    else
-                    {
-                        CreateNewDropdown("RGB channel name:", pclConfig.m_RgbChannel, newChannel => { pclConfig.m_RgbChannel = newChannel; });
-                    }
+                MinMaxText("color", ref m_ColorMinVal, ref m_ColorMin, ref m_ColorMaxVal, ref m_ColorMax);
 
-                    break;
+                switch (m_Config.colorMode)
+                {
+                    case ColorMode.HSV:
+                        CreateNewDropdown("RGB channel name:", m_Config.rgbChannel, newChannel => { m_Config.rgbChannel = newChannel; });
+                        CreateMinMaxSlider(ref m_Config.rgbRange, m_ColorMinVal, m_ColorMaxVal);
+                        break;
+                    case ColorMode.RGB:
+                        m_Config.useSeparateRgb = EditorGUILayout.ToggleLeft("Separate R, G, B channels?", m_Config.useSeparateRgb);
+
+                        if (m_Config.useSeparateRgb)
+                        {
+                            CreateNewDropdown("R channel name:", m_Config.rChannel, newChannel => { m_Config.rChannel = newChannel; });
+                            CreateMinMaxSlider(ref m_Config.rRange, m_ColorMinVal, m_ColorMaxVal);
+
+                            CreateNewDropdown("G channel name:", m_Config.gChannel, newChannel => { m_Config.gChannel = newChannel; });
+                            CreateMinMaxSlider(ref m_Config.gRange, m_ColorMinVal, m_ColorMaxVal);
+
+                            CreateNewDropdown("B channel name:", m_Config.bChannel, newChannel => { m_Config.bChannel = newChannel; });
+                            CreateMinMaxSlider(ref m_Config.bRange, m_ColorMinVal, m_ColorMaxVal);
+                        }
+                        else
+                        {
+                            CreateNewDropdown("RGB channel name:", m_Config.rgbChannel, newChannel => { m_Config.rgbChannel = newChannel; });
+                        }
+
+                        break;
+                }
             }
         }
     }

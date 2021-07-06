@@ -7,15 +7,24 @@ using UnityEngine;
 
 public class DefaultVisualizerPointCloud : DrawingVisualFactory<PointCloudMsg>
 {
-    public PointCloudVisualizerSettings m_Settings;
+    public PointCloudVisualizerSettings settings;
     [SerializeField]
     Color m_Color;
 
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            m_Topic = settings.topic;
+        }
+        base.Start();
+    }
+
     public override void Draw(BasicDrawing drawing, PointCloudMsg message, MessageMetadata meta)
     {
-        if (m_Settings.channels == null)
-            m_Settings.channels = message.channels;
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Settings);
+        if (settings.channels == null)
+            settings.channels = message.channels;
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), settings);
     }
 
     public override Action CreateGUI(PointCloudMsg message, MessageMetadata meta)

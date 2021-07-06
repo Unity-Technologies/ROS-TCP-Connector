@@ -6,11 +6,20 @@ using UnityEngine;
 
 public class DefaultVisualizerLaserScan : DrawingVisualFactory<LaserScanMsg>
 {
-    public LaserScanVisualizerSettings m_Settings;
+    public LaserScanVisualizerSettings settings;
+
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            m_Topic = settings.topic;
+        }
+        base.Start();
+    }
 
     public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Settings);
+        message.Draw<FLU>(drawing, settings);
     }
 
     public override Action CreateGUI(LaserScanMsg message, MessageMetadata meta)

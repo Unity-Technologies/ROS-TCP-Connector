@@ -6,11 +6,20 @@ using UnityEngine;
 
 public class DefaultVisualizerMultiEchoLaserScan : DrawingVisualFactory<MultiEchoLaserScanMsg>
 {
-    public MultiEchoLaserScanVisualizerSettings m_Settings;
+    public MultiEchoLaserScanVisualizerSettings settings;
+
+    public override void Start()
+    {
+        if (settings != null)
+        {
+            m_Topic = settings.topic;
+        }
+        base.Start();
+    }
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Settings);
+        message.Draw<FLU>(drawing, settings);
     }
 
     public override Action CreateGUI(MultiEchoLaserScanMsg message, MessageMetadata meta)
