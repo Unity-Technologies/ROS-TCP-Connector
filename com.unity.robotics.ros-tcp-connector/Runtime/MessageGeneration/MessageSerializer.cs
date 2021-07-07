@@ -118,7 +118,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(byte value)
         {
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_ListOfSerializations.Add(new byte[] { value });
             m_AlignmentOffset += sizeof(byte);
         }
 
