@@ -26,6 +26,11 @@ public struct TFFrame
         return Quaternion.Inverse(rotation) * (point - translation);
     }
 
+    public Quaternion TransformRotation(Quaternion rot)
+    {
+        return rot * rotation;
+    }
+
     public TFFrame Compose(TFFrame child)
     {
         return new TFFrame(TransformPoint(child.translation), rotation * child.rotation);

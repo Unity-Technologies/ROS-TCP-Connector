@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RosMessageTypes.Std;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
@@ -188,26 +189,27 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (message.effort.Length > 0)
             {
-                DrawEffort(drawing, GetJointPlacements(message), color, message.effort);
+                DrawEffort(drawing, GetJointPlacements(message), color, message);
             }
             else
             {
                 Debug.Log("This JointState message contains no Effort data!");
-                return;
             }
         }
 
-        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, double[] radii)
+        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, JointStateMsg message)
         {
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+
             for (int i = 0; i < placements.Length; i++)
             {
-                MessageVisualizations.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
+                MessageVisualizations.DrawRotationArrow(drawing, frame.TransformRotation(placements[i].Rotation), frame.TransformPoint(placements[i].Position), color, (float)message.effort[i]);
             }
         }
 
         public void DrawGhost(BasicDrawing drawing, JointTrajectoryMsg message, int pointIndex, Color color)
         {
-            DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color);
+            DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color, message.header);
         }
 
         public void DrawGhost(BasicDrawing drawing, JointTrajectoryPointMsg message, string[] jointNames, Color color)
@@ -217,12 +219,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawGhost(BasicDrawing drawing, JointStateMsg message, Color color)
         {
-            DrawGhost(drawing, GetJointPlacements(message), color);
+            DrawGhost(drawing, GetJointPlacements(message), color, message.header);
         }
 
         public void DrawGhost(BasicDrawing drawing, MultiDOFJointStateMsg message, Color color)
         {
-            DrawGhost(drawing, GetJointPlacements(message), color);
+            DrawGhost(drawing, GetJointPlacements(message), color, message.header);
         }
 
         public void DrawJointPath(BasicDrawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
@@ -230,8 +232,10 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLineStrip(jointPlacements.Select(p => p[jointIndex].Position).ToArray(), color, pathThickness);
         }
 
-        public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color)
+        public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color, HeaderMsg header = null)
         {
+            TFFrame frame = (header != null) ? TFSystem.instance.GetTransform(header) : TFFrame.identity;
+
             foreach (JointPlacement jointPlacement in placements)
             {
                 UrdfJoint joint = jointPlacement.Joint;
@@ -245,10 +249,17 @@ namespace Unity.Robotics.MessageVisualizers
                     {
                         Vector3 localMeshOffset = jointPlacement.Rotation * joint.transform.InverseTransformPoint(mfilter.transform.position);
                         Quaternion localMeshRotation = Quaternion.Inverse(joint.transform.rotation) * mfilter.transform.rotation;
+                        var worldPos = jointPlacement.Position + localMeshOffset;
+                        var worldRot = jointPlacement.Rotation * localMeshRotation;
+                        if (header != null)
+                        {
+                            worldPos = frame.TransformPoint(worldPos);
+                            worldRot = frame.TransformRotation(worldRot);
+                        }
                         drawing.DrawMesh(
                             mfilter.sharedMesh,
-                            jointPlacement.Position + localMeshOffset,
-                            jointPlacement.Rotation * localMeshRotation,
+                            worldPos,
+                            worldRot,
                             Vector3.one,
                             color
                         );
