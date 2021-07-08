@@ -9,7 +9,7 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
     where TMessageType : Message
     where TVisualizerSettings : VisualizerSettings<TMessageType>
 {
-    public const string ScriptableObjectsSettingsPath = "Assets/ROS-TCP-Connector/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects";
+    public const string ScriptableObjectsSettingsPath = "Packages/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects";
     public abstract string DefaultScriptableObjectFilename { get; }
 
     TVisualizerSettings m_Config;
