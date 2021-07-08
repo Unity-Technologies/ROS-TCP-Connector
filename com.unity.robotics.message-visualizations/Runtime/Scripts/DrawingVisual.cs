@@ -4,25 +4,31 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DrawingVisual<TargetMessageType> : IVisual
-        where TargetMessageType : Message
+    public interface IVisualDrawer<T> where T : Message
     {
-        public TargetMessageType message { get; }
+        void Draw(BasicDrawing drawing, T message, MessageMetadata meta);
+        Action CreateGUI(T message, MessageMetadata meta);
+    }
+
+    public class DrawingVisual<T> : IVisual
+        where T : Message
+    {
+        public T message { get; }
         Message IVisual.message
         {
             get => message;
         }
         public MessageMetadata meta { get; }
-        
+
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
-        DrawingVisualFactory<TargetMessageType> m_Factory;
+        IVisualDrawer<T> m_Drawer;
 
-        public DrawingVisual(TargetMessageType newMessage, MessageMetadata newMeta, DrawingVisualFactory<TargetMessageType> factory)
+        public DrawingVisual(T newMessage, MessageMetadata newMeta, IVisualDrawer<T> drawer)
         {
             message = newMessage;
             meta = newMeta;
-            m_Factory = factory;
+            m_Drawer = drawer;
         }
 
         public bool hasDrawing => m_BasicDrawing != null;
@@ -32,7 +38,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_GUIAction == null)
             {
-                m_GUIAction = m_Factory.CreateGUI(message, meta);    
+                m_GUIAction = m_Drawer.CreateGUI(message, meta);
             }
             m_GUIAction();
         }
@@ -46,18 +52,24 @@ namespace Unity.Robotics.MessageVisualizers
 
             m_BasicDrawing = null;
         }
-        
+
         public void CreateDrawing()
         {
             if (m_BasicDrawing == null)
             {
-                m_BasicDrawing = m_Factory.CreateDrawing(message, meta, null);
+                m_BasicDrawing = BasicDrawingManager.CreateDrawing();
             }
+            else
+            {
+                m_BasicDrawing.Clear();
+            }
+
+            m_Drawer.Draw(m_BasicDrawing, message, meta);
         }
 
         public void Recycle(IVisual oldVisual)
         {
-            if (oldVisual is DrawingVisual<TargetMessageType> v)
+            if (oldVisual is DrawingVisual<T> v)
             {
                 m_BasicDrawing = v.m_BasicDrawing;
                 v.m_BasicDrawing = null;

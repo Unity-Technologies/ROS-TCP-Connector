@@ -97,10 +97,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (m_DrawingUpdatedAtFrameIndex != meta.FrameIndex)
             {
-                m_Contents.ClearVisual();
                 if (ShowDrawing)
                 {
                     m_Contents.ShowDrawing(true);
+                }
+                else
+                {
+                    m_Contents.ClearVisual();
                 }
 
                 m_DrawingUpdatedAtFrameIndex = meta.FrameIndex;
@@ -268,6 +271,7 @@ namespace Unity.Robotics.ROSTCPConnector
             TopicVisualizationState m_State;
             IVisual m_Visual;
             IVisualFactory m_VisualFactory;
+            public IVisualFactory VisualFactory => m_VisualFactory;
 
             public MessageWindowContents(TopicVisualizationState state, Message message, MessageMetadata meta)
             {
@@ -289,7 +293,8 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (show)
                 {
-                    if (m_VisualFactory == null && m_Message != null) m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
+                    if (m_VisualFactory == null && m_Message != null)
+                        m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
 
                     if (m_VisualFactory != null)
                     {
@@ -299,7 +304,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
-                    if (m_Visual != null) m_Visual.DeleteDrawing();
+                    if (m_Visual != null)
+                        m_Visual.DeleteDrawing();
                 }
             }
 
@@ -312,7 +318,8 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (m_Visual == null)
                 {
-                    if (m_VisualFactory == null && m_Message != null) m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
+                    if (m_VisualFactory == null && m_Message != null)
+                        m_VisualFactory = VisualFactoryRegistry.GetVisualizer(m_Message, m_Meta);
 
                     if (m_VisualFactory != null)
                     {

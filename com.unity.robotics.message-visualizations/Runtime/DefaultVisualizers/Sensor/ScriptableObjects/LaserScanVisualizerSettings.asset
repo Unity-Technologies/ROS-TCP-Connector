@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: LaserScanVisualizerSettings
   m_EditorClassIdentifier: 
   m_UseIntensitySize: 0
-  m_PointRadius: 0.05
-  m_SizeRange:
-  - 0
-  - 100
+  m_PointRadius: 0.01
+  m_MaxIntensity: 100
+  m_ColorMode: 2

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
@@ -58,16 +58,20 @@ namespace Unity.Robotics.MessageVisualizers
         public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0)
         {
             Tuple<IVisualFactory, int> currentEntry;
-            if (!s_TypeVisualFactories.TryGetValue(rosMessageName, out currentEntry) || currentEntry.Item2 <= priority) s_TypeVisualFactories[rosMessageName] = new Tuple<IVisualFactory, int>(visualFactory, priority);
+            if (!s_TypeVisualFactories.TryGetValue(rosMessageName, out currentEntry) || currentEntry.Item2 <= priority)
+                s_TypeVisualFactories[rosMessageName] = new Tuple<IVisualFactory, int>(visualFactory, priority);
         }
 
         public static void RegisterTopicVisualizer(string topic, IVisualFactory visualFactory, int priority = 0)
         {
             Tuple<IVisualFactory, int> currentEntry;
-            if (!s_TopicVisualFactories.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority) s_TopicVisualFactories[topic] = new Tuple<IVisualFactory, int>(visualFactory, priority);
+            if (topic == null)
+                Debug.Log("Registered null topic!");
+            if (!s_TopicVisualFactories.TryGetValue(topic, out currentEntry) || currentEntry.Item2 <= priority)
+                s_TopicVisualFactories[topic] = new Tuple<IVisualFactory, int>(visualFactory, priority);
         }
 
-        public static IVisualFactory GetVisualizer(string topic, string rosMessageName=null)
+        public static IVisualFactory GetVisualizer(string topic, string rosMessageName = null)
         {
             Tuple<IVisualFactory, int> result;
             s_TopicVisualFactories.TryGetValue(topic, out result);
@@ -94,6 +98,9 @@ namespace Unity.Robotics.MessageVisualizers
             if (result != null)
                 return result.Item1;
 
+            string messageName = HUDPanel.GetMessageNameByTopic(meta.Topic);
+            if (messageName == null)
+                Debug.Log($"Message name for topic {meta.Topic} is null!");
             s_TypeVisualFactories.TryGetValue(HUDPanel.GetMessageNameByTopic(meta.Topic), out result);
             if (result != null)
                 return result.Item1;

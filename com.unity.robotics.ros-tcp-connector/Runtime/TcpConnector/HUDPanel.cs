@@ -236,11 +236,12 @@ namespace Unity.Robotics.ROSTCPConnector
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
-            RequestTopics();
             foreach (var savedRule in saveState.Rules)
             {
                 s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
+                s_MessageNamesByTopic[savedRule.Topic] = savedRule.RosMessageName;
             }
+            RequestTopics();
         }
 
         public void AddWindow(TopicVisualizationState window)
@@ -266,7 +267,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageSentMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageSentRealtime = Time.realtimeSinceStartup;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
@@ -277,7 +279,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
@@ -287,7 +290,8 @@ namespace Unity.Robotics.ROSTCPConnector
             var serviceID = nextServiceID;
             nextServiceID++;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
             {
                 m_PendingServiceRequests.Add(serviceID, state);
@@ -471,12 +475,14 @@ namespace Unity.Robotics.ROSTCPConnector
             maxY = 0;
             var result = true;
             foreach (var window in m_ActiveWindows)
+            {
                 if (window.WindowRect.Overlaps(rect))
                 {
                     maxX = Mathf.Max(maxX, window.WindowRect.xMax);
                     maxY = Mathf.Max(maxY, window.WindowRect.yMax);
                     result = false;
                 }
+            }
 
             return result;
         }
@@ -484,7 +490,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public IVisualFactory GetVisualizer(string topic)
         {
             IVisualFactory result;
-            if (m_TopicVisualizers.TryGetValue(topic, out result)) return result;
+            if (m_TopicVisualizers.TryGetValue(topic, out result))
+                return result;
 
             var rosMessageName = GetMessageNameByTopic(topic);
             result = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
@@ -494,7 +501,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public TopicVisualizationState GetVisualizationState(string topic, bool subscribe = false)
         {
-            if (s_AllTopics.TryGetValue(topic, out var result) && result != null) return result;
+            if (s_AllTopics.TryGetValue(topic, out var result) && result != null)
+                return result;
 
             var rosMessageName = GetMessageNameByTopic(topic);
             if (rosMessageName != null)
@@ -521,11 +529,11 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 var topic = c.Key;
                 var type = c.Value;
-                if (!s_AllTopics.ContainsKey(topic)) s_AllTopics.Add(topic, null);
+                if (!s_AllTopics.ContainsKey(topic))
+                    s_AllTopics.Add(topic, null);
                 s_MessageNamesByTopic[topic] = type;
             }
 
-            //ResizeTopicsWindow();
             m_TopicVisualizers.Clear(); // update to the newest message types
         }
 
