@@ -9,7 +9,7 @@ using UnityEngine;
 [CustomEditor(typeof(DefaultVisualizerLaserScan))]
 public class LaserScanEditor : SettingsBasedVisualizerEditor<LaserScanMsg, LaserScanVisualizerSettings>
 {
-    public override string DefaultScriptableObjectFilename => "LaserScanVisualizerSettings.asset";
+    public override string DefaultScriptableObjectPath => ScriptableObjectsSettingsPath + "LaserScanVisualizerSettings.asset";
 }
 
 #endif //UNITY_EDITOR

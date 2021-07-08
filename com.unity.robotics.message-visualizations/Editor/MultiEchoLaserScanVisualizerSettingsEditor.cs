@@ -6,7 +6,7 @@ using UnityEngine;
 [CustomEditor(typeof(DefaultVisualizerMultiEchoLaserScan))]
 public class MultiEchoLaserScanEditor : SettingsBasedVisualizerEditor<MultiEchoLaserScanMsg, MultiEchoLaserScanVisualizerSettings>
 {
-    public override string DefaultScriptableObjectFilename => "MultiEchoLaserScanVisualizerSettings.asset";
+    public override string DefaultScriptableObjectPath => ScriptableObjectsSettingsPath + "MultiEchoLaserScanVisualizerSettings.asset";
 }
 
 [CustomEditor(typeof(MultiEchoLaserScanVisualizerSettings))]
