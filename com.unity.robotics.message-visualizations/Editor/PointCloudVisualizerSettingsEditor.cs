@@ -89,8 +89,8 @@ public class PointCloudVisualSettingsEditor : Editor
             switch (settings.colorMode)
             {
                 case PointCloud2VisualizerSettings.ColorMode.HSV:
-                    CreateNewDropdown("RGB channel name:", settings, settings.m_RgbChannel, newChannel => { settings.m_RgbChannel = newChannel; });
-                    CreateMinMaxSlider(ref settings.m_RgbRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("RGB channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
+                    CreateMinMaxSlider(ref settings.m_HueRange, colorMinVal, colorMaxVal);
                     break;
                 case PointCloud2VisualizerSettings.ColorMode.RGB:
                     settings.m_UseSeparateRgb = EditorGUILayout.ToggleLeft("Separate R, G, B channels?", settings.m_UseSeparateRgb);
@@ -108,7 +108,7 @@ public class PointCloudVisualSettingsEditor : Editor
                     }
                     else
                     {
-                        CreateNewDropdown("RGB channel name:", settings, settings.m_RgbChannel, newChannel => { settings.m_RgbChannel = newChannel; });
+                        CreateNewDropdown("RGB channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
                     }
                     break;
             }

@@ -103,7 +103,7 @@ using MPoint = RosMessageTypes.Geometry.Point;
 public class PointVisualizerExample : BasicVisualizer<MPoint>
 {
 	public float size = 0.1f; // this will appear as a configurable parameter in the Unity editor.
-	
+
 	public override void Draw(MPoint msg, MessageMetadata meta, Color color, string label,
 			DebugDraw.Drawing drawing)
 	{
@@ -119,7 +119,7 @@ public class PointVisualizerExample : BasicVisualizer<MPoint>
 		// if you want to do any preprocessing or declare any state variables for the GUI to use,
 		// you can do that here.
 		string text = $"[{message.x}, {message.y}, {message.z}]";
-		
+
 		return () =>
 		{
 			// within the body of this function, it acts like a normal Unity OnGUI function.
