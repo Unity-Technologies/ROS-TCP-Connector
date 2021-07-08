@@ -857,7 +857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 0}
+  m_Settings: {fileID: 11400000, guid: f53165fb8c4d340e3ad973ec7784242e, type: 2}
 --- !u!114 &5076905229583966791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -900,7 +900,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 0}
+  m_Settings: {fileID: 11400000, guid: 1d15599f177254e03b3698260c33d600, type: 2}
 --- !u!114 &6838279059595972066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -940,7 +940,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 0}
+  m_Settings: {fileID: 11400000, guid: 1b7359921b91a4830ae57b1c5b22caeb, type: 2}
 --- !u!114 &7706973890697128904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -954,7 +954,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 0}
+  m_Settings: {fileID: 11400000, guid: f1d2df8bcd83d4410b03e8a6ddd5eac4, type: 2}
 --- !u!114 &8415320985331918883
 MonoBehaviour:
   m_ObjectHideFlags: 0
