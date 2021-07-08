@@ -11,13 +11,13 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
 {
     public PointCloud2VisualizerSettings.ColorMode colorMode;
     public ChannelFloat32Msg[] channels;
-    public string m_RgbChannel = "";
+    public string m_HueChannel = "";
     public string m_RChannel = "";
     public string m_GChannel = "";
     public string m_BChannel = "";
     public string m_SizeChannel = "";
 
-    public float[] m_RgbRange = { 0, 100 };
+    public float[] m_HueRange = { 0, 100 };
     public float[] m_RRange = { 0, 100 };
     public float[] m_GRange = { 0, 100 };
     public float[] m_BRange = { 0, 100 };
@@ -65,10 +65,10 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
                 switch (colorMode)
                 {
                     case PointCloud2VisualizerSettings.ColorMode.HSV:
-                        if (m_RgbChannel.Length > 0)
+                        if (m_HueChannel.Length > 0)
                         {
-                            float colC = message.channels[channelToIdx[m_RgbChannel]].values[i];
-                            color = Color.HSVToRGB(Mathf.InverseLerp(m_RgbRange[0], m_RgbRange[1], colC), 1, 1);
+                            float colC = message.channels[channelToIdx[m_HueChannel]].values[i];
+                            color = Color.HSVToRGB(Mathf.InverseLerp(m_HueRange[0], m_HueRange[1], colC), 1, 1);
                         }
                         break;
                     case PointCloud2VisualizerSettings.ColorMode.RGB:
@@ -90,7 +90,7 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
                         else
                         {
                             // uint8 (R,G,B) values packed into the least significant 24 bits, in order.
-                            byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[m_RgbChannel]].values[i]);
+                            byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[m_HueChannel]].values[i]);
 
                             var r = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 0));
                             var g = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 8));
@@ -112,5 +112,4 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
         }
         pointCloud.Bake();
     }
-
 }

@@ -8,7 +8,7 @@ namespace Unity.Robotics.MessageVisualizers
         where TargetMessageType : Message
     {
         [SerializeField]
-        string m_Topic;
+        protected string m_Topic;
 
         public virtual void Start()
         {
@@ -37,7 +37,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
-        
+
         public bool AssertMessageType(Message message, MessageMetadata meta)
         {
             if (!(message is TargetMessageType))

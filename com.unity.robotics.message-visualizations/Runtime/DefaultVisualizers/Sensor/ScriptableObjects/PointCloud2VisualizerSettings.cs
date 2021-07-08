@@ -137,5 +137,4 @@ public class PointCloud2VisualizerSettings : VisualizerSettings<PointCloud2Msg>
             GUILayout.Label($"Channels:\n{formats}");
         };
     }
-
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
@@ -15,7 +15,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
-            HUDPanel.RegisterTab(this);
+            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
             TFSystem.Register(this);
             if (color.a == 0)
                 color.a = 1;
@@ -35,7 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
         public void OnChanged(TFStream stream)
         {
             BasicDrawing drawing;
-            if(!drawings.TryGetValue(stream.Name, out drawing))
+            if (!drawings.TryGetValue(stream.Name, out drawing))
             {
                 drawing = BasicDrawing.Create();
                 drawings[stream.Name] = drawing;
@@ -116,7 +116,7 @@ namespace Unity.Robotics.MessageVisualizers
                 }
             }
 
-            if(numDrawn == 0)
+            if (numDrawn == 0)
             {
                 GUILayout.Label("(No transform data received yet)");
             }
@@ -132,15 +132,15 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.BeginHorizontal();
             GUILayout.Space(indent * k_IndentWidth);
 
-/*#if UNITY_EDITOR
-            GUIStyle style = new GUIStyle(UnityEditor.EditorStyles.foldout);
-            style.fixedWidth = k_TFNameWidth;// - indent * k_IndentWidth;
-            style.stretchWidth = false;
-            m_ShowExpanded[stream] = UnityEditor.EditorGUILayout.Foldout(m_ShowExpanded[stream], stream.Name, true, style);// GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth));
-#else*/
+            /*#if UNITY_EDITOR
+                        GUIStyle style = new GUIStyle(UnityEditor.EditorStyles.foldout);
+                        style.fixedWidth = k_TFNameWidth;// - indent * k_IndentWidth;
+                        style.stretchWidth = false;
+                        m_ShowExpanded[stream] = UnityEditor.EditorGUILayout.Foldout(m_ShowExpanded[stream], stream.Name, true, style);// GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth));
+            #else*/
             if (GUILayout.Button(stream.Name, GUI.skin.label, GUILayout.Width(k_TFNameWidth - indent * k_IndentWidth)))
                 m_ShowExpanded[stream] = !m_ShowExpanded[stream];
-//#endif
+            //#endif
 
             m_ShowAxes[stream] = GUILayout.Toggle(m_ShowAxes[stream], "", GUILayout.Width(k_CheckboxWidth));
             m_ShowLinks[stream] = GUILayout.Toggle(m_ShowLinks[stream], "", GUILayout.Width(k_CheckboxWidth));
@@ -152,7 +152,7 @@ namespace Unity.Robotics.MessageVisualizers
                 TFSystem.UpdateVisualization(stream);
             }
 
-            if(m_ShowExpanded[stream])
+            if (m_ShowExpanded[stream])
                 foreach (TFStream child in stream.Children)
                     DrawTFStreamHierarchy(child, indent + 1, globalChange);
         }

@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_Topic == null || m_Topic == "")
             {
-                VisualFactoryRegistry.RegisterTypeVisualizer(m_Settings.RosMessageName, this, Priority);
+                VisualFactoryRegistry.RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<TMessageType>(), this, Priority);
             }
             else
             {

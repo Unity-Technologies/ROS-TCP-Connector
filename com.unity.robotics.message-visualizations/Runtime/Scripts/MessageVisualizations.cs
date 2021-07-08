@@ -288,7 +288,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
         }
 
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings settings) where C : ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
             TFFrame frame = TFSystem.instance.GetTransform(message.header);
@@ -305,11 +305,11 @@ namespace Unity.Robotics.MessageVisualizers
                     Vector3 worldPoint = frame.TransformPoint(localPoint);
                     Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
 
-                    var radius = cConfs.m_PointRadius;
+                    var radius = settings.m_PointRadius;
 
-                    if (message.intensities.Length > 0 && cConfs.m_UseIntensitySize)
+                    if (message.intensities.Length > 0 && settings.m_UseIntensitySize)
                     {
-                        radius = Mathf.InverseLerp(cConfs.m_SizeRange[0], cConfs.m_SizeRange[1], message.intensities[i].echoes[j]);
+                        radius = Mathf.InverseLerp(settings.m_SizeRange[0], settings.m_SizeRange[1], message.intensities[i].echoes[j]);
                     }
 
                     pointCloud.AddPoint(worldPoint, c, radius);
@@ -349,6 +349,19 @@ namespace Unity.Robotics.MessageVisualizers
             gridMaterial.mainTexture = gridTexture;
 
             drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
+        }
+
+        public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            // TODO
+            TFFrame frame = TFSystem.instance.GetTransform(message.header);
+            Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
+            if (origin != null)
+            {
+                pos += origin.transform.position;
+            }
+            message.pose.pose.Draw<C>(drawing);
+            message.twist.twist.Draw<C>(drawing, color, pos, lengthScale, sphereRadius, thickness);
         }
 
         public static void Draw<C>(this PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
@@ -494,6 +507,12 @@ namespace Unity.Robotics.MessageVisualizers
             transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
 
+        public static void Draw<C>(this TwistMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawArrow(origin, origin + message.linear.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
+        }
+
         public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             Vector3 point = message.From<C>();
@@ -513,6 +532,12 @@ namespace Unity.Robotics.MessageVisualizers
                 point = origin.transform.TransformPoint(point);
             drawing.DrawPoint(point, color, size);
             drawing.DrawLabel(label, point, color, size * 1.5f);
+        }
+
+        public static void Draw<C>(this WrenchMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawArrow(origin, origin + message.force.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.torque.From<C>(), origin, color, sphereRadius, thickness);
         }
 
         public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
@@ -585,7 +610,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUI(this DiagnosticStatusMsg message)
         {
             string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
-            GUILayout.Label($"Status of {message.name}|{message.hardware_id}: {status}");
+            GUILayout.Label(message.hardware_id.Length > 0 ? $"Status of {message.name}|{message.hardware_id}: {status}" : $"Status of {message.name}: {status}");
             GUILayout.Label(message.message);
             foreach (KeyValueMsg keyValue in message.values)
             {
@@ -604,6 +629,12 @@ namespace Unity.Robotics.MessageVisualizers
         {
             "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
         };
+
+        public static void GUI(this GoalIDMsg message)
+        {
+            message.stamp.GUI();
+            GUILayout.Label($"ID: {message.id}");
+        }
 
         public static void GUI(this GoalStatusMsg message)
         {
@@ -734,8 +765,12 @@ namespace Unity.Robotics.MessageVisualizers
                 GUI(p);
         }
 
-        public static void GUI(this PoseMsg message)
+        public static void GUI(this PoseMsg message, string name = "")
         {
+            if (name.Length > 0)
+            {
+                GUILayout.Label(name);
+            }
             message.position.GUI("Position");
             message.orientation.GUI("Orientation");
         }
@@ -814,8 +849,12 @@ namespace Unity.Robotics.MessageVisualizers
             message.rotation.GUI("Rotation");
         }
 
-        public static void GUI(this TwistMsg message)
+        public static void GUI(this TwistMsg message, string name = "")
         {
+            if (name.Length > 0)
+            {
+                GUILayout.Label(name);
+            }
             message.linear.GUI("Linear");
             message.angular.GUI("Angular");
         }
