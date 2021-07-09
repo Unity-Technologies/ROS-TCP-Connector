@@ -15,24 +15,41 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
     TVisualizerSettings m_Config;
     Editor m_Editor;
 
+    bool m_LoggedNullConfigWarning;
+
     public override void OnInspectorGUI()
     {
-        SettingsBasedVisualFactory<TMessageType, TVisualizerSettings> visualizer = (SettingsBasedVisualFactory<TMessageType, TVisualizerSettings>)target;
+        var visualizer = (SettingsBasedVisualFactory<TMessageType, TVisualizerSettings>)target;
         visualizer.Topic = EditorGUILayout.TextField("Topic", visualizer.Topic);
 
+        m_Config ??= visualizer.Settings ??=
+            AssetDatabase.LoadAssetAtPath<TVisualizerSettings>(DefaultScriptableObjectPath);
         if (m_Config == null)
         {
-            m_Config = visualizer.Settings;
-            if (m_Config == null)
-                m_Config = (TVisualizerSettings)AssetDatabase.LoadAssetAtPath(DefaultScriptableObjectPath, typeof(TVisualizerSettings));
+            if (!m_LoggedNullConfigWarning)
+            {
+                Debug.LogWarning(
+                    $"Failed to find default settings for {GetType()} -- you will have to find them manually.");
+                m_LoggedNullConfigWarning = true;
+            }
         }
-        GUI.changed = false;
-        m_Config = (TVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(TVisualizerSettings), false);
-        visualizer.Settings = m_Config;
+        else
+        {
+            m_LoggedNullConfigWarning = false;
+        }
 
-        EditorGUI.indentLevel++;
-        OnInspectorGUIForSettings(visualizer);
-        EditorGUI.indentLevel--;
+        GUI.changed = false;
+        m_Config = (TVisualizerSettings)EditorGUILayout.ObjectField(
+            "Visualizer settings", m_Config, typeof(TVisualizerSettings), false);
+
+        if (m_Config != null)
+        {
+            visualizer.Settings = m_Config;
+            EditorGUI.indentLevel++;
+            OnInspectorGUIForSettings(visualizer);
+            EditorGUI.indentLevel--;
+        }
+
 
         if (GUI.changed)
         {
