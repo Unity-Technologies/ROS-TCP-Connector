@@ -7,18 +7,28 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
 public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
 {
-    public TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-    public bool m_UseIntensitySize;
-    public float m_PointRadius = 0.05f;
-    public float m_MaxIntensity = 100.0f;
+    [SerializeField]
+    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
+    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
+    [SerializeField]
+    bool m_UseIntensitySize;
+    public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
+    [SerializeField]
+    float m_PointRadius = 0.05f;
+    public float PointRadius { get => m_PointRadius; set => m_PointRadius = value; }
+    [SerializeField]
+    float m_MaxIntensity = 100.0f;
+    public float MaxIntensity { get => m_MaxIntensity; set => m_MaxIntensity = value; }
 
-    public enum ColorMode
+    public enum ColorModeType
     {
         Distance,
         Intensity,
         Angle,
     }
-    public ColorMode m_ColorMode;
+    [SerializeField]
+    ColorModeType m_ColorMode;
+    public ColorModeType ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
     public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
     {
@@ -27,9 +37,9 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
         float angle = -message.angle_min;
-        ColorMode mode = m_ColorMode;
-        if (mode == ColorMode.Intensity && message.intensities.Length != message.ranges.Length)
-            mode = ColorMode.Distance;
+        ColorModeType mode = m_ColorMode;
+        if (mode == ColorModeType.Intensity && message.intensities.Length != message.ranges.Length)
+            mode = ColorModeType.Distance;
         for (int i = 0; i < message.ranges.Length; i++)
         {
             Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
@@ -37,13 +47,13 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
             Color32 c = Color.white;
             switch (mode)
             {
-                case ColorMode.Distance:
+                case ColorModeType.Distance:
                     c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, message.ranges[i]), 1, 1);
                     break;
-                case ColorMode.Intensity:
+                case ColorModeType.Intensity:
                     c = new Color(1, message.intensities[i] / m_MaxIntensity, 0, 1);
                     break;
-                case ColorMode.Angle:
+                case ColorModeType.Angle:
                     c = Color.HSVToRGB((1 + angle / (Mathf.PI * 2)) % 1, 1, 1);
                     break;
             }

@@ -112,7 +112,6 @@ public class PointCloud2VisualizerSettings : VisualizerSettings<PointCloud2Msg>
 
             pointCloud.AddPoint(worldPoint, color, radius);
         }
-        //pointCloud.Bake();
     }
 
     public override Action CreateGUI(PointCloud2Msg message, MessageMetadata meta)

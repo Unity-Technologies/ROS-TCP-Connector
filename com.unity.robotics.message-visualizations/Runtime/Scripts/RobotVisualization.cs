@@ -1,13 +1,12 @@
 using RosMessageTypes.Sensor;
 using RosMessageTypes.Trajectory;
-//using Unity.Robotics.UrdfImporter;
+using Unity.Robotics.UrdfImporter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
-using RosSharp.Urdf;
 
 namespace Unity.Robotics.MessageVisualizers
 {

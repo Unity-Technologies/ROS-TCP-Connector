@@ -13,7 +13,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual void Start()
         {
-            if (m_Topic == null || m_Topic == "")
+            if (string.IsNullOrEmpty(m_Topic))
             {
                 VisualFactoryRegistry.RegisterTypeVisualizer<TMessageType>(this, Priority);
             }
@@ -48,7 +48,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static string SelectLabel(string userLabel, MessageMetadata meta)
         {
-            if (userLabel == null || userLabel == "")
+            if (string.IsNullOrEmpty(userLabel))
                 return meta.Topic;
 
             return userLabel;
