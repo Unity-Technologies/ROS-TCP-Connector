@@ -347,7 +347,7 @@ namespace Unity.Robotics.ROSTCPConnector
             InitializeHUD();
 
             if (listenForTFMessages)
-                TFSystem.Init();
+                TFSystem.GetOrCreateInstance();
 
             if (ConnectOnStart)
                 Connect();

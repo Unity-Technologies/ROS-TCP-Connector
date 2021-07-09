@@ -25,7 +25,6 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
         drawing.SetTFTrackingType(m_TFTrackingType, message.header);
 
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
         float angle = -message.angle_min;
         ColorMode mode = m_ColorMode;
@@ -33,8 +32,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
             mode = ColorMode.Distance;
         for (int i = 0; i < message.ranges.Length; i++)
         {
-            Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
-            Vector3 worldPoint = frame.TransformPoint(localPoint);
+            Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
 
             Color32 c = Color.white;
             switch (mode)
@@ -55,7 +53,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
             {
                 radius = Mathf.InverseLerp(0, m_MaxIntensity, message.intensities[i]);
             }
-            pointCloud.AddPoint(worldPoint, c, radius);
+            pointCloud.AddPoint(point, c, radius);
 
             angle -= message.angle_increment;
         }
