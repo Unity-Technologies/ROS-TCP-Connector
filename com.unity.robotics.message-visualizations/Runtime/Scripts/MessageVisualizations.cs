@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RosMessageTypes.BuiltinInterfaces;
+using RosMessageTypes.Map;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
@@ -494,7 +495,9 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
+        static GameObject s_OccupancyGridGameObject;
         static Mesh s_OccupancyGridMesh;
+        static Texture2D s_OccupancyGridTexture;
         static Material s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/Color"));
 
         public static void Draw<C>(this OccupancyGridMsg message, BasicDrawing drawing) where C : ICoordinateSpace, new()
@@ -514,16 +517,44 @@ namespace Unity.Robotics.MessageVisualizers
                 s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/OccupancyGrid"));
             }
 
-            Texture2D gridTexture = new Texture2D(width, height, TextureFormat.R8, true);
-            gridTexture.wrapMode = TextureWrapMode.Clamp;
-            gridTexture.filterMode = FilterMode.Point;
-            gridTexture.SetPixelData(message.data, 0);
-            gridTexture.Apply();
+            s_OccupancyGridTexture = new Texture2D(width, height, TextureFormat.R8, true);
+            s_OccupancyGridTexture.wrapMode = TextureWrapMode.Clamp;
+            s_OccupancyGridTexture.filterMode = FilterMode.Point;
+            s_OccupancyGridTexture.SetPixelData(message.data, 0);
+            s_OccupancyGridTexture.Apply();
 
             Material gridMaterial = new Material(s_OccupancyGridMaterial);
-            gridMaterial.mainTexture = gridTexture;
+            gridMaterial.mainTexture = s_OccupancyGridTexture;
 
-            drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
+            s_OccupancyGridGameObject = drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
+        }
+
+        public static void Draw<C>(this OccupancyGridUpdateMsg message, BasicDrawing drawing) where C : ICoordinateSpace, new()
+        {
+            int width = (int)message.width;
+            int height = (int)message.height;
+            var updateTexture = new Texture2D(width, height, TextureFormat.R8, true);
+            updateTexture.wrapMode = TextureWrapMode.Clamp;
+            updateTexture.filterMode = FilterMode.Point;
+            updateTexture.SetPixelData(message.data, 0);
+            updateTexture.Apply();
+
+            if (s_OccupancyGridTexture == null)
+            {
+                s_OccupancyGridTexture = new Texture2D(width, height, TextureFormat.R8, true);
+                s_OccupancyGridTexture.wrapMode = TextureWrapMode.Clamp;
+                s_OccupancyGridTexture.filterMode = FilterMode.Point;
+            }
+            s_OccupancyGridTexture.SetPixels(message.x, message.y, width, height, updateTexture.GetPixels(0, 0, width, height));
+            s_OccupancyGridTexture.Apply();
+
+            var gridMaterial = new Material(s_OccupancyGridMaterial);
+            gridMaterial.mainTexture = s_OccupancyGridTexture;
+
+            if (s_OccupancyGridGameObject != null)
+            {
+                s_OccupancyGridGameObject = drawing.DrawMesh(s_OccupancyGridMesh, s_OccupancyGridGameObject.transform.position, s_OccupancyGridGameObject.transform.rotation, s_OccupancyGridGameObject.transform.localScale, gridMaterial);
+            }
         }
 
         public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
