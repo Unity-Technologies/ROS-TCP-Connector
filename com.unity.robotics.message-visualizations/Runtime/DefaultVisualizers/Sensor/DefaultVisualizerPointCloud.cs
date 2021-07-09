@@ -7,4 +7,5 @@ using UnityEngine;
 
 public class DefaultVisualizerPointCloud : SettingsBasedVisualFactory<PointCloudMsg, PointCloudVisualizerSettings>
 {
+    public override string DefaultScriptableObjectPath => "VisualizerSettings/PointCloudVisualizerSettings";
 }

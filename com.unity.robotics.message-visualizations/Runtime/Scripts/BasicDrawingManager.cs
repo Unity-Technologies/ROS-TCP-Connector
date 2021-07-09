@@ -22,7 +22,7 @@ namespace Unity.Robotics.MessageVisualizers
                         s_Instance.m_UnlitVertexColorMaterial = new Material(Shader.Find("Unlit/VertexColor"));
                         s_Instance.m_UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
                         s_Instance.m_UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
-                        s_Instance.m_UnlitPointCloudMaterial = new Material(Shader.Find("Unlit/PointCloud"));
+                        s_Instance.m_UnlitPointCloudMaterial = new Material(Shader.Find("Unlit/PointCloudCutout"));
                     }
                 }
 #endif

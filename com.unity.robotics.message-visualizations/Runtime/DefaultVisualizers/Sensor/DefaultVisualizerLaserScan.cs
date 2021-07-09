@@ -6,4 +6,5 @@ using UnityEngine;
 
 public class DefaultVisualizerLaserScan : SettingsBasedVisualFactory<LaserScanMsg, LaserScanVisualizerSettings>
 {
+    public override string DefaultScriptableObjectPath => "VisualizerSettings/LaserScanVisualizerSettings";
 }

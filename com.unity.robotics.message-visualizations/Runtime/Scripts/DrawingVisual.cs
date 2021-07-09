@@ -1,3 +1,4 @@
+using RosMessageTypes.Std;
 using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -23,12 +24,16 @@ namespace Unity.Robotics.MessageVisualizers
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
         IVisualDrawer<T> m_Drawer;
+        TFTrackingType m_TFTrackingType;
+        HeaderMsg m_HeaderMsg;
 
-        public DrawingVisual(T newMessage, MessageMetadata newMeta, IVisualDrawer<T> drawer)
+        public DrawingVisual(T newMessage, MessageMetadata newMeta, IVisualDrawer<T> drawer, TFTrackingType tfTrackingType = TFTrackingType.None, HeaderMsg headerMsg = null)
         {
             message = newMessage;
             meta = newMeta;
             m_Drawer = drawer;
+            m_TFTrackingType = tfTrackingType;
+            m_HeaderMsg = headerMsg;
         }
 
         public bool hasDrawing => m_BasicDrawing != null;

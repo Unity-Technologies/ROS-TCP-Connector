@@ -9,9 +9,6 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
     where TMessageType : Message
     where TVisualizerSettings : VisualizerSettings<TMessageType>
 {
-    public const string ScriptableObjectsSettingsPath = "Assets/ROS-TCP-Connector/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects/";
-    public abstract string DefaultScriptableObjectPath { get; }
-
     TVisualizerSettings m_Config;
     Editor m_Editor;
 
@@ -20,12 +17,7 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         SettingsBasedVisualFactory<TMessageType, TVisualizerSettings> visualizer = (SettingsBasedVisualFactory<TMessageType, TVisualizerSettings>)target;
         visualizer.Topic = EditorGUILayout.TextField("Topic", visualizer.Topic);
 
-        if (m_Config == null)
-        {
-            m_Config = visualizer.Settings;
-            if (m_Config == null)
-                m_Config = (TVisualizerSettings)AssetDatabase.LoadAssetAtPath(DefaultScriptableObjectPath, typeof(TVisualizerSettings));
-        }
+        m_Config = visualizer.Settings;
         GUI.changed = false;
         m_Config = (TVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(TVisualizerSettings), false);
         visualizer.Settings = m_Config;

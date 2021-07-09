@@ -5,10 +5,13 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class SettingsBasedVisualFactory<TMessageType, TDrawingSettings> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class SettingsBasedVisualFactory<TMessageType, TDrawingSettings> : MonoBehaviour, IVisualFactory, IPriority
         where TMessageType : Message
         where TDrawingSettings : VisualizerSettings<TMessageType>
     {
+        public const string ScriptableObjectsSettingsPath = "ScriptableObjects/";
+        public abstract string DefaultScriptableObjectPath { get; }
+
         [SerializeField]
         string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
@@ -16,6 +19,22 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         TDrawingSettings m_Settings;
         public TDrawingSettings Settings { get => m_Settings; set => m_Settings = value; }
+
+        void Awake()
+        {
+            if (m_Settings == null)
+            {
+                m_Settings = Resources.Load<TDrawingSettings>(DefaultScriptableObjectPath);
+            }
+        }
+
+        void OnValidate()
+        {
+            if (m_Settings == null)
+            {
+                m_Settings = (TDrawingSettings)Resources.Load<ScriptableObject>(DefaultScriptableObjectPath);
+            }
+        }
 
         public virtual void Start()
         {

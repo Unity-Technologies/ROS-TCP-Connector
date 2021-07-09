@@ -17,6 +17,7 @@ public class TFSystem
 {
     static ITFSystemVisualizer s_Visualizer;
     Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
+    Dictionary<string, Transform> m_TrackingTransformTable = new Dictionary<string, Transform>();
     public static TFSystem instance { get; private set; }
 
     public static void Init()
@@ -72,9 +73,19 @@ public class TFSystem
 
     public TFStream GetTransformStream(string frame_id)
     {
-        TFStream tf;
-        m_TransformTable.TryGetValue(frame_id, out tf);
-        return tf;
+        TFStream stream;
+        m_TransformTable.TryGetValue(frame_id, out stream);
+        return stream;
+    }
+
+    public GameObject GetTransformObject(string frame_id)
+    {
+        TFStream stream = GetTransformStream(frame_id);
+        if (stream != null)
+        {
+            return stream.GameObject;
+        }
+        return null;
     }
 
     TFStream GetOrCreateTFStream(string frame_id)

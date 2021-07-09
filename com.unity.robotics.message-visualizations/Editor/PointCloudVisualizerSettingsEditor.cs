@@ -9,7 +9,6 @@ using UnityEngine;
 [CustomEditor(typeof(DefaultVisualizerPointCloud))]
 public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointCloudMsg, PointCloudVisualizerSettings>
 {
-    public override string DefaultScriptableObjectPath => ScriptableObjectsSettingsPath + "PointCloudVisualizerSettings.asset";
 }
 
 [CustomEditor(typeof(PointCloudVisualizerSettings))]

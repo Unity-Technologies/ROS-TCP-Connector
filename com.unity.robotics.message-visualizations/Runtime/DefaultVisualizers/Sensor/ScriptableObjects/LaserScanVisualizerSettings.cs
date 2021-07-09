@@ -7,6 +7,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
 public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
 {
+    public TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
     public bool m_UseIntensitySize;
     public float m_PointRadius = 0.05f;
     public float m_MaxIntensity = 100.0f;
@@ -21,6 +22,8 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
 
     public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
         TFFrame frame = TFSystem.instance.GetTransform(message.header);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
