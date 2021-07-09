@@ -608,7 +608,7 @@ namespace Unity.Robotics.MessageVisualizers
             DrawMesh(source, position, rotation, scale, colorMaterial);
         }
 
-        public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Material material)
+        public GameObject DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Material material)
         {
             GameObject meshObject;
             MeshRenderer mrenderer;
@@ -631,6 +631,8 @@ namespace Unity.Robotics.MessageVisualizers
             meshObject.transform.localScale = scale;
             mrenderer.sharedMaterial = material;
             m_SupplementalMeshes.Add(mrenderer);
+
+            return meshObject;
         }
 
         public PointCloudDrawing AddPointCloud(int numPoints = 0, Material material = null)
