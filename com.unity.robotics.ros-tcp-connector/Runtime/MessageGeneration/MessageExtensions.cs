@@ -390,13 +390,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format = "jpeg")
         {
             var data = tex.GetRawTextureData();
-            return new CompressedImageMsg(new MHeader(), format, data);
+            return new CompressedImageMsg(new HeaderMsg(), format, data);
         }
 
         public static ImageMsg ImageMsg(this Texture2D tex, string encoding = "RGBA", byte isBigEndian = 0, uint step = 4)
         {
             var data = tex.GetRawTextureData();
-            return new ImageMsg(new MHeader(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
+            return new ImageMsg(new HeaderMsg(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
         }
 
         static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>()

@@ -1,9 +1,16 @@
+using RosMessageTypes.Std;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
+    public enum TFTrackingType
+    {
+        None,
+        Exact,
+        TrackLatest,
+    }
     public class BasicDrawing : MonoBehaviour
     {
         static GUIStyle s_LabelStyle;
@@ -58,6 +65,31 @@ namespace Unity.Robotics.MessageVisualizers
                     alignment = TextAnchor.LowerLeft,
                     wordWrap = false,
                 };
+            }
+        }
+
+        public void SetTFTrackingType(TFTrackingType tfTrackingType, HeaderMsg headerMsg)
+        {
+            switch (tfTrackingType)
+            {
+                case TFTrackingType.Exact:
+                    {
+                        TFFrame frame = TFSystem.instance.GetTransform(headerMsg);
+                        transform.position = frame.translation;
+                        transform.rotation = frame.rotation;
+                    }
+                    break;
+                case TFTrackingType.TrackLatest:
+                    {
+                        transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id).transform;
+                        transform.localPosition = Vector3.zero;
+                        transform.localRotation = Quaternion.identity;
+                    }
+                    break;
+                case TFTrackingType.None:
+                    transform.localPosition = Vector3.zero;
+                    transform.localRotation = Quaternion.identity;
+                    break;
             }
         }
 

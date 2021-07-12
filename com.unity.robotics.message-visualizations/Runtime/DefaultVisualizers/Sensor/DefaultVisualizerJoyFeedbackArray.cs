@@ -9,7 +9,7 @@ public class DefaultVisualizerJoyFeedbackArray : GuiVisualFactory<JoyFeedbackArr
     {
         return () =>
         {
-            foreach (MJoyFeedback m in message.array) m.GUI();
+            foreach (JoyFeedbackMsg m in message.array) m.GUI();
         };
     }
 }

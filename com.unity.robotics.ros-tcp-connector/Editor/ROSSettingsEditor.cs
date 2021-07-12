@@ -19,7 +19,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
         }
 
         GameObject prefabObj;
-        ROSConnection prefab;
+        Unity.Robotics.ROSTCPConnector.ROSConnection prefab;
 
         public enum RosProtocol
         {

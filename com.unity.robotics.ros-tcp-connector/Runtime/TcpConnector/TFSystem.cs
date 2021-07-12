@@ -17,16 +17,17 @@ public class TFSystem
 {
     static ITFSystemVisualizer s_Visualizer;
     Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
+    Dictionary<string, Transform> m_TrackingTransformTable = new Dictionary<string, Transform>();
     public static TFSystem instance { get; private set; }
 
-    public static void Init()
+    public static TFSystem GetOrCreateInstance()
     {
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.instance.RegisterSubscriber("/tf", TFMessageMsg.k_RosMessageName);
             ROSConnection.instance.Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
         }
+        return instance;
     }
 
     public IEnumerable<string> GetTransformNames()
@@ -73,9 +74,15 @@ public class TFSystem
 
     public TFStream GetTransformStream(string frame_id)
     {
-        TFStream tf;
-        m_TransformTable.TryGetValue(frame_id, out tf);
-        return tf;
+        TFStream stream;
+        m_TransformTable.TryGetValue(frame_id, out stream);
+        return stream;
+    }
+
+    public GameObject GetTransformObject(string frame_id)
+    {
+        TFStream stream = GetOrCreateTFStream(frame_id);
+        return stream.GameObject;
     }
 
     TFStream GetOrCreateTFStream(string frame_id)
@@ -91,6 +98,7 @@ public class TFSystem
             if (slash <= 0)
             {
                 // there's no slash, or only an initial slash - just create a new root object
+                // (set the parent later if and when we learn more)
                 tf = new TFStream(null, singleName);
             }
             else
@@ -101,6 +109,10 @@ public class TFSystem
 
             m_TransformTable[singleName] = tf;
             UpdateVisualization(tf);
+        }
+        else if (slash > 0 && tf.Parent == null)
+        {
+            tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash)));
         }
 
         return tf;
