@@ -24,7 +24,6 @@ public static class RosEditorAnalytics
     struct AnalyticsData
     {
         public string protocol;
-        public string user_id;
     }
 
     public static void SendAnalytics()
@@ -39,7 +38,6 @@ public static class RosEditorAnalytics
 #else
             protocol = "ROS1",
 #endif
-            user_id = UnityEditor.CloudProjectSettings.userId,
         };
 
         EditorAnalytics.SendEventWithLimit(k_EventName, data);
