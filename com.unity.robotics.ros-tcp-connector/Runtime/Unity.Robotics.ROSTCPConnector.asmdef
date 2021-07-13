@@ -2,7 +2,14 @@
     "name": "Unity.Robotics.ROSTCPConnector",
     "rootNamespace": "Unity.Robotics.ROSTCPConnector",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "WSA",
+        "WindowsStandalone32",
+        "WindowsStandalone64"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
