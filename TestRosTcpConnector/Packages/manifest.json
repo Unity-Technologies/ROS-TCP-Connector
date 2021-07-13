@@ -4,7 +4,7 @@
     "com.unity.ide.rider": "2.0.7",
     "com.unity.ide.visualstudio": "2.0.8",
     "com.unity.ide.vscode": "1.2.3",
-    "com.unity.render-pipelines.universal": "10.3.2",
+    "com.unity.render-pipelines.universal": "10.2.2",
     "com.unity.robotics.ros-tcp-connector": "file:../../com.unity.robotics.ros-tcp-connector",
     "com.unity.test-framework": "1.1.24",
     "com.unity.testtools.codecoverage": "1.0.0",
