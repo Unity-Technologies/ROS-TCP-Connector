@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -347,10 +348,14 @@ namespace Unity.Robotics.ROSTCPConnector
             InitializeHUD();
 
             if (listenForTFMessages)
-                TFSystem.Init();
+            {
+                TransformGraph.Init();
+            }
 
             if (ConnectOnStart)
+            {
                 Connect();
+            }
         }
 
         public void Connect(string ipAddress, int port)

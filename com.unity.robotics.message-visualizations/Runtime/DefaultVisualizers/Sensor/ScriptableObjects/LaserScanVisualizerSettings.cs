@@ -2,6 +2,7 @@ using RosMessageTypes.Sensor;
 using System;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
@@ -25,7 +26,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
         drawing.SetTFTrackingType(m_TFTrackingType, message.header);
 
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
+        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
         float angle = -message.angle_min;
         ColorMode mode = m_ColorMode;

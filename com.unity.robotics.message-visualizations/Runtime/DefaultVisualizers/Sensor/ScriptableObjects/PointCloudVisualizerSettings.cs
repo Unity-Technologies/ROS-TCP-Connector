@@ -4,6 +4,7 @@ using System.Linq;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
@@ -47,7 +48,7 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
             channels = message.channels;
 
         pointCloud.SetCapacity(message.points.Length);
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
+        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
 
         Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
         for (int i = 0; i < message.channels.Length; i++)

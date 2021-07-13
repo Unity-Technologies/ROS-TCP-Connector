@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using UnityEditor.U2D;
 using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
@@ -266,11 +267,22 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        static bool CanBeLoaded(TopicVisualizationState.SaveState state)
+        {
+            return MessageRegistry.HasDeserializeFunction(state.RosMessageName);
+        }
+
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
             foreach (var savedRule in saveState.Rules)
             {
+                if (!CanBeLoaded(savedRule))
+                {
+                    Debug.LogWarning($"Can't load {savedRule}, skipping...");
+                    continue;
+                }
+
                 s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
                 s_MessageNamesByTopic[savedRule.Topic] = savedRule.RosMessageName;
             }

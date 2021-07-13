@@ -23,6 +23,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Rect m_WindowRect;
 
+        public string Topic { get; }
+        public string RosMessageName { get; }
+        public bool ShowWindow { get; private set; }
+        public bool ShowDrawing { get; private set; }
+        public Vector2 WindowScrollPosition { get; set; }
+        public Rect WindowRect => m_WindowRect;
+        public MessageWindowContents WindowContents => m_Contents as MessageWindowContents;
+
         public TopicVisualizationState(SaveState saveState, HUDPanel hud)
         {
             m_Hud = hud;
@@ -60,14 +68,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 SetShowDrawing(false);
             }
         }
-
-        public string Topic { get; }
-        public string RosMessageName { get; }
-        public bool ShowWindow { get; private set; }
-        public bool ShowDrawing { get; private set; }
-        public Vector2 WindowScrollPosition { get; set; }
-        public Rect WindowRect => m_WindowRect;
-        public MessageWindowContents WindowContents => m_Contents as MessageWindowContents;
 
         public SaveState CreateSaveState()
         {

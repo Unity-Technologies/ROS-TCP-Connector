@@ -7,8 +7,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<MessageDeserializer, Message>> s_DeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>();
-        class RegistryEntry<T>
+        static Dictionary<string, Func<MessageDeserializer, Message>> s_DeserializeFunctionsByName =
+            new Dictionary<string, Func<MessageDeserializer, Message>>();
+
+        static class RegistryEntry<T>
         {
             public static string s_RosMessageName;
             public static Func<MessageDeserializer, T> s_DeserializeFunction;
@@ -19,6 +21,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             RegistryEntry<T>.s_RosMessageName = rosMessageName;
             RegistryEntry<T>.s_DeserializeFunction = deserialize;
             s_DeserializeFunctionsByName[rosMessageName] = deserialize;
+        }
+
+        public static bool HasDeserializeFunction(string rosMessageName)
+        {
+            return s_DeserializeFunctionsByName.ContainsKey(rosMessageName);
         }
 
         public static Func<MessageDeserializer, Message> GetDeserializeFunction(string rosMessageName)

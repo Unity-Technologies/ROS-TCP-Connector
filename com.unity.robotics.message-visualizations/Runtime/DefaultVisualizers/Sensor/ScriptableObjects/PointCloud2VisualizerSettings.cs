@@ -5,6 +5,7 @@ using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PointCloud2VisualizerSettings", menuName = "Robotics/Sensor/PointCloud2", order = 1)]
@@ -52,7 +53,7 @@ public class PointCloud2VisualizerSettings : VisualizerSettings<PointCloud2Msg>
             channelToIdx.Add(message.fields[i].name, i);
         }
 
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
+        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
 
         int xChannelOffset = (int)message.fields[channelToIdx[m_XChannel]].offset;
         int yChannelOffset = (int)message.fields[channelToIdx[m_YChannel]].offset;

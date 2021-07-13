@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class TFSystemVisualizer : MonoBehaviour, ITFSystemVisualizer, ROSTCPConnector.IHudTab
+    public class TransformVisualizer : MonoBehaviour, ITransformVisualizer, ROSTCPConnector.IHudTab
     {
         public float axesScale = 0.1f;
         public float lineThickness = 0.01f;
@@ -16,12 +17,12 @@ namespace Unity.Robotics.MessageVisualizers
         public void Start()
         {
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
-            TFSystem.Register(this);
+            TransformGraph.Register(this);
             if (color.a == 0)
                 color.a = 1;
         }
 
-        void EnsureSettings(TFStream stream)
+        void EnsureSettings(TransformStream stream)
         {
             if (!m_ShowExpanded.ContainsKey(stream))
             {
@@ -32,7 +33,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void OnChanged(TFStream stream)
+        public void OnChanged(TransformStream stream)
         {
             BasicDrawing drawing;
             if (!drawings.TryGetValue(stream.Name, out drawing))
@@ -50,7 +51,7 @@ namespace Unity.Robotics.MessageVisualizers
                 }
             }
 
-            TFFrame frame = stream.GetLocalTF();
+            var frame = stream.GetFrameFailSilently();
 
             drawing.transform.localPosition = frame.translation;
             drawing.transform.localRotation = frame.rotation;
@@ -74,13 +75,13 @@ namespace Unity.Robotics.MessageVisualizers
         Vector2 m_TransformMenuScrollPosition;
 
         // Default visualization settings
-        Dictionary<TFStream, bool> m_ShowExpanded = new Dictionary<TFStream, bool>();
+        Dictionary<TransformStream, bool> m_ShowExpanded = new Dictionary<TransformStream, bool>();
         public bool ShowTFAxesDefault { get; set; }
-        Dictionary<TFStream, bool> m_ShowAxes = new Dictionary<TFStream, bool>();
+        Dictionary<TransformStream, bool> m_ShowAxes = new Dictionary<TransformStream, bool>();
         public bool ShowTFLinksDefault { get; set; }
-        Dictionary<TFStream, bool> m_ShowLinks = new Dictionary<TFStream, bool>();
+        Dictionary<TransformStream, bool> m_ShowLinks = new Dictionary<TransformStream, bool>();
         public bool ShowTFNamesDefault { get; set; }
-        Dictionary<TFStream, bool> m_ShowNames = new Dictionary<TFStream, bool>();
+        Dictionary<TransformStream, bool> m_ShowNames = new Dictionary<TransformStream, bool>();
 
         string IHudTab.Label => "Transforms";
 
@@ -107,7 +108,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             // draw the root objects
             int numDrawn = 0;
-            foreach (TFStream stream in TFSystem.instance.GetTransforms())
+            foreach (TransformStream stream in TransformGraph.instance.GetTransforms())
             {
                 if (stream.Parent == null)
                 {
@@ -124,7 +125,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndScrollView();
         }
 
-        void DrawTFStreamHierarchy(TFStream stream, int indent, bool globalChange)
+        void DrawTFStreamHierarchy(TransformStream stream, int indent, bool globalChange)
         {
             GUI.changed = false;
             EnsureSettings(stream);
@@ -149,15 +150,15 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (GUI.changed || globalChange)
             {
-                TFSystem.UpdateVisualization(stream);
+                TransformGraph.UpdateVisualization(stream);
             }
 
             if (m_ShowExpanded[stream])
-                foreach (TFStream child in stream.Children)
+                foreach (TransformStream child in stream.Children)
                     DrawTFStreamHierarchy(child, indent + 1, globalChange);
         }
 
-        bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TFStream, bool> setter)
+        bool DrawTFHeaderCheckbox(bool wasChecked, string label, Action<TransformStream, bool> setter)
         {
             bool result = GUILayout.Toggle(wasChecked, "", GUILayout.Width(k_CheckboxWidth));
 
@@ -168,7 +169,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (wasChecked != result)
             {
-                foreach (TFStream stream in TFSystem.instance.GetTransforms())
+                foreach (TransformStream stream in TransformGraph.instance.GetTransforms())
                 {
                     setter(stream, result);
                 }

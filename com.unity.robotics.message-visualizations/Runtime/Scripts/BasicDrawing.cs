@@ -74,14 +74,14 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 case TFTrackingType.Exact:
                     {
-                        TFFrame frame = TFSystem.instance.GetTransform(headerMsg);
+                        TransformFrame frame = TransformGraph.instance.GetTransform(headerMsg);
                         transform.position = frame.translation;
                         transform.rotation = frame.rotation;
                     }
                     break;
                 case TFTrackingType.TrackLatest:
                     {
-                        transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id).transform;
+                        transform.parent = TransformGraph.instance.GetTransformGameObject(headerMsg.frame_id).transform;
                         transform.localPosition = Vector3.zero;
                         transform.localRotation = Quaternion.identity;
                     }
