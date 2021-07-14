@@ -349,7 +349,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (listenForTFMessages)
             {
-                TransformGraph.Init();
+                TransformManager.Init();
             }
 
             if (ConnectOnStart)

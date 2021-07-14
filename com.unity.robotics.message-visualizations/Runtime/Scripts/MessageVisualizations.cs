@@ -12,6 +12,7 @@ using System.Linq;
 using RosMessageTypes.BuiltinInterfaces;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
@@ -74,10 +75,10 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
-            message.orientation.Draw<C>(drawing, frame.translation);
-            drawing.DrawArrow(frame.translation, frame.translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
+            TransformFrame frame = TransformManager.instance.GetTransform(message.header);
+            message.orientation.Draw<C>(drawing, frame.Translation);
+            drawing.DrawArrow(frame.Translation, frame.Translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.Translation, color, sphereRadius, thickness);
         }
 
         public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
@@ -291,7 +292,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings settings) where C : ICoordinateSpace, new()
         {
             pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
-            TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+            TransformFrame frame = TransformManager.instance.GetTransform(message.header);
             // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
             float angle = -message.angle_min;
             // foreach(MLaserEcho echo in message.ranges)
@@ -354,7 +355,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             // TODO
-            TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+            TransformFrame frame = TransformManager.instance.GetTransform(message.header);
             Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
             if (origin != null)
             {
@@ -457,17 +458,17 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
-            TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+            TransformFrame frame = TransformManager.instance.GetTransform(message.header);
 
             var s = Mathf.Asin(message.field_of_view);
             var c = Mathf.Acos(message.field_of_view);
             Color col = Color.HSVToRGB(Mathf.InverseLerp(message.min_range, message.max_range, message.range), 1, 1);
 
             Vector3 end = new Vector3(message.range * c, 0, message.range * s);
-            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.Rotation, Vector3.one);
             end = matrix.MultiplyPoint(end);
 
-            drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
+            drawing.DrawCone(frame.Translation + end, frame.Translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
         }
 
         public static void Draw<C>(this SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)
@@ -489,15 +490,28 @@ namespace Unity.Robotics.MessageVisualizers
                     );
                     break;
                 case SolidPrimitiveMsg.SPHERE:
-                    drawing.DrawSphere(originPosition, color, (float)message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]);
+                    drawing.DrawSphere(
+                        originPosition,
+                        color,
+                        (float)message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]);
                     break;
                 case SolidPrimitiveMsg.CYLINDER:
-                    Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT] * 0.5f;
-                    drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]);
+                    var cylinderAxis =
+                        originRotation * Vector3.up * ((float)message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT] * 0.5f);
+                    drawing.DrawCylinder(
+                        originPosition - cylinderAxis,
+                        originPosition + cylinderAxis,
+                        color,
+                        (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]);
                     break;
                 case SolidPrimitiveMsg.CONE:
-                    Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT] * 0.5f;
-                    drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
+                    var coneAxis =
+                        originRotation * Vector3.up * ((float)message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT] * 0.5f);
+                    drawing.DrawCone(
+                        originPosition - coneAxis,
+                        originPosition + coneAxis,
+                        color,
+                        (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
                     break;
             }
         }

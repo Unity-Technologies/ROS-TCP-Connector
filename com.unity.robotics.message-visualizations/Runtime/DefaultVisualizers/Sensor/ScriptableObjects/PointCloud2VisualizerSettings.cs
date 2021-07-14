@@ -53,7 +53,7 @@ public class PointCloud2VisualizerSettings : VisualizerSettings<PointCloud2Msg>
             channelToIdx.Add(message.fields[i].name, i);
         }
 
-        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+        TransformFrame frame = TransformManager.instance.GetTransform(message.header);
 
         int xChannelOffset = (int)message.fields[channelToIdx[m_XChannel]].offset;
         int yChannelOffset = (int)message.fields[channelToIdx[m_YChannel]].offset;

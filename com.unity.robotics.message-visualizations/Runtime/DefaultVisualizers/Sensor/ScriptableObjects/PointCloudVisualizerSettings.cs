@@ -48,7 +48,7 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
             channels = message.channels;
 
         pointCloud.SetCapacity(message.points.Length);
-        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+        TransformFrame frame = TransformManager.instance.GetTransform(message.header);
 
         Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
         for (int i = 0; i < message.channels.Length; i++)

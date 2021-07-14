@@ -13,7 +13,9 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
         const double k_HistoryMaxLengthSeconds = 10.0;
         const int k_HistoryMaxNumEntries = 100;
 
-        SortedList<long, TransformFrame> m_Transforms = new SortedList<long, TransformFrame>(k_HistoryMaxNumEntries);
+        TransformStream m_Parent;
+        SortedList<double, TransformFrame> m_Transforms =
+            new SortedList<double, TransformFrame>(k_HistoryMaxNumEntries);
 
         HashSet<TransformStream> m_Children = new HashSet<TransformStream>();
 
@@ -22,7 +24,25 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 
         public string Name { get; }
 
-        public TransformStream Parent { get; }
+        public TransformStream Parent
+        {
+            get => m_Parent;
+            set
+            {
+                if (m_Parent != null)
+                {
+                    Debug.LogWarning($"{nameof(m_Parent)} has already been assigned as {m_Parent.Name}. "
+                    + $"Re-assigning to {value?.Name} which could lead to undefined behavior.");
+                    m_Parent.RemoveChildStream(this);
+                }
+
+                // Whenever the parent is assigned, these values must be updated
+                m_GameObject.transform.parent = value?.m_GameObject.transform;
+                value?.AddChildStream(this);
+
+                m_Parent = value;
+            }
+        }
 
         public IEnumerable<TransformStream> Children => m_Children;
 
@@ -30,14 +50,10 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 
         public TransformStream(TransformStream parent, string name)
         {
-            Parent = parent;
             Name = name;
             m_GameObject = new GameObject(name);
-            if (parent != null)
-            {
-                m_GameObject.transform.parent = parent.m_GameObject.transform;
-                parent.AddChildStream(this);
-            }
+            // Ensure parent is assigned after the GameObject is created to avoid null reference
+            Parent = parent;
         }
 
         void AddChildStream(TransformStream child)
@@ -45,7 +61,18 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             m_Children.Add(child);
         }
 
-        public void Add(long timestamp, Vector3 translation, Quaternion rotation)
+        void RemoveChildStream(TransformStream child)
+        {
+            if (!m_Children.Contains(child))
+            {
+                throw new InvalidOperationException(
+                    $"Can't remove {child?.Name} from {nameof(m_Children)} because it is not in the set.");
+            }
+
+            m_Children.Remove(child);
+        }
+
+        public void Add(double timestamp, Vector3 translation, Quaternion rotation)
         {
             if (Parent == null)
             {
@@ -59,7 +86,9 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             {
                 // we found an existing entry at the same timestamp!? Just replace the old one, I guess.
                 Debug.LogWarning(
-                    $"Transform {newEntry} has same timestamp as {m_Transforms[timestamp]} this will be overwritten.");
+                    $"Transform {newEntry} has same timestamp ({timestamp}) as {m_Transforms[timestamp]} for {this}, "
+                            + "the entry will be overwritten.");
+                m_Transforms.Remove(timestamp);
             }
 
             // Only need to check if we're at the max entry limit if the entry is being added and not overwritten
@@ -84,7 +113,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             m_GameObject.transform.SetPositionAndRotation(latestFrame.Translation, latestFrame.Rotation);
         }
 
-        TransformFrame GetFrameFailSilently(long time = 0)
+        TransformFrame GetFrameFailSilently(double time)
         {
             // this stream has no data at all, so just report identity.
             if (m_Transforms.Count == 0)
@@ -113,7 +142,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             return Interpolate(time, index);
         }
 
-        public bool TryGetFrame(long time, out TransformFrame frame, out string failureReason)
+        public bool TryGetFrame(double time, out TransformFrame frame, out string failureReason)
         {
             failureReason = "";
 
@@ -143,7 +172,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             return false;
         }
 
-        public TransformFrame GetFrame(long time, bool shouldFailSilently = false)
+        public TransformFrame GetFrame(double time, bool shouldFailSilently = false)
         {
             if (shouldFailSilently)
             {
@@ -159,17 +188,22 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
                 $"{nameof(TransformStream)} {Name} failed to get a {nameof(TransformFrame)} to {Parent.Name} at time {time} because {failureReason}.");
         }
 
-        TransformFrame Interpolate(long time, int endIndex)
+        TransformFrame Interpolate(double time, int endIndex)
         {
             var start = m_Transforms.ElementAt(endIndex - 1);
             var end = m_Transforms.ElementAt(endIndex);
-            var t = (time - start.Key) / (end.Key - start.Key);
+            var t = (float)((time - start.Key) / (end.Key - start.Key));
             return TransformFrame.Lerp(start.Value, end.Value, t);
         }
 
-        int BinarySearchForIndex(long time)
+        int BinarySearchForIndex(double time)
         {
-            return ((List<long>)m_Transforms.Keys).BinarySearch(time);
+            return ((List<double>)m_Transforms.Keys).BinarySearch(time);
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}({nameof(TransformStream)})";
         }
     }
 }

@@ -334,7 +334,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 var oldVisual = m_Visual;
                 var newVisual = m_VisualFactory.CreateVisual(m_Message, m_Meta);
-                newVisual.Recycle(oldVisual);
+                newVisual?.Recycle(oldVisual);
                 ClearVisual();
                 m_Visual = newVisual;
             }

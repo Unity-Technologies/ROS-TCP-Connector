@@ -26,7 +26,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
         drawing.SetTFTrackingType(m_TFTrackingType, message.header);
 
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
-        TransformFrame frame = TransformGraph.instance.GetTransform(message.header);
+        TransformFrame frame = TransformManager.instance.GetTransform(message.header);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
         float angle = -message.angle_min;
         ColorMode mode = m_ColorMode;

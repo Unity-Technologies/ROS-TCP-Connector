@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class TransformVisualizer : MonoBehaviour, ITransformVisualizer, ROSTCPConnector.IHudTab
+    public class TransformTreeVisualizer : MonoBehaviour, ITransformVisualizer, ROSTCPConnector.IHudTab
     {
         public float axesScale = 0.1f;
         public float lineThickness = 0.01f;
@@ -17,7 +17,7 @@ namespace Unity.Robotics.MessageVisualizers
         public void Start()
         {
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
-            TransformGraph.Register(this);
+            TransformManager.Register(this);
             if (color.a == 0)
                 color.a = 1;
         }
@@ -51,17 +51,17 @@ namespace Unity.Robotics.MessageVisualizers
                 }
             }
 
-            var frame = stream.GetFrameFailSilently();
+            stream.TryGetFrame(0, out var frame, out _);
 
-            drawing.transform.localPosition = frame.translation;
-            drawing.transform.localRotation = frame.rotation;
+            drawing.transform.localPosition = frame.Translation;
+            drawing.transform.localRotation = frame.Rotation;
             drawing.Clear();
             EnsureSettings(stream);
             if (m_ShowAxes[stream])
                 MessageVisualizations.DrawAxisVectors<FLU>(drawing, Vector3.zero.To<FLU>(), Quaternion.identity.To<FLU>(), axesScale, false);
 
             if (m_ShowLinks[stream])
-                drawing.DrawLine(Quaternion.Inverse(frame.rotation) * -frame.translation, Vector3.zero, color, lineThickness);
+                drawing.DrawLine(Quaternion.Inverse(frame.Rotation) * -frame.Translation, Vector3.zero, color, lineThickness);
 
             if (m_ShowNames[stream])
                 drawing.DrawLabel(stream.Name, Vector3.zero, color);
@@ -108,7 +108,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             // draw the root objects
             int numDrawn = 0;
-            foreach (TransformStream stream in TransformGraph.instance.GetTransforms())
+            foreach (TransformStream stream in TransformManager.instance.GetTransforms())
             {
                 if (stream.Parent == null)
                 {
@@ -150,7 +150,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (GUI.changed || globalChange)
             {
-                TransformGraph.UpdateVisualization(stream);
+                TransformManager.UpdateVisualization(stream);
             }
 
             if (m_ShowExpanded[stream])
@@ -169,7 +169,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (wasChecked != result)
             {
-                foreach (TransformStream stream in TransformGraph.instance.GetTransforms())
+                foreach (TransformStream stream in TransformManager.instance.GetTransforms())
                 {
                     setter(stream, result);
                 }

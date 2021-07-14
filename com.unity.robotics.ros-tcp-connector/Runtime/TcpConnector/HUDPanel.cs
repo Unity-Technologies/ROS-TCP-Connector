@@ -697,7 +697,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     var visualFactory = hud.GetVisualizer(kv.Key);
                     canShowWindow = visualFactory != null;
-                    canShowDrawing = visualFactory != null ? visualFactory.CanShowDrawing : false;
+                    canShowDrawing = visualFactory?.CanShowDrawing ?? false;
 
                     var hasWindow = showWindow;
                     var hasDrawing = showDrawing;

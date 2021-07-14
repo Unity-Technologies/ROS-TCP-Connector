@@ -7,12 +7,15 @@ namespace Unity.Robotics.MessageVisualizers
     public abstract class DrawingVisualFactory<TMessageType> : MonoBehaviour, IVisualDrawer<TMessageType>, IVisualFactory, IPriority
         where TMessageType : Message
     {
+        bool m_IsMisconfigured;
+
         [SerializeField]
         string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
 
         public virtual void Start()
         {
+            m_IsMisconfigured = false;
             if (m_Topic == null || m_Topic == "")
             {
                 VisualFactoryRegistry.RegisterTypeVisualizer<TMessageType>(this, Priority);
@@ -29,8 +32,10 @@ namespace Unity.Robotics.MessageVisualizers
 
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
-            if (!AssertMessageType(message, meta))
+            if (m_IsMisconfigured || !AssertMessageType(message, meta))
+            {
                 return null;
+            }
 
             return new DrawingVisual<TMessageType>((TMessageType)message, meta, this);
         }
@@ -60,6 +65,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (!(message is TMessageType))
             {
+                m_IsMisconfigured = true;
                 Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TMessageType)}).");
                 return false;
             }

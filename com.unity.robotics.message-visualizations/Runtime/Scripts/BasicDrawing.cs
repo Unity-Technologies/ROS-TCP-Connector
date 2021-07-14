@@ -1,6 +1,7 @@
 using RosMessageTypes.Std;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
@@ -74,14 +75,14 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 case TFTrackingType.Exact:
                     {
-                        TransformFrame frame = TransformGraph.instance.GetTransform(headerMsg);
-                        transform.position = frame.translation;
-                        transform.rotation = frame.rotation;
+                        var frame = TransformManager.instance.GetTransform(headerMsg);
+                        transform.position = frame.Translation;
+                        transform.rotation = frame.Rotation;
                     }
                     break;
                 case TFTrackingType.TrackLatest:
                     {
-                        transform.parent = TransformGraph.instance.GetTransformGameObject(headerMsg.frame_id).transform;
+                        transform.parent = TransformManager.instance.GetTransformGameObject(headerMsg.frame_id).transform;
                         transform.localPosition = Vector3.zero;
                         transform.localRotation = Quaternion.identity;
                     }
