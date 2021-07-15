@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Unity.Robotics.MessageVisualizers;
-using UnityEditorInternal;
 
 namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 {

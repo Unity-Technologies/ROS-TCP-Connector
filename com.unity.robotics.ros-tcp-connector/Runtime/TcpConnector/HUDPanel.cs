@@ -318,14 +318,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
 
-        public void SetLastMessageReceived(string topic, Message message)
+        public void SetLastMessageReceived(string topic, string messageName, Message message)
         {
             m_LastMessageReceived = new MessageViewState { label = "Last Message Received:", message = message };
             m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
 
             if (!s_AllTopics.TryGetValue(topic, out var state))
-                s_AllTopics.Add(topic, null);
+                s_AllTopics.Add(topic, new TopicVisualizationState(topic, messageName, this, true));
             if (state != null)
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,22 +18,57 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
+        // TODO: Would this be better as a list of Classes which directly implement the ConnectionThread?
+        public enum ConnectionMode
+        {
+            // Connect to ROS as normal
+            External,
+            // Fake a ROS connection by mocking publish/subscribe internally, using the message serializers
+            InternalWithSerialization,
+            // TODO: InternalWithoutSerialization
+        }
+
+        const string k_SysCommandPrefix = "__";
+
+        SysCommand_TopicsResponse m_MostRecentTopicsAndTypes;
+
         // Variables required for ROS communication
         [SerializeField]
         [FormerlySerializedAs("hostName")]
         [FormerlySerializedAs("rosIPAddress")]
         string m_RosIPAddress = "127.0.0.1";
-        public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
+        public string RosIPAddress
+        {
+            get => m_RosIPAddress;
+            internal set => m_RosIPAddress = value;
+        }
 
         [SerializeField]
         [FormerlySerializedAs("hostPort")]
         [FormerlySerializedAs("rosPort")]
         int m_RosPort = 10000;
-        public int RosPort { get => m_RosPort; set => m_RosPort = value; }
+
+        public int RosPort
+        {
+            get => m_RosPort;
+            internal set => m_RosPort = value;
+        }
+
+        [SerializeField]
+        ConnectionMode m_ConnectionMode = ConnectionMode.External;
+        public ConnectionMode ConnectMode
+        {
+            get => m_ConnectionMode;
+            internal set => m_ConnectionMode = value;
+        }
 
         [SerializeField]
         bool m_ConnectOnStart = true;
-        public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
+        public bool ConnectOnStart
+        {
+            get => m_ConnectOnStart;
+            internal set => m_ConnectOnStart = value;
+        }
 
         [SerializeField]
         [Tooltip("If nothing has been sent for this long (seconds), send a keepalive message to check the connection is still working.")]
@@ -75,7 +111,10 @@ namespace Unity.Robotics.ROSTCPConnector
         ConcurrentQueue<List<byte[]>> m_OutgoingMessages = new ConcurrentQueue<List<byte[]>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
-        public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
+        public bool HasConnectionThread => m_ConnectionMode == ConnectionMode.InternalWithSerialization ||
+            m_ConnectionThreadCancellation != null;
+
+        public bool CanSendNetworkMessages => HasConnectionThread && m_ConnectionMode == ConnectionMode.External;
 
         static bool m_HasConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
@@ -121,7 +160,7 @@ namespace Unity.Robotics.ROSTCPConnector
             string rosMessageName = MessageRegistry.GetRosMessageName<T>();
             AddSubscriberInternal<T>(topic, rosMessageName, callback);
 
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendSubscriberRegistration(topic, rosMessageName);
         }
 
@@ -129,7 +168,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_Subscribers.Remove(topic);
 
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendSubscriberUnregistration(topic);
         }
 
@@ -174,7 +213,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             subCallbacks.callbacks.Add(callback);
 
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendSubscriberRegistration(topic, rosMessageName);
         }
 
@@ -188,7 +227,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 callback = (Message msg) => callback((REQUEST)msg)
             };
 
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendUnityServiceRegistration(topic, rosMessageName);
         }
 
@@ -234,10 +273,54 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
+        // In cases where we're not connected to ROS, we can just use this function to populate a list of all
+        // known topics and types used by our internal publishers/subscribers
+        void UpdateTopicsAndTypesInternal()
+        {
+            var topicsSet = new HashSet<string>(m_Publishers.Keys);
+            topicsSet.UnionWith(m_Subscribers.Keys);
+            var topics = topicsSet.ToArray();
+            var types = new string[topics.Length];
+            for (var i = 0; i < topics.Length; i++)
+            {
+                if (!m_Publishers.TryGetValue(topics[i], out types[i]))
+                {
+                    if (m_Subscribers.TryGetValue(topics[i], out var callback))
+                    {
+                        types[i] = callback.rosMessageName;
+                    }
+                    else
+                    {
+                        throw new Exception(
+                            $"Something went wrong. {topics[i]} should be guaranteed to exist in either {nameof(m_Publishers)} or {nameof(m_Subscribers)}");
+                    }
+                }
+            }
+
+            m_MostRecentTopicsAndTypes = new SysCommand_TopicsResponse
+            {
+                topics = topics,
+                types = types
+            };
+        }
+
         public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
         {
             m_TopicsAndTypesListCallbacks.Add(callback);
-            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+            // TODO: ROSConnection should automatically handle keeping a topic/type list in sync with
+            //       the endpoint and raise an event when this list changes
+            switch (m_ConnectionMode)
+            {
+                case ConnectionMode.External:
+                    SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+                    break;
+                case ConnectionMode.InternalWithSerialization:
+                    UpdateTopicsAndTypesInternal();
+                    SendTopicsAndTypesUpdates();
+                    break;
+                default:
+                    throw new NotImplementedException($"No handling implemented for {m_ConnectionMode}");
+            }
         }
 
         [Obsolete("Calling Subscribe now implicitly registers a subscriber")]
@@ -253,7 +336,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterPublisher(string topic, string rosMessageName)
         {
             m_Publishers[topic] = rosMessageName;
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendPublisherRegistration(topic, rosMessageName);
         }
 
@@ -265,7 +348,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterRosService(string topic, string rosMessageName)
         {
             m_RosServices[topic] = rosMessageName;
-            if (HasConnectionThread)
+            if (CanSendNetworkMessages)
                 SendRosServiceRegistration(topic, rosMessageName);
         }
 
@@ -315,7 +398,7 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand(k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, stream);
         }
 
-        private static ROSConnection _instance;
+        static ROSConnection _instance;
         public static ROSConnection instance
         {
             get
@@ -325,9 +408,10 @@ namespace Unity.Robotics.ROSTCPConnector
                     GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
                     if (prefab == null)
                     {
-                        Debug.LogWarning("No settings for ROSConnection.instance! Open \"ROS Settings\" from the Robotics menu to configure it.");
-                        GameObject instance = new GameObject("ROSConnection");
-                        _instance = instance.AddComponent<ROSConnection>();
+                        Debug.LogWarning("No settings for ROSConnection.instance! " +
+                            "Open \"ROS Settings\" from the Robotics menu to configure it.");
+                        var go = new GameObject("ROSConnection");
+                        _instance = go.AddComponent<ROSConnection>();
                     }
                     else
                     {
@@ -373,19 +457,22 @@ namespace Unity.Robotics.ROSTCPConnector
             if (m_HudPanel != null)
                 m_HudPanel.host = $"{RosIPAddress}:{RosPort}";
 
-            m_ConnectionThreadCancellation = new CancellationTokenSource();
+            if (ConnectMode == ConnectionMode.External)
+            {
+                m_ConnectionThreadCancellation = new CancellationTokenSource();
 
-            Task.Run(() => ConnectionThread(
-                RosIPAddress,
-                RosPort,
-                m_NetworkTimeoutSeconds,
-                m_KeepaliveTime,
-                (int)(m_SleepTimeSeconds * 1000.0f),
-                RegisterAll,
-                m_OutgoingMessages,
-                m_IncomingMessages,
-                m_ConnectionThreadCancellation.Token
-            ));
+                Task.Run(() => ExternalConnectionThread(
+                    RosIPAddress,
+                    RosPort,
+                    m_NetworkTimeoutSeconds,
+                    m_KeepaliveTime,
+                    (int)(m_SleepTimeSeconds * 1000.0f),
+                    RegisterAll,
+                    m_OutgoingMessages,
+                    m_IncomingMessages,
+                    m_ConnectionThreadCancellation.Token
+                ));
+            }
         }
 
         void RegisterAll(NetworkStream stream)
@@ -415,7 +502,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void Disconnect()
+        void Disconnect()
         {
             if (m_ConnectionThreadCancellation != null)
                 m_ConnectionThreadCancellation.Cancel();
@@ -434,7 +521,7 @@ namespace Unity.Robotics.ROSTCPConnector
             InitializeHUD();
         }
 
-        private void InitializeHUD()
+        void InitializeHUD()
         {
             if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
                 return;
@@ -454,39 +541,55 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
-            Tuple<string, byte[]> data;
-            while (m_IncomingMessages.TryDequeue(out data))
+            while (m_IncomingMessages.TryDequeue(out var data))
             {
-                (string topic, byte[] contents) = data;
+                (var topic, byte[] contents) = data;
 
                 if (m_SpecialIncomingMessageHandler != null)
                 {
                     m_SpecialIncomingMessageHandler(topic, contents);
                 }
-                else if (topic.StartsWith("__"))
+                else if (IsSysCommand(topic))
                 {
                     ReceiveSysCommand(topic, Encoding.UTF8.GetString(contents));
                 }
                 else
                 {
                     // notify whatever is interested in this incoming message
-                    SubscriberCallback callback;
-                    if (m_Subscribers.TryGetValue(topic, out callback))
+                    if (m_Subscribers.TryGetValue(topic, out var callback))
                     {
                         m_MessageDeserializer.InitWithBuffer(contents);
-                        Message message = callback.deserialize(m_MessageDeserializer);
+                        var message = callback.deserialize(m_MessageDeserializer);
 
-                        if (m_HudPanel != null && !topic.StartsWith("__"))
-                            m_HudPanel.SetLastMessageReceived(topic, message);
+                        if (m_HudPanel != null && !IsSysCommand(topic))
+                        {
+                            m_HudPanel.SetLastMessageReceived(topic, callback.rosMessageName, message);
+                        }
 
                         callback.callbacks.ForEach(item => item(message));
+                    }
+                    else
+                    {
+                        Debug.LogWarning(
+                            $"Received a message for topic {topic} but don't have any subscribers registered for that topic.");
                     }
                 }
             }
         }
 
+        static bool IsSysCommand(string topic)
+        {
+            return topic.StartsWith(k_SysCommandPrefix);
+        }
+
         void ReceiveSysCommand(string topic, string json)
         {
+            if (m_ConnectionMode != ConnectionMode.External)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot {nameof(ReceiveSysCommand)} when {nameof(m_ConnectionMode)} is not set to {ConnectionMode.External}");
+            }
+
             switch (topic)
             {
                 case k_SysCommand_Log:
@@ -564,22 +667,27 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 case k_SysCommand_TopicList:
                     {
-                        var topicsResponse = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
-                        if (m_TopicsAndTypesListCallbacks.Count > 0)
-                        {
-                            Dictionary<string, string> callbackParam = new Dictionary<string, string>();
-                            for (int idx = 0; idx < topicsResponse.topics.Length; ++idx)
-                                callbackParam[topicsResponse.topics[idx]] = topicsResponse.types[idx];
-                            m_TopicsAndTypesListCallbacks.ForEach(a => a(callbackParam));
-                            m_TopicsAndTypesListCallbacks.Clear();
-                        }
-                        if (m_TopicsListCallbacks.Count > 0)
-                        {
-                            m_TopicsListCallbacks.ForEach(a => a(topicsResponse.topics));
-                            m_TopicsListCallbacks.Clear();
-                        }
+                        m_MostRecentTopicsAndTypes = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
+                        SendTopicsAndTypesUpdates();
                     }
                     break;
+            }
+        }
+
+        void SendTopicsAndTypesUpdates()
+        {
+            if (m_TopicsAndTypesListCallbacks.Count > 0)
+            {
+                Dictionary<string, string> callbackParam = new Dictionary<string, string>();
+                for (int idx = 0; idx < m_MostRecentTopicsAndTypes.topics.Length; ++idx)
+                    callbackParam[m_MostRecentTopicsAndTypes.topics[idx]] = m_MostRecentTopicsAndTypes.types[idx];
+                m_TopicsAndTypesListCallbacks.ForEach(a => a(callbackParam));
+                m_TopicsAndTypesListCallbacks.Clear();
+            }
+            if (m_TopicsListCallbacks.Count > 0)
+            {
+                m_TopicsListCallbacks.ForEach(a => a(m_MostRecentTopicsAndTypes.topics));
+                m_TopicsListCallbacks.Clear();
             }
         }
 
@@ -597,13 +705,13 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ConnectionThread(
+        static async Task ExternalConnectionThread(
             string rosIPAddress,
             int rosPort,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
-            Action<NetworkStream> RegisterAll,
+            Action<NetworkStream> registerAll,
             ConcurrentQueue<List<byte[]>> outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
@@ -611,7 +719,6 @@ namespace Unity.Robotics.ROSTCPConnector
             //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
-            MessageSerializer messageSerializer = new MessageSerializer();
 
             while (!token.IsCancellationRequested)
             {
@@ -629,10 +736,11 @@ namespace Unity.Robotics.ROSTCPConnector
                     networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
                     SendKeepalive(networkStream);
-                    RegisterAll(networkStream);
+                    registerAll(networkStream);
 
                     readerCancellation = new CancellationTokenSource();
-                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
+                    _ = Task.Run(() => ReaderThread(
+                        nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
                     nextReaderIdx++;
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
@@ -724,7 +832,8 @@ namespace Unity.Robotics.ROSTCPConnector
         static byte[] s_FourBytes = new byte[4];
         static byte[] s_TopicScratchSpace = new byte[64];
 
-        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, int sleepMilliseconds, CancellationToken token)
+        static async Task<Tuple<string, byte[]>> ReadMessageContents(
+            NetworkStream networkStream, int sleepMilliseconds, CancellationToken token)
         {
             // Get first bytes to determine length of topic name
             await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
@@ -785,13 +894,18 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param, NetworkStream stream = null)
         {
+            if (m_ConnectionMode != ConnectionMode.External)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot {nameof(SendSysCommand)} when {nameof(m_ConnectionMode)} is not set to {ConnectionMode.External}");
+            }
             m_MessageSerializer.Clear();
             // syscommands are sent as:
             // 4 byte command length, followed by that many bytes of the command
             // (all command names start with __ to distinguish them from ros topics)
             m_MessageSerializer.Write(command);
             // 4-byte json length, followed by a json string of that length
-            string json = JsonUtility.ToJson(param);
+            var json = JsonUtility.ToJson(param);
             m_MessageSerializer.WriteUnaligned(json);
 
             if (stream != null)
@@ -802,49 +916,60 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Send<T>(string rosTopicName, T message) where T : Message
         {
-            if (!rosTopicName.StartsWith("__"))
+            if (!IsSysCommand(rosTopicName))
             {
                 m_Publishers[rosTopicName] = MessageRegistry.GetRosMessageName<T>();
                 if (m_HudPanel != null)
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }
 
-            m_MessageSerializer.Clear();
-            // ros messages sent on our network channel contain:
-            // 4 byte topic length, followed by that many bytes of the topic name
-            m_MessageSerializer.Write(rosTopicName);
-            // 4-byte message length, followed by that many bytes of the message
-            m_MessageSerializer.SerializeMessageWithLength(message);
 
-            m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+            m_MessageSerializer.Clear();
+            switch (m_ConnectionMode)
+            {
+                case ConnectionMode.External:
+                    // ros messages sent on our network channel contain:
+                    // 4 byte topic length, followed by that many bytes of the topic name
+                    m_MessageSerializer.Write(rosTopicName);
+                    // 4-byte message length, followed by that many bytes of the message
+                    m_MessageSerializer.SerializeMessageWithLength(message);
+                    m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+                    break;
+                case ConnectionMode.InternalWithSerialization:
+                    // Serialize message without topic name or message length, since those are already stripped away
+                    // by the time they get placed in the incoming message queue
+                    m_MessageSerializer.SerializeMessage(message);
+                    m_IncomingMessages.Enqueue(
+                        new Tuple<string, byte[]>(rosTopicName, m_MessageSerializer.GetBytes()));
+                    break;
+                default:
+                    throw new NotImplementedException($"Failed to define any behavior for {m_ConnectionMode}");
+
+            }
+
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
         {
-            if (ipAddress == null || ipAddress == "")
+            if (string.IsNullOrEmpty(ipAddress))
+            {
                 return false;
+            }
 
             // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
-            if (Char.IsLetter(ipAddress[0]))
+            if (char.IsLetter(ipAddress[0]))
             {
-                foreach (Char subChar in ipAddress)
+                foreach (char subChar in ipAddress)
                 {
-                    if (!(Char.IsLetterOrDigit(subChar) || subChar == '-' || subChar == '.'))
+                    if (!(char.IsLetterOrDigit(subChar) || subChar == '-' || subChar == '.'))
                         return false;
                 }
 
-                if (!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
-                    return false;
-                return true;
+                return char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]);
             }
 
-            string[] subAdds = ipAddress.Split('.');
-            if (subAdds.Length != 4)
-            {
-                return false;
-            }
-            IPAddress parsedipAddress;
-            return IPAddress.TryParse(ipAddress, out parsedipAddress);
+            var subAdds = ipAddress.Split('.');
+            return subAdds.Length == 4 && IPAddress.TryParse(ipAddress, out _);
         }
     }
 }
