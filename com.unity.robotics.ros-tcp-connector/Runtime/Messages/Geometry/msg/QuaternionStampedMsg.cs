@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class QuaternionStampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/QuaternionStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents an orientation with reference coordinate frame and timestamp.
         public Std.HeaderMsg header;

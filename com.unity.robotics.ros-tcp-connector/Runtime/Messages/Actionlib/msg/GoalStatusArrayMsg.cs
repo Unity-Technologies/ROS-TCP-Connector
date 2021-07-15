@@ -11,6 +11,7 @@ namespace RosMessageTypes.Actionlib
     public class GoalStatusArrayMsg : Message
     {
         public const string k_RosMessageName = "actionlib_msgs/GoalStatusArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Stores the statuses for goals that are currently being tracked
         //  by an action server

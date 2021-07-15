@@ -12,6 +12,7 @@ namespace RosMessageTypes.ObjectRecognition
     public class RecognizedObjectArrayMsg : Message
     {
         public const string k_RosMessageName = "object_recognition_msgs/RecognizedObjectArray";
+        public override string RosMessageName => k_RosMessageName;
 
         // #################################################### HEADER ###########################################################
         public HeaderMsg header;

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Diagnostic
     public class AddDiagnosticsResponse : Message
     {
         public const string k_RosMessageName = "diagnostic_msgs/AddDiagnostics";
+        public override string RosMessageName => k_RosMessageName;
 
         //  True if diagnostic aggregator was updated with new diagnostics, False
         //  otherwise. A false return value means that either there is a bond in the

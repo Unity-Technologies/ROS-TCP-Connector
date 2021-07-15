@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class InertiaStampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/InertiaStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  An Inertia with a time stamp and reference frame.
         public Std.HeaderMsg header;

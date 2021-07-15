@@ -10,7 +10,7 @@ namespace RosMessageTypes.BuiltinInterfaces
     {
 #if !ROS2
         public const string k_RosMessageName = "builtin_interfaces/Duration";
-
+        public override string RosMessageName => k_RosMessageName;
 
         public int sec;
         public int nanosec;
@@ -28,6 +28,7 @@ namespace RosMessageTypes.BuiltinInterfaces
         }
 #else
         public const string k_RosMessageName = "builtin_interfaces/Duration";
+        public override string RosMessageName => k_RosMessageName;
 
 
         //  Duration defines a period between two time points.

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class InteractiveMarkerUpdateMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerUpdate";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Identifying string. Must be unique in the topic namespace
         //  that this server works on.
