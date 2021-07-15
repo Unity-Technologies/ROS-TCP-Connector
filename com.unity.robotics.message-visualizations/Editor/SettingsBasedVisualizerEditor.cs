@@ -34,10 +34,7 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
 
     protected virtual void OnInspectorGUIForSettings(SettingsBasedVisualFactory<TMessageType, TVisualizerSettings> visualizer)
     {
-        if (m_Editor == null)
-        {
-            CreateCachedEditor(m_Config, null, ref m_Editor);
-        }
+        CreateCachedEditor(m_Config, null, ref m_Editor);
         m_Editor.OnInspectorGUI();
     }
 }
