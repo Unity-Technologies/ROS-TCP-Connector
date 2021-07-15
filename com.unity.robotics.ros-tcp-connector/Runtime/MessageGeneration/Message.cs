@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
-    public abstract class Message
+    public class Message
     {
         public virtual void SerializeTo(MessageSerializer state)
         {
             throw new NotImplementedException("Your message class needs to be rebuilt");
         }
 
-        public abstract string RosMessageName { get; }
+        public virtual string RosMessageName => throw new NotImplementedException();
 
         // The following should never be used, they're here for backwards compatibility only.
         public virtual List<byte[]> SerializationStatements() => throw new NotImplementedException();
