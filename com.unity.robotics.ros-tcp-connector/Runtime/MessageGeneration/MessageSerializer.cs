@@ -48,7 +48,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_LengthCorrection += 4;
             int preambleLength = Length;
 
+            byte[] prebytes = GetBytes();
             SerializeMessage(message);
+            byte[] postbytes = GetBytes();
 
             // fill in the gap, now that we know the length
             m_ListOfSerializations[lengthIndex] = BitConverter.GetBytes(Length - preambleLength);
@@ -71,6 +73,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             int writeIndex = 0;
             foreach (byte[] statement in m_ListOfSerializations)
             {
+                if (statement == null)
+                    continue;
                 statement.CopyTo(serializedMessage, writeIndex);
                 writeIndex += statement.Length;
             }
@@ -118,13 +122,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(byte value)
         {
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_ListOfSerializations.Add(new byte[] { value });
             m_AlignmentOffset += sizeof(byte);
         }
 
         public void Write(sbyte value)
         {
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_ListOfSerializations.Add(new byte[] { (byte)value });
             m_AlignmentOffset += sizeof(sbyte);
         }
 
