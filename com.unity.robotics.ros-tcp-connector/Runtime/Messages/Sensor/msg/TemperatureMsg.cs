@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class TemperatureMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/Temperature";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single temperature reading.
         public Std.HeaderMsg header;

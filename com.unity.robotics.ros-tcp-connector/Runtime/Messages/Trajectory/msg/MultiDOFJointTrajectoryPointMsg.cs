@@ -11,6 +11,7 @@ namespace RosMessageTypes.Trajectory
     public class MultiDOFJointTrajectoryPointMsg : Message
     {
         public const string k_RosMessageName = "trajectory_msgs/MultiDOFJointTrajectoryPoint";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Each multi-dof joint can specify a transform (up to 6 DOF).
         public Geometry.TransformMsg[] transforms;

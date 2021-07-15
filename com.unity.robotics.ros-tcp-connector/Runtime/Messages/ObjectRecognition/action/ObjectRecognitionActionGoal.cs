@@ -8,6 +8,7 @@ namespace RosMessageTypes.ObjectRecognition
     public class ObjectRecognitionActionGoal : ActionGoal<ObjectRecognitionGoal>
     {
         public const string k_RosMessageName = "object_recognition_msgs-master/ObjectRecognitionActionGoal";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public ObjectRecognitionActionGoal() : base()

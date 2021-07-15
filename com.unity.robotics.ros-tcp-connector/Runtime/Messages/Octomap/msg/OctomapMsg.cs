@@ -12,6 +12,7 @@ namespace RosMessageTypes.Octomap
     public class OctomapMsg : Message
     {
         public const string k_RosMessageName = "octomap_msgs/Octomap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  A 3D map in binary format, as Octree
         public HeaderMsg header;

@@ -128,7 +128,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     );
 
                 // Write ROS package name
-                writer.Write(TWO_TABS + "public const string k_RosMessageName = \"" + rosPackageName + "/" + rosMsgName + "\";\n\n");
+                writer.Write(TWO_TABS + "public const string k_RosMessageName = \"" + rosPackageName + "/" + rosMsgName + "\";\n");
+                writer.Write(TWO_TABS + "public override string RosMessageName => k_RosMessageName;\n\n");
 
                 // Write body
                 writer.Write(body);

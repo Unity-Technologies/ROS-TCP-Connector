@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class CameraInfoMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/CameraInfo";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message defines meta information for a camera. It should be in a
         //  camera namespace on topic "camera_info" and accompanied by up to five

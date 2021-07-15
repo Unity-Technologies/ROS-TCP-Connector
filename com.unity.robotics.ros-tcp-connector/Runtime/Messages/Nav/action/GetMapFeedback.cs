@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class GetMapFeedback : Message
     {
         public const string k_RosMessageName = "nav_msgs/GetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  no feedback
 

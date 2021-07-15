@@ -11,6 +11,7 @@ namespace RosMessageTypes.Diagnostic
     public class DiagnosticArrayMsg : Message
     {
         public const string k_RosMessageName = "diagnostic_msgs/DiagnosticArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message is used to send diagnostic information about the state of the robot.
         public Std.HeaderMsg header;

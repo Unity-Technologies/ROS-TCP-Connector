@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class PointCloudMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/PointCloud";
+        public override string RosMessageName => k_RosMessageName;
 
         // # THIS MESSAGE IS DEPRECATED AS OF FOXY
         // # Please use sensor_msgs/PointCloud2

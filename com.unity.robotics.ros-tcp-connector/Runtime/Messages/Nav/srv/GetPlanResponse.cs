@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class GetPlanResponse : Message
     {
         public const string k_RosMessageName = "nav_msgs/GetPlan";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Array of poses from start to goal if one was successfully found.
         public PathMsg plan;
