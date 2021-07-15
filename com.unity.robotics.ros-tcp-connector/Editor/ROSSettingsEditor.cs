@@ -56,6 +56,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 }
             }
 
+            EditorGUI.BeginDisabledGroup(Application.isPlaying);
+            prefab.ConnectMode = (ROSConnection.ConnectionMode)EditorGUILayout.EnumPopup(
+                "Connection Mode", prefab.ConnectMode);
+
             prefab.ConnectOnStart = EditorGUILayout.Toggle("Connect on Startup", prefab.ConnectOnStart);
 
             if (m_SelectedProtocol == k_AlternateProtocol)
@@ -78,7 +82,9 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, string.Join(";", allDefines));
                 }
             }
+            EditorGUI.EndDisabledGroup();
 
+            EditorGUI.BeginDisabledGroup(prefab.ConnectOnStart && Application.isPlaying);
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
 
             prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
@@ -94,6 +100,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
+            EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.Space();
 

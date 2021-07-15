@@ -1,5 +1,5 @@
 {
-    "name": "Unity.Robotics.RosTcpConnector.Runtime.Tests",
+    "name": "Unity.Robotics.ROSTCPConnector.Runtime.Tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",

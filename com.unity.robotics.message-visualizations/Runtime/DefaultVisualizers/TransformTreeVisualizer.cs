@@ -17,6 +17,8 @@ namespace Unity.Robotics.MessageVisualizers
         public void Start()
         {
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
+            // TODO: Calling this in both ROSConnection and here to resolve ordering ambiguity -- fix this
+            TransformManager.Init();
             TransformManager.Register(this);
             if (color.a == 0)
                 color.a = 1;
