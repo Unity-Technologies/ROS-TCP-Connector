@@ -1,39 +1,24 @@
-using System.IO;
-using System.Collections;
-using Unity.Robotics.ROSTCPConnector;
+using System;
+using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
-using UnityEditor;
 
-namespace Unity.Robotics.MessageVisualizers
+public abstract class VisualizerSettings : ScriptableObject
 {
-    public class VisualizerSettings : MonoBehaviour, IHudTab
+    public abstract string RosMessageName { get; }
+}
+
+public class VisualizerSettings<T> : VisualizerSettings, IVisualDrawer<T>
+    where T : Message
+{
+    public override string RosMessageName => MessageRegistry.GetRosMessageName<T>();
+
+    public virtual Action CreateGUI(T message, MessageMetadata meta)
     {
-        string IHudTab.Label => "Settings";
-        string m_LayoutPath;
+        return null;
+    }
 
-        void Start()
-        {
-            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
-        }
-
-        void IHudTab.OnGUI(HUDPanel hud)
-        {
-            // Save/Load layout files
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Export layout"))
-            {
-                m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
-                hud.SaveLayout(m_LayoutPath);
-            }
-            if (GUILayout.Button("Import layout"))
-            {
-                m_LayoutPath = EditorUtility.OpenFilePanel("Select Visualizations Settings", "", "json");
-                hud.LoadLayout(m_LayoutPath);
-            }
-            GUILayout.EndHorizontal();
-        }
-
-        void IHudTab.OnSelected() { }
-        void IHudTab.OnDeselected() { }
+    public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta)
+    {
     }
 }

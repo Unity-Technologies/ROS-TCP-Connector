@@ -65,9 +65,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         IHudTab m_SelectedTab;
         Dictionary<string, IVisualFactory> m_TopicVisualizers = new Dictionary<string, IVisualFactory>();
-        bool m_ViewRecv;
-        bool m_ViewSent;
-        bool m_ViewSrvs;
         int nextServiceID = 101;
 
         static SortedList<string, TopicVisualizationState> s_AllTopics = new SortedList<string, TopicVisualizationState>();
@@ -144,27 +141,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 GUILayout.EndHorizontal();
             }
 
-            // Last message sent
-            GUILayout.Label("Last Message Sent:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageSentMeta, m_ContentStyle);
-            if (m_LastMessageSent != null)
-                m_ViewSent = GUILayout.Toggle(m_ViewSent, "View contents");
-
-            // Last message received
-            GUILayout.Label("Last Message Received:", m_LabelStyle);
-            GUILayout.Label(m_LastMessageReceivedMeta, m_ContentStyle);
-            if (m_LastMessageReceived != null)
-                m_ViewRecv = GUILayout.Toggle(m_ViewRecv, "View contents");
-
-            GUILayout.Label($"{activeServices.Count} Active Service Requests:", m_LabelStyle);
-            if (activeServices.Count > 0)
-            {
-                var dots = new string('.', (int)Time.time % 4);
-                GUILayout.Label($"Waiting for service response{dots}", m_ContentStyle);
-            }
-
-            m_ViewSrvs = GUILayout.Toggle(m_ViewSrvs, "View services status");
-
             GUILayout.BeginHorizontal();
             foreach (IHudTab tab in s_HUDTabs.Values)
             {
@@ -192,23 +168,6 @@ namespace Unity.Robotics.ROSTCPConnector
             // Update length of scroll
             if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
                 m_ScrollRect = GUILayoutUtility.GetLastRect();
-
-            // Optionally show message contents
-            var y = m_ScrollRect.yMax;
-            if (m_ViewSent) y = ShowMessage(m_LastMessageSent, y);
-
-            if (m_ViewRecv) y = ShowMessage(m_LastMessageReceived, y);
-
-            if (m_ViewSrvs)
-            {
-                foreach (var service in activeServices) y = ShowMessage(service, y, true);
-
-                if (lastCompletedServiceRequest != null && lastCompletedServiceResponse != null)
-                {
-                    y = ShowMessage(lastCompletedServiceRequest, y);
-                    y = ShowMessage(lastCompletedServiceResponse, y);
-                }
-            }
 
             // Draggable windows
             var current = Event.current;
@@ -310,11 +269,12 @@ namespace Unity.Robotics.ROSTCPConnector
         void LoadLayout(HUDLayoutSave saveState)
         {
             m_ActiveWindows.Clear();
-            RequestTopics();
             foreach (var savedRule in saveState.Rules)
             {
                 s_AllTopics[savedRule.Topic] = new TopicVisualizationState(savedRule, this);
+                s_MessageNamesByTopic[savedRule.Topic] = savedRule.RosMessageName;
             }
+            RequestTopics();
         }
 
         public void AddWindow(TopicVisualizationState window)
@@ -340,7 +300,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageSentMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageSentRealtime = Time.realtimeSinceStartup;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
@@ -351,7 +312,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageReceivedMeta = $"{topic} (time: {DateTime.Now.TimeOfDay})";
             m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
                 state.SetMessage(message, new MessageMetadata(topic, m_CurrentFrameIndex, DateTime.Now));
         }
@@ -361,7 +323,8 @@ namespace Unity.Robotics.ROSTCPConnector
             var serviceID = nextServiceID;
             nextServiceID++;
 
-            if (!s_AllTopics.TryGetValue(topic, out var state)) s_AllTopics.Add(topic, null);
+            if (!s_AllTopics.TryGetValue(topic, out var state))
+                s_AllTopics.Add(topic, null);
             if (state != null)
             {
                 m_PendingServiceRequests.Add(serviceID, state);
@@ -567,12 +530,14 @@ namespace Unity.Robotics.ROSTCPConnector
             maxY = 0;
             var result = true;
             foreach (var window in m_ActiveWindows)
+            {
                 if (window.WindowRect.Overlaps(rect))
                 {
                     maxX = Mathf.Max(maxX, window.WindowRect.xMax);
                     maxY = Mathf.Max(maxY, window.WindowRect.yMax);
                     result = false;
                 }
+            }
 
             return result;
         }
@@ -580,7 +545,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public IVisualFactory GetVisualizer(string topic)
         {
             IVisualFactory result;
-            if (m_TopicVisualizers.TryGetValue(topic, out result)) return result;
+            if (m_TopicVisualizers.TryGetValue(topic, out result))
+                return result;
 
             var rosMessageName = GetMessageNameByTopic(topic);
             result = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
@@ -590,7 +556,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public TopicVisualizationState GetVisualizationState(string topic, bool subscribe = false)
         {
-            if (s_AllTopics.TryGetValue(topic, out var result) && result != null) return result;
+            if (s_AllTopics.TryGetValue(topic, out var result) && result != null)
+                return result;
 
             var rosMessageName = GetMessageNameByTopic(topic);
             if (rosMessageName != null)
@@ -617,11 +584,11 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 var topic = c.Key;
                 var type = c.Value;
-                if (!s_AllTopics.ContainsKey(topic)) s_AllTopics.Add(topic, null);
+                if (!s_AllTopics.ContainsKey(topic))
+                    s_AllTopics.Add(topic, null);
                 s_MessageNamesByTopic[topic] = type;
             }
 
-            //ResizeTopicsWindow();
             m_TopicVisualizers.Clear(); // update to the newest message types
         }
 

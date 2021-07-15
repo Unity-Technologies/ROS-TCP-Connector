@@ -21,7 +21,8 @@ public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
             if (imageState.WindowContents != null)
             {
                 var imageVisual = imageState.WindowContents.GetVisual() as ITextureVisual;
-                if (imageVisual != null) return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
+                if (imageVisual != null)
+                    return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
             }
         }
 

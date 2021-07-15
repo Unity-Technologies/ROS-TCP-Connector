@@ -53,15 +53,38 @@ public class TFStream
     // same order as m_Timestamps
     List<TFFrame> m_Frames = new List<TFFrame>();
     List<TFStream> m_Children = new List<TFStream>();
+
+    // a gameobject at the last known position of this tfstream
     GameObject m_GameObject;
+    public GameObject GameObject => m_GameObject;
 
     public TFStream(TFStream parent, string name)
     {
-        Parent = parent;
         Name = name;
+        m_GameObject = new GameObject(name);
+        SetParent(parent);
+    }
 
-        if (parent != null)
-            parent.m_Children.Add(this);
+    public void SetParent(TFStream newParent)
+    {
+        if (Parent == newParent)
+            return;
+
+        if (Parent != null)
+        {
+            Parent.m_Children.Remove(this);
+        }
+
+        if (newParent != null)
+        {
+            m_GameObject.transform.parent = newParent.m_GameObject.transform;
+            newParent.m_Children.Add(this);
+        }
+        else
+        {
+            m_GameObject.transform.parent = null;
+        }
+        Parent = newParent;
     }
 
     public void Add(long timestamp, Vector3 translation, Quaternion rotation)
@@ -72,6 +95,8 @@ public class TFStream
         {
             m_Timestamps.Add(timestamp);
             m_Frames.Add(newEntry);
+            m_GameObject.transform.localPosition = translation;
+            m_GameObject.transform.localRotation = rotation;
         }
         else
         {
@@ -157,14 +182,5 @@ public class TFStream
             return false;
 
         return true;
-    }
-
-    public void ShowWidget(string name)
-    {
-        if (m_GameObject == null)
-            m_GameObject = new GameObject(name);
-        TFFrame frame = GetWorldTF(0);
-        m_GameObject.transform.position = frame.translation;
-        m_GameObject.transform.rotation = frame.rotation;
     }
 }
