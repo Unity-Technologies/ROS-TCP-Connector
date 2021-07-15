@@ -28,7 +28,7 @@ Update third party notices also
 
 ### Known Issues
 
-### Added 
+### Added
 
 Add the option to connect to ROS2. User can use a dropdown menu and choose ROS1 or ROS2 protocols to connect to the ROS side
 
