@@ -9,24 +9,60 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
 public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
 {
-    public PointCloud2VisualizerSettings.ColorMode colorMode;
-    public ChannelFloat32Msg[] channels;
-    public string m_HueChannel = "";
-    public string m_RChannel = "";
-    public string m_GChannel = "";
-    public string m_BChannel = "";
-    public string m_SizeChannel = "";
+    [SerializeField]
+    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
+    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
+    [SerializeField]
+    PointCloud2VisualizerSettings.ColorMode m_ColorMode;
+    public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    public float[] m_HueRange = { 0, 100 };
-    public float[] m_RRange = { 0, 100 };
-    public float[] m_GRange = { 0, 100 };
-    public float[] m_BRange = { 0, 100 };
-    public float[] m_SizeRange = { 0, 100 };
-    public float m_Size = 0.05f;
+    [SerializeField]
+    public ChannelFloat32Msg[] Channels { get => m_Channels; set => m_Channels = value; }
+    ChannelFloat32Msg[] m_Channels;
+    [SerializeField]
+    public string HueChannel { get => m_HueChannel; set => m_HueChannel = value; }
+    string m_HueChannel = "";
+    [SerializeField]
+    public string RChannel { get => m_RChannel; set => m_RChannel = value; }
+    string m_RChannel = "";
+    [SerializeField]
+    public string GChannel { get => m_GChannel; set => m_GChannel = value; }
+    string m_GChannel = "";
+    [SerializeField]
+    public string BChannel { get => m_BChannel; set => m_BChannel = value; }
+    string m_BChannel = "";
+    [SerializeField]
+    public string SizeChannel { get => m_SizeChannel; set => m_SizeChannel = value; }
+    string m_SizeChannel = "";
 
-    public bool m_UseRgbChannel;
-    public bool m_UseSeparateRgb = true;
-    public bool m_UseSizeChannel;
+    [SerializeField]
+    public float[] HueRange { get => m_HueRange; set => m_HueRange = value; }
+    float[] m_HueRange = { 0, 100 };
+    [SerializeField]
+    public float[] RRange { get => m_RRange; set => m_RRange = value; }
+    float[] m_RRange = { 0, 100 };
+    [SerializeField]
+    public float[] GRange { get => m_GRange; set => m_GRange = value; }
+    float[] m_GRange = { 0, 100 };
+    [SerializeField]
+    public float[] BRange { get => m_BRange; set => m_BRange = value; }
+    float[] m_BRange = { 0, 100 };
+    [SerializeField]
+    public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
+    float[] m_SizeRange = { 0, 100 };
+    [SerializeField]
+    public float Size { get => m_Size; set => m_Size = value; }
+    float m_Size = 0.05f;
+
+    [SerializeField]
+    public bool UseRgbChannel { get => m_UseRgbChannel; set => m_UseRgbChannel = value; }
+    bool m_UseRgbChannel = true;
+    [SerializeField]
+    public bool UseSeparateRgb { get => m_UseSeparateRgb; set => m_UseSeparateRgb = value; }
+    bool m_UseSeparateRgb = true;
+    [SerializeField]
+    public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
+    bool m_UseSizeChannel = true;
 
     public override Action CreateGUI(PointCloudMsg message, MessageMetadata meta)
     {
@@ -41,13 +77,13 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
 
     public override void Draw(BasicDrawing drawing, PointCloudMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();
 
-        if (channels == null)
-            channels = message.channels;
+        if (m_Channels == null)
+            m_Channels = message.channels;
 
         pointCloud.SetCapacity(message.points.Length);
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
 
         Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
         for (int i = 0; i < message.channels.Length; i++)
@@ -58,11 +94,11 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
         Color color = Color.white;
         for (int i = 0; i < message.points.Length; i++)
         {
-            Vector3 worldPoint = frame.TransformPoint(message.points[i].From<FLU>());
+            Vector3 point = message.points[i].From<FLU>();
 
             if (m_UseRgbChannel)
             {
-                switch (colorMode)
+                switch (m_ColorMode)
                 {
                     case PointCloud2VisualizerSettings.ColorMode.HSV:
                         if (m_HueChannel.Length > 0)
@@ -108,7 +144,7 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
                 radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size);
             }
 
-            pointCloud.AddPoint(worldPoint, color, radius);
+            pointCloud.AddPoint(point, color, radius);
         }
         pointCloud.Bake();
     }
