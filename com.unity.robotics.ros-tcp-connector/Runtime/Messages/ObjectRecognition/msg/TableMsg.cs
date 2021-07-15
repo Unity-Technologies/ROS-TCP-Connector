@@ -12,6 +12,7 @@ namespace RosMessageTypes.ObjectRecognition
     public class TableMsg : Message
     {
         public const string k_RosMessageName = "object_recognition_msgs/Table";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Informs that a planar table has been detected at a given location
         public HeaderMsg header;

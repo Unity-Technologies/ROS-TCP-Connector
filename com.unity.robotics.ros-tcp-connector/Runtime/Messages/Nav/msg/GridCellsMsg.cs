@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class GridCellsMsg : Message
     {
         public const string k_RosMessageName = "nav_msgs/GridCells";
+        public override string RosMessageName => k_RosMessageName;
 
         //  An array of cells in a 2D grid
         public Std.HeaderMsg header;

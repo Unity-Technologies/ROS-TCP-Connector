@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class RelativeHumidityMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/RelativeHumidity";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single reading from a relative humidity sensor.
         //  Defines the ratio of partial pressure of water vapor to the saturated vapor

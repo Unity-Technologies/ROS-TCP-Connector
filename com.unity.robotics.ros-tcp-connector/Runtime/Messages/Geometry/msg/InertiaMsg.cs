@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class InertiaMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Inertia";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Mass [kg]
         public double m;

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Octomap
     public class BoundingBoxQueryResponse : Message
     {
         public const string k_RosMessageName = "octomap_msgs-melodic-devel/BoundingBoxQuery";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public BoundingBoxQueryResponse()

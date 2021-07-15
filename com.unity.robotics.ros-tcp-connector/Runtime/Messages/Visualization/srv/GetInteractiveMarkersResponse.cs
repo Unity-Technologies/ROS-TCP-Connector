@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class GetInteractiveMarkersResponse : Message
     {
         public const string k_RosMessageName = "visualization_msgs/GetInteractiveMarkers";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Sequence number.
         //  Set to the sequence number of the latest update message

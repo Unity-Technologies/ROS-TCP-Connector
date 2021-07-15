@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class MarkerMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/Marker";
+        public override string RosMessageName => k_RosMessageName;
 
         //  See:
         //   - http://www.ros.org/wiki/rviz/DisplayTypes/Marker

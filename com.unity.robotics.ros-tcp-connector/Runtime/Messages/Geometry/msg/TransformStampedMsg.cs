@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class TransformStampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/TransformStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses a transform from coordinate frame header.frame_id
         //  to the coordinate frame child_frame_id at the time of header.stamp

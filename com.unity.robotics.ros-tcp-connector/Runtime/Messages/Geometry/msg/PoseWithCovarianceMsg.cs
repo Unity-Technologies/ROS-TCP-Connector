@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class PoseWithCovarianceMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/PoseWithCovariance";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a pose in free space with uncertainty.
         public PoseMsg pose;
