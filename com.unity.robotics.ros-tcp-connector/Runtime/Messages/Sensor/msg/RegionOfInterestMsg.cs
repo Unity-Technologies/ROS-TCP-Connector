@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class RegionOfInterestMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/RegionOfInterest";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message is used to specify a region of interest within an image.
         // 

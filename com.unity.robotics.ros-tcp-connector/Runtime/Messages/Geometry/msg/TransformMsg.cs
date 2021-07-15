@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class TransformMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Transform";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents the transform between two coordinate frames in free space.
         public Vector3Msg translation;

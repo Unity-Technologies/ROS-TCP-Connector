@@ -11,6 +11,7 @@ namespace RosMessageTypes.Actionlib
     public class GoalStatusMsg : Message
     {
         public const string k_RosMessageName = "actionlib_msgs/GoalStatus";
+        public override string RosMessageName => k_RosMessageName;
 
         public GoalIDMsg goal_id;
         public byte status;

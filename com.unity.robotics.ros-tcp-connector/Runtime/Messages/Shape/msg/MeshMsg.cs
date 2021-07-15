@@ -11,6 +11,7 @@ namespace RosMessageTypes.Shape
     public class MeshMsg : Message
     {
         public const string k_RosMessageName = "shape_msgs/Mesh";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Definition of a mesh.
         //  List of triangles; the index values refer to positions in vertices[].

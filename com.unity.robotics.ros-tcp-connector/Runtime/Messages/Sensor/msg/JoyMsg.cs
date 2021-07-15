@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class JoyMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/Joy";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Reports the state of a joystick's axes and buttons.
         //  The timestamp is the time at which data is received from the joystick.

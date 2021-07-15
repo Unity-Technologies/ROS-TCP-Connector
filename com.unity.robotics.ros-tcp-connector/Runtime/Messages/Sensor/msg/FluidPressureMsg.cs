@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class FluidPressureMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/FluidPressure";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single pressure reading.  This message is appropriate for measuring the
         //  pressure inside of a fluid (air, water, etc).  This also includes

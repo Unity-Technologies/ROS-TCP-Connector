@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class InteractiveMarkerPoseMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerPose";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Time/frame info.
         public Std.HeaderMsg header;

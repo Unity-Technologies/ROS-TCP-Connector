@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class JoyFeedbackMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/JoyFeedback";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Declare of the type of feedback
         public const byte TYPE_LED = 0;

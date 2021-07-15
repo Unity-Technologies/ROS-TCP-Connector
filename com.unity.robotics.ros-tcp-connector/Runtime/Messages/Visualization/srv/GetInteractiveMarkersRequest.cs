@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class GetInteractiveMarkersRequest : Message
     {
         public const string k_RosMessageName = "visualization_msgs/GetInteractiveMarkers";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public GetInteractiveMarkersRequest()

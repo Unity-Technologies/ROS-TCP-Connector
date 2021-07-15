@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class Int16Msg : Message
     {
         public const string k_RosMessageName = "std_msgs/Int16";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy

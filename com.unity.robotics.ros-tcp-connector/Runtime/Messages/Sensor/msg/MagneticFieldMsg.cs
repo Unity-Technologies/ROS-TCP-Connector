@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class MagneticFieldMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/MagneticField";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Measurement of the Magnetic Field vector at a specific location.
         // 
