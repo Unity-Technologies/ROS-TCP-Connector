@@ -11,7 +11,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
         const double k_HistoryMaxLengthSeconds = 10.0;
         const int k_HistoryMaxNumEntries = 100;
 
-        TransformStream m_Parent;
+        protected TransformStream m_Parent;
         SortedList<double, TransformFrame> m_Transforms =
             new SortedList<double, TransformFrame>(k_HistoryMaxNumEntries);
 
@@ -25,13 +25,17 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
         public TransformStream Parent
         {
             get => m_Parent;
-            set
+            protected set
             {
                 if (m_Parent != null)
                 {
                     Debug.LogWarning($"{nameof(m_Parent)} has already been assigned as {m_Parent.Name}. "
                     + $"Re-assigning to {value?.Name} which could lead to undefined behavior.");
                     m_Parent.RemoveChildStream(this);
+                }
+                else
+                {
+                    Debug.LogWarning($"{Name} was created without a parent transform - is this a global frame?");
                 }
 
                 // Whenever the parent is assigned, these values must be updated
@@ -50,8 +54,10 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
         {
             Name = name;
             m_GameObject = new GameObject(name);
+
             // Ensure parent is assigned after the GameObject is created to avoid null reference
             Parent = parent;
+
         }
 
         void AddChildStream(TransformStream child)
@@ -70,13 +76,21 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             m_Children.Remove(child);
         }
 
-        public void Add(double timestamp, Vector3 translation, Quaternion rotation)
+        public void AddFrame(double timestamp, Vector3 translation, Quaternion rotation, TransformStream parentStream)
         {
             if (Parent == null)
             {
-                // Can't add transforms for root nodes (nodes with no parent to transform to)
-                throw new InvalidOperationException(
-                    $"Cannot add {nameof(TransformFrame)} to {Name} because you must assign a {nameof(Parent)} first.");
+                if (parentStream != null)
+                {
+                    Debug.Log($"Transform received for orphan node {Name}, setting {parentStream.Name} as the parent.");
+                    Parent = parentStream;
+                }
+                else
+                {
+                    // Can't add transforms for root nodes (nodes with no parent to transform to)
+                    throw new InvalidOperationException(
+                        $"Cannot add {nameof(TransformFrame)} to {Name} because you must assign a {nameof(Parent)} first.");
+                }
             }
 
             var newEntry = new TransformFrame(translation, rotation);

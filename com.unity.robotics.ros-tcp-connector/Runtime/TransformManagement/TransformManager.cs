@@ -1,24 +1,47 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Std;
 using RosMessageTypes.Tf2;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 {
-    public interface ITransformVisualizer
+    // TODO: The modification broadcast system is super generic, move to someplace more appropriate
+    public class ModificationEventArgs<T> : EventArgs where T : class
     {
-        void OnChanged(TransformStream stream);
+
+        public T ObjectChanged { get; }
+
+        public ModificationEventArgs(T objectChanged)
+        {
+            ObjectChanged = objectChanged;
+        }
     }
 
-    public class TransformManager
+    public interface IModificationBroadcaster<T> where T : class
     {
-        static ITransformVisualizer s_Visualizer;
+        public event EventHandler<ModificationEventArgs<T>> OnChangeEvent;
+        // Define with output in function signature to make it more tolerant of defining this interface more than
+        // once on a single class
+        public void ListTrackedObjects(out IEnumerable<T> trackedObjects);
+    }
+
+    public class TransformManager : IModificationBroadcaster<TransformStream>
+    {
         Dictionary<string, TransformStream> m_TransformTable = new Dictionary<string, TransformStream>();
         public static TransformManager instance { get; private set; }
+
+        public event EventHandler<ModificationEventArgs<TransformStream>> OnChangeEvent;
+
+        public void ListTrackedObjects(out IEnumerable<TransformStream> trackedObjects)
+        {
+            trackedObjects = instance.m_TransformTable.Values;
+        }
 
         public static void Init()
         {
@@ -41,30 +64,11 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             return m_TransformTable.Values;
         }
 
-        public static void Register(ITransformVisualizer visualizer)
+        void AnnounceChange(TransformStream stream)
         {
-            if (visualizer == null)
-            {
-                Debug.LogWarning($"Tried to {nameof(Register)} a null {nameof(ITransformVisualizer)}");
-            }
-
-            s_Visualizer = visualizer;
-            if (instance != null)
-            {
-                foreach (var stream in instance.m_TransformTable.Values)
-                {
-                    UpdateVisualization(stream);
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to update Visualization");
-            }
-        }
-
-        public static void UpdateVisualization(TransformStream stream)
-        {
-            s_Visualizer?.OnChanged(stream);
+            // For thread safety, make a temporary copy
+            var raiseEvent = OnChangeEvent;
+            raiseEvent?.Invoke(this, new ModificationEventArgs<TransformStream>(stream));
         }
 
         public TransformFrame GetTransform(HeaderMsg header)
@@ -124,7 +128,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
                 tf = new TransformStream(parent, singleName);
 
                 m_TransformTable[singleName] = tf;
-                UpdateVisualization(tf);
+                AnnounceChange(tf);
             }
             else if (tf == null)
             {
@@ -142,13 +146,20 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
                 var parentId = tfMessage.header.frame_id;
                 var childId = tfMessage.child_frame_id;
                 var streamParent = GetOrCreateStream(parentId, null);
+                if (streamParent == null)
+                {
+                    throw new InvalidOperationException($"Failed to create the parent stream, {parentId}."
+                        + $"The child stream {childId} will also fail.");
+                }
+
                 var streamChild = GetOrCreateStream(childId, streamParent);
-                streamChild.Add(
+                streamChild.AddFrame(
                     tfMessage.header.stamp.ToSeconds(),
                     tfMessage.transform.translation.From<FLU>(),
-                    tfMessage.transform.rotation.From<FLU>()
+                    tfMessage.transform.rotation.From<FLU>(),
+                    streamParent
                 );
-                UpdateVisualization(streamChild);
+                AnnounceChange(streamChild);
             }
         }
     }

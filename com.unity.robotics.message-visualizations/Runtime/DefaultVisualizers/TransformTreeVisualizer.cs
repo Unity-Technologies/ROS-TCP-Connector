@@ -4,10 +4,11 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class TransformTreeVisualizer : MonoBehaviour, ITransformVisualizer, ROSTCPConnector.IHudTab
+    public class TransformTreeVisualizer : MonoBehaviour, ROSTCPConnector.IHudTab
     {
         public float axesScale = 0.1f;
         public float lineThickness = 0.01f;
@@ -17,9 +18,14 @@ namespace Unity.Robotics.MessageVisualizers
         public void Start()
         {
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
-            // TODO: Calling this in both ROSConnection and here to resolve ordering ambiguity -- fix this
             TransformManager.Init();
-            TransformManager.Register(this);
+            TransformManager.instance.ListTrackedObjects(out var currentStreams);
+            foreach (var stream in currentStreams)
+            {
+                UpdateVisualizations(stream);
+            }
+            TransformManager.instance.OnChangeEvent += OnTransformStreamChanged;
+
             if (color.a == 0)
                 color.a = 1;
         }
@@ -35,7 +41,12 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void OnChanged(TransformStream stream)
+        public void OnTransformStreamChanged(object _, ModificationEventArgs<TransformStream> eventArgs)
+        {
+            UpdateVisualizations(eventArgs.ObjectChanged);
+        }
+
+        public void UpdateVisualizations(TransformStream stream)
         {
             BasicDrawing drawing;
             if (!drawings.TryGetValue(stream.Name, out drawing))
@@ -44,7 +55,7 @@ namespace Unity.Robotics.MessageVisualizers
                 drawings[stream.Name] = drawing;
                 if (stream.Parent != null)
                 {
-                    OnChanged(stream.Parent);
+                    UpdateVisualizations(stream.Parent);
                     BasicDrawing parentStream;
                     if (drawings.TryGetValue(stream.Parent.Name, out parentStream))
                     {
@@ -152,7 +163,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (GUI.changed || globalChange)
             {
-                TransformManager.UpdateVisualization(stream);
+                UpdateVisualizations(stream);
             }
 
             if (m_ShowExpanded[stream])
