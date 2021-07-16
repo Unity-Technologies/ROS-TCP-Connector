@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Callbacks;
 
 namespace Unity.Robotics.ROSTCPConnector.Editor
 {
@@ -17,6 +20,21 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         ROSConnection prefab;
+
+        public enum RosProtocol
+        {
+            ROS1,
+            ROS2
+        }
+
+#if ROS2
+        RosProtocol m_SelectedProtocol = RosProtocol.ROS2;
+        const RosProtocol k_AlternateProtocol = RosProtocol.ROS1;
+#else
+        RosProtocol m_SelectedProtocol = RosProtocol.ROS1;
+        const RosProtocol k_AlternateProtocol = RosProtocol.ROS2;
+#endif
+
         protected virtual void OnGUI()
         {
             if (prefab == null)
@@ -41,9 +59,36 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             prefab.ConnectOnStart = EditorGUILayout.Toggle("Connect on Startup", prefab.ConnectOnStart);
 
+            if (m_SelectedProtocol == k_AlternateProtocol)
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.EnumPopup("Protocol", m_SelectedProtocol);
+                EditorGUILayout.LabelField("(Recompiling, please wait...)");
+                EditorGUI.EndDisabledGroup();
+            }
+            else
+            {
+                m_SelectedProtocol = (RosProtocol)EditorGUILayout.EnumPopup("Protocol", m_SelectedProtocol);
+                if (m_SelectedProtocol == k_AlternateProtocol)
+                {
+                    List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
+                    if (m_SelectedProtocol == RosProtocol.ROS1)
+                        allDefines.Remove("ROS2");
+                    else
+                        allDefines.Add("ROS2");
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, string.Join(";", allDefines));
+                }
+            }
+
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
+
             prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
             prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+
+            // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
+            HUDPanel.SetIPPref(prefab.RosIPAddress);
+            HUDPanel.SetPortPref(prefab.RosPort);
+
             EditorGUILayout.Space();
 
             if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
@@ -74,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             if (GUI.changed)
             {
-                EditorUtility.SetDirty(prefabObj);
+                PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
         }
     }
