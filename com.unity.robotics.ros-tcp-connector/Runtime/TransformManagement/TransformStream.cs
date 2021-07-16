@@ -6,19 +6,16 @@ using UnityEngine;
 namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 {
     // Represents a transform frame changing over time.
-    public class TransformStream
+    class TransformStream
     {
         const double k_HistoryMaxLengthSeconds = 10.0;
         const int k_HistoryMaxNumEntries = 100;
 
-        protected TransformStream m_Parent;
-        SortedList<double, TransformFrame> m_Transforms =
+        TransformStream m_Parent;
+        protected SortedList<double, TransformFrame> m_Transforms =
             new SortedList<double, TransformFrame>(k_HistoryMaxNumEntries);
 
         HashSet<TransformStream> m_Children = new HashSet<TransformStream>();
-
-        // a gameobject at the last known position of this tfstream
-        GameObject m_GameObject;
 
         public string Name { get; }
 
@@ -38,8 +35,6 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
                     Debug.LogWarning($"{Name} was created without a parent transform - is this a global frame?");
                 }
 
-                // Whenever the parent is assigned, these values must be updated
-                m_GameObject.transform.parent = value?.m_GameObject.transform;
                 value?.AddChildStream(this);
 
                 m_Parent = value;
@@ -48,16 +43,11 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 
         public IEnumerable<TransformStream> Children => m_Children;
 
-        public GameObject GameObject => m_GameObject;
 
         public TransformStream(TransformStream parent, string name)
         {
             Name = name;
-            m_GameObject = new GameObject(name);
-
-            // Ensure parent is assigned after the GameObject is created to avoid null reference
             Parent = parent;
-
         }
 
         void AddChildStream(TransformStream child)
@@ -76,7 +66,8 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             m_Children.Remove(child);
         }
 
-        public void AddFrame(double timestamp, Vector3 translation, Quaternion rotation, TransformStream parentStream)
+        internal void AddFrame(double timestamp, Vector3 translation, Quaternion rotation,
+            TransformStream parentStream = null)
         {
             if (Parent == null)
             {
@@ -102,7 +93,6 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
                             + "the entry will be overwritten.");
                 m_Transforms.Remove(timestamp);
             }
-
             // Only need to check if we're at the max entry limit if the entry is being added and not overwritten
             else
             {
@@ -120,9 +110,11 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             {
                 m_Transforms.RemoveAt(0);
             }
+        }
 
-            var latestFrame = latestEntry.Value;
-            m_GameObject.transform.SetPositionAndRotation(latestFrame.Translation, latestFrame.Rotation);
+        internal TransformFrame GetLatestFrame()
+        {
+            return m_Transforms.Values.Last();
         }
 
         TransformFrame GetFrameFailSilently(double time)
@@ -154,7 +146,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             return Interpolate(time, index);
         }
 
-        public bool TryGetFrame(double time, out TransformFrame frame, out string failureReason)
+        internal bool TryGetFrame(double time, out TransformFrame frame, out string failureReason)
         {
             failureReason = "";
 
@@ -184,7 +176,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
             return false;
         }
 
-        public TransformFrame GetFrame(double time, bool shouldFailSilently = false)
+        internal TransformFrame GetFrame(double time, bool shouldFailSilently = false)
         {
             if (shouldFailSilently)
             {

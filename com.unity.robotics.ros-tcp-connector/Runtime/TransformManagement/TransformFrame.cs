@@ -4,7 +4,7 @@ namespace Unity.Robotics.ROSTCPConnector.TransformManagement
 {
     // Represents a transform - position and rotation.
     //(Like the Unity Transform class, but without the GameObject baggage that comes with it.)
-    public readonly struct TransformFrame
+    readonly struct TransformFrame
     {
         public Vector3 Translation { get; }
         public Quaternion Rotation { get; }

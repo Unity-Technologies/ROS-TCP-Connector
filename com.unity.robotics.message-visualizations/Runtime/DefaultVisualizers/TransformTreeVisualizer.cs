@@ -4,7 +4,6 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.TransformManagement;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -41,12 +40,12 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void OnTransformStreamChanged(object _, ModificationEventArgs<TransformStream> eventArgs)
+        void OnTransformStreamChanged(object _, ModificationEventArgs<TransformStream> eventArgs)
         {
             UpdateVisualizations(eventArgs.ObjectChanged);
         }
 
-        public void UpdateVisualizations(TransformStream stream)
+        void UpdateVisualizations(TransformStream stream)
         {
             BasicDrawing drawing;
             if (!drawings.TryGetValue(stream.Name, out drawing))
