@@ -13,6 +13,7 @@ public class DefaultVisualizerGridCells : DrawingVisualFactory<GridCellsMsg>
 
     public override void Draw(BasicDrawing drawing, GridCellsMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Radius);
     }
 

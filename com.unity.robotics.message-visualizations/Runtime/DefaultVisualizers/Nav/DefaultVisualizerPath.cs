@@ -14,6 +14,7 @@ public class DefaultVisualizerPath : DrawingVisualFactory<PathMsg>
 
     public override void Draw(BasicDrawing drawing, PathMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 
