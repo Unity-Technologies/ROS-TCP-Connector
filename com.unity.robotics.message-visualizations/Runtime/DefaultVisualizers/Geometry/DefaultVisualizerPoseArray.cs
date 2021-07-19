@@ -14,6 +14,7 @@ public class DefaultVisualizerPoseArray : DrawingVisualFactory<PoseArrayMsg>
 
     public override void Draw(BasicDrawing drawing, PoseArrayMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 

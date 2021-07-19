@@ -21,6 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, QuaternionStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             message.quaternion.Draw<FLU>(drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), transform.position, SelectColor(m_Color, meta), m_Size);
         }

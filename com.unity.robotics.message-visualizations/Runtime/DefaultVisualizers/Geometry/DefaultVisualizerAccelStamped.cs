@@ -15,6 +15,7 @@ public class DefaultVisualizerAccelStamped : DrawingVisualFactory<AccelStampedMs
 
     public override void Draw(BasicDrawing drawing, AccelStampedMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 

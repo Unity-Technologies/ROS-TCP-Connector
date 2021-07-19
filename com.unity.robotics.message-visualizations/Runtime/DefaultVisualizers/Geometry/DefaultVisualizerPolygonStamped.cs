@@ -14,6 +14,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, PolygonStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             message.polygon.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
         }
 

@@ -26,6 +26,7 @@ public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<JointTrajec
 
     public override void Draw(BasicDrawing drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
     }
 }
