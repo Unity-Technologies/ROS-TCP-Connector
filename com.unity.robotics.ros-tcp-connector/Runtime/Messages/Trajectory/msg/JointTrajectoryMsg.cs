@@ -11,6 +11,7 @@ namespace RosMessageTypes.Trajectory
     public class JointTrajectoryMsg : Message
     {
         public const string k_RosMessageName = "trajectory_msgs/JointTrajectory";
+        public override string RosMessageName => k_RosMessageName;
 
         //  The header is used to specify the coordinate frame and the reference time for
         //  the trajectory durations

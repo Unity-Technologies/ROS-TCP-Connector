@@ -24,6 +24,30 @@ Add the Ros Tcp Connector assembly to support Universal Windows Platform
 
 ### Fixed
 
+## [0.5.0-preview] - 2021-07-15
+
+### Upgrade Notes
+
+Update third party notices also
+
+### Known Issues
+
+### Added
+
+Add the option to connect to ROS2. User can use a dropdown menu and choose ROS1 or ROS2 protocols to connect to the ROS side
+
+Add badges to main README
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+Fixed byte conversion method in the serialization process
+
 ## [0.4.0-preview] - 2021-05-27
 
 Note: the logs only reflect the changes from 0.3.0-preview

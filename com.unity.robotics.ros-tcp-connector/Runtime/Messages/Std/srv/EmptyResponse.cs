@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class EmptyResponse : Message
     {
         public const string k_RosMessageName = "std_srvs/Empty";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public EmptyResponse()

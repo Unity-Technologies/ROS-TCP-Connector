@@ -11,6 +11,7 @@ namespace RosMessageTypes.Octomap
     public class GetOctomapRequest : Message
     {
         public const string k_RosMessageName = "octomap_msgs-melodic-devel/GetOctomap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Get the map as a octomap
 

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class MenuEntryMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/MenuEntry";
+        public override string RosMessageName => k_RosMessageName;
 
         //  MenuEntry message.
         // 

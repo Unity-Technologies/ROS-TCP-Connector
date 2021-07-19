@@ -10,7 +10,7 @@ namespace RosMessageTypes.BuiltinInterfaces
     {
 #if !ROS2
         public const string k_RosMessageName = "std_msgs/Time";
-
+        public override string RosMessageName => k_RosMessageName;
 
         public uint sec;
         public uint nanosec;
@@ -29,7 +29,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 
 #else
         public const string k_RosMessageName = "builtin_interfaces/Time";
-
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message communicates ROS Time defined here:
         //  https://design.ros2.org/articles/clock_and_time.html

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class CompressedImageMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/CompressedImage";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message contains a compressed image.
         public Std.HeaderMsg header;

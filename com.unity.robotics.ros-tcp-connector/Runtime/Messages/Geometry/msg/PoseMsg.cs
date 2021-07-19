@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class PoseMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Pose";
+        public override string RosMessageName => k_RosMessageName;
 
         //  A representation of pose in free space, composed of position and orientation.
         public PointMsg position;

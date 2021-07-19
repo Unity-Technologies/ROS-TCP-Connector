@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class PointStampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/PointStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a Point with reference coordinate frame and timestamp
         public Std.HeaderMsg header;

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class Point32Msg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Point32";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This contains the position of a point in free space(with 32 bits of precision).
         //  It is recommended to use Point wherever possible instead of Point32.
