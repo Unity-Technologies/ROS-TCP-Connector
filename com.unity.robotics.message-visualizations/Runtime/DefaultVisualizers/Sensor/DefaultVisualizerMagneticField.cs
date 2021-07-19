@@ -12,6 +12,7 @@ public class DefaultVisualizerMagneticField : DrawingVisualFactory<MagneticField
 
     public override void Draw(BasicDrawing drawing, MagneticFieldMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
     }
 

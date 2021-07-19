@@ -20,6 +20,7 @@ public class DefaultVisualizerImu : DrawingVisualFactory<ImuMsg>
 
     public override void Draw(BasicDrawing drawing, ImuMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 

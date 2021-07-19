@@ -12,6 +12,7 @@ public class DefaultVisualizerRange : DrawingVisualFactory<RangeMsg>
 
     public override void Draw(BasicDrawing drawing, RangeMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
     }
 

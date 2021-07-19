@@ -79,6 +79,7 @@ public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
     {
         drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();
+        Channels = message.channels.Select(field => field).ToArray();
 
         if (m_Channels == null)
             m_Channels = message.channels;

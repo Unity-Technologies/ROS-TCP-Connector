@@ -75,10 +75,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(this ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            message.orientation.Draw<C>(drawing, frame.translation);
-            drawing.DrawArrow(frame.translation, frame.translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
+            message.orientation.Draw<C>(drawing);
+            drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
+            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
         }
 
         public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
@@ -284,42 +283,6 @@ namespace Unity.Robotics.MessageVisualizers
                 drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
         }
 
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
-        {
-            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
-        }
-
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings settings) where C : ICoordinateSpace, new()
-        {
-            pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
-            float angle = -message.angle_min;
-            // foreach(MLaserEcho echo in message.ranges)
-            for (int i = 0; i < message.ranges.Length; i++)
-            {
-                var echoes = message.ranges[i].echoes;
-                // foreach (float range in echo.echoes)
-                for (int j = 0; j < echoes.Length; j++)
-                {
-                    Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
-                    Vector3 worldPoint = frame.TransformPoint(localPoint);
-                    Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
-
-                    var radius = settings.m_PointRadius;
-
-                    if (message.intensities.Length > 0 && settings.m_UseIntensitySize)
-                    {
-                        radius = Mathf.InverseLerp(settings.m_SizeRange[0], settings.m_SizeRange[1], message.intensities[i].echoes[j]);
-                    }
-
-                    pointCloud.AddPoint(worldPoint, c, radius);
-                }
-                angle -= message.angle_increment;
-            }
-            pointCloud.Bake();
-        }
-
         static GameObject s_OccupancyGridGameObject;
         static Mesh s_OccupancyGridMesh;
         static Texture2D s_OccupancyGridTexture;
@@ -383,17 +346,10 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
-            // TODO
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
-            if (origin != null)
-            {
-                pos += origin.transform.position;
-            }
             message.pose.pose.Draw<C>(drawing);
-            message.twist.twist.Draw<C>(drawing, color, pos, lengthScale, sphereRadius, thickness);
+            message.twist.twist.Draw<C>(drawing, color, message.pose.pose.position.From<C>(), lengthScale, sphereRadius, thickness);
         }
 
         public static void Draw<C>(this PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
@@ -489,17 +445,12 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-
-            var s = Mathf.Asin(message.field_of_view);
-            var c = Mathf.Acos(message.field_of_view);
+            var asin = Mathf.Asin(message.field_of_view);
+            var acos = Mathf.Acos(message.field_of_view);
             Color col = Color.HSVToRGB(Mathf.InverseLerp(message.min_range, message.max_range, message.range), 1, 1);
+            Vector3 end = new Vector3Msg(message.range * acos, 0, message.range * asin).From<C>();
 
-            Vector3 end = new Vector3(message.range * c, 0, message.range * s);
-            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
-            end = matrix.MultiplyPoint(end);
-
-            drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
+            drawing.DrawCone(end, Vector3.zero, col, Mathf.Rad2Deg * message.field_of_view / 2);
         }
 
         public static void Draw<C>(this SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)

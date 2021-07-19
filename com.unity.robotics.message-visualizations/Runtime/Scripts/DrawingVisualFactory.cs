@@ -10,6 +10,9 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
+        [SerializeField]
+        protected TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
+        public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
 
         public virtual void Start()
         {

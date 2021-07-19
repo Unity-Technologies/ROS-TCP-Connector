@@ -9,13 +9,12 @@ public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
     public float thickness = 0.01f;
     public float lengthScale = 1.0f;
     public float sphereRadius = 1.0f;
-    public GameObject origin;
     [SerializeField]
     Color m_Color;
 
     public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(OdometryMsg message, MessageMetadata meta) => () =>

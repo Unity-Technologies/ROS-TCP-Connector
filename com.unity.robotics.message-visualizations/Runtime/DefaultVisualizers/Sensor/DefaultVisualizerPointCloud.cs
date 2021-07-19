@@ -7,10 +7,4 @@ using UnityEngine;
 public class DefaultVisualizerPointCloud : SettingsBasedVisualFactory<PointCloudMsg, PointCloudVisualizerSettings>
 {
     public override string DefaultScriptableObjectPath => "VisualizerSettings/PointCloudVisualizerSettings";
-
-    public override IVisual CreateVisual(Message message, MessageMetadata meta)
-    {
-        Settings.Channels = ((PointCloudMsg)message).channels;
-        return base.CreateVisual(message, meta);
-    }
 }

@@ -7,13 +7,49 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "MessageVisualizations/Sensor/MultiEchoLaserScan", order = 1)]
 public class MultiEchoLaserScanVisualizerSettings : VisualizerSettings<MultiEchoLaserScanMsg>
 {
-    public bool m_UseIntensitySize;
-    public float m_PointRadius = 0.05f;
-    public float[] m_SizeRange = { 0, 100 };
+    [SerializeField]
+    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
+    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
+    [SerializeField]
+    bool m_UseIntensitySize;
+    public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
+    [SerializeField]
+    float m_PointRadius = 0.05f;
+    public float PointRadius { get => m_PointRadius; set => m_PointRadius = value; }
+    [SerializeField]
+    float[] m_SizeRange = { 0, 100 };
+    public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, this);
+        // message.Draw<FLU>(drawing, this);
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+
+        PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
+        pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
+
+        // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
+        float angle = -message.angle_min;
+        for (int i = 0; i < message.ranges.Length; i++)
+        {
+            var echoes = message.ranges[i].echoes;
+            for (int j = 0; j < echoes.Length; j++)
+            {
+                Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
+                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
+
+                var radius = m_PointRadius;
+
+                if (message.intensities.Length > 0 && m_UseIntensitySize)
+                {
+                    radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], message.intensities[i].echoes[j]);
+                }
+
+                pointCloud.AddPoint(point, c, radius);
+            }
+            angle -= message.angle_increment;
+        }
+        pointCloud.Bake();
     }
 
     public override Action CreateGUI(MultiEchoLaserScanMsg message, MessageMetadata meta)
