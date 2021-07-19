@@ -292,7 +292,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             Vector3 origin = message.info.origin.position.From<C>();
             Quaternion rotation = message.info.origin.orientation.From<C>();
-            rotation.eulerAngles += new Vector3(0, -90, 0); // Account for differing texture origin
+            rotation.eulerAngles += new Vector3(0, -90, 0); // TODO: Account for differing texture origin
             int width = (int)message.info.width;
             int height = (int)message.info.height;
             float scale = message.info.resolution;
@@ -315,7 +315,7 @@ namespace Unity.Robotics.MessageVisualizers
             Material gridMaterial = new Material(s_OccupancyGridMaterial);
             gridMaterial.mainTexture = s_OccupancyGridTexture;
 
-            s_OccupancyGridGameObject = drawing.DrawMesh(s_OccupancyGridMesh, origin, rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
+            s_OccupancyGridGameObject = drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
         }
 
         public static void Draw<C>(this OccupancyGridUpdateMsg message, BasicDrawing drawing) where C : ICoordinateSpace, new()
