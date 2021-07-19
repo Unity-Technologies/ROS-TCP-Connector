@@ -8,9 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Upgrade Notes
 
+Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
+
 ### Known Issues
 
 ### Added
+
+Add the Ros Tcp Connector assembly to support Universal Windows Platform
 
 ### Changed
 
