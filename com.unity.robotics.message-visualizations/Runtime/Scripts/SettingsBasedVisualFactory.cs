@@ -59,7 +59,7 @@ namespace Unity.Robotics.MessageVisualizers
             return true;
         }
 
-        public virtual IVisual CreateVisual(Message message, MessageMetadata meta)
+        public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
             if (!AssertMessageType(message, meta))
                 return null;

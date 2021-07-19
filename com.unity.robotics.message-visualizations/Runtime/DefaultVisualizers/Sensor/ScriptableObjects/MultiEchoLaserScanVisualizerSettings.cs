@@ -19,10 +19,8 @@ public class MultiEchoLaserScanVisualizerSettings : VisualizerSettings<MultiEcho
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
-        // message.Draw<FLU>(drawing, this);
         drawing.SetTFTrackingType(m_TFTrackingType, message.header);
-
-        PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
+        var pointCloud = drawing.AddPointCloud(message.ranges.Length);
         pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
 
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
