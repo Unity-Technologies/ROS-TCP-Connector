@@ -27,10 +27,12 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
         {
             var menu = new GenericMenu();
             foreach (var c in channels)
+            {
                 menu.AddItem(new GUIContent(c), c == channel, () =>
                 {
                     action(c);
                 });
+            }
             menu.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
         }
 

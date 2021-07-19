@@ -17,9 +17,6 @@ public class PointCloud2VisualizerSettings : VisualizerSettings<PointCloud2Msg>
     }
 
     [SerializeField]
-    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
-    [SerializeField]
     ColorMode m_ColorModeSetting;
     public ColorMode ColorModeSetting { get => m_ColorModeSetting; set => m_ColorModeSetting = value; }
     public string[] Channels { get => m_Channels; set => m_Channels = value; }

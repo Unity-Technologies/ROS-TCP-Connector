@@ -12,6 +12,9 @@ public class VisualizerSettings<T> : VisualizerSettings, IVisualDrawer<T>
     where T : Message
 {
     public override string RosMessageName => MessageRegistry.GetRosMessageName<T>();
+    [SerializeField]
+    protected TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
+    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
 
     public virtual Action CreateGUI(T message, MessageMetadata meta)
     {

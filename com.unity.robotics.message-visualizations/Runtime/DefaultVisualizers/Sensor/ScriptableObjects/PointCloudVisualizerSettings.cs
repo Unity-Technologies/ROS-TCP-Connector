@@ -10,57 +10,39 @@ using UnityEngine;
 public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
 {
     [SerializeField]
-    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
-    [SerializeField]
     PointCloud2VisualizerSettings.ColorMode m_ColorMode;
     public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    [SerializeField]
     public ChannelFloat32Msg[] Channels { get => m_Channels; set => m_Channels = value; }
     ChannelFloat32Msg[] m_Channels;
-    [SerializeField]
     public string HueChannel { get => m_HueChannel; set => m_HueChannel = value; }
     string m_HueChannel = "";
-    [SerializeField]
     public string RChannel { get => m_RChannel; set => m_RChannel = value; }
     string m_RChannel = "";
-    [SerializeField]
     public string GChannel { get => m_GChannel; set => m_GChannel = value; }
     string m_GChannel = "";
-    [SerializeField]
     public string BChannel { get => m_BChannel; set => m_BChannel = value; }
     string m_BChannel = "";
-    [SerializeField]
     public string SizeChannel { get => m_SizeChannel; set => m_SizeChannel = value; }
     string m_SizeChannel = "";
 
-    [SerializeField]
     public float[] HueRange { get => m_HueRange; set => m_HueRange = value; }
     float[] m_HueRange = { 0, 100 };
-    [SerializeField]
     public float[] RRange { get => m_RRange; set => m_RRange = value; }
     float[] m_RRange = { 0, 100 };
-    [SerializeField]
     public float[] GRange { get => m_GRange; set => m_GRange = value; }
     float[] m_GRange = { 0, 100 };
-    [SerializeField]
     public float[] BRange { get => m_BRange; set => m_BRange = value; }
     float[] m_BRange = { 0, 100 };
-    [SerializeField]
     public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
     float[] m_SizeRange = { 0, 100 };
-    [SerializeField]
     public float Size { get => m_Size; set => m_Size = value; }
     float m_Size = 0.05f;
 
-    [SerializeField]
     public bool UseRgbChannel { get => m_UseRgbChannel; set => m_UseRgbChannel = value; }
     bool m_UseRgbChannel = true;
-    [SerializeField]
     public bool UseSeparateRgb { get => m_UseSeparateRgb; set => m_UseSeparateRgb = value; }
     bool m_UseSeparateRgb = true;
-    [SerializeField]
     public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
     bool m_UseSizeChannel = true;
 
