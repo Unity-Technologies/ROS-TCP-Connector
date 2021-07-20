@@ -8,9 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Upgrade Notes
 
+Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
+
 ### Known Issues
 
 ### Added
+
+Add the Ros Tcp Connector assembly to support Universal Windows Platform
 
 ### Changed
 
@@ -19,6 +23,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Removed
 
 ### Fixed
+
+## [0.5.0-preview] - 2021-07-15
+
+### Upgrade Notes
+
+Update third party notices also
+
+### Known Issues
+
+### Added
+
+Add the option to connect to ROS2. User can use a dropdown menu and choose ROS1 or ROS2 protocols to connect to the ROS side
+
+Add badges to main README
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+Fixed byte conversion method in the serialization process
 
 ## [0.4.0-preview] - 2021-05-27
 

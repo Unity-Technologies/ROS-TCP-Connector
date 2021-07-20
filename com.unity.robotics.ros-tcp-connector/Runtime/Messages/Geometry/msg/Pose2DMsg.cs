@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class Pose2DMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Pose2D";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Deprecated as of Foxy and will potentially be removed in any following release.
         //  Please use the full 3D pose.

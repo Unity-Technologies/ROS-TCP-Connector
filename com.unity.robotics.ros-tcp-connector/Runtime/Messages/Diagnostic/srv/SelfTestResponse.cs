@@ -11,6 +11,7 @@ namespace RosMessageTypes.Diagnostic
     public class SelfTestResponse : Message
     {
         public const string k_RosMessageName = "diagnostic_msgs/SelfTest";
+        public override string RosMessageName => k_RosMessageName;
 
         public string id;
         public sbyte passed;

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class PoseStampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/PoseStamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  A Pose with reference coordinate frame and timestamp
         public Std.HeaderMsg header;

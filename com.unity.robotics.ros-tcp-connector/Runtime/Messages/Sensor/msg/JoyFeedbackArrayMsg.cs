@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class JoyFeedbackArrayMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/JoyFeedbackArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message publishes values for multiple feedback at once.
         public JoyFeedbackMsg[] array;

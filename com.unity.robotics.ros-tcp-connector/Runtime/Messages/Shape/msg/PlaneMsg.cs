@@ -11,6 +11,7 @@ namespace RosMessageTypes.Shape
     public class PlaneMsg : Message
     {
         public const string k_RosMessageName = "shape_msgs/Plane";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Representation of a plane, using the plane equation ax + by + cz + d = 0.
         // 

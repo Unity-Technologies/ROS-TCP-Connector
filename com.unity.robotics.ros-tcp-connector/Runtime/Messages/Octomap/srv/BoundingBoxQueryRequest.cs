@@ -11,6 +11,7 @@ namespace RosMessageTypes.Octomap
     public class BoundingBoxQueryRequest : Message
     {
         public const string k_RosMessageName = "octomap_msgs-melodic-devel/BoundingBoxQuery";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Clear a region specified by a global axis-aligned bounding box in stored OctoMap
         //  minimum corner point of axis-aligned bounding box in global frame

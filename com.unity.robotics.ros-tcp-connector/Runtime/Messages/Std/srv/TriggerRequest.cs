@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class TriggerRequest : Message
     {
         public const string k_RosMessageName = "std_srvs/Trigger";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public TriggerRequest()

@@ -13,6 +13,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             throw new NotImplementedException("Your message class needs to be rebuilt");
         }
 
+        public virtual string RosMessageName => throw new NotImplementedException();
+
         // The following should never be used, they're here for backwards compatibility only.
         public virtual List<byte[]> SerializationStatements() => throw new NotImplementedException();
         public virtual int Deserialize(byte[] data, int offset) => throw new NotImplementedException();

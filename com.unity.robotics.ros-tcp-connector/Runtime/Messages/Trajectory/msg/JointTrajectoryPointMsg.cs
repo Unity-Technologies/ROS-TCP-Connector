@@ -11,6 +11,7 @@ namespace RosMessageTypes.Trajectory
     public class JointTrajectoryPointMsg : Message
     {
         public const string k_RosMessageName = "trajectory_msgs/JointTrajectoryPoint";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Each trajectory point specifies either positions[, velocities[, accelerations]]
         //  or positions[, effort] for the trajectory to be executed.
