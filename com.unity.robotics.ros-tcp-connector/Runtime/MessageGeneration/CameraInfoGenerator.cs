@@ -5,12 +5,17 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
+
     public static class CameraInfoGenerator
     {
 
+        //The default Camera Info distortion model.
+        const string k_PlumbBobDistortionModel = "plumb_bob";
+
         /**
          * <summary>
-         *   <para>Using a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg</para>
+         *   <para>Using a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg,
+         *  see http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/CameraInfo.html for more information.</para>
          * </summary>
          *
          * <param name="unityCamera">The camera used to generate the message.</param>
@@ -34,7 +39,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
          * -> Axis Skew.
          *
          */
-        public static CameraInfoMsg GenerateCameraInfoMessage(Camera unityCamera, HeaderMsg header,
+        public static CameraInfoMsg ConstructCameraInfoMessage(Camera unityCamera, HeaderMsg header,
             float horizontalCameraOffsetDistanceMeters = 0.0f, float integerResolutionTolerance = 0.01f)
         {
             CameraInfoMsg cameraInfo = new CameraInfoMsg();
@@ -45,26 +50,36 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             uint resolutionHeight = (uint) pixelRect.height;
 
             //Check whether the resolution is an integer value, if not, raise a warning.
+            //Note: While the resolution of a screen or a render texture is always an integer value,
+            //      one can change the rendering region within the screen / texture using the
+            //      viewport rect. It is possible that this region will be a non-integer resolution.
+            //      since the resolution of the CameraInfo message is stored as a uint,
+            //      non-integer values are not supported
             if ((pixelRect.width - (float) resolutionWidth) > integerResolutionTolerance)
             {
-                Debug.LogWarning($"Resolution width is not an integer: {pixelRect.width}");
+                Debug.LogWarning($"CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
+                                 $"Resolution width is not an integer: {pixelRect.width}. Adjust the viewport rect.");
             }
 
             if ((pixelRect.height - (float) resolutionHeight) > integerResolutionTolerance)
             {
-                Debug.LogWarning($"Resolution height is not an integer: {pixelRect.height}");
+                Debug.LogWarning($"CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
+                                 $"Resolution height is not an integer: {pixelRect.height}. Adjust the viewport rect.");
             }
-
 
             if (resolutionWidth != unityCamera.scaledPixelWidth || resolutionHeight != unityCamera.scaledPixelHeight)
             {
                 //Check for resolution scaling (Not Implemented). TODO - Implement.
-                throw new NotImplementedException("Resolution scaling is not yet supported.");
+                throw new NotImplementedException(
+                    $"Unable to construct CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
+                    $"Resolution scaling is not yet supported.");
             }
 
             if (unityCamera.lensShift != Vector2.zero)
             {
-                throw new NotImplementedException("Lens shift is not yet supported.");
+                throw new NotImplementedException(
+                    $"Unable to construct CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
+                    "Lens shift is not yet supported.");
             }
 
             cameraInfo.width = resolutionWidth;
@@ -72,9 +87,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             //Focal center currently assumes zero lens shift.
             //Focal center x.
-            double cX = resolutionWidth / 2.0f;
+            double cX = resolutionWidth / 2.0;
             //Focal center y.
-            double cY = resolutionHeight / 2.0f;
+            double cY = resolutionHeight / 2.0;
 
             //Get the vertical field of view of the camera taking into account any physical camera settings.
             float verticalFieldOfView = GetVerticalFieldOfView(unityCamera);
@@ -83,46 +98,39 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             //http://paulbourke.net/miscellaneous/lens/
             //http://ksimek.github.io/2013/06/18/calibrated-cameras-and-gluperspective/
             //Rearranging the equation for verticalFieldOfView given a focal length, determine the focal length in pixels.
-            double focalLengthInPixels = (resolutionHeight / 2.0f) / Mathf.Tan((Mathf.Deg2Rad * verticalFieldOfView) / 2.0f);
+            double focalLengthInPixels =
+                (resolutionHeight / 2.0) / Math.Tan((Mathf.Deg2Rad * verticalFieldOfView) / 2.0);
 
-            //As this is a perfect pinhole camera, the fx=fy=f
+            //As this is a perfect pinhole camera, the fx = fy = f
             //Source http://ksimek.github.io/2013/08/13/intrinsic/
             //Focal Length (x)
             double fX = focalLengthInPixels;
             //Focal Length (y)
             double fY = focalLengthInPixels;
 
-            /*
-            [Tx Ty 0] is related to the
-            position of the optical center of the second camera in the first
-            camera's frame.
-
-            For a stereo pair, the fourth column [Tx Ty 0]' is related to the
-            position of the optical center of the second camera in the first
-            camera's frame. We assume Tz = 0 so both cameras are in the same
-            stereo image plane. The first camera always has Tx = Ty = 0. For
-            the right (second) camera of a horizontal stereo pair, Ty = 0 and
-            Tx = -fx' * B, where B is the baseline between the cameras.
-            */
+            //Source: http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/CameraInfo.html
+            //For a single camera, tX = tY = 0.
+            //For a stereo camera, assuming Tz = 0, Ty = 0 and Tx = -fx' * B (for the second camera)
             double baseline = horizontalCameraOffsetDistanceMeters;
 
             double tX = -fX * baseline;
-            double tY = 0;
+            double tY = 0.0;
 
-            double s = 0.0; //Axis Skew, Assuming none.
+            //Axis Skew, Assuming none.
+            double s = 0.0;
 
             //http://ksimek.github.io/2013/08/13/intrinsic/
             cameraInfo.k = new double[]
             {
-                fX, s,  cX,
-                0,  fY, cY,
-                0,  0,  1
+                fX, s, cX,
+                0, fY, cY,
+                0, 0, 1
             };
 
             //The distortion parameters, size depending on the distortion model.
             //For "plumb_bob", the 5 parameters are: (k1, k2, t1, t2, k3).
             //No distortion means d = {k1, k2, t1, t2, k3} = {0, 0, 0, 0, 0}
-            cameraInfo.distortion_model = "plumb_bob";
+            cameraInfo.distortion_model = k_PlumbBobDistortionModel;
             cameraInfo.d = new double[]
             {
                 0.0, //k1
@@ -150,9 +158,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             //     [ 0   0   1   0]
             cameraInfo.p = new double[]
             {
-                fX, 0,  cX, tX,
-                0,  fY, cY, tY,
-                0,  0,  1,  0
+                fX, 0, cX, tX,
+                0, fY, cY, tY,
+                0, 0, 1, 0
             };
 
             //We're not worrying about binning...
@@ -176,7 +184,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
          *   <para>The vertical field of view of the rendered image taking into account physical properties, in degrees.</para>
          * </summary>
          */
-        public static float GetVerticalFieldOfView(Camera camera)
+        private static float GetVerticalFieldOfView(Camera camera)
         {
             if (camera.usePhysicalProperties)
             {
