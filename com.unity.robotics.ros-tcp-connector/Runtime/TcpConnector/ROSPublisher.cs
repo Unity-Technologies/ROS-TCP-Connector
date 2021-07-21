@@ -99,7 +99,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
 
         //Whether you want to pool messages for reuse (Used to reduce GC calls).
-        private volatile bool messagePoolEnabled;
+        private volatile bool _messagePoolEnabled;
 
         //Optional, used if you want to pool messages and reuse them when they are no longer in use.
         private Queue<T> inactiveMessagePool = new Queue<T>();
@@ -145,11 +145,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (ValidMessageExistsInQueue && ValidMessagesInQueue >= QueueSize)
                 {
                     //Remove outgoing messages that don't fit in the queue.
-                    PublishedMessage<T> messageToInvalidate = nextValidOutgoingMessage.Value;
                     //Recycle the message if applicable
-                    AddMessageToPool(messageToInvalidate.message);
-                    //Flag that the message shouldn't be sent as it was removed from the queue.
-                    messageToInvalidate.Invalidate();
+                    RecycleMessage(nextValidOutgoingMessage.Value);
                     //Update the nextValidOutgoingMessage and nextValidMessageIndex
                     SetNextOutgoingIndex();
                 }
@@ -168,7 +165,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool RemoveMessageToSend(out PublishedMessage<T> messageToSend)
         {
-            bool result = false;
+            var result = false;
             messageToSend = null;
             lock(outgoingMessages)
             {
@@ -178,12 +175,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     //Update the next valid message.
                     if (nextValidMessageIndex == 0)
                     {
-                        //The next valid message was the one we just sent, we need to set it to the next one.
+                        //The next valid message was the one we are about to remove, we need to set it to the next one.
                         SetNextOutgoingIndex();
                     }
-                    else
+                    if(nextValidMessageIndex >= 0)
                     {
-                        //The next valid message was later in the queue, we need to update the index.
+                        //We are going to remove the first element, we need to update the index.
                         nextValidMessageIndex--;
                     }
 
@@ -239,8 +236,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     //Send via the stream.
                     m_MessageSerializer.SendTo(stream);
                     //Recycle the message (if applicable).
-                    AddMessageToPool(toSend.message);
-                    toSend.Invalidate();
+                    RecycleMessage(toSend);
                     return SendToState.Normal;
                 }
                 //This means that we can't send message to ROS as fast as we're generating them.
@@ -253,28 +249,48 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public override void ClearAllQueuedData()
         {
-            while (RemoveMessageToSend(out PublishedMessage<T> unused))
+            while (RemoveMessageToSend(out PublishedMessage<T> removed))
             {
+                RecycleMessage(removed);
+            }
+        }
+
+        private void RecycleMessage(PublishedMessage<T> toRecycle)
+        {
+            if (toRecycle.valid)
+            {
+                //Add the message back to the pool.
+                AddMessageToPool(toRecycle.message);
+                //Flag that the message shouldn't be sent as it was removed from the queue.
+                toRecycle.Invalidate();
             }
         }
 
         #region Message Pooling
 
-        public void SetMessagePoolEnabled(bool messagePoolEnabled)
+        public bool MessagePoolEnabled
         {
-            this.messagePoolEnabled = messagePoolEnabled;
-            if (!messagePoolEnabled)
+            get => _messagePoolEnabled;
+            set
             {
-                lock(inactiveMessagePool)
+                if (_messagePoolEnabled != value)
                 {
-                    inactiveMessagePool.Clear();
+                    _messagePoolEnabled = value;
+                    if (!_messagePoolEnabled)
+                    {
+                        lock(inactiveMessagePool)
+                        {
+                            inactiveMessagePool.Clear();
+                        }
+                    }
                 }
+
             }
         }
 
         public void AddMessageToPool(T messageToRecycle)
         {
-            if (!messagePoolEnabled)
+            if (!MessagePoolEnabled)
             {
                 //No message pooling, let the GC handle this message.
                 return;
