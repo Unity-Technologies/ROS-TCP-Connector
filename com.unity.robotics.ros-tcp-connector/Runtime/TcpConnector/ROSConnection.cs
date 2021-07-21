@@ -272,16 +272,6 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
-        void SendPublisherRegistration(ROSPublisherBase rosPublisherBase, NetworkStream stream = null)
-        {
-            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType
-            {
-                topic = rosPublisherBase.TopicName, message_name = rosPublisherBase.RosMessageName,
-                queue_size = rosPublisherBase.QueueSize, latch = rosPublisherBase.Latch
-            }, stream);
-            rosPublisherBase.PublisherRegistered = true;
-        }
-
         void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
             SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
@@ -383,7 +373,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 foreach (var keyValue in m_Publishers)
                 {
                     if (keyValue.Value != null)
-                        SendPublisherRegistration(keyValue.Value, stream);
+                        keyValue.Value.OnConnectionEstablished(m_MessageSerializer, stream);
                 }
 
                 foreach (var keyValue in m_RosServices)
