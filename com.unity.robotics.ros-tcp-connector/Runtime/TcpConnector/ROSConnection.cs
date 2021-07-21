@@ -227,13 +227,15 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         Debug.LogWarning($"Publisher on topic {rosTopicName} has changed type! " +
                                          $"Do you have multiple publishers on the same topic?");
-                        m_Publishers[rosTopicName] = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                        publisher = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                        m_Publishers[rosTopicName] = publisher;
                     }
                 }
                 else
                 {
                     //Create a new publisher.
-                    m_Publishers[rosTopicName] = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                    publisher = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                    m_Publishers[rosTopicName] = publisher;
                 }
             }
 
@@ -574,9 +576,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         static void ClearMessageQueue(ConcurrentQueue<SendsOutgoingMessages> queue)
         {
-            SendsOutgoingMessages unused;
-            while (queue.TryDequeue(out unused))
+            while (queue.TryDequeue(out SendsOutgoingMessages sendsOutgoingMessages))
             {
+                sendsOutgoingMessages.ClearAllQueuedData();
             }
         }
 
@@ -637,7 +639,24 @@ namespace Unity.Robotics.ROSTCPConnector
                             token.ThrowIfCancellationRequested();
                         }
 
-                        sendsOutgoingMessages.SendTo(messageSerializer, networkStream);
+                        SendsOutgoingMessages.SendToState sendToState = sendsOutgoingMessages.SendTo(messageSerializer, networkStream);
+                        switch (sendToState)
+                        {
+                            case SendsOutgoingMessages.SendToState.Normal:
+                                //This is normal operation.
+                                break;
+                            case SendsOutgoingMessages.SendToState.QueueFullWarning:
+                                //Unable to send messages to ROS as fast as we're generating them.
+                                //This could be caused by a TCP connection that is too slow.
+                                Debug.LogWarning("Queue full! Messages are getting dropped! " +
+                                                 "Try check your connection speed is fast enough to handle the traffic.");
+                                break;
+                            case SendsOutgoingMessages.SendToState.NoMessageToSendError:
+                                //This indicates
+                                Debug.LogError(
+                                    "Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
+                                break;
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -766,12 +785,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSysCommand(string command, object param, NetworkStream stream = null)
         {
-
-
             if (stream != null)
-                m_MessageSerializer.SendTo(stream);
+                SendSysCommandImmediate(command, param, stream);
             else
-                m_OutgoingMessageQueue.Enqueue(new SimpleDataSender(m_MessageSerializer.GetBytesSequence()));
+                QueueSysCommand(command, param);
         }
 
         private static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
@@ -806,32 +823,22 @@ namespace Unity.Robotics.ROSTCPConnector
         public void Send<T>(string rosTopicName, T message, int queue_size = k_DefaultPublisherQueueSize,
             bool latch = k_DefaultPublisherLatch) where T : Message
         {
+
             if (rosTopicName.StartsWith("__"))
             {
-                //This is a special sys command.
-                //TODO...
+                QueueSysCommand(rosTopicName, message);
             }
             else
             {
                 //Find the publisher and queue the message for sending.
                 ROSPublisher<T> existingPublisher = GetOrRegisterPublisher<T>(rosTopicName, queue_size, latch);
                 existingPublisher.Send(message);
+                m_OutgoingMessageQueue.Enqueue(existingPublisher);
 
                 if (m_HudPanel != null)
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }
 
-            /*
-             TODO - Remove.
-            m_MessageSerializer.Clear();
-            // ros messages sent on our network channel contain:
-            // 4 byte topic length, followed by that many bytes of the topic name
-            m_MessageSerializer.Write(rosTopicName);
-            // 4-byte message length, followed by that many bytes of the message
-            m_MessageSerializer.SerializeMessageWithLength(message);
-
-            m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
-            */
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
