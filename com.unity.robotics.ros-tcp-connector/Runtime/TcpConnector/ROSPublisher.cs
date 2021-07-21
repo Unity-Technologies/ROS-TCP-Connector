@@ -76,6 +76,8 @@ namespace Unity.Robotics.ROSTCPConnector
             return TopicName == topicName && RosMessageName == rosMessageName && QueueSize == queueSize && Latch == latch;
         }
 
+        public abstract void OnConnectionEstablished(MessageSerializer m_MessageSerializer, Stream stream);
+
     }
 
     public class ROSPublisher<T> : ROSPublisherBase where T : Message
@@ -92,11 +94,12 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         //Messages waiting to be sent.
-        //TODO - I don't like how this is implemented, I think it's confusing and could be done better.
         private LinkedList<PublishedMessage<T>> outgoingMessages = new LinkedList<PublishedMessage<T>>();
         private int nextValidMessageIndex = -1;
         private LinkedListNode<PublishedMessage<T>> nextValidOutgoingMessage = null;
 
+        //Latching - This message will be set if latching is enabled, and on reconnection, it will be sent again.
+        private PublishedMessage<T> lastMessageSent = null;
 
         //Whether you want to pool messages for reuse (Used to reduce GC calls).
         private volatile bool _messagePoolEnabled;
@@ -163,10 +166,29 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        public override void OnConnectionEstablished(MessageSerializer m_MessageSerializer, Stream stream)
+        {
+            //Register the publisher with the ROS Endpoint.
+            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
+
+            if (Latch && lastMessageSent != null)
+            {
+                //This topic is latching, so to mimic that functionality,
+                //here the last sent message is sent again with the new connection.
+                SendMessageWithStream(m_MessageSerializer, stream, lastMessageSent.message);
+            }
+        }
+
         public bool RemoveMessageToSend(out PublishedMessage<T> messageToSend)
         {
             var result = false;
             messageToSend = null;
+            if (!PublisherRegistered && Latch && lastMessageSent != null)
+            {
+                //Resend the latched message.
+                messageToSend = lastMessageSent;
+                return true;
+            }
             lock(outgoingMessages)
             {
                 if (outgoingMessages.Count > 0)
@@ -212,6 +234,32 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
+        private void SendMessageWithStream(MessageSerializer m_MessageSerializer, Stream stream, Message message)
+        {
+            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
+
+            //Clear the serializer
+            m_MessageSerializer.Clear();
+            //Prepare the data to send.
+            m_MessageSerializer.Write(TopicName);
+            m_MessageSerializer.SerializeMessageWithLength(message);
+            //Send via the stream.
+            m_MessageSerializer.SendTo(stream);
+        }
+
+        private void RegisterPublisherIfApplicable(MessageSerializer m_MessageSerializer, Stream stream)
+        {
+            if (PublisherRegistered)
+            {
+                return;
+            }
+            //Register the publisher before sending anything.
+            SysCommandPublisherRegistration publisherRegistration =
+                new SysCommandPublisherRegistration(this);
+            publisherRegistration.SendTo(stream, m_MessageSerializer);
+            PublisherRegistered = true;
+        }
+
         public override SendToState SendTo(MessageSerializer m_MessageSerializer, Stream stream)
         {
             if (RemoveMessageToSend(out PublishedMessage<T> toSend))
@@ -219,24 +267,22 @@ namespace Unity.Robotics.ROSTCPConnector
                 if (toSend.valid)
                 {
 
-                    if (!PublisherRegistered)
+                    SendMessageWithStream(m_MessageSerializer, stream, toSend.message);
+
+                    //Recycle the message (if applicable).
+                    if (Latch)
                     {
-                        //Register the publisher before sending anything.
-                        SysCommandPublisherRegistration publisherRegistration =
-                            new SysCommandPublisherRegistration(this);
-                        publisherRegistration.SendTo(stream, m_MessageSerializer);
-                        PublisherRegistered = true;
+                        if (lastMessageSent != null && lastMessageSent != toSend)
+                        {
+                            RecycleMessage(lastMessageSent);
+                        }
+                        lastMessageSent = toSend;
+                    }
+                    else
+                    {
+                        RecycleMessage(toSend);
                     }
 
-                    //Clear the serializer
-                    m_MessageSerializer.Clear();
-                    //Prepare the data to send.
-                    m_MessageSerializer.Write(TopicName);
-                    m_MessageSerializer.SerializeMessageWithLength(toSend.message);
-                    //Send via the stream.
-                    m_MessageSerializer.SendTo(stream);
-                    //Recycle the message (if applicable).
-                    RecycleMessage(toSend);
                     return SendToState.Normal;
                 }
                 //This means that we can't send message to ROS as fast as we're generating them.
