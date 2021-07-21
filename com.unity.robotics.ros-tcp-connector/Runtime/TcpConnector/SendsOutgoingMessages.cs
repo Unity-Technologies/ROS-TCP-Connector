@@ -15,6 +15,8 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         public abstract SendToState SendTo(MessageSerializer m_MessageSerializer, System.IO.Stream stream);
+
+        public abstract void ClearAllQueuedData();
     }
 
     public class SimpleDataSender : SendsOutgoingMessages
@@ -34,6 +36,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             return SendToState.Normal;
+        }
+
+        public override void ClearAllQueuedData()
+        {
+            m_ListOfSerializations.Clear();
         }
     }
 }

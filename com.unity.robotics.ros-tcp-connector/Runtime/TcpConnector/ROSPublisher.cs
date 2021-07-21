@@ -54,9 +54,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         protected ROSPublisherBase(string topicName, int queueSize, bool latch)
         {
+            if (queueSize < 1)
+            {
+                throw new Exception("Queue size must be greater than or equal to 1.");
+            }
             TopicName = topicName;
             QueueSize = queueSize;
             Latch = latch;
+            PublisherRegistered = false;
         }
 
         public abstract bool IsType(Type messageType);
@@ -89,8 +94,8 @@ namespace Unity.Robotics.ROSTCPConnector
         //Messages waiting to be sent.
         //TODO - I don't like how this is implemented, I think it's confusing and could be done better.
         private LinkedList<PublishedMessage<T>> outgoingMessages = new LinkedList<PublishedMessage<T>>();
+        private int nextValidMessageIndex = -1;
         private LinkedListNode<PublishedMessage<T>> nextValidOutgoingMessage = null;
-        private int validOutgoingMessageCount = 0;
 
 
         //Whether you want to pool messages for reuse (Used to reduce GC calls).
@@ -102,7 +107,34 @@ namespace Unity.Robotics.ROSTCPConnector
         public ROSPublisher(string topicName, int queueSize, bool latch) : base(topicName, queueSize, latch)
         {
             this.RosMessageName = MessageRegistry.GetRosMessageName<T>();
-            this.PublisherRegistered = false;
+        }
+
+        private bool ValidMessageExistsInQueue => nextValidMessageIndex != -1;
+
+        private int ValidMessagesInQueue
+        {
+            get
+            {
+                if (!ValidMessageExistsInQueue)
+                {
+                    return 0;
+                }
+                return outgoingMessages.Count - nextValidMessageIndex;
+            }
+        }
+
+        private void SetNextOutgoingIndex()
+        {
+            //Set the next valid message.
+            nextValidOutgoingMessage = nextValidOutgoingMessage.Next;
+            if (nextValidOutgoingMessage == null)
+            {
+                nextValidMessageIndex = -1;
+            }
+            else
+            {
+                nextValidMessageIndex++;
+            }
         }
 
         public void Send(T message)
@@ -110,34 +142,26 @@ namespace Unity.Robotics.ROSTCPConnector
             lock(outgoingMessages)
             {
 
-                if (validOutgoingMessageCount >= QueueSize)
+                if (ValidMessageExistsInQueue && ValidMessagesInQueue >= QueueSize)
                 {
                     //Remove outgoing messages that don't fit in the queue.
-                    validOutgoingMessageCount--;
-                    if (nextValidOutgoingMessage == null || nextValidOutgoingMessage.List == null)
-                    {
-                        //The next valid outgoing message is no longer part of the list (probably because it was sent).
-                        //Set the next valid message to the beginning of the list.
-                        nextValidOutgoingMessage = outgoingMessages.First;
-                    }
-
-                    if (nextValidOutgoingMessage != null)
-                    {
-                        //Recycle the message if applicable
-                        AddMessageToPool(nextValidOutgoingMessage.Value.message);
-                        //Flag that the message shouldn't be sent as it was removed from the queue.
-                        nextValidOutgoingMessage.Value.Invalidate();
-                        nextValidOutgoingMessage = nextValidOutgoingMessage.Next;
-                    }
+                    PublishedMessage<T> messageToInvalidate = nextValidOutgoingMessage.Value;
+                    //Recycle the message if applicable
+                    AddMessageToPool(messageToInvalidate.message);
+                    //Flag that the message shouldn't be sent as it was removed from the queue.
+                    messageToInvalidate.Invalidate();
+                    //Update the nextValidOutgoingMessage and nextValidMessageIndex
+                    SetNextOutgoingIndex();
                 }
 
-                validOutgoingMessageCount++;
+                //Add a new valid message to the end.
                 outgoingMessages.AddLast(new PublishedMessage<T>(message));
-                if (nextValidOutgoingMessage == null || nextValidOutgoingMessage.List == null)
+                if (!ValidMessageExistsInQueue)
                 {
                     //The next valid outgoing message is no longer part of the list (probably because it was sent).
                     //Set the next valid message to the beginning of the list.
-                    nextValidOutgoingMessage = outgoingMessages.First;
+                    nextValidOutgoingMessage = outgoingMessages.Last;
+                    nextValidMessageIndex = outgoingMessages.Count - 1;
                 }
             }
         }
@@ -150,13 +174,22 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (outgoingMessages.Count > 0)
                 {
+
+                    //Update the next valid message.
+                    if (nextValidMessageIndex == 0)
+                    {
+                        //The next valid message was the one we just sent, we need to set it to the next one.
+                        SetNextOutgoingIndex();
+                    }
+                    else
+                    {
+                        //The next valid message was later in the queue, we need to update the index.
+                        nextValidMessageIndex--;
+                    }
+
+                    //Retrieve the next message and populate messageToSend.
                     messageToSend = outgoingMessages.First.Value;
                     outgoingMessages.RemoveFirst();
-
-                    if (nextValidOutgoingMessage.List == null)
-                    {
-                        validOutgoingMessageCount--;
-                    }
 
                     result = true;
                 }
@@ -218,6 +251,13 @@ namespace Unity.Robotics.ROSTCPConnector
             return SendToState.NoMessageToSendError;
         }
 
+        public override void ClearAllQueuedData()
+        {
+            while (RemoveMessageToSend(out PublishedMessage<T> unused))
+            {
+            }
+        }
+
         #region Message Pooling
 
         public void SetMessagePoolEnabled(bool messagePoolEnabled)
@@ -241,7 +281,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             lock(inactiveMessagePool)
             {
-                if (inactiveMessagePool.Count < (QueueSize + 2))
+                if (inactiveMessagePool.Count < (QueueSize + 5))
                 {
                     //Make sure we're only pooling a reasonable amount.
                     //We shouldn't need any more than the queue size plus a little.
