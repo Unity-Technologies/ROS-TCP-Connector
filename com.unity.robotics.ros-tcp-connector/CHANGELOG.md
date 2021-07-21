@@ -17,12 +17,15 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 Add the Ros Tcp Connector assembly to support Universal Windows Platform
 
 ### Changed
+- Publishing a message to an unregistered topic will show an error.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+  - Fixed the issue when queuing a message fails if the type is unspecified in compile type.
+
 
 ## [0.5.0-preview] - 2021-07-15
 
