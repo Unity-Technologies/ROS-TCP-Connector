@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class PathMsg : Message
     {
         public const string k_RosMessageName = "nav_msgs/Path";
+        public override string RosMessageName => k_RosMessageName;
 
         //  An array of poses that represents a Path for a robot to follow.
         //  Indicates the frame_id of the path.

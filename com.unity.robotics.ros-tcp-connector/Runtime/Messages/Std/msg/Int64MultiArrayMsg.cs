@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class Int64MultiArrayMsg : Message
     {
         public const string k_RosMessageName = "std_msgs/Int64MultiArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This was originally provided as an example message.
         //  It is deprecated as of Foxy

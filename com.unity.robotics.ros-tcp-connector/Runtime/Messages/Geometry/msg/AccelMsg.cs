@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class AccelMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Accel";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This expresses acceleration in free space broken into its linear and angular parts.
         public Vector3Msg linear;

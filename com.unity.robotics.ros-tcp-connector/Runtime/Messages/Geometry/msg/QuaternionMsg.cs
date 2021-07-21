@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class QuaternionMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Quaternion";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents an orientation in free space in quaternion form.
         public double x = 0;

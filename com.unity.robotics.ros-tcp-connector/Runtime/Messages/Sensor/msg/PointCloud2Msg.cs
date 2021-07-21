@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class PointCloud2Msg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/PointCloud2";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message holds a collection of N-dimensional points, which may
         //  contain additional information such as normals, intensity, etc. The

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class ImageMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/Image";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message contains an uncompressed image
         //  (0, 0) is at top-left corner of image
