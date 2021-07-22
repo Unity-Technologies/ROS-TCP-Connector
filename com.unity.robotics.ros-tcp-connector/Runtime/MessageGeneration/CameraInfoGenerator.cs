@@ -42,12 +42,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static CameraInfoMsg ConstructCameraInfoMessage(Camera unityCamera, HeaderMsg header,
             float horizontalCameraOffsetDistanceMeters = 0.0f, float integerResolutionTolerance = 0.01f)
         {
-            CameraInfoMsg cameraInfo = new CameraInfoMsg();
-            cameraInfo.header = header;
+            var cameraInfo = new CameraInfoMsg {header = header};
 
             Rect pixelRect = unityCamera.pixelRect;
-            uint resolutionWidth = (uint) pixelRect.width;
-            uint resolutionHeight = (uint) pixelRect.height;
+            var resolutionWidth = (uint)pixelRect.width;
+            var resolutionHeight = (uint)pixelRect.height;
 
             //Check whether the resolution is an integer value, if not, raise a warning.
             //Note: While the resolution of a screen or a render texture is always an integer value,
@@ -55,13 +54,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             //      viewport rect. It is possible that this region will be a non-integer resolution.
             //      since the resolution of the CameraInfo message is stored as a uint,
             //      non-integer values are not supported
-            if ((pixelRect.width - (float) resolutionWidth) > integerResolutionTolerance)
+            if ((pixelRect.width - (float)resolutionWidth) > integerResolutionTolerance)
             {
                 Debug.LogWarning($"CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
                                  $"Resolution width is not an integer: {pixelRect.width}. Adjust the viewport rect.");
             }
 
-            if ((pixelRect.height - (float) resolutionHeight) > integerResolutionTolerance)
+            if ((pixelRect.height - (float)resolutionHeight) > integerResolutionTolerance)
             {
                 Debug.LogWarning($"CameraInfoMsg for camera with name {unityCamera.gameObject.name}, " +
                                  $"Resolution height is not an integer: {pixelRect.height}. Adjust the viewport rect.");
