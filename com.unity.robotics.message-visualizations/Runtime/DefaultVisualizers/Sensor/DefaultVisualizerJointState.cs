@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.UrdfImporter;
+//using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
@@ -8,8 +8,8 @@ public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
 {
     [SerializeField]
     bool m_ShowEffort;
-    [SerializeField]
-    UrdfRobot m_UrdfRobot;
+    //[SerializeField]
+    //UrdfRobot m_UrdfRobot;
     [SerializeField]
     Color m_Color;
     [SerializeField]
@@ -18,8 +18,8 @@ public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
     public override void Start()
     {
         base.Start();
-        if (m_UrdfRobot != null)
-            m_RobotData = new RobotVisualization(m_UrdfRobot);
+        //if (m_UrdfRobot != null)
+        //m_RobotData = new RobotVisualization(m_UrdfRobot);
     }
 
     public override void Draw(BasicDrawing drawing, JointStateMsg message, MessageMetadata meta)

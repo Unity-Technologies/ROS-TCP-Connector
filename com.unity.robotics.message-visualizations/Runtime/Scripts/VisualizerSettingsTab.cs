@@ -6,13 +6,15 @@ using UnityEditor;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class VisualizerSettingsTab : MonoBehaviour, IHudTab
+    public class VisualizerSettingsTab : IHudTab
     {
         string IHudTab.Label => "Settings";
         string m_LayoutPath;
+        ROSConnection m_Connection;
 
-        void Start()
+        public VisualizerSettingsTab(ROSConnection connection)
         {
+            m_Connection = connection;
             HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
         }
 
@@ -23,12 +25,12 @@ namespace Unity.Robotics.MessageVisualizers
             if (GUILayout.Button("Export layout"))
             {
                 m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
-                hud.SaveLayout(m_LayoutPath);
+                m_Connection.SaveLayout(m_LayoutPath);
             }
             if (GUILayout.Button("Import layout"))
             {
                 m_LayoutPath = EditorUtility.OpenFilePanel("Select Visualizations Settings", "", "json");
-                hud.LoadLayout(m_LayoutPath);
+                m_Connection.LoadLayout(m_LayoutPath);
             }
             GUILayout.EndHorizontal();
         }

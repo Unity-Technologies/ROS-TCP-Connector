@@ -13,6 +13,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         int alignmentCorrection;
 #endif
 
+        public Message DeserializeMessage(string rosMessageName, byte[] data)
+        {
+            InitWithBuffer(data);
+            return MessageRegistry.GetDeserializeFunction(rosMessageName)(this);
+        }
+
         public T DeserializeMessage<T>(byte[] data) where T : Message
         {
             InitWithBuffer(data);

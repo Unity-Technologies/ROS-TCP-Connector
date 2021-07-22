@@ -85,8 +85,8 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
 
             // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
-            HUDPanel.SetIPPref(prefab.RosIPAddress);
-            HUDPanel.SetPortPref(prefab.RosPort);
+            ROSConnection.SetIPPref(prefab.RosIPAddress);
+            ROSConnection.SetPortPref(prefab.RosPort);
 
             EditorGUILayout.Space();
 

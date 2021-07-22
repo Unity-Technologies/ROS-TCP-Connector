@@ -8,6 +8,18 @@ using System.Linq;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
+namespace Unity.Robotics.UrdfImporter
+{
+    public class UrdfJoint : MonoBehaviour
+    {
+        public string jointName;
+    }
+
+    public class UrdfRobot : MonoBehaviour
+    {
+    }
+}
+
 namespace Unity.Robotics.MessageVisualizers
 {
     public class RobotVisualization
