@@ -20,12 +20,15 @@ Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg
 [CameraInfo Generator](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues/133)
 
 ### Changed
+- Publishing a message to an unregistered topic will show an error.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+  - Fixed the issue when queuing a message fails if the type is unspecified in compile type.
+
 
 ## [0.5.0-preview] - 2021-07-15
 
