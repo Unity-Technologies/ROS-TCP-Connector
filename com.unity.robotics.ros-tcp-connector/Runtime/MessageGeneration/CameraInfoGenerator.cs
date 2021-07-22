@@ -42,7 +42,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static CameraInfoMsg ConstructCameraInfoMessage(Camera unityCamera, HeaderMsg header,
             float horizontalCameraOffsetDistanceMeters = 0.0f, float integerResolutionTolerance = 0.01f)
         {
-            var cameraInfo = new CameraInfoMsg {header = header};
+            var cameraInfo = new CameraInfoMsg { header = header };
 
             Rect pixelRect = unityCamera.pixelRect;
             var resolutionWidth = (uint)pixelRect.width;
