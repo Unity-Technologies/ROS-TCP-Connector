@@ -58,7 +58,7 @@ namespace Unity.Robotics.ROSTCPConnector
         const string k_SysCommand_ServiceRequest = "__request";
         const string k_SysCommand_ServiceResponse = "__response";
         const string k_SysCommand_Subscribe = "__subscribe";
-        const string k_SysCommand_Publish = "__publish";
+        //const string k_SysCommand_Publish = "__publish";
         const string k_SysCommand_RosService = "__ros_service";
         const string k_SysCommand_UnityService = "__unity_service";
         const string k_SysCommand_TopicList = "__topic_list";
@@ -82,7 +82,9 @@ namespace Unity.Robotics.ROSTCPConnector
         static bool m_HasConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
 
-        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
+        // only the main thread can access Time.*, so make a copy here
+        public static float s_RealTimeSinceStartup = 0.0f;
+        private static float s_SimulatedTimeSinceStartup = 0.0f;
 
         readonly object m_ServiceRequestLock = new object();
         int m_NextSrvID = 101;
@@ -120,6 +122,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (HasConnectionThread)
                 SendSubscriberRegistration(topic, rosMessageName);
+        }
+
+        public static TimeMsg SimulationTime
+        {
+            get
+            {
+                var simTimeSeconds = (uint) Mathf.FloorToInt(s_SimulatedTimeSinceStartup);
+                var simTimeNanoSeconds =
+                    (uint) ((s_SimulatedTimeSinceStartup - (double) simTimeSeconds) * 1000000000.0);
+                return new TimeMsg(simTimeSeconds, simTimeNanoSeconds);
+            }
         }
 
         void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T : Message
@@ -210,9 +223,11 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         public ROSPublisher<T> GetOrRegisterPublisher<T>(string rosTopicName,
-            int queue_size = k_DefaultPublisherQueueSize, bool latch = k_DefaultPublisherLatch) where T : Message
+            int? queue_size = null, bool? latch = null) where T : Message
         {
             ROSPublisherBase publisher;
+            int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
+            bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
             lock(dictionaryLock)
             {
                 if (m_Publishers.TryGetValue(rosTopicName, out publisher))
@@ -225,14 +240,14 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         Debug.LogWarning($"Publisher on topic {rosTopicName} has changed type! " +
                                          $"Do you have multiple publishers on the same topic?");
-                        publisher = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                        publisher = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
                         m_Publishers[rosTopicName] = publisher;
                     }
                 }
                 else
                 {
                     //Create a new publisher.
-                    publisher = new ROSPublisher<T>(rosTopicName, queue_size, latch);
+                    publisher = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
                     m_Publishers[rosTopicName] = publisher;
                 }
             }
@@ -426,6 +441,7 @@ namespace Unity.Robotics.ROSTCPConnector
         void Update()
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
+            s_SimulatedTimeSinceStartup = Time.time;
 
             Tuple<string, byte[]> data;
             while (m_IncomingMessages.TryDequeue(out data))
@@ -618,6 +634,7 @@ namespace Unity.Robotics.ROSTCPConnector
                         while (!outgoingQueue.TryDequeue(out sendsOutgoingMessages))
                         {
                             // nothing to send right now, let's wait and see if something comes in
+                            //TODO - Change this to a ManualResetEvent with a timeout.
                             Thread.Sleep(sleepMilliseconds);
                             if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
                             {
@@ -808,14 +825,14 @@ namespace Unity.Robotics.ROSTCPConnector
             m_OutgoingMessageQueue.Enqueue(new SimpleDataSender(m_MessageSerializer.GetBytesSequence()));
         }
 
-        public void Send<T>(string rosTopicName, T message, int queue_size = k_DefaultPublisherQueueSize,
-            bool latch = k_DefaultPublisherLatch) where T : Message
+        public void Send<T>(string rosTopicName, T message, int? queue_size = null,
+            bool? latch = null) where T : Message
         {
             Publish(rosTopicName, message, queue_size, latch);
         }
 
-        public void Publish<T>(string rosTopicName, T message, int queue_size = k_DefaultPublisherQueueSize,
-            bool latch = k_DefaultPublisherLatch) where T : Message
+        public void Publish<T>(string rosTopicName, T message, int? queue_size = null,
+            bool? latch = null) where T : Message
         {
             if (rosTopicName.StartsWith("__"))
             {
@@ -834,6 +851,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }
 
+        }
+
+        public static T GetFromPool<T>(string rosTopicName) where T : Message
+        {
+            ROSPublisher<T> rosPublisher = instance.GetOrRegisterPublisher<T>(rosTopicName);
+            return rosPublisher.GetMessageFromPool();
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)

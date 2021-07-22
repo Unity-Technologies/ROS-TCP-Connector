@@ -66,14 +66,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public abstract bool IsType(Type messageType);
 
-        public bool EquivalentTo(string topicName, Type type, int queueSize, bool latch)
+        public bool EquivalentTo(string topicName, Type type, int? queueSize, bool? latch)
         {
-            return TopicName == topicName && IsType(type) && QueueSize == queueSize && Latch == latch;
-        }
-
-        public bool EquivalentTo(string topicName, string rosMessageName, int queueSize, bool latch)
-        {
-            return TopicName == topicName && RosMessageName == rosMessageName && QueueSize == queueSize && Latch == latch;
+            return TopicName == topicName && IsType(type) &&
+                   (!queueSize.HasValue || QueueSize == queueSize) &&
+                   (!latch.HasValue || Latch == latch);
         }
 
         public abstract void OnConnectionEstablished(MessageSerializer m_MessageSerializer, Stream stream);
@@ -358,6 +355,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public T GetMessageFromPool()
         {
             T result = null;
+            MessagePoolEnabled = true;
             lock(inactiveMessagePool)
             {
                 if (inactiveMessagePool.Count > 0)
