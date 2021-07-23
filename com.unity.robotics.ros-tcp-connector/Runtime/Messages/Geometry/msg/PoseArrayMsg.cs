@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class PoseArrayMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/PoseArray";
+        public override string RosMessageName => k_RosMessageName;
 
         //  An array of poses with a header for global reference.
         public Std.HeaderMsg header;

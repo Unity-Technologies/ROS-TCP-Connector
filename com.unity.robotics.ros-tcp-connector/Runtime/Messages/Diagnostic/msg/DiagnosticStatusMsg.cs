@@ -11,6 +11,7 @@ namespace RosMessageTypes.Diagnostic
     public class DiagnosticStatusMsg : Message
     {
         public const string k_RosMessageName = "diagnostic_msgs/DiagnosticStatus";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message holds the status of an individual component of the robot.
         //  Possible levels of operations.

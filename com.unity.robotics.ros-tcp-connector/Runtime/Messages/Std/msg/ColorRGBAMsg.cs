@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class ColorRGBAMsg : Message
     {
         public const string k_RosMessageName = "std_msgs/ColorRGBA";
+        public override string RosMessageName => k_RosMessageName;
 
         public float r;
         public float g;

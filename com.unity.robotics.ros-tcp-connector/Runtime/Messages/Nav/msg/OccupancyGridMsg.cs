@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class OccupancyGridMsg : Message
     {
         public const string k_RosMessageName = "nav_msgs/OccupancyGrid";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a 2-D grid map
         public Std.HeaderMsg header;

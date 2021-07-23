@@ -11,6 +11,7 @@ namespace RosMessageTypes.ObjectRecognition
     public class ObjectRecognitionFeedback : Message
     {
         public const string k_RosMessageName = "object_recognition_msgs-master/ObjectRecognition";
+        public override string RosMessageName => k_RosMessageName;
 
         // no feedback
 

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class NavSatStatusMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/NavSatStatus";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Navigation Satellite fix status for any Global Navigation Satellite System.
         // 

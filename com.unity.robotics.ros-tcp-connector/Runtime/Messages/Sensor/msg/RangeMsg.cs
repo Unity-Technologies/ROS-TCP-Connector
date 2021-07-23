@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class RangeMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/Range";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Single range reading from an active ranger that emits energy and reports
         //  one range reading that is valid along an arc at the distance measured.

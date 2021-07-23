@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class SetBoolRequest : Message
     {
         public const string k_RosMessageName = "std_srvs/SetBool";
+        public override string RosMessageName => k_RosMessageName;
 
         public bool data;
         //  e.g. for hardware enabling / disabling

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class InteractiveMarkerControlMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/InteractiveMarkerControl";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Represents a control that is to be displayed together with an interactive marker
         //  Identifying string for this control.

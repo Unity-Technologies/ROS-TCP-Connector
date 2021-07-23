@@ -795,7 +795,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 RosTopicState rosTopic = GetTopic(rosTopicName);
                 if (!rosTopic.IsPublisher)
-                    Debug.LogError($"Can't send a message on topic '{rosTopicName}', publisher is not registered!");
+                    Debug.LogError($"Can't publish a message to an unregistered topic '{rosTopicName}'");
 
                 m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
                 rosTopic.OnMessageSent(message);

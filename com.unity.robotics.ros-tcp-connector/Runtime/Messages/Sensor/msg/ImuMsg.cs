@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class ImuMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/Imu";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This is a message to hold data from an IMU (Inertial Measurement Unit)
         //

@@ -8,7 +8,7 @@ namespace RosMessageTypes.Nav
     public class GetMapActionFeedback : ActionFeedback<GetMapFeedback>
     {
         public const string k_RosMessageName = "nav_msgs/GetMapActionFeedback";
-
+        public override string RosMessageName => k_RosMessageName;
 
         public GetMapActionFeedback() : base()
         {

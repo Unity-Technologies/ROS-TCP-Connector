@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class SetMapRequest : Message
     {
         public const string k_RosMessageName = "nav_msgs/SetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Set a new map together with an initial pose
         //  Requested 2D map to be set.
