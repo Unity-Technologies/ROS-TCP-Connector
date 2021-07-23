@@ -181,6 +181,7 @@ namespace Unity.Robotics.ROSTCPConnector
             info.AddSubscriber(callback);
         }
 
+        // Implement a service in Unity
         public void ImplementService<REQUEST>(string topic, Func<REQUEST, Message> callback) where REQUEST : Message
         {
             string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<REQUEST>();
@@ -194,6 +195,7 @@ namespace Unity.Robotics.ROSTCPConnector
             info.ImplementService((Message msg) => callback((REQUEST)msg));
         }
 
+        // Send a request to a ros service
         public async void SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest, Action<RESPONSE> callback) where RESPONSE : Message, new()
         {
             RESPONSE response = await SendServiceMessage<RESPONSE>(rosServiceName, serviceRequest);

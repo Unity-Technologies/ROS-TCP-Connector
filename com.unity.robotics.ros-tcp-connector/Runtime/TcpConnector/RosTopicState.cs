@@ -116,11 +116,21 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void OnMessageReceived(byte[] data)
         {
+            if (m_IsRosService && m_ServiceResponseTopic != null)
+            {
+                //  For a service, incoming messages are a different type from outgoing messages.
+                //  We process them using a separate RosTopicState.
+                m_ServiceResponseTopic.OnMessageReceived(data);
+                return;
+            }
+
             bool shouldVisualize = Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing);
 
             // don't bother deserializing this message if nobody cares
             if (m_SubscriberCallbacks.Count == 0 && !shouldVisualize)
+            {
                 return;
+            }
 
             Message message = Deserialize(data);
 
@@ -135,7 +145,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public void OnMessageSent(Message message)
         {
             if (m_RosMessageName == null)
+            {
                 ChangeRosMessageName(message.RosMessageName);
+            }
+
             if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
             {
                 UpdateVisual(message);
@@ -169,7 +182,9 @@ namespace Unity.Robotics.ROSTCPConnector
             Message requestMessage = Deserialize(data);
 
             // run the actual service
-            return m_ServiceImplementation(requestMessage);
+            Message response = m_ServiceImplementation(requestMessage);
+            m_ServiceResponseTopic.OnMessageSent(response);
+            return response;
         }
 
         Message Deserialize(byte[] data)
@@ -297,6 +312,11 @@ namespace Unity.Robotics.ROSTCPConnector
             if (showDrawing != m_IsVisualizingDrawing || showWindow != m_IsVisualizingUI)
             {
                 SetVisualizing(showWindow, showDrawing);
+            }
+
+            if (m_ServiceResponseTopic != null)
+            {
+                m_ServiceResponseTopic.DrawGUILine();
             }
         }
 
