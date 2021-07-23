@@ -11,6 +11,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public Rect WindowRect => m_WindowRect;
         string m_Title;
         bool m_IsActive;
+        public bool IsActive => m_IsActive;
         bool m_AutoLayout;
         bool m_DraggingBottom;
         bool m_DraggingLeft;
@@ -21,21 +22,35 @@ namespace Unity.Robotics.ROSTCPConnector
         System.Action m_GuiDrawer;
         int m_WindowID;
 
-        public HudWindow(string title, Rect rect, bool autoLayout = false)
+        public HudWindow(string title, Rect rect)
         {
-            m_WindowID = HUDPanel.GetNextWindowID();
-            m_AutoLayout = autoLayout;
-            HUDPanel.AddWindow(this);
+            m_Title = title;
+            m_WindowID = HudPanel.GetNextWindowID();
+            m_IsActive = true;
+            m_AutoLayout = false;
+        }
+
+        public HudWindow(string title)
+        {
+            m_Title = title;
+            m_WindowID = HudPanel.GetNextWindowID();
+            m_IsActive = true;
+            m_AutoLayout = true;
+        }
+
+        public void SetActive(bool active)
+        {
+            m_IsActive = active;
         }
 
         public bool HasActiveRect => m_IsActive && !m_AutoLayout;
 
-        public void SetGuiDrawer(System.Action guiDrawer)
+        public void SetOnGUI(System.Action guiDrawer)
         {
             m_GuiDrawer = guiDrawer;
         }
 
-        public void DrawWindow(HUDPanel hud)
+        public void DrawWindow(HudPanel hud)
         {
             if (m_IsActive && m_GuiDrawer != null)
             {

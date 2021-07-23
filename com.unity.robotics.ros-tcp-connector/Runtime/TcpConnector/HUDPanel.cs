@@ -10,15 +10,14 @@ namespace Unity.Robotics.ROSTCPConnector
     public interface IHudTab
     {
         string Label { get; }
-        void OnGUI(HUDPanel hud);
+        void OnGUI(HudPanel hud);
         void OnSelected();
         void OnDeselected();
     }
 
-    public class HUDPanel : MonoBehaviour
+    public class HudPanel : MonoBehaviour
     {
         public static GUIStyle s_BoldStyle;
-        static GUIStyle m_ConnectionArrowStyle;
 
         // these are static so that anyone can register tabs and windows without needing to worry about whether the hud has been initialized
         static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab>();
@@ -38,12 +37,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         HudWindow m_DraggingWindow;
 
-        // GUI variables
-        GUIStyle m_MessageStyle;
-        Rect m_ScrollRect;
-
         IHudTab m_SelectedTab;
-        int nextServiceID = 101;
 
         void Awake()
         {
@@ -64,6 +58,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             GUILayout.BeginHorizontal();
+
             foreach (IHudTab tab in s_HUDTabs.Values)
             {
                 var wasSelected = tab == m_SelectedTab;
@@ -86,10 +81,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_SelectedTab.OnGUI(this);
 
             GUILayout.EndVertical();
-
-            // Update length of scroll
-            if (GUILayoutUtility.GetLastRect().height > 1 && GUILayoutUtility.GetLastRect().width > 1)
-                m_ScrollRect = GUILayoutUtility.GetLastRect();
 
             // Draggable windows
             var current = Event.current;
@@ -161,23 +152,12 @@ namespace Unity.Robotics.ROSTCPConnector
         void InitStyles()
         {
             // Define font styles
-            m_MessageStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 0, 5, 5),
-                normal = { textColor = Color.white },
-                fixedWidth = 300,
-                wordWrap = true
-            };
-
             s_BoldStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = Color.white },
                 fontStyle = FontStyle.Bold,
             };
-
-            m_ScrollRect = new Rect();
         }
         public static Rect GetDefaultWindowRect()
         {

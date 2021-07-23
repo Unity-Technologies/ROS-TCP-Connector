@@ -68,8 +68,8 @@ namespace Unity.Robotics.ROSTCPConnector
         const string k_SysCommand_RemoveUnityService = "__remove_unity_service";
 
         // GUI window variables
-        internal HUDPanel m_HudPanel = null;
-        public HUDPanel HUDPanel => m_HudPanel;
+        internal HudPanel m_HudPanel = null;
+        public HudPanel HUDPanel => m_HudPanel;
 
         ConcurrentQueue<List<byte[]>> m_OutgoingMessages = new ConcurrentQueue<List<byte[]>>();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
@@ -103,7 +103,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasSubscriber(string topic)
         {
             RosTopicState info;
-            return m_Topics.TryGetValue(topic, out info) && info.HasSubscriber;
+            return m_Topics.TryGetValue(topic, out info) && info.HasSubscriberCallback;
         }
 
         MessageSerializer m_MessageSerializer = new MessageSerializer();
@@ -133,7 +133,13 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             RosTopicState info = GetTopic(topic);
             if (info != null)
+            {
+                if (info.RosMessageName != rosMessageName)
+                {
+                    info.ChangeRosMessageName(rosMessageName);
+                }
                 return info;
+            }
 
             return AddTopic(topic, rosMessageName);
         }
@@ -201,6 +207,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        // Send a request to a ros service
         public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
         {
             m_MessageSerializer.Clear();
@@ -252,15 +259,15 @@ namespace Unity.Robotics.ROSTCPConnector
             info.RegisterPublisher();
         }
 
-        public void RegisterRosService<T>(string topic) where T : Message
+        public void RegisterRosService<TRequest, TResponse>(string topic) where TRequest : Message where TResponse : Message
         {
-            RegisterRosService(topic, MessageRegistry.GetRosMessageName<T>());
+            RegisterRosService(topic, MessageRegistry.GetRosMessageName<TRequest>(), MessageRegistry.GetRosMessageName<TResponse>());
         }
 
-        public void RegisterRosService(string topic, string rosMessageName)
+        public void RegisterRosService(string topic, string requestMessageName, string responseMessageName)
         {
-            RosTopicState info = GetOrCreateTopic(topic, rosMessageName);
-            info.RegisterRosService();
+            RosTopicState info = GetOrCreateTopic(topic, requestMessageName);
+            info.RegisterRosService(responseMessageName);
         }
 
         [Obsolete("Calling ImplementUnityService now implicitly registers it")]
@@ -378,7 +385,8 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!IPFormatIsCorrect(RosIPAddress))
                 Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
-            HUDPanel.RegisterHeader(DrawHeaderGUI);
+            HudPanel.RegisterHeader(DrawHeaderGUI);
+            HudPanel.RegisterTab(new RosTopicsTab(this), (int)HudPanel.HudTabIndices.Topics);
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
@@ -401,7 +409,7 @@ namespace Unity.Robotics.ROSTCPConnector
             foreach (RosTopicState topicInfo in AllTopics)
                 topicInfo.RegisterAll(stream);
 
-            DownloadTopicsList();
+            RefreshTopicsList();
         }
 
         public void Disconnect()
@@ -449,13 +457,25 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void DownloadTopicsList()
+        float m_LastTopicsRequestRealtime = -1;
+        const float k_TimeBetweenTopicsUpdates = 5.0f;
+
+        public void RefreshTopicsList()
         {
+            // cap the rate of requests
+            if (m_LastTopicsRequestRealtime != -1 && s_RealTimeSinceStartup - m_LastTopicsRequestRealtime <= k_TimeBetweenTopicsUpdates)
+                return;
+
+            m_LastTopicsRequestRealtime = s_RealTimeSinceStartup;
             GetTopicAndTypeList((data) =>
             {
                 foreach (KeyValuePair<string, string> kv in data)
                 {
-                    GetOrCreateTopic(kv.Key, kv.Value);
+                    RosTopicState state = GetOrCreateTopic(kv.Key, kv.Value);
+                    if (state.RosMessageName != kv.Value)
+                    {
+                        state.ChangeRosMessageName(kv.Value);
+                    }
                 }
             });
         }
@@ -486,7 +506,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
 
-                        // the next incoming message will be a service request, so set a special callback to process it
+                        // the next incoming message will be a request for a Unity service, so set a special callback to process it
                         m_SpecialIncomingMessageHandler = (string serviceTopic, byte[] requestBytes) =>
                         {
                             m_SpecialIncomingMessageHandler = null;
@@ -497,7 +517,7 @@ namespace Unity.Robotics.ROSTCPConnector
                                 Debug.LogError($"Unity service {serviceTopic} has not been implemented!");
                                 return;
                             }
-                            Message responseMessage = topicState.ProcessServiceRequest(requestBytes);
+                            Message responseMessage = topicState.HandleUnityServiceRequest(requestBytes);
 
                             // send the response message back
                             SendSysCommand(k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
@@ -508,7 +528,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 case k_SysCommand_ServiceResponse:
                     {
-                        // it's a response from a ros service
+                        // the next incoming message will be a response from a ros service
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
                         m_SpecialIncomingMessageHandler = (string serviceTopic, byte[] requestBytes) =>
                         {
@@ -863,7 +883,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (m_HudPanel == null)
             {
-                m_HudPanel = gameObject.AddComponent<HUDPanel>();
+                m_HudPanel = gameObject.AddComponent<HudPanel>();
             }
 
             m_HudPanel.isEnabled = m_ShowHUD;

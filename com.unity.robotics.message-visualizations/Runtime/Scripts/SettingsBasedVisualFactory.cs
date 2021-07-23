@@ -78,7 +78,7 @@ namespace Unity.Robotics.MessageVisualizers
             IVisualFactory thisFactory = this;
             foreach (RosTopicState topic in ROSConnection.GetOrCreateInstance().AllTopics)
             {
-                if (topic != null && topic.IsVisualizingDrawing && topic.Visualizer == thisFactory)
+                if (topic != null && topic.IsVisualizingDrawing && topic.GetVisualizer() == thisFactory)
                 {
                     topic.Visual.CreateDrawing();
                 }

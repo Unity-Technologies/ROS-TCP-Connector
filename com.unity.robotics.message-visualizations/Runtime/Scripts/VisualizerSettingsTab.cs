@@ -15,10 +15,10 @@ namespace Unity.Robotics.MessageVisualizers
         public VisualizerSettingsTab(ROSConnection connection)
         {
             m_Connection = connection;
-            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
+            HudPanel.RegisterTab(this, (int)HudPanel.HudTabIndices.Settings);
         }
 
-        void IHudTab.OnGUI(HUDPanel hud)
+        void IHudTab.OnGUI(HudPanel hud)
         {
             // Save/Load layout files
             GUILayout.BeginHorizontal();
