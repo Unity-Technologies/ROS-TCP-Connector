@@ -441,6 +441,12 @@ namespace Unity.Robotics.ROSTCPConnector
 
         Action<string, byte[]> m_SpecialIncomingMessageHandler;
 
+        private void FixedUpdate()
+        {
+            s_RealTimeSinceStartup = Time.realtimeSinceStartup;
+            s_SimulatedTimeSinceStartup = Time.time;
+        }
+
         void Update()
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
