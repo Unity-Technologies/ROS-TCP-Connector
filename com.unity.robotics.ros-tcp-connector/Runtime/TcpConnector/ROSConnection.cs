@@ -381,6 +381,12 @@ namespace Unity.Robotics.ROSTCPConnector
             RosPort = port;
             Connect();
         }
+        public enum HudTabIndices
+        {
+            Topics = -3,
+            TF = -2,
+            Layout = -1
+        }
 
         public void Connect()
         {
@@ -388,7 +394,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
             HudPanel.RegisterHeader(DrawHeaderGUI);
-            HudPanel.RegisterTab(new RosTopicsTab(this), (int)HudPanel.HudTabIndices.Topics);
+            HudPanel.RegisterTab(new RosTopicsTab(this), (int)HudTabIndices.Topics);
+            HudPanel.RegisterTab(new VisualizerLayoutTab(this), (int)HudTabIndices.Layout);
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 

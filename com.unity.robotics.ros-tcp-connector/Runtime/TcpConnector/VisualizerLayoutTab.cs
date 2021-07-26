@@ -4,18 +4,17 @@ using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 using UnityEditor;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.ROSTCPConnector
 {
-    public class VisualizerSettingsTab : IHudTab
+    public class VisualizerLayoutTab : IHudTab
     {
-        string IHudTab.Label => "Settings";
+        string IHudTab.Label => "Layout";
         string m_LayoutPath;
         ROSConnection m_Connection;
 
-        public VisualizerSettingsTab(ROSConnection connection)
+        public VisualizerLayoutTab(ROSConnection connection)
         {
             m_Connection = connection;
-            HudPanel.RegisterTab(this, (int)HudPanel.HudTabIndices.Settings);
         }
 
         void IHudTab.OnGUI(HudPanel hud)
