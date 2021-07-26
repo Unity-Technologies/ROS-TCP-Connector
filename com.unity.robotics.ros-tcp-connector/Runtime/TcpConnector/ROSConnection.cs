@@ -356,11 +356,6 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionThreadCancellation = null;
         }
 
-        void OnValidate()
-        {
-            InitializeHUD();
-        }
-
         private void InitializeHUD()
         {
             if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
