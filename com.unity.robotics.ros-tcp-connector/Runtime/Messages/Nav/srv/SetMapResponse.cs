@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class SetMapResponse : Message
     {
         public const string k_RosMessageName = "nav_msgs/SetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  True if the map was successfully set, false otherwise.
         public bool success;

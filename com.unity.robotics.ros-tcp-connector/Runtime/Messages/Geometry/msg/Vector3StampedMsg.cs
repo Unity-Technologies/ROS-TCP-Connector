@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class Vector3StampedMsg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Vector3Stamped";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a Vector3 with reference coordinate frame and timestamp
         //  Note that this follows vector semantics with it always anchored at the origin,

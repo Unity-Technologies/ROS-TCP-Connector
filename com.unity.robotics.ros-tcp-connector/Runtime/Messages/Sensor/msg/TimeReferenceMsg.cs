@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class TimeReferenceMsg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/TimeReference";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Measurement from an external time source not actively synchronized with the system clock.
         public Std.HeaderMsg header;

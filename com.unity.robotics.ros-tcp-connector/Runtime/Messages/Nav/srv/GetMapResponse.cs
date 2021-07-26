@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class GetMapResponse : Message
     {
         public const string k_RosMessageName = "nav_msgs/GetMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  The current map hosted by this map service.
         public OccupancyGridMsg map;

@@ -11,6 +11,7 @@ namespace RosMessageTypes.Nav
     public class LoadMapResponse : Message
     {
         public const string k_RosMessageName = "nav_msgs/LoadMap";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Result code defintions
         public const byte RESULT_SUCCESS = 0;

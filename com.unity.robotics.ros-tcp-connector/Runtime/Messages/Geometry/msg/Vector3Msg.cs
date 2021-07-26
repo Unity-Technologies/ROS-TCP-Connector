@@ -11,6 +11,7 @@ namespace RosMessageTypes.Geometry
     public class Vector3Msg : Message
     {
         public const string k_RosMessageName = "geometry_msgs/Vector3";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This represents a vector in free space.
         //  This is semantically different than a point.

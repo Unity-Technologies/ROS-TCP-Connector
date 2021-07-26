@@ -1,12 +1,17 @@
 # ROS-TCP-Connector
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Version](https://img.shields.io/github/v/tag/Unity-Technologies/ROS-TCP-Connector)](https://github.com/Unity-Technologies/ROS-TCP-Connector/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE.md)
+![ROS](https://img.shields.io/badge/ros-melodic-brightgreen)
+![ROS](https://img.shields.io/badge/ros-noetic-brightgreen)
+![ROS](https://img.shields.io/badge/ros2-foxy-brightgreen)
+![Unity](https://img.shields.io/badge/unity-2020.2+-brightgreen)
 
 ## Installation
 1. Using Unity 2020.2 or later, open the package manager from `Window` -> `Package Manager` and select "Add package from git URL..."
 ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
-2. Enter the following URL. If you don't want to use the latest version, substitute your desired version tag where we've put `v0.4.0` in this example:
-`https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector#v0.4.0`
+2. Enter the following URL. If you don't want to use the latest version, substitute your desired version tag where we've put `v0.5.0` in this example:
+`https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector#v0.5.0`
 3. Click `Add`.
 
 

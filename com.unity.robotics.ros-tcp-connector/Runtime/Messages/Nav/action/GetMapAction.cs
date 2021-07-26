@@ -7,7 +7,7 @@ namespace RosMessageTypes.Nav
     public class GetMapAction : Action<GetMapActionGoal, GetMapActionResult, GetMapActionFeedback, GetMapGoal, GetMapResult, GetMapFeedback>
     {
         public const string k_RosMessageName = "nav_msgs/GetMapAction";
-
+        public override string RosMessageName => k_RosMessageName;
 
         public GetMapAction() : base()
         {

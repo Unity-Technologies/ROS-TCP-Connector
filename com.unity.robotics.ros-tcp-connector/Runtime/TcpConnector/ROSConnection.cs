@@ -799,7 +799,12 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (!rosTopicName.StartsWith("__"))
             {
-                m_Publishers[rosTopicName] = MessageRegistry.GetRosMessageName<T>();
+                if (!m_Publishers.ContainsKey(rosTopicName))
+                {
+                    Debug.LogError($"Can't publish a message to an unregistered topic '{rosTopicName}'");
+                    return;
+                }
+
                 if (m_HudPanel != null)
                     m_HudPanel.SetLastMessageSent(rosTopicName, message);
             }

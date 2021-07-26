@@ -11,6 +11,7 @@ namespace RosMessageTypes.Visualization
     public class ImageMarkerMsg : Message
     {
         public const string k_RosMessageName = "visualization_msgs/ImageMarker";
+        public override string RosMessageName => k_RosMessageName;
 
         public const int CIRCLE = 0;
         public const int LINE_STRIP = 1;

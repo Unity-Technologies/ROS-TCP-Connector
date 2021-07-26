@@ -11,6 +11,7 @@ namespace RosMessageTypes.Std
     public class TriggerResponse : Message
     {
         public const string k_RosMessageName = "std_srvs/Trigger";
+        public override string RosMessageName => k_RosMessageName;
 
         public bool success;
         //  indicate successful run of triggered service

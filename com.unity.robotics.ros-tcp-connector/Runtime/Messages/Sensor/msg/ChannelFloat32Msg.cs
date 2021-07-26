@@ -11,6 +11,7 @@ namespace RosMessageTypes.Sensor
     public class ChannelFloat32Msg : Message
     {
         public const string k_RosMessageName = "sensor_msgs/ChannelFloat32";
+        public override string RosMessageName => k_RosMessageName;
 
         //  This message is used by the PointCloud message to hold optional data
         //  associated with each point in the cloud. The length of the values

@@ -12,6 +12,7 @@ namespace RosMessageTypes.ObjectRecognition
     public class TableArrayMsg : Message
     {
         public const string k_RosMessageName = "object_recognition_msgs/TableArray";
+        public override string RosMessageName => k_RosMessageName;
 
         public HeaderMsg header;
         //  Just an array of tables

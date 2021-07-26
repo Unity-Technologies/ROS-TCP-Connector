@@ -11,6 +11,7 @@ namespace RosMessageTypes.Stereo
     public class DisparityImageMsg : Message
     {
         public const string k_RosMessageName = "stereo_msgs/DisparityImage";
+        public override string RosMessageName => k_RosMessageName;
 
         //  Separate header for compatibility with current TimeSynchronizer.
         //  Likely to be removed in a later release, use image.header instead.
