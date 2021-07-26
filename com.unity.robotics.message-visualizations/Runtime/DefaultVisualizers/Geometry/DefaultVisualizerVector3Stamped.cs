@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerVector3Stamped : DrawingVisualFactory<Vector3StampedMsg>
+    public class DefaultVisualizerVector3Stamped : DrawingStampedVisualFactory<Vector3StampedMsg>
     {
         [SerializeField]
         float m_Radius = 0.01f;

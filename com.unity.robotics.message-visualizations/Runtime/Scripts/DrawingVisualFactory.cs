@@ -8,11 +8,8 @@ namespace Unity.Robotics.MessageVisualizers
         where TMessageType : Message
     {
         [SerializeField]
-        string m_Topic;
+        protected string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
-        [SerializeField]
-        protected TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-        public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
 
         public virtual void Start()
         {
@@ -30,7 +27,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public bool CanShowDrawing => true;
 
-        public IVisual CreateVisual(Message message, MessageMetadata meta)
+        public virtual IVisual CreateVisual(Message message, MessageMetadata meta)
         {
             if (!AssertMessageType(message, meta))
                 return null;

@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
+public class DefaultVisualizerOdometry : DrawingStampedVisualFactory<OdometryMsg>
 {
     public float thickness = 0.01f;
     public float lengthScale = 1.0f;

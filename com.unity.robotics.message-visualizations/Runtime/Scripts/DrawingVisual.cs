@@ -21,9 +21,9 @@ namespace Unity.Robotics.MessageVisualizers
         }
         public MessageMetadata meta { get; }
 
-        BasicDrawing m_BasicDrawing;
+        protected BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
-        IVisualDrawer<T> m_Drawer;
+        protected IVisualDrawer<T> m_Drawer;
         TFTrackingType m_TFTrackingType;
         HeaderMsg m_HeaderMsg;
 

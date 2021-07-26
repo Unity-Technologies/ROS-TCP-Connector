@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<PoseWithCovarianceStampedMsg>
+public class DefaultVisualizerPoseWithCovarianceStamped : DrawingStampedVisualFactory<PoseWithCovarianceStampedMsg>
 {
     [SerializeField]
     float m_Size = 0.1f;

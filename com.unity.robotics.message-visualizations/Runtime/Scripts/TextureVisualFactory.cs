@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class TextureVisualFactory<TargetMessageType> : MonoBehaviour, IVisualFactory, IPriority
-        where TargetMessageType : Message
+    public abstract class TextureVisualFactory<T> : MonoBehaviour, IVisualFactory, IPriority
+        where T : Message
     {
         [SerializeField]
         protected string m_Topic;
@@ -14,7 +14,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_Topic == "")
             {
-                VisualFactoryRegistry.RegisterTypeVisualizer<TargetMessageType>(this, Priority);
+                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
             }
             else
             {
@@ -28,21 +28,21 @@ namespace Unity.Robotics.MessageVisualizers
         public IVisual CreateVisual(Message message, MessageMetadata meta)
         {
             if (!AssertMessageType(message, meta)) return null;
-            return new TextureVisual<TargetMessageType>((TargetMessageType)message, meta, this, CreateTexture((TargetMessageType)message));
+            return new TextureVisual<T>((T)message, meta, this, CreateTexture((T)message));
         }
 
-        public abstract Texture2D CreateTexture(TargetMessageType message);
+        public abstract Texture2D CreateTexture(T message);
 
-        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta, Texture2D tex)
+        public virtual Action CreateGUI(T message, MessageMetadata meta, Texture2D tex)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
 
         public bool AssertMessageType(Message message, MessageMetadata meta)
         {
-            if (!(message is TargetMessageType))
+            if (!(message is T))
             {
-                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
+                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
                 return false;
             }
 

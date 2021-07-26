@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerQuaternionStamped : DrawingVisualFactory<QuaternionStampedMsg>
+    public class DefaultVisualizerQuaternionStamped : DrawingStampedVisualFactory<QuaternionStampedMsg>
     {
         [SerializeField]
         float m_Size = 0.01f;

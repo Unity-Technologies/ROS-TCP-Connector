@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTransformStamped : DrawingVisualFactory<TransformStampedMsg>
+    public class DefaultVisualizerTransformStamped : DrawingStampedVisualFactory<TransformStampedMsg>
     {
         [SerializeField]
         float m_Size = 0.1f;

@@ -4,7 +4,7 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
+public class DefaultVisualizerJointState : DrawingStampedVisualFactory<JointStateMsg>
 {
     [SerializeField]
     bool m_ShowEffort;

@@ -4,7 +4,7 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<JointTrajectoryMsg>
+public class DefaultVisualizerJointTrajectory : DrawingStampedVisualFactory<JointTrajectoryMsg>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;

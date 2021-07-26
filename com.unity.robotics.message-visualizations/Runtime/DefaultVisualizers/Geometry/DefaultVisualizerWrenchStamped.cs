@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerWrenchStamped : DrawingVisualFactory<WrenchStampedMsg>
+    public class DefaultVisualizerWrenchStamped : DrawingStampedVisualFactory<WrenchStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;

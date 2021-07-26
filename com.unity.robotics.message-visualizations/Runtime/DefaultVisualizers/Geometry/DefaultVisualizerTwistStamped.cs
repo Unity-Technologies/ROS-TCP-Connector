@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTwistStamped : DrawingVisualFactory<TwistStampedMsg>
+    public class DefaultVisualizerTwistStamped : DrawingStampedVisualFactory<TwistStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;

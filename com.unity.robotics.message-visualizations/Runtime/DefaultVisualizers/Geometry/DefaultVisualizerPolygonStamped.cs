@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerPolygonStamped : DrawingVisualFactory<PolygonStampedMsg>
+    public class DefaultVisualizerPolygonStamped : DrawingStampedVisualFactory<PolygonStampedMsg>
     {
         [SerializeField]
         float m_Thickness = 0.01f;
