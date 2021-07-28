@@ -4,6 +4,10 @@ In Unity, the X axis points right, Y up, and Z forward. ROS, on the other hand, 
 
 The ROSGeometry namespace contains code to make it easier to work with these various coordinate frames - letting you be explicit about what coordinates a given value is in at compile time, and managing the conversions for you.
 
+Here's the using declaration for adding ROSGeometry to your namespace:
+
+    using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+
 # Ros Message conversions:
 
 The main ROS position messages (geometry_msgs/Point, geometry_msgs/Point32 and geometry_msgs/Vector3) can be converted to and from Unity Vector3s like this:
