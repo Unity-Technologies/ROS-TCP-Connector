@@ -149,6 +149,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 ChangeRosMessageName(message.RosMessageName);
             }
 
+            m_SubscriberCallbacks.ForEach(item => item(message));
+
             if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
             {
                 UpdateVisual(message);
