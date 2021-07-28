@@ -357,15 +357,16 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void OnEnable()
+        private void Awake()
         {
             if (_instance == null)
                 _instance = this;
+
+            LoadLayout();
         }
 
         void Start()
         {
-            LoadLayout();
             InitializeHUD();
 
             if (listenForTFMessages)
