@@ -15,6 +15,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
+            ROSConnection.GetOrCreateInstance();
             HudPanel.RegisterTab(this, (int)ROSConnection.HudTabIndices.TF);
             TFSystem.Register(this);
             if (color.a == 0)

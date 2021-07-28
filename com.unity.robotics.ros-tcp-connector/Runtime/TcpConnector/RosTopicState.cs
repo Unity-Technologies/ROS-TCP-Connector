@@ -33,17 +33,17 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         bool m_SentSubscriberRegistration;
 
-        IVisualFactory m_Visualizer;
+        IVisualFactory m_VisualizerCached;
         bool m_NoVisualizerAvailable;
         public IVisualFactory GetVisualizer()
         {
-            if (m_Visualizer == null && !m_NoVisualizerAvailable)
+            if (m_VisualizerCached == null && !m_NoVisualizerAvailable)
             {
-                m_Visualizer = VisualFactoryRegistry.GetVisualizer(Topic, RosMessageName);
-                if (m_Visualizer == null)
+                m_VisualizerCached = VisualFactoryRegistry.GetVisualizer(Topic, RosMessageName);
+                if (m_VisualizerCached == null)
                     m_NoVisualizerAvailable = true;
             }
-            return m_Visualizer;
+            return m_VisualizerCached;
         }
         IVisual m_Visual;
         public IVisual Visual => m_Visual;
@@ -69,7 +69,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_RosMessageName = rosMessageName;
             // clear cached data to force it to be refreshed
             m_Deserializer = null;
-            m_Visualizer = null;
+            m_VisualizerCached = null;
+            m_NoVisualizerAvailable = false;
         }
 
         [Serializable]
@@ -160,7 +161,15 @@ namespace Unity.Robotics.ROSTCPConnector
         void UpdateVisual(Message message)
         {
             MessageMetadata meta = new MessageMetadata(m_Topic, Time.time, DateTime.Now);
-            IVisual newVisual = m_Visualizer.CreateVisual(message, meta);
+            IVisualFactory visualizer = GetVisualizer();
+            if (visualizer == null)
+            {
+                // this should never be null!? We know how to deserialize this message so the default visualizer should at least be working.
+                Debug.LogError($"Unexpected error: No visualizer for {m_RosMessageName} - message type {message?.GetType()}");
+                return;
+            }
+
+            IVisual newVisual = visualizer.CreateVisual(message, meta);
             newVisual.Recycle(m_Visual);
             m_Visual = newVisual;
             m_LastVisualFrameTime = Time.time;
