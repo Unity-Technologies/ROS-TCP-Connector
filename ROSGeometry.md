@@ -8,15 +8,19 @@ The ROSGeometry namespace contains code to make it easier to work with these var
 
 The main ROS position messages (geometry_msgs/Point, geometry_msgs/Point32 and geometry_msgs/Vector3) can be converted to and from Unity Vector3s like this:
 
-	PointMsg myRosPoint = transform.position.To<FLU>();
-	Vector3 myUnityPoint = myRosPoint.From<FLU>();
+	PointMsg ToRosExample(Vector3 position)
+	{
+		return position.To<FLU>();
+	}
 
-	Vector3Msg myRosVector = transform.forward.To<FLU>();
-	Vector3 myUnityVector = myRosVector.From<FLU>();
+	Vector3 ToUnityExample(PointMsg message)
+	{
+		return message.From<FLU>();
+	}
 
 Similarly, the geometry_msgs/Quaternion message can be converted to and from a Unity Quaternion.
 
-	QuaternionMsg myRosQuaternion = transform.rotation.To<FLU>();
+	QuaternionMsg myRosQuaternion = myGameObject.transform.rotation.To<FLU>();
 	Quaternion myUnityQuaternion = myRosQuaternion.From<FLU>();
 
 Hence, writing 3d data into a message can often be as simple as writing:
@@ -29,9 +33,9 @@ Hence, writing 3d data into a message can often be as simple as writing:
 	}
 	ros.Send("imu", msg);
 
-Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So creating a geometry_msgs/Transform message typically looks like:
+Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So creating a geometry_msgs/Transform message typically looks like this:
 
-    TransformMsg msg = obj.transform.To<FLU>());
+    TransformMsg msg = myGameObject.transform.To<FLU>());
 
 # Internal details
 
