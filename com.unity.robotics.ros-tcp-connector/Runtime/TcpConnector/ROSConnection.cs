@@ -462,7 +462,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     RosTopicState topicInfo = GetTopic(topic);
-                    topicInfo.OnMessageReceived(contents);
+                    // if this is null, we have received a message on a topic we've never heard of...!?
+                    // all we can do is ignore it, we don't even know what type it is
+                    if (topicInfo != null)
+                        topicInfo.OnMessageReceived(contents);
                 }
             }
         }
