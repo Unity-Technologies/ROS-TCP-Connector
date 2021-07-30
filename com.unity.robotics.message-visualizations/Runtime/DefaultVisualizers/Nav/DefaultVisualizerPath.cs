@@ -5,7 +5,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPath : DrawingVisualFactory<PathMsg>
+public class DefaultVisualizerPath : StampedDrawingVisualFactory<PathMsg>
 {
     [SerializeField]
     float m_Thickness;
@@ -14,6 +14,7 @@ public class DefaultVisualizerPath : DrawingVisualFactory<PathMsg>
 
     public override void Draw(BasicDrawing drawing, PathMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 

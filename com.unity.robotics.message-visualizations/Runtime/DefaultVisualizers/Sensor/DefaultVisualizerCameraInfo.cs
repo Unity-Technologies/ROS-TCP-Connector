@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
 {
-    public string imageTopic;
+    [SerializeField]
+    public string ImageTopic;
     bool m_ViewK;
     bool m_ViewP;
     bool m_ViewR;
@@ -17,7 +18,7 @@ public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify)
         {
-            RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
+            RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(ImageTopic);
             if (imageState != null)
             {
                 var imageVisual = imageState.Visual as ITextureVisual;

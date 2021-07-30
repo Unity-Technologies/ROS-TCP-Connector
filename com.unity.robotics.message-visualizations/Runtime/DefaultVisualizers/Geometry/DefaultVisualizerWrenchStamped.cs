@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerWrenchStamped : DrawingVisualFactory<WrenchStampedMsg>
+    public class DefaultVisualizerWrenchStamped : StampedDrawingVisualFactory<WrenchStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;
@@ -16,6 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, WrenchStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             message.wrench.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 

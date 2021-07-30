@@ -4,7 +4,7 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<JointTrajectoryMsg>
+public class DefaultVisualizerJointTrajectory : StampedDrawingVisualFactory<JointTrajectoryMsg>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;
@@ -26,6 +26,7 @@ public class DefaultVisualizerJointTrajectory : DrawingVisualFactory<JointTrajec
 
     public override void Draw(BasicDrawing drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
     }
 }

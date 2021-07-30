@@ -8,9 +8,6 @@ using UnityEngine;
 public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
 {
     [SerializeField]
-    TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
-    [SerializeField]
     bool m_UseIntensitySize;
     public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
     [SerializeField]

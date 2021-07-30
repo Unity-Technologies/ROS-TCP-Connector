@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
+public class DefaultVisualizerOdometry : StampedDrawingVisualFactory<OdometryMsg>
 {
     public float thickness = 0.01f;
     public float lengthScale = 1.0f;
@@ -15,7 +15,8 @@ public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
 
     public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(OdometryMsg message, MessageMetadata meta) => () =>

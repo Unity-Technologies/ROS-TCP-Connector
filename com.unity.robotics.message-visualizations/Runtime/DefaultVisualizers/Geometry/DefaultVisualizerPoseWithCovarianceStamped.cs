@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<PoseWithCovarianceStampedMsg>
+public class DefaultVisualizerPoseWithCovarianceStamped : StampedDrawingVisualFactory<PoseWithCovarianceStampedMsg>
 {
     [SerializeField]
     float m_Size = 0.1f;
@@ -15,6 +15,7 @@ public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<P
 
     public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.pose.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
     }
 

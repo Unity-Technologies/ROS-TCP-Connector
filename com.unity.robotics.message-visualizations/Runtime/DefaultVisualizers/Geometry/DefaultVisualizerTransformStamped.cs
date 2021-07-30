@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTransformStamped : DrawingVisualFactory<TransformStampedMsg>
+    public class DefaultVisualizerTransformStamped : StampedDrawingVisualFactory<TransformStampedMsg>
     {
         [SerializeField]
         float m_Size = 0.1f;
@@ -19,6 +19,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, TransformStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             message.transform.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), message.transform.translation.From<FLU>(), SelectColor(m_Color, meta), m_Size);
         }

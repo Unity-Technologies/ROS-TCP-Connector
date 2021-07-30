@@ -4,7 +4,7 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
+public class DefaultVisualizerJointState : StampedDrawingVisualFactory<JointStateMsg>
 {
     [SerializeField]
     bool m_ShowEffort;
@@ -24,6 +24,7 @@ public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
 
     public override void Draw(BasicDrawing drawing, JointStateMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         var color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
         if (m_ShowEffort)

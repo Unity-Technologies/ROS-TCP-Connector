@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerVector3Stamped : DrawingVisualFactory<Vector3StampedMsg>
+    public class DefaultVisualizerVector3Stamped : StampedDrawingVisualFactory<Vector3StampedMsg>
     {
         [SerializeField]
         float m_Radius = 0.01f;
@@ -16,6 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, Vector3StampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             message.vector.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 

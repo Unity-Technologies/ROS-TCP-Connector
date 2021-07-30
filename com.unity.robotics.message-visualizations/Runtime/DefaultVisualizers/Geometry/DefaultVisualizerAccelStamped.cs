@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerAccelStamped : DrawingVisualFactory<AccelStampedMsg>
+public class DefaultVisualizerAccelStamped : StampedDrawingVisualFactory<AccelStampedMsg>
 {
     public float m_Thickness = 0.01f;
     public float m_LengthScale = 1.0f;
@@ -15,6 +15,7 @@ public class DefaultVisualizerAccelStamped : DrawingVisualFactory<AccelStampedMs
 
     public override void Draw(BasicDrawing drawing, AccelStampedMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 

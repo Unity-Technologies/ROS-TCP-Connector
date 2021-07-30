@@ -4,7 +4,7 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
 
-public class DefaultVisualizerMultiDOFJointState : DrawingVisualFactory<MultiDOFJointStateMsg>
+public class DefaultVisualizerMultiDOFJointState : StampedDrawingVisualFactory<MultiDOFJointStateMsg>
 {
     [SerializeField]
     UrdfRobot m_UrdfRobot;
@@ -22,6 +22,7 @@ public class DefaultVisualizerMultiDOFJointState : DrawingVisualFactory<MultiDOF
 
     public override void Draw(BasicDrawing drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
     }
 

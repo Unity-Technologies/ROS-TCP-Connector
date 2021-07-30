@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DefaultVisualizerTwistWithCovarianceStamped : DrawingVisualFactory<TwistWithCovarianceStampedMsg>
+    public class DefaultVisualizerTwistWithCovarianceStamped : StampedDrawingVisualFactory<TwistWithCovarianceStampedMsg>
     {
         public float thickness = 0.01f;
         public float lengthScale = 1.0f;
@@ -17,6 +17,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, TwistWithCovarianceStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             var orig = origin == null ? Vector3.zero : origin.transform.position;
             message.twist.twist.Draw<FLU>(drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
         }

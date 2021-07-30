@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerImu : DrawingVisualFactory<ImuMsg>
+public class DefaultVisualizerImu : StampedDrawingVisualFactory<ImuMsg>
 {
     [SerializeField]
     public Color m_Color;
@@ -20,6 +20,7 @@ public class DefaultVisualizerImu : DrawingVisualFactory<ImuMsg>
 
     public override void Draw(BasicDrawing drawing, ImuMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
