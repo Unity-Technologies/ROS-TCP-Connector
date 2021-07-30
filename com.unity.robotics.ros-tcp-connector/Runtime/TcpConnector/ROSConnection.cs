@@ -226,7 +226,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             SendSysCommand(k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
-            Send(rosServiceName, serviceRequest);
+            SendInternal(rosServiceName, serviceRequest);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
 
@@ -535,7 +535,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                             // send the response message back
                             SendSysCommand(k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
-                            Send(serviceTopic, responseMessage);
+                            SendInternal(serviceTopic, responseMessage);
                         };
                     }
                     break;
@@ -805,6 +805,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Send<T>(string rosTopicName, T message) where T : Message
         {
+            Publish(rosTopicName, message);
+        }
+
+        public void Publish<T>(string rosTopicName, T message) where T : Message
+        {
             if (!rosTopicName.StartsWith("__"))
             {
                 RosTopicState rosTopic = GetTopic(rosTopicName);
@@ -814,7 +819,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
                 rosTopic.OnMessageSent(message);
             }
+            SendInternal(rosTopicName, message);
+        }
 
+        void SendInternal<T>(string rosTopicName, T message) where T : Message
+        {
             m_MessageSerializer.Clear();
             // ros messages sent on our network channel contain:
             // 4 byte topic length, followed by that many bytes of the topic name
