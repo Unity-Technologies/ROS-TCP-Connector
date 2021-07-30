@@ -726,7 +726,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (!rosTopicName.StartsWith("__"))
             {
-                if (!m_Publishers.ContainsKey(rosTopicName))
+                if (!m_Publishers.ContainsKey(rosTopicName) && !m_UnityServices.ContainsKey(rosTopicName))
                 {
                     Debug.LogError($"Can't publish a message to an unregistered topic '{rosTopicName}'");
                     return;
