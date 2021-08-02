@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualFactory<OccupancyGridMsg>
 {
+    [SerializeField]
+    Vector3 m_Offset = Vector3.zero;
     int m_Height;
     int m_Width;
 
@@ -37,7 +39,7 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualFactory<Occup
 
             drawing.SetTFTrackingType(m_TFTrackingType, message.header);
             visual.drawingObject = drawing.DrawMesh(visual.mesh,
-                origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation,
+                origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f) + m_Offset, rotation,
                 new Vector3(m_Width * scale, 1, m_Height * scale), visual.material);
         }
     }
