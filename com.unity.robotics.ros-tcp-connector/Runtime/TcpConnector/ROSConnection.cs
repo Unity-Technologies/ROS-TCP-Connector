@@ -8,8 +8,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Threading;
+using RosMessageTypes.BuiltinInterfaces;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
