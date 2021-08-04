@@ -14,7 +14,7 @@ namespace Unity.Robotics.ROSTCPConnector
             QueueFullWarning
         }
 
-        public abstract SendToState SendTo(MessageSerializer m_MessageSerializer, System.IO.Stream stream);
+        public abstract SendToState SendInternal(MessageSerializer m_MessageSerializer, System.IO.Stream stream);
 
         public abstract void ClearAllQueuedData();
     }
@@ -28,7 +28,7 @@ namespace Unity.Robotics.ROSTCPConnector
             this.m_ListOfSerializations = m_ListOfSerializations;
         }
 
-        public override SendToState SendTo(MessageSerializer m_MessageSerializer, Stream stream)
+        public override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)
         {
             foreach (byte[] statement in m_ListOfSerializations)
             {

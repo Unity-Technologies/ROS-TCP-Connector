@@ -7,24 +7,6 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 namespace Unity.Robotics.ROSTCPConnector
 {
 
-    public class PublishedMessage<T> where T : Message
-    {
-        public bool valid;
-        public T message;
-
-        public PublishedMessage(T message)
-        {
-            this.valid = true;
-            this.message = message;
-        }
-
-        public void Invalidate()
-        {
-            this.valid = false;
-            this.message = null;
-        }
-    }
-
     public abstract class ROSPublisherBase : SendsOutgoingMessages {
         public abstract string RosMessageName
         {
@@ -90,13 +72,17 @@ namespace Unity.Robotics.ROSTCPConnector
             return messageType == typeof(T);
         }
 
-        //Messages waiting to be sent.
-        private LinkedList<PublishedMessage<T>> outgoingMessages = new LinkedList<PublishedMessage<T>>();
-        private int nextValidMessageIndex = -1;
-        private LinkedListNode<PublishedMessage<T>> nextValidOutgoingMessage = null;
+        //Messages waiting to be sent queue.
+        private LinkedList<T> outgoingMessages = new LinkedList<T>();
+
+        //Keeps track of how many outgoing messages were removed due to queue overflow.
+        //If a message is published but the queue is full, the counter is incremented, the
+        //first message in the queue is recycled and the message to publish is put on the end of the queue.
+        //If this is non 0, a SendTo call will decrement the counter instead of sending data.
+        private int queueOverflowUnsentCounter = 0;
 
         //Latching - This message will be set if latching is enabled, and on reconnection, it will be sent again.
-        private PublishedMessage<T> lastMessageSent = null;
+        private T lastMessageSent = null;
 
         //Whether you want to pool messages for reuse (Used to reduce GC calls).
         private volatile bool _messagePoolEnabled;
@@ -109,57 +95,23 @@ namespace Unity.Robotics.ROSTCPConnector
             this.RosMessageName = MessageRegistry.GetRosMessageName<T>();
         }
 
-        private bool ValidMessageExistsInQueue => nextValidMessageIndex != -1;
-
-        private int ValidMessagesInQueue
-        {
-            get
-            {
-                if (!ValidMessageExistsInQueue)
-                {
-                    return 0;
-                }
-                return outgoingMessages.Count - nextValidMessageIndex;
-            }
-        }
-
-        private void SetNextOutgoingIndex()
-        {
-            //Set the next valid message.
-            nextValidOutgoingMessage = nextValidOutgoingMessage.Next;
-            if (nextValidOutgoingMessage == null)
-            {
-                nextValidMessageIndex = -1;
-            }
-            else
-            {
-                nextValidMessageIndex++;
-            }
-        }
-
-        public void Send(T message)
+        public void Publish(T message)
         {
             lock(outgoingMessages)
             {
 
-                if (ValidMessageExistsInQueue && ValidMessagesInQueue >= QueueSize)
+                if (outgoingMessages.Count >= QueueSize)
                 {
                     //Remove outgoing messages that don't fit in the queue.
                     //Recycle the message if applicable
-                    RecycleMessage(nextValidOutgoingMessage.Value);
-                    //Update the nextValidOutgoingMessage and nextValidMessageIndex
-                    SetNextOutgoingIndex();
+                    RecycleMessage(outgoingMessages.First.Value);
+                    //Update the overflow counter.
+                    queueOverflowUnsentCounter++;
+                    outgoingMessages.RemoveFirst();
                 }
 
                 //Add a new valid message to the end.
-                outgoingMessages.AddLast(new PublishedMessage<T>(message));
-                if (!ValidMessageExistsInQueue)
-                {
-                    //The next valid outgoing message is no longer part of the list (probably because it was sent).
-                    //Set the next valid message to the beginning of the list.
-                    nextValidOutgoingMessage = outgoingMessages.Last;
-                    nextValidMessageIndex = outgoingMessages.Count - 1;
-                }
+                outgoingMessages.AddLast(message);
             }
         }
 
@@ -168,53 +120,34 @@ namespace Unity.Robotics.ROSTCPConnector
             //Register the publisher with the ROS Endpoint.
             RegisterPublisherIfApplicable(m_MessageSerializer, stream);
 
-            if (Latch && lastMessageSent != null)
-            {
-                //This topic is latching, so to mimic that functionality,
-                //here the last sent message is sent again with the new connection.
-                SendMessageWithStream(m_MessageSerializer, stream, lastMessageSent.message);
-            }
         }
 
-        public bool RemoveMessageToSend(out PublishedMessage<T> messageToSend)
+        private SendToState RemoveMessageToSend(out T messageToSend)
         {
-            var result = false;
+            SendToState result = SendToState.NoMessageToSendError;
             messageToSend = null;
-            if (!PublisherRegistered && Latch && lastMessageSent != null)
-            {
-                //Resend the latched message.
-                messageToSend = lastMessageSent;
-                return true;
-            }
             lock(outgoingMessages)
             {
-                if (outgoingMessages.Count > 0)
+                if (queueOverflowUnsentCounter > 0)
                 {
-
-                    //Update the next valid message.
-                    if (nextValidMessageIndex == 0)
-                    {
-                        //The next valid message was the one we are about to remove, we need to set it to the next one.
-                        SetNextOutgoingIndex();
-                    }
-                    if(nextValidMessageIndex >= 0)
-                    {
-                        //We are going to remove the first element, we need to update the index.
-                        nextValidMessageIndex--;
-                    }
-
+                    //This means that we can't send message to ROS as fast as we're generating them.
+                    //This could potentially be bad as it means that we are dropping messages!
+                    queueOverflowUnsentCounter--;
+                    messageToSend = null;
+                    result = SendToState.QueueFullWarning;
+                } else if (outgoingMessages.Count > 0)
+                {
                     //Retrieve the next message and populate messageToSend.
                     messageToSend = outgoingMessages.First.Value;
                     outgoingMessages.RemoveFirst();
-
-                    result = true;
+                    result = SendToState.Normal;
                 }
             }
 
             return result;
         }
 
-        public bool PeekNextMessageToSend(out PublishedMessage<T> messageToSend)
+        public bool PeekNextMessageToSend(out T messageToSend)
         {
             bool result = false;
             messageToSend = null;
@@ -255,58 +188,61 @@ namespace Unity.Robotics.ROSTCPConnector
                 new SysCommandPublisherRegistration(this);
             publisherRegistration.SendTo(stream, m_MessageSerializer);
             PublisherRegistered = true;
+
+            if (Latch && lastMessageSent != null)
+            {
+                //This topic is latching, so to mimic that functionality,
+                //here the last sent message is sent again with the new connection.
+                SendMessageWithStream(m_MessageSerializer, stream, lastMessageSent);
+            }
         }
 
-        public override SendToState SendTo(MessageSerializer m_MessageSerializer, Stream stream)
+        public override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)
         {
-            if (RemoveMessageToSend(out PublishedMessage<T> toSend))
+            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
+            SendToState sendToState = RemoveMessageToSend(out T toSend);
+            if (sendToState == SendToState.Normal)
             {
-                if (toSend.valid)
+                SendMessageWithStream(m_MessageSerializer, stream, toSend);
+
+                //Recycle the message (if applicable).
+                if (Latch)
                 {
-
-                    SendMessageWithStream(m_MessageSerializer, stream, toSend.message);
-
-                    //Recycle the message (if applicable).
-                    if (Latch)
+                    if (lastMessageSent != null && lastMessageSent != toSend)
                     {
-                        if (lastMessageSent != null && lastMessageSent != toSend)
-                        {
-                            RecycleMessage(lastMessageSent);
-                        }
-                        lastMessageSent = toSend;
+                        RecycleMessage(lastMessageSent);
                     }
-                    else
-                    {
-                        RecycleMessage(toSend);
-                    }
-
-                    return SendToState.Normal;
+                    lastMessageSent = toSend;
                 }
-                //This means that we can't send message to ROS as fast as we're generating them.
-                //This could potentially be bad as it means that we are dropping messages!
-                return SendToState.QueueFullWarning;
+                else
+                {
+                    RecycleMessage(toSend);
+                }
             }
-            //This shouldn't happen, it's just used here as a sanity check.
-            return SendToState.NoMessageToSendError;
+            return sendToState;
         }
 
         public override void ClearAllQueuedData()
         {
-            while (RemoveMessageToSend(out PublishedMessage<T> removed))
+
+            List<T> toRecycle;
+            lock(outgoingMessages)
             {
-                RecycleMessage(removed);
+                toRecycle = new List<T>(outgoingMessages);
+                outgoingMessages.Clear();
+                queueOverflowUnsentCounter = 0;
+            }
+
+            foreach (T messageToRecycle in toRecycle)
+            {
+                RecycleMessage(messageToRecycle);
             }
         }
 
-        private void RecycleMessage(PublishedMessage<T> toRecycle)
+        private void RecycleMessage(T toRecycle)
         {
-            if (toRecycle.valid)
-            {
-                //Add the message back to the pool.
-                AddMessageToPool(toRecycle.message);
-                //Flag that the message shouldn't be sent as it was removed from the queue.
-                toRecycle.Invalidate();
-            }
+            //Add the message back to the pool.
+            AddMessageToPool(toRecycle);
         }
 
         #region Message Pooling
@@ -373,9 +309,6 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         #endregion
-
-
-
 
     }
 }

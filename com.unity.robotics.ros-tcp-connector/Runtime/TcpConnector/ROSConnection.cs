@@ -195,7 +195,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             SendSysCommand(k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
-            Send(rosServiceName, serviceRequest);
+            Publish(rosServiceName, serviceRequest);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
 
@@ -526,7 +526,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                             // send the response message back
                             SendSysCommand(k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
-                            Send(serviceTopic, responseMessage);
+                            Publish(serviceTopic, responseMessage);
                         };
                     }
                     break;
@@ -648,7 +648,7 @@ namespace Unity.Robotics.ROSTCPConnector
                             token.ThrowIfCancellationRequested();
                         }
 
-                        SendsOutgoingMessages.SendToState sendToState = sendsOutgoingMessages.SendTo(messageSerializer, networkStream);
+                        SendsOutgoingMessages.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
                         switch (sendToState)
                         {
                             case SendsOutgoingMessages.SendToState.Normal:
@@ -848,7 +848,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 //IE: if (!m_Publishers.ContainsKey(rosTopicName)) error unregistered topic!
                 //Find the publisher and queue the message for sending.
                 ROSPublisher<T> existingPublisher = GetOrRegisterPublisher<T>(rosTopicName, queue_size, latch);
-                existingPublisher.Send(message);
+                existingPublisher.Publish(message);
                 m_OutgoingMessageQueue.Enqueue(existingPublisher);
 
                 if (m_HudPanel != null)
