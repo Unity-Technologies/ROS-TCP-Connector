@@ -53,18 +53,30 @@ namespace Unity.Robotics.ROSTCPConnector
         }
     }
 
-    public class SysCommandSubscriberRegistration : SysCommand
+    public struct SysCommand_TopicAndType
     {
-        [SerializeField] public string topic;
-        [SerializeField] public string rosMessageName;
+        public string topic;
+        public string message_name;
+    }
 
-        public SysCommandSubscriberRegistration(string topic, string rosMessageName)
-        {
-            this.topic = topic;
-            this.rosMessageName = rosMessageName;
-        }
+    public struct SysCommand_Log
+    {
+        public string text;
+    }
 
-        public override string Command => k_SysCommand_Subscribe;
+    public struct SysCommand_Service
+    {
+        public int srv_id;
+    }
+
+    public struct SysCommand_TopicsRequest
+    {
+    }
+
+    public struct SysCommand_TopicsResponse
+    {
+        public string[] topics;
+        public string[] types;
     }
 
     public class SysCommandPublisherRegistration : SysCommand

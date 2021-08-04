@@ -50,17 +50,6 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
-        const string k_SysCommand_Log = "__log";
-        const string k_SysCommand_Warning = "__warn";
-        const string k_SysCommand_Error = "__error";
-        const string k_SysCommand_ServiceRequest = "__request";
-        const string k_SysCommand_ServiceResponse = "__response";
-        const string k_SysCommand_Subscribe = "__subscribe";
-        //const string k_SysCommand_Publish = "__publish";
-        const string k_SysCommand_RosService = "__ros_service";
-        const string k_SysCommand_UnityService = "__unity_service";
-        const string k_SysCommand_TopicList = "__topic_list";
-
         private const int k_DefaultPublisherQueueSize = 10;
         private const bool k_DefaultPublisherLatch = false;
 
@@ -194,7 +183,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ServicesWaiting.Add(srvID, pauser);
             }
 
-            SendSysCommand(k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
+            SendSysCommand(SysCommand.k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
             Publish(rosServiceName, serviceRequest);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
@@ -206,13 +195,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public void GetTopicList(Action<string[]> callback)
         {
             m_TopicsListCallbacks.Add(callback);
-            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+            SendSysCommand(SysCommand.k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
         public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
         {
             m_TopicsAndTypesListCallbacks.Add(callback);
-            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+            SendSysCommand(SysCommand.k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
         [Obsolete("Calling Subscribe now implicitly registers a subscriber")]
@@ -280,17 +269,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         void SendUnityServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         private static ROSConnection _instance;
@@ -482,25 +471,25 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             switch (topic)
             {
-                case k_SysCommand_Log:
+                case SysCommand.k_SysCommand_Log:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.Log(logCommand.text);
                     }
                     break;
-                case k_SysCommand_Warning:
+                case SysCommand.k_SysCommand_Warning:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.LogWarning(logCommand.text);
                     }
                     break;
-                case k_SysCommand_Error:
+                case SysCommand.k_SysCommand_Error:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.LogError(logCommand.text);
                     }
                     break;
-                case k_SysCommand_ServiceRequest:
+                case SysCommand.k_SysCommand_ServiceRequest:
                     {
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
 
@@ -525,13 +514,13 @@ namespace Unity.Robotics.ROSTCPConnector
                             Message responseMessage = service.callback(requestMessage);
 
                             // send the response message back
-                            SendSysCommand(k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
+                            SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
                             Publish(serviceTopic, responseMessage);
                         };
                     }
                     break;
 
-                case k_SysCommand_ServiceResponse:
+                case SysCommand.k_SysCommand_ServiceResponse:
                     {
                         // it's a response from a ros service
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
@@ -555,7 +544,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                     break;
 
-                case k_SysCommand_TopicList:
+                case SysCommand.k_SysCommand_TopicList:
                     {
                         var topicsResponse = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
                         if (m_TopicsAndTypesListCallbacks.Count > 0)
@@ -657,7 +646,7 @@ namespace Unity.Robotics.ROSTCPConnector
                             case SendsOutgoingMessages.SendToState.QueueFullWarning:
                                 //Unable to send messages to ROS as fast as we're generating them.
                                 //This could be caused by a TCP connection that is too slow.
-                                Debug.LogWarning("Queue full! Messages are getting dropped! " +
+                                Debug.LogWarning($"Queue full! Messages are getting dropped! " +
                                                  "Try check your connection speed is fast enough to handle the traffic.");
                                 break;
                             case SendsOutgoingMessages.SendToState.NoMessageToSendError:
@@ -764,33 +753,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Disconnect();
         }
 
-        public struct SysCommand_TopicAndType
-        {
-            public string topic;
-            public string message_name;
-            public int queue_size;
-            public bool latch; //Note - Only applicable for publishers.
-        }
 
-        struct SysCommand_Log
-        {
-            public string text;
-        }
-
-        struct SysCommand_Service
-        {
-            public int srv_id;
-        }
-
-        struct SysCommand_TopicsRequest
-        {
-        }
-
-        struct SysCommand_TopicsResponse
-        {
-            public string[] topics;
-            public string[] types;
-        }
 
         void SendSysCommand(string command, object param, NetworkStream stream = null)
         {
