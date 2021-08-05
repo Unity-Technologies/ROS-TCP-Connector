@@ -9,7 +9,6 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
-using RosMessageTypes.BuiltinInterfaces;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -91,7 +90,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         // only the main thread can access Time.*, so make a copy here
         public static float s_RealTimeSinceStartup = 0.0f;
-        private static float s_SimulatedTimeSinceStartup = 0.0f;
 
         readonly object m_ServiceRequestLock = new object();
         int m_NextSrvID = 101;
@@ -129,17 +127,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (HasConnectionThread)
                 SendSubscriberRegistration(topic, rosMessageName);
-        }
-
-        public static TimeMsg SimulationTime
-        {
-            get
-            {
-                var simTimeSeconds = (uint) Mathf.FloorToInt(s_SimulatedTimeSinceStartup);
-                var simTimeNanoSeconds =
-                    (uint) ((s_SimulatedTimeSinceStartup - (double) simTimeSeconds) * 1000000000.0);
-                return new TimeMsg(simTimeSeconds, simTimeNanoSeconds);
-            }
         }
 
         void AddSubscriberInternal<T>(string topic, string rosMessageName, Action<T> callback) where T : Message
@@ -449,13 +436,11 @@ namespace Unity.Robotics.ROSTCPConnector
         private void FixedUpdate()
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
-            s_SimulatedTimeSinceStartup = Time.time;
         }
 
         void Update()
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
-            s_SimulatedTimeSinceStartup = Time.time;
 
             Tuple<string, byte[]> data;
             while (m_IncomingMessages.TryDequeue(out data))
