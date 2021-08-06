@@ -1,7 +1,7 @@
 name: Connector Unit Tests
 agent:
     type: Unity::VM
-    image: robotics/ci-ubuntu20:latest
+    image: robotics/ci-ubuntu20:v0.1.0-795910
     flavor: i1.large
 variables:
     PATH: /root/.local/bin:/home/bokken/bin:/home/bokken/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/sbin:/home/bokken/.npm-global/bin
