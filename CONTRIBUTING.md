@@ -52,14 +52,10 @@ We run continuous integration on all PRs; all tests must be passing before the P
 
 All Python code should follow the [PEP 8 style guidelines](https://pep8.org/).
 
-All C# code should follow the [Microsoft C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
-Additionally, the [Unity Coding package](https://docs.unity3d.com/Packages/com.unity.coding@0.1/manual/index.html)
-can be used to format, encode, and lint your code according to the standard Unity
-development conventions. Be aware that these Unity conventions will supersede the
-Microsoft C# Coding Conventions where applicable.
+All C# code should follow the [Microsoft C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions). (Code may be reformatted to Unity coding standards where applicable.)
 
-Please note that even if the code you are changing does not adhere to these guidelines,
-we expect your submissions to follow these conventions.
+Please note that even if the code you are changing does not follow these conventions,
+we expect your submissions to do so.
 
 ## Contributor License Agreements
 
