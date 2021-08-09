@@ -30,7 +30,7 @@ does the following:
 - Has corresponding changes to documentation, unit tests and sample environments (if
   applicable)
 - Contains a summary of the tests performed to validate your changes
-- Updates the [Changelog](com.unity.robotics.ros-tcp-connector/CHANGELOG.md) and described changes in the [Unreleased section](com.unity.robotics.ros-tcp-connector/CHANGELOG.md#unreleased)
+- Updates the [Changelog](com.unity.robotics.ros-tcp-connector/CHANGELOG.md) and describes changes in the Unreleased section
 - Links to issue numbers that the PR resolves (if any)
 
 ## Workflow
