@@ -44,9 +44,9 @@ This project is provided as a package to be imported into a Unity project. In or
 5. Navigate to the cloned repository, and select the `com.unity.<package>/package.json` file. Click `Open`.
 6. The local version of the package is now added to your Unity project! Changes made to your cloned directory will update in your Unity project.
 
-## Continuous Integration (CI)
+<!-- ## Continuous Integration (CI)
 
-We run continuous integration on all PRs; all tests must be passing before the PR is merged.
+We run continuous integration on all PRs; all tests must be passing before the PR is merged. -->
 
 ## Code style
 
