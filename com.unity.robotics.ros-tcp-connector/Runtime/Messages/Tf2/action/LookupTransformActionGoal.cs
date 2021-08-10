@@ -8,6 +8,7 @@ namespace RosMessageTypes.Tf2
     public class LookupTransformActionGoal : ActionGoal<LookupTransformGoal>
     {
         public const string k_RosMessageName = "tf2_msgs/LookupTransformActionGoal";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public LookupTransformActionGoal() : base()

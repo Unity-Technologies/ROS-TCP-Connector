@@ -40,7 +40,7 @@ namespace RosMessageTypes.Nav
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, Deserialize, MessageSubtopic.Feedback);
         }
     }
 }
