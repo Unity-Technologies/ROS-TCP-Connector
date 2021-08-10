@@ -121,12 +121,13 @@ public class TFSystem
         return tf;
     }
 
-    void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
+    //void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
+    void ReceiveTF(TFMessageMsg message)
     {
         foreach (var tf_message in message.transforms)
         {
             var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
-            var tf = GetOrCreateTFStream(frame_id, tfTopic);
+            var tf = GetOrCreateTFStream(frame_id);
             tf.Add(
                 tf_message.header.stamp.ToLongTime(),
                 tf_message.transform.translation.From<FLU>(),
