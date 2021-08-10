@@ -9,6 +9,8 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualFactory<Occup
 {
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
+    [SerializeField]
+    string m_TFTopic = "/tf";
     int m_Height;
     int m_Width;
 
@@ -23,7 +25,7 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualFactory<Occup
             {
                 visual.mesh = new Mesh();
                 visual.mesh.vertices = new[]
-                    { Vector3.zero, new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0) };
+                { Vector3.zero, new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0) };
                 visual.mesh.uv = new[] { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
                 visual.mesh.triangles = new[] { 0, 1, 2, 2, 3, 0 };
                 visual.shaderMaterial = new Material(Shader.Find("Unlit/OccupancyGrid"));
@@ -37,7 +39,7 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualFactory<Occup
             rotation.eulerAngles += new Vector3(0, -90, 0); // TODO: Account for differing texture origin
             var scale = message.info.resolution;
 
-            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header, m_TFTopic);
             visual.drawingObject = drawing.DrawMesh(visual.mesh,
                 origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f) + m_Offset, rotation,
                 new Vector3(m_Width * scale, 1, m_Height * scale), visual.material);

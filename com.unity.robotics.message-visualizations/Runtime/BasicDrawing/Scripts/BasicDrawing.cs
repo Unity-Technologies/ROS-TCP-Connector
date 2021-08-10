@@ -68,24 +68,24 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void SetTFTrackingType(TFTrackingType tfTrackingType, HeaderMsg headerMsg)
+        public void SetTFTrackingType(TFTrackingType tfTrackingType, HeaderMsg headerMsg, string tfTopic = "/tf")
         {
             switch (tfTrackingType)
             {
                 case TFTrackingType.Exact:
-                    {
-                        TFFrame frame = TFSystem.instance.GetTransform(headerMsg);
-                        transform.position = frame.translation;
-                        transform.rotation = frame.rotation;
-                    }
-                    break;
+                {
+                    TFFrame frame = TFSystem.instance.GetTransform(headerMsg, tfTopic);
+                    transform.position = frame.translation;
+                    transform.rotation = frame.rotation;
+                }
+                break;
                 case TFTrackingType.TrackLatest:
-                    {
-                        transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id).transform;
-                        transform.localPosition = Vector3.zero;
-                        transform.localRotation = Quaternion.identity;
-                    }
-                    break;
+                {
+                    transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id, tfTopic).transform;
+                    transform.localPosition = Vector3.zero;
+                    transform.localRotation = Quaternion.identity;
+                }
+                break;
                 case TFTrackingType.None:
                     transform.localPosition = Vector3.zero;
                     transform.localRotation = Quaternion.identity;
@@ -350,7 +350,7 @@ namespace Unity.Robotics.MessageVisualizers
                     1,
                     lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings,
                     lastRingStart + vertexIdx * numRings
-                    );
+                );
             }
             SetDirty();
         }
@@ -740,6 +740,7 @@ namespace Unity.Robotics.MessageVisualizers
                 UnityEditor.Handles.Label(worldPos, label.text, style);
             }
         }
+
 #endif
 
         public void Refresh()

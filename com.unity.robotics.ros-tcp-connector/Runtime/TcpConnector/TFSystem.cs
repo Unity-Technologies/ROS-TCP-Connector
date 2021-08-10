@@ -16,7 +16,7 @@ public interface ITFSystemVisualizer
 public class TFSystem
 {
     static ITFSystemVisualizer s_Visualizer;
-    Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
+    Dictionary<string, Dictionary<string, TFStream>> m_TransformTable = new Dictionary<string, Dictionary<string, TFStream>>();
     Dictionary<string, Transform> m_TrackingTransformTable = new Dictionary<string, Transform>();
     public static TFSystem instance { get; private set; }
 
@@ -26,25 +26,28 @@ public class TFSystem
         {
             instance = new TFSystem();
             ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
+            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF("/tf"));
+            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("findbot/tf", instance.ReceiveTF("findbot/tf"));
+            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("ferrybot/tf", instance.ReceiveTF("ferrybot/tf"));
         }
         return instance;
     }
 
-    public IEnumerable<string> GetTransformNames()
+    public IEnumerable<string> GetTransformNames(string tfTopic = "/tf")
     {
-        return m_TransformTable.Keys;
+        return m_TransformTable[tfTopic].Keys;
     }
 
-    public IEnumerable<TFStream> GetTransforms()
+    public IEnumerable<TFStream> GetTransforms(string tfTopic = "/tf")
     {
-        return m_TransformTable.Values;
+        return m_TransformTable[tfTopic].Values;
     }
 
-    public static void Register(ITFSystemVisualizer visualizer)
+    public static void Register(ITFSystemVisualizer visualizer, string tfTopic = "/tf")
     {
         s_Visualizer = visualizer;
         if (instance != null)
-            foreach (var stream in instance.m_TransformTable.Values)
+            foreach (var stream in instance.m_TransformTable[tfTopic].Values)
                 UpdateVisualization(stream);
     }
 
@@ -54,14 +57,14 @@ public class TFSystem
             s_Visualizer.OnChanged(stream);
     }
 
-    public TFFrame GetTransform(HeaderMsg header)
+    public TFFrame GetTransform(HeaderMsg header, string tfTopic = "/tf")
     {
-        return GetTransform(header.frame_id, header.stamp.ToLongTime());
+        return GetTransform(header.frame_id, header.stamp.ToLongTime(), tfTopic);
     }
 
-    public TFFrame GetTransform(string frame_id, long time)
+    public TFFrame GetTransform(string frame_id, long time, string tfTopic = "/tf")
     {
-        var stream = GetTransformStream(frame_id);
+        var stream = GetTransformStream(frame_id, tfTopic);
         if (stream != null)
             return stream.GetWorldTF(time);
         return TFFrame.identity;
@@ -72,20 +75,20 @@ public class TFSystem
         return GetTransform(frame_id, time.ToLongTime());
     }
 
-    public TFStream GetTransformStream(string frame_id)
+    public TFStream GetTransformStream(string frame_id, string tfTopic = "/tf")
     {
         TFStream stream;
-        m_TransformTable.TryGetValue(frame_id, out stream);
+        m_TransformTable[tfTopic].TryGetValue(frame_id, out stream);
         return stream;
     }
 
-    public GameObject GetTransformObject(string frame_id)
+    public GameObject GetTransformObject(string frame_id, string tfTopic = "/tf")
     {
         TFStream stream = GetOrCreateTFStream(frame_id);
         return stream.GameObject;
     }
 
-    TFStream GetOrCreateTFStream(string frame_id)
+    TFStream GetOrCreateTFStream(string frame_id, string tfTopic = "/tf")
     {
         TFStream tf;
         while (frame_id.EndsWith("/"))
@@ -93,7 +96,7 @@ public class TFSystem
 
         var slash = frame_id.LastIndexOf('/');
         var singleName = slash == -1 ? frame_id : frame_id.Substring(slash + 1);
-        if (!m_TransformTable.TryGetValue(singleName, out tf) || tf == null)
+        if (!m_TransformTable[tfTopic].TryGetValue(singleName, out tf) || tf == null)
         {
             if (slash <= 0)
             {
@@ -107,7 +110,7 @@ public class TFSystem
                 tf = new TFStream(parent, singleName);
             }
 
-            m_TransformTable[singleName] = tf;
+            m_TransformTable[tfTopic][singleName] = tf;
             UpdateVisualization(tf);
         }
         else if (slash > 0 && tf.Parent == null)
@@ -118,12 +121,12 @@ public class TFSystem
         return tf;
     }
 
-    void ReceiveTF(TFMessageMsg message)
+    void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
     {
         foreach (var tf_message in message.transforms)
         {
             var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
-            var tf = GetOrCreateTFStream(frame_id);
+            var tf = GetOrCreateTFStream(frame_id, tfTopic);
             tf.Add(
                 tf_message.header.stamp.ToLongTime(),
                 tf_message.transform.translation.From<FLU>(),
