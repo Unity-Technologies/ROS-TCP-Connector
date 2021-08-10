@@ -27,32 +27,13 @@ namespace Unity.Robotics.ROSTCPConnector
         Func<MessageDeserializer, Message> m_Deserializer;
         Func<Message, Message> m_ServiceImplementation;
         RosTopicState m_ServiceResponseTopic;
+        public RosTopicState ServiceResponseTopic => m_ServiceResponseTopic;
+
         public bool IsUnityService => m_ServiceImplementation != null;
 
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         bool m_SentSubscriberRegistration;
-
-        IVisualFactory m_VisualizerCached;
-        bool m_NoVisualizerAvailable;
-        public IVisualFactory GetVisualizer()
-        {
-            if (m_VisualizerCached == null && !m_NoVisualizerAvailable)
-            {
-                m_VisualizerCached = VisualFactoryRegistry.GetVisualizer(Topic, RosMessageName);
-                if (m_VisualizerCached == null)
-                    m_NoVisualizerAvailable = true;
-            }
-            return m_VisualizerCached;
-        }
-        IVisual m_Visual;
-        public IVisual Visual => m_Visual;
-        HudWindow m_VisualWindow;
-        bool m_IsVisualizingUI;
-        public bool IsVisualizingUI => m_IsVisualizingUI;
-        bool m_IsVisualizingDrawing;
-        public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
-        float m_LastVisualFrameTime;
 
         internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal)
         {
@@ -73,48 +54,6 @@ namespace Unity.Robotics.ROSTCPConnector
             m_NoVisualizerAvailable = false;
         }
 
-        [Serializable]
-        public class SaveState
-        {
-            public Rect Rect;
-            public bool HasRect;
-            public string Topic;
-            public string RosMessageName;
-            public bool ShowWindow;
-            public bool ShowDrawing;
-        }
-
-        internal RosTopicState(SaveState save, ROSConnection connection, ROSConnection.InternalAPI connectionInternal)
-        {
-            m_Topic = save.Topic;
-            m_RosMessageName = save.RosMessageName;
-            if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
-                m_VisualWindow = new HudWindow(m_Topic, save.Rect);
-            else
-                m_VisualWindow = new HudWindow(m_Topic);
-
-            m_IsVisualizingUI = save.ShowWindow;
-            m_IsVisualizingDrawing = save.ShowDrawing;
-            m_Connection = connection;
-            m_ConnectionInternal = connectionInternal;
-        }
-
-        public SaveState CreateSaveState()
-        {
-            if (!m_IsVisualizingUI && !m_IsVisualizingDrawing)
-                return null;
-
-            return new SaveState
-            {
-                Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
-                HasRect = m_VisualWindow != null,
-                Topic = Topic,
-                RosMessageName = RosMessageName,
-                ShowWindow = m_IsVisualizingUI,
-                ShowDrawing = m_IsVisualizingDrawing,
-            };
-        }
-
         public void OnMessageReceived(byte[] data)
         {
             if (m_IsRosService && m_ServiceResponseTopic != null)
@@ -125,10 +64,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 return;
             }
 
-            bool shouldVisualize = Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing);
-
             // don't bother deserializing this message if nobody cares
-            if (m_SubscriberCallbacks.Count == 0 && !shouldVisualize)
+            if (m_SubscriberCallbacks.Count == 0)
             {
                 return;
             }
@@ -136,11 +73,6 @@ namespace Unity.Robotics.ROSTCPConnector
             Message message = Deserialize(data);
 
             m_SubscriberCallbacks.ForEach(item => item(message));
-
-            if (shouldVisualize)
-            {
-                UpdateVisual(message);
-            }
         }
 
         public void OnMessageSent(Message message)
@@ -151,34 +83,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             m_SubscriberCallbacks.ForEach(item => item(message));
-
-            if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
-            {
-                UpdateVisual(message);
-            }
-        }
-
-        void UpdateVisual(Message message)
-        {
-            MessageMetadata meta = new MessageMetadata(m_Topic, Time.time, DateTime.Now);
-            IVisualFactory visualizer = GetVisualizer();
-            if (visualizer == null)
-            {
-                // this should never be null!? We know how to deserialize this message so the default visualizer should at least be working.
-                Debug.LogError($"Unexpected error: No visualizer for {m_RosMessageName} - message type {message?.GetType()}");
-                return;
-            }
-
-            IVisual newVisual = visualizer.CreateVisual(message, meta);
-            newVisual.Recycle(m_Visual);
-            m_Visual = newVisual;
-            m_LastVisualFrameTime = Time.time;
-
-            if (m_IsVisualizingDrawing)
-                m_Visual.CreateDrawing();
-
-            if (m_VisualWindow != null)
-                m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
         }
 
         public Message HandleUnityServiceRequest(byte[] data)
@@ -272,102 +176,6 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
-        }
-
-        public void DrawGUILine()
-        {
-            bool showWindow = IsVisualizingUI;
-            bool showDrawing = IsVisualizingDrawing;
-
-            IVisualFactory visualizer = GetVisualizer();
-            bool canShowWindow = visualizer != null;
-            bool canShowDrawing = visualizer != null ? visualizer.CanShowDrawing : false;
-
-            var hasWindow = showWindow;
-            var hasDrawing = showDrawing;
-
-            GUILayout.BeginHorizontal();
-            if (hasWindow || canShowWindow)
-                showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
-            else
-                GUILayout.Label("", GUILayout.Width(15));
-
-            if (hasDrawing || canShowDrawing)
-                showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
-            else
-                GUILayout.Label("", GUILayout.Width(15));
-
-            var baseColor = GUI.color;
-            GUI.color = canShowWindow ? baseColor : Color.grey;
-            if (GUILayout.Button(new GUIContent(Topic, RosMessageName), GUI.skin.label, GUILayout.Width(240)))
-            {
-                if (!canShowWindow)
-                {
-                    Debug.LogError($"No message class registered for type {RosMessageName}");
-                }
-                else if (!canShowDrawing)
-                {
-                    showWindow = !showWindow;
-                }
-                else
-                {
-                    var toggleOn = !showWindow || !showDrawing;
-                    showWindow = toggleOn;
-                    showDrawing = toggleOn;
-                }
-            }
-
-            GUI.color = baseColor;
-            GUILayout.EndHorizontal();
-
-            if (showDrawing != m_IsVisualizingDrawing || showWindow != m_IsVisualizingUI)
-            {
-                SetVisualizing(showWindow, showDrawing);
-            }
-
-            if (m_ServiceResponseTopic != null)
-            {
-                m_ServiceResponseTopic.DrawGUILine();
-            }
-        }
-
-        void DefaultWindowContents()
-        {
-            GUILayout.Label("Waiting for message...");
-        }
-
-        public void SetVisualizing(bool ui, bool drawing)
-        {
-            if (m_VisualWindow != null)
-            {
-                m_VisualWindow.SetActive(ui);
-            }
-            else if (ui)
-            {
-                m_VisualWindow = new HudWindow(Topic);
-                m_VisualWindow.SetOnGUI(DefaultWindowContents);
-                HudPanel.AddWindow(m_VisualWindow);
-            }
-
-            if (m_Visual != null)
-            {
-                m_Visual.DeleteDrawing();
-
-                if (drawing)
-                    m_Visual.CreateDrawing();
-
-                if (m_VisualWindow != null)
-                    m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
-            }
-
-            if ((ui || drawing) && !m_SentSubscriberRegistration)
-            {
-                m_ConnectionInternal.SendSubscriberRegistration(Topic, RosMessageName);
-                m_SentSubscriberRegistration = true;
-            }
-
-            m_IsVisualizingUI = ui;
-            m_IsVisualizingDrawing = drawing;
         }
     }
 }

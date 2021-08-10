@@ -91,7 +91,6 @@ namespace Unity.Robotics.ROSTCPConnector
         float m_LastMessageSentRealtime;
         public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
         public float LastMessageSentRealtime => m_LastMessageSentRealtime;
-        string LayoutFilePath => System.IO.Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
         // For the IP address field we show in the hud, we store the IP address and port in PlayerPrefs.
         // This is used to remember the last IP address the player typed into the HUD, in builds where ConnectOnStart is not checked
@@ -110,8 +109,21 @@ namespace Unity.Robotics.ROSTCPConnector
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
+        List<Action<RosTopicState>> m_NewTopicCallbacks = new List<Action<RosTopicState>>();
 
         Dictionary<string, RosTopicState> m_Topics = new Dictionary<string, RosTopicState>();
+
+        public void ListenForTopics(Action<RosTopicState> callback, bool notifyAllExistingTopics = false)
+        {
+            m_NewTopicCallbacks.Add(callback);
+            if (notifyAllExistingTopics)
+            {
+                foreach (RosTopicState state in m_Topics.Values)
+                {
+                    callback(state);
+                }
+            }
+        }
 
         public RosTopicState AddTopic(string topic, string rosMessageName)
         {
@@ -131,14 +143,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public RosTopicState GetOrCreateTopic(string topic, string rosMessageName)
         {
-            RosTopicState info = GetTopic(topic);
-            if (info != null)
+            RosTopicState state = GetTopic(topic);
+            if (state != null)
             {
-                if (info.RosMessageName != rosMessageName)
+                if (state.RosMessageName != rosMessageName)
                 {
-                    info.ChangeRosMessageName(rosMessageName);
+                    state.ChangeRosMessageName(rosMessageName);
                 }
-                return info;
+                return state;
             }
 
             return AddTopic(topic, rosMessageName);
@@ -361,8 +373,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
                 _instance = this;
-
-            LoadLayout();
         }
 
         void Start()
@@ -395,9 +405,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
             HudPanel.RegisterHeader(DrawHeaderGUI);
-            HudPanel.RegisterTab(new RosTopicsTab(this), (int)HudTabIndices.Topics);
-            HudPanel.RegisterTab(new VisualizerLayoutTab(this), (int)HudTabIndices.Layout);
-
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
             Task.Run(() => ConnectionThread(
@@ -750,7 +757,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnApplicationQuit()
         {
-            SaveLayout();
             Disconnect();
         }
 
@@ -824,70 +830,6 @@ namespace Unity.Robotics.ROSTCPConnector
             m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
         }
 
-
-
-        //============ HUD logic =================
-        class HUDLayoutSave
-        {
-            public RosTopicState.SaveState[] Rules;
-
-            public void AddRules(IEnumerable<RosTopicState> rules)
-            {
-                var topicRuleSaves = new List<RosTopicState.SaveState>();
-                foreach (var rule in rules)
-                {
-                    if (rule == null)
-                        continue;
-                    var save = rule.CreateSaveState();
-                    if (save != null)
-                        topicRuleSaves.Add(save);
-                }
-
-                Rules = topicRuleSaves.ToArray();
-            }
-        }
-
-        public void SaveLayout(string path = "")
-        {
-            // Print filepath if saving to user-input path; default to persistentDataPath
-            if (path.Length > 0)
-            {
-                Debug.Log($"Saved visualizations layout to {path}");
-            }
-            else
-            {
-                path = LayoutFilePath;
-            }
-
-            HUDLayoutSave saveState = new HUDLayoutSave { };
-            saveState.AddRules(m_Topics.Values);
-            System.IO.File.WriteAllText(path, JsonUtility.ToJson(saveState));
-        }
-
-        public void LoadLayout(string path = "")
-        {
-            if (path.Length > 0)
-            {
-                Debug.Log($"Loaded visualizations layout from {path}");
-            }
-            else
-            {
-                path = LayoutFilePath;
-            }
-
-            if (System.IO.File.Exists(path))
-            {
-                LoadLayout(JsonUtility.FromJson<HUDLayoutSave>(System.IO.File.ReadAllText(path)));
-            }
-        }
-
-        void LoadLayout(HUDLayoutSave saveState)
-        {
-            foreach (var savedRule in saveState.Rules)
-            {
-                m_Topics[savedRule.Topic] = new RosTopicState(savedRule, this, new InternalAPI(this));
-            }
-        }
 
         private void InitializeHUD()
         {
