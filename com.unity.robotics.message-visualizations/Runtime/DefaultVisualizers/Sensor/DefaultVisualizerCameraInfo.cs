@@ -15,18 +15,19 @@ public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
     public override Texture2D CreateTexture(CameraInfoMsg message)
     {
         // False if ROI not used, true if subwindow captured
-        if (message.roi.do_rectify)
-        {
-            RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
-            if (imageState != null)
-            {
-                var imageVisual = imageState.Visual as ITextureVisual;
-                if (imageVisual != null)
-                    return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
-            }
-        }
+        if (!message.roi.do_rectify)
+            return null;
 
-        return null;
+        RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
+        if (imageState == null)
+            return null;
+
+        RosTopicVisualizationState visualizationState = RosTopicVisualizationState.GetOrCreate(imageState);
+        var imageVisual = visualizationState.Visual as ITextureVisual;
+        if (imageVisual == null)
+            return null;
+
+        return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
     }
 
     public override Action CreateGUI(CameraInfoMsg message, MessageMetadata meta, Texture2D tex)

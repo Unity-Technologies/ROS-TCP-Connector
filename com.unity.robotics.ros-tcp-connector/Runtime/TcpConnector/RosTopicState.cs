@@ -48,10 +48,8 @@ namespace Unity.Robotics.ROSTCPConnector
             if (m_RosMessageName != null)
                 Debug.LogWarning($"Inconsistent declaration of topic '{Topic}': was '{m_RosMessageName}', switching to '{rosMessageName}'.");
             m_RosMessageName = rosMessageName;
-            // clear cached data to force it to be refreshed
+            // force deserializer to be refreshed
             m_Deserializer = null;
-            m_VisualizerCached = null;
-            m_NoVisualizerAvailable = false;
         }
 
         public void OnMessageReceived(byte[] data)
