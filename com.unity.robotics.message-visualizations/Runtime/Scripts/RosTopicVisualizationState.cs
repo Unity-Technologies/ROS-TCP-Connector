@@ -9,7 +9,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public class RosTopicVisualizationState
     {
-        static Dictionary<RosTopicState, RosTopicVisualizationState> m_VisualizationStatesByTopic;
+        static Dictionary<RosTopicState, RosTopicVisualizationState> m_VisualizationStatesByTopic = new Dictionary<RosTopicState, RosTopicVisualizationState>();
 
         public static RosTopicVisualizationState GetOrCreate(RosTopicState topicState)
         {
@@ -24,7 +24,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Load(SaveState saveState, ROSConnection connection)
         {
-            RosTopicVisualizationState result = new RosTopicVisualizationState(saveState, connection);
+            RosTopicState topicState = connection.GetOrCreateTopic(saveState.Topic, saveState.RosMessageName);
+            RosTopicVisualizationState result = new RosTopicVisualizationState(saveState, topicState);
             m_VisualizationStatesByTopic.Add(result.m_TopicState, result);
         }
 
@@ -87,9 +88,9 @@ namespace Unity.Robotics.MessageVisualizers
             public bool ShowDrawing;
         }
 
-        internal RosTopicVisualizationState(SaveState save, ROSConnection connection)
+        internal RosTopicVisualizationState(SaveState save, RosTopicState topicState)
         {
-            m_TopicState = connection.AddTopic(save.Topic, save.RosMessageName);
+            m_TopicState = topicState;
             if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
                 m_VisualWindow = new HudWindow(save.Topic, save.Rect);
             else

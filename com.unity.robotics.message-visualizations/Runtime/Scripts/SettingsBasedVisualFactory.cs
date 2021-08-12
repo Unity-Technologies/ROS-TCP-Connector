@@ -76,7 +76,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             // settings have changed - update the visualization
             IVisualFactory thisFactory = this;
-            foreach (RosTopicState topic in ROSConnection.GetOrCreateInstance().AllTopics)
+            foreach (RosTopicVisualizationState topic in RosTopicVisualizationState.AllTopics)
             {
                 if (topic != null && topic.IsVisualizingDrawing && topic.GetVisualizer() == thisFactory)
                 {

@@ -379,6 +379,8 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             InitializeHUD();
 
+            HudPanel.RegisterHeader(DrawHeaderGUI);
+
             if (listenForTFMessages)
                 TFSystem.GetOrCreateInstance();
 
@@ -404,7 +406,6 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!IPFormatIsCorrect(RosIPAddress))
                 Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
-            HudPanel.RegisterHeader(DrawHeaderGUI);
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
             Task.Run(() => ConnectionThread(
@@ -820,14 +821,18 @@ namespace Unity.Robotics.ROSTCPConnector
                 rosTopic.OnMessageSent(message);
             }
 
-            m_MessageSerializer.Clear();
-            // ros messages sent on our network channel contain:
-            // 4 byte topic length, followed by that many bytes of the topic name
-            m_MessageSerializer.Write(rosTopicName);
-            // 4-byte message length, followed by that many bytes of the message
-            m_MessageSerializer.SerializeMessageWithLength(message);
+            // TODO: figure out how to do this check without losing messages on startup
+            if (HasConnectionThread)
+            {
+                m_MessageSerializer.Clear();
+                // ros messages sent on our network channel contain:
+                // 4 byte topic length, followed by that many bytes of the topic name
+                m_MessageSerializer.Write(rosTopicName);
+                // 4-byte message length, followed by that many bytes of the message
+                m_MessageSerializer.SerializeMessageWithLength(message);
 
-            m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+                m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+            }
         }
 
 

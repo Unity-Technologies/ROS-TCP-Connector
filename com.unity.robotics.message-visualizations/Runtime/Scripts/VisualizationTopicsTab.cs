@@ -24,8 +24,8 @@ namespace Unity.Robotics.MessageVisualizers
             HudPanel.RegisterTab(this, (int)ROSConnection.HudTabIndices.Topics);
             HudPanel.RegisterTab(new VisualizerLayoutTab(this), (int)ROSConnection.HudTabIndices.Layout);
             m_Connection = ROSConnection.GetOrCreateInstance();
-            m_Connection.ListenForTopics(OnNewTopic, notifyAllExistingTopics: true);
             LoadLayout();
+            m_Connection.ListenForTopics(OnNewTopic, notifyAllExistingTopics: true);
         }
 
         void OnNewTopic(RosTopicState state)
