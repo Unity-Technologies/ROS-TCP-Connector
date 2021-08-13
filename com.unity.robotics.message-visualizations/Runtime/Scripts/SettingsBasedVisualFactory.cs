@@ -35,7 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override IVisual CreateVisual()
         {
-            return new DrawingVisual<TMessage>(this);
+            return new Visual(this);
         }
 
         public override void Draw(BasicDrawing drawing, TMessage message, MessageMetadata meta)
