@@ -25,7 +25,7 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            string[] topics = new string[] { "/findbot/tf", "/ferrybot/tf" };
+            string[] topics = new string[] { "/findbot/tf", "/findbot2/tf", "/ferrybot/tf" };
             SubscribeToMultipleTopics<TFMessageMsg>(topics, instance.ReceiveTF);
             //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
             //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF("/tf"));
