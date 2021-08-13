@@ -48,11 +48,13 @@ public class TFSystem
 
     public IEnumerable<string> GetTransformNames(string tfTopic = "/tf")
     {
+        CheckTFTopicInDictionary(tfTopic);
         return m_TransformTable[tfTopic].Keys;
     }
 
     public IEnumerable<TFStream> GetTransforms(string tfTopic = "/tf")
     {
+        CheckTFTopicInDictionary(tfTopic);
         return m_TransformTable[tfTopic].Values;
     }
 
@@ -91,6 +93,7 @@ public class TFSystem
     public TFStream GetTransformStream(string frame_id, string tfTopic = "/tf")
     {
         TFStream stream;
+        CheckTFTopicInDictionary(tfTopic);
         m_TransformTable[tfTopic].TryGetValue(frame_id, out stream);
         return stream;
     }
@@ -101,6 +104,15 @@ public class TFSystem
         return stream.GameObject;
     }
 
+    public void CheckTFTopicInDictionary(string topic)
+    {
+        Dictionary<string, TFStream> tfDict;
+        if (!m_TransformTable.TryGetValue(topic, out tfDict))
+        {
+            m_TransformTable[topic] = new Dictionary<string, TFStream>();
+        }
+    }
+
     TFStream GetOrCreateTFStream(string frame_id, string tfTopic = "/tf")
     {
         TFStream tf;
@@ -109,6 +121,7 @@ public class TFSystem
 
         var slash = frame_id.LastIndexOf('/');
         var singleName = slash == -1 ? frame_id : frame_id.Substring(slash + 1);
+        CheckTFTopicInDictionary(tfTopic);
         if (!m_TransformTable[tfTopic].TryGetValue(singleName, out tf) || tf == null)
         {
             if (slash <= 0)

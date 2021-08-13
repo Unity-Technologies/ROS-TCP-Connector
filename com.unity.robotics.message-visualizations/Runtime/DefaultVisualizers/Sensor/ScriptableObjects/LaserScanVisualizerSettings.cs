@@ -16,6 +16,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
     [SerializeField]
     float m_MaxIntensity = 100.0f;
     public float MaxIntensity { get => m_MaxIntensity; set => m_MaxIntensity = value; }
+    public string m_TFTopic = "/tf";
 
     public enum ColorModeType
     {
@@ -29,7 +30,7 @@ public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
 
     public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header, m_TFTopic);
 
         PointCloudDrawing pointCloud = drawing.AddPointCloud(message.ranges.Length);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
