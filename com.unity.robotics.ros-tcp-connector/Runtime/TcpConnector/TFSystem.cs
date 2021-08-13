@@ -25,12 +25,25 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
+            string[] topics = new string[] { "/findbot/tf", "/ferrybot/tf" };
+            SubscribeToMultipleTopics<TFMessageMsg>(topics, instance.ReceiveTF);
+            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
             //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF("/tf"));
             //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("findbot/tf", instance.ReceiveTF("findbot/tf"));
             //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("ferrybot/tf", instance.ReceiveTF("ferrybot/tf"));
         }
         return instance;
+    }
+
+    static void SubscribeToMultipleTopics<Msg>(string[] topics, Action<Msg, string> callback) where Msg : Message
+    {
+        foreach (string t in topics)
+        {
+            string topic = t;  // C# design flaw
+            ROSConnection.GetOrCreateInstance().Subscribe<Msg>(
+                topic,
+                (Msg msg) => callback(msg, topic));
+        }
     }
 
     public IEnumerable<string> GetTransformNames(string tfTopic = "/tf")
@@ -70,9 +83,9 @@ public class TFSystem
         return TFFrame.identity;
     }
 
-    public TFFrame GetTransform(string frame_id, TimeMsg time)
+    public TFFrame GetTransform(string frame_id, TimeMsg time, string tfTopic = "/tf")
     {
-        return GetTransform(frame_id, time.ToLongTime());
+        return GetTransform(frame_id, time.ToLongTime(), tfTopic);
     }
 
     public TFStream GetTransformStream(string frame_id, string tfTopic = "/tf")
@@ -84,7 +97,7 @@ public class TFSystem
 
     public GameObject GetTransformObject(string frame_id, string tfTopic = "/tf")
     {
-        TFStream stream = GetOrCreateTFStream(frame_id);
+        TFStream stream = GetOrCreateTFStream(frame_id, tfTopic);
         return stream.GameObject;
     }
 
@@ -106,7 +119,7 @@ public class TFSystem
             }
             else
             {
-                var parent = GetOrCreateTFStream(frame_id.Substring(0, slash));
+                var parent = GetOrCreateTFStream(frame_id.Substring(0, slash), tfTopic);
                 tf = new TFStream(parent, singleName);
             }
 
@@ -115,19 +128,19 @@ public class TFSystem
         }
         else if (slash > 0 && tf.Parent == null)
         {
-            tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash)));
+            tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash), tfTopic));
         }
 
         return tf;
     }
 
-    //void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
-    void ReceiveTF(TFMessageMsg message)
+    void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
+    // void ReceiveTF(TFMessageMsg message)
     {
         foreach (var tf_message in message.transforms)
         {
             var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
-            var tf = GetOrCreateTFStream(frame_id);
+            var tf = GetOrCreateTFStream(frame_id, tfTopic);
             tf.Add(
                 tf_message.header.stamp.ToLongTime(),
                 tf_message.transform.translation.From<FLU>(),
