@@ -16,8 +16,27 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public static class MessageVisualizations
+    public static class MessageVisualizationUtils
     {
+        public static Color SelectColor(Color userColor, MessageMetadata meta)
+        {
+            if (userColor.r == 0 && userColor.g == 0 && userColor.b == 0)
+                return PickColorForTopic(meta.Topic);
+
+            if (userColor.a == 0)
+                return new Color(userColor.r, userColor.g, userColor.b, 1);
+
+            return userColor;
+        }
+
+        public static string SelectLabel(string userLabel, MessageMetadata meta)
+        {
+            if (string.IsNullOrEmpty(userLabel))
+                return meta.Topic;
+
+            return userLabel;
+        }
+
         public static Action CreateDefaultGUI(Message message, MessageMetadata meta)
         {
             string text = message.ToString();
@@ -33,6 +52,16 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
+        public static bool AssertMessageType<T>(Message message, MessageMetadata meta)
+        {
+            if (!(message is T))
+            {
+                Debug.LogError($"Topic \"{meta.Topic}\": Can't visualize a message of type {message.GetType()}! (expected {typeof(T)}).");
+                return false;
+            }
+
+            return true;
+        }
         public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();
@@ -55,17 +84,8 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static void Draw<C>(this GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
-        {
-            DrawPointCloud<C>(message.cells, drawing, color, radius);
-        }
-
-        public static void Draw<C>(this ImageMsg message, BasicDrawing drawing, Color color, PointMsg[] points, float radius = 0.01f) where C : ICoordinateSpace, new()
-        {
-            DrawPointCloud<C>(points, drawing, color, radius);
-        }
-
-        public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+            where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
             foreach (PointMsg p in points)
@@ -73,7 +93,8 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void DrawPointCloud<C>(Point32Msg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
+        public static void DrawPointCloud<C>(Point32Msg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+            where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
             foreach (Point32Msg p in points)
@@ -248,122 +269,6 @@ namespace Unity.Robotics.MessageVisualizers
                             }
                         }
                     }
-                    break;
-            }
-        }
-
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
-        {
-            message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
-        }
-
-        public static void Draw<C>(this MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings settings) where C : ICoordinateSpace, new()
-        {
-            pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
-            float angle = -message.angle_min;
-            // foreach(MLaserEcho echo in message.ranges)
-            for (int i = 0; i < message.ranges.Length; i++)
-            {
-                var echoes = message.ranges[i].echoes;
-                // foreach (float range in echo.echoes)
-                for (int j = 0; j < echoes.Length; j++)
-                {
-                    Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
-                    Vector3 worldPoint = frame.TransformPoint(localPoint);
-                    Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
-
-                    var radius = settings.m_PointRadius;
-
-                    if (message.intensities.Length > 0 && settings.m_UseIntensitySize)
-                    {
-                        radius = Mathf.InverseLerp(settings.m_SizeRange[0], settings.m_SizeRange[1], message.intensities[i].echoes[j]);
-                    }
-
-                    pointCloud.AddPoint(worldPoint, c, radius);
-                }
-                angle -= message.angle_increment;
-            }
-            pointCloud.Bake();
-        }
-
-        public static void Draw<C>(this PoseMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
-        {
-            DrawAxisVectors<C>(
-                drawing,
-                new Vector3Msg(message.position.x, message.position.y, message.position.z),
-                message.orientation,
-                size,
-                drawUnityAxes
-            );
-        }
-
-        public static void Draw<C>(this PoseArrayMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
-        {
-            foreach (PoseMsg pose in message.poses)
-            {
-                pose.Draw<C>(drawing, size, drawUnityAxes);
-            }
-        }
-
-        public static void Draw<C>(this QuaternionMsg message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
-    where C : ICoordinateSpace, new()
-        {
-            Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
-            DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
-        }
-
-        public static void Draw<C>(this QuaternionMsg message, BasicDrawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
-            where C : ICoordinateSpace, new()
-        {
-            DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
-        }
-
-        public static void Draw<C>(this RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
-            where C : ICoordinateSpace, new()
-        {
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-
-            var s = Mathf.Asin(message.field_of_view);
-            var c = Mathf.Acos(message.field_of_view);
-            Color col = Color.HSVToRGB(Mathf.InverseLerp(message.min_range, message.max_range, message.range), 1, 1);
-
-            Vector3 end = new Vector3(message.range * c, 0, message.range * s);
-            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
-            end = matrix.MultiplyPoint(end);
-
-            drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
-        }
-
-        public static void Draw<C>(this SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)
-            where C : ICoordinateSpace, new()
-        {
-            Vector3 originPosition = origin != null ? origin.transform.position : Vector3.zero;
-            Quaternion originRotation = origin != null ? origin.transform.rotation : Quaternion.identity;
-            switch (message.type)
-            {
-                case SolidPrimitiveMsg.BOX:
-                    drawing.DrawCuboid(
-                        originPosition,
-                        new Vector3<C>(
-                            (float)message.dimensions[SolidPrimitiveMsg.BOX_X] * 0.5f,
-                            (float)message.dimensions[SolidPrimitiveMsg.BOX_Y] * 0.5f,
-                            (float)message.dimensions[SolidPrimitiveMsg.BOX_Z] * 0.5f).toUnity,
-                        originRotation,
-                        color
-                    );
-                    break;
-                case SolidPrimitiveMsg.SPHERE:
-                    drawing.DrawSphere(originPosition, color, (float)message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]);
-                    break;
-                case SolidPrimitiveMsg.CYLINDER:
-                    Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT] * 0.5f;
-                    drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]);
-                    break;
-                case SolidPrimitiveMsg.CONE:
-                    Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT] * 0.5f;
-                    drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
                     break;
             }
         }

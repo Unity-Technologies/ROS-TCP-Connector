@@ -25,7 +25,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             message.header.GUI();
             message.twist.twist.GUI();
-            MessageVisualizations.GUIGrid(message.twist.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.twist.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

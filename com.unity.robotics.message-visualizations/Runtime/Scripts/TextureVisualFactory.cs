@@ -35,23 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual Action CreateGUI(T message, MessageMetadata meta, Texture2D tex)
         {
-            return MessageVisualizations.CreateDefaultGUI(message, meta);
-        }
-
-        public bool AssertMessageType(Message message, MessageMetadata meta)
-        {
-            if (!(message is T))
-            {
-                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
-                return false;
-            }
-
-            return true;
-        }
-
-        public HeaderMsg GetHeader(Message message)
-        {
-            return null;
+            return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
     }
 }

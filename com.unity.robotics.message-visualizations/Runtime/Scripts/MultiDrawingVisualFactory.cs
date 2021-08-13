@@ -1,16 +1,21 @@
 using RosMessageTypes.Std;
 using System;
+using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class DrawingVisualFactory<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class MultiDrawingVisualFactory<T> : MonoBehaviour, IVisualFactory, IPriority
         where T : Message
     {
         [SerializeField]
         string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
+
+        [SerializeField]
+        int m_HistoryLength;
+        public int HistoryLength { get => m_HistoryLength; set => m_HistoryLength = value; }
 
         public virtual void Start()
         {
@@ -30,20 +35,20 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual IVisual CreateVisual()
         {
-            return new DrawingVisual<T>(this);
+            return new MultiDrawingVisual<T>(this, m_HistoryLength);
         }
 
-        public Color SelectColor(Color userColor, MessageMetadata meta)
+        public virtual void Draw(BasicDrawing drawing, IEnumerable<Tuple<T, MessageMetadata>> messages) { }
+
+        public virtual Action CreateGUI(IEnumerable<Tuple<T, MessageMetadata>> messages)
         {
-            return MessageVisualizationUtils.SelectColor(userColor, meta);
+            List<Action> actions = new List<Action>();
+            foreach ((T message, MessageMetadata meta) in messages)
+            {
+                actions.Add(CreateGUI(message, meta));
+            }
+            return () => actions.ForEach(a => a());
         }
-
-        public string SelectLabel(string userLabel, MessageMetadata meta)
-        {
-            return MessageVisualizationUtils.SelectLabel(userLabel, meta);
-        }
-
-        public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta) { }
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {

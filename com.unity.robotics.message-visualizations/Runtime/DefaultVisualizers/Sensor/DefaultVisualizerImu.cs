@@ -26,9 +26,9 @@ public class DefaultVisualizerImu : DrawingVisualFactory<ImuMsg>
     public static void Draw<C>(ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
         TFFrame frame = TFSystem.instance.GetTransform(message.header);
-        message.orientation.Draw<C>(drawing, frame.translation);
+        DefaultVisualizerQuaternion.Draw<C>(message.orientation, drawing, frame.translation);
         drawing.DrawArrow(frame.translation, frame.translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-        MessageVisualizations.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
+        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(ImuMsg message, MessageMetadata meta)
@@ -39,9 +39,9 @@ public class DefaultVisualizerImu : DrawingVisualFactory<ImuMsg>
             message.orientation.GUI("Orientation");
             message.angular_velocity.GUI("Angular velocity");
             message.linear_acceleration.GUI("Linear acceleration");
-            MessageVisualizations.GUIGrid(message.orientation_covariance, 3, "Orientation covariance", ref m_ViewOrientation);
-            MessageVisualizations.GUIGrid(message.angular_velocity_covariance, 3, "Angular velocity covariance", ref m_ViewAngular);
-            MessageVisualizations.GUIGrid(message.linear_acceleration_covariance, 3, "Linear acceleration covariance", ref m_ViewAccel);
+            MessageVisualizationUtils.GUIGrid(message.orientation_covariance, 3, "Orientation covariance", ref m_ViewOrientation);
+            MessageVisualizationUtils.GUIGrid(message.angular_velocity_covariance, 3, "Angular velocity covariance", ref m_ViewAngular);
+            MessageVisualizationUtils.GUIGrid(message.linear_acceleration_covariance, 3, "Linear acceleration covariance", ref m_ViewAccel);
         };
     }
 }

@@ -34,12 +34,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
-            return MessageVisualizations.CreateDefaultGUI(message, meta);
-        }
-
-        public HeaderMsg GetHeader(Message message)
-        {
-            return null;
+            return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
     }
 }

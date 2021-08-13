@@ -19,23 +19,13 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void NewMessage(Message message, MessageMetadata meta)
         {
-            if (!AssertMessageType(message, meta))
+            if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
                 return;
 
             this.message = (T)message;
             this.meta = meta;
-            m_Texture2D = m_Factory.CreateTexture(this.message);
-        }
-
-        public bool AssertMessageType(Message message, MessageMetadata meta)
-        {
-            if (!(message is T))
-            {
-                Debug.LogError($"{GetType()}, DrawingSettings for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
-                return false;
-            }
-
-            return true;
+            m_Texture2D = null;
+            m_GUIAction = null;
         }
 
         public T message { get; private set; }
@@ -65,6 +55,5 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DeleteDrawing() { }
         public void CreateDrawing() { }
-        public void Recycle(IVisual oldVisual) { }
     }
 }

@@ -11,7 +11,6 @@ namespace Unity.Robotics.MessageVisualizers
     {
         bool CanShowDrawing { get; }
         IVisual CreateVisual();
-        HeaderMsg GetHeader(Message message);
     }
 
     public interface IVisual

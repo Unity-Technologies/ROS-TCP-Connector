@@ -58,7 +58,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.Clear();
             EnsureSettings(stream);
             if (m_ShowAxes[stream])
-                MessageVisualizations.DrawAxisVectors<FLU>(drawing, Vector3.zero.To<FLU>(), Quaternion.identity.To<FLU>(), axesScale, false);
+                MessageVisualizationUtils.DrawAxisVectors<FLU>(drawing, Vector3.zero.To<FLU>(), Quaternion.identity.To<FLU>(), axesScale, false);
 
             if (m_ShowLinks[stream])
                 drawing.DrawLine(Quaternion.Inverse(frame.rotation) * -frame.translation, Vector3.zero, color, lineThickness);

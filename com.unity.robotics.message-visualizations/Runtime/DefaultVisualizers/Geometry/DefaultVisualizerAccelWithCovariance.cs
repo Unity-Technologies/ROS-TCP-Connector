@@ -29,7 +29,7 @@ public class DefaultVisualizerAccelWithCovariance : DrawingVisualFactory<AccelWi
         return () =>
         {
             message.accel.GUI();
-            MessageVisualizations.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

@@ -15,7 +15,7 @@ public class DefaultVisualizerPoseWithCovariance : DrawingVisualFactory<PoseWith
 
     public override void Draw(BasicDrawing drawing, PoseWithCovarianceMsg message, MessageMetadata meta)
     {
-        message.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
+        DefaultVisualizerPose.Draw<FLU>(message.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 
     public override Action CreateGUI(PoseWithCovarianceMsg message, MessageMetadata meta)
@@ -23,7 +23,7 @@ public class DefaultVisualizerPoseWithCovariance : DrawingVisualFactory<PoseWith
         return () =>
         {
             message.pose.GUI();
-            MessageVisualizations.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

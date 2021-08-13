@@ -21,8 +21,21 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, QuaternionMsg message, MessageMetadata meta)
         {
-            message.Draw<FLU>(drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
+            Draw<FLU>(message, drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), transform.position, SelectColor(m_Color, meta), m_Size);
+        }
+
+        public static void Draw<C>(QuaternionMsg message, BasicDrawing drawing, GameObject drawAtPosition = null, float size = 0.1f, bool drawUnityAxes = false)
+where C : ICoordinateSpace, new()
+        {
+            Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
+            MessageVisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
+        }
+
+        public static void Draw<C>(QuaternionMsg message, BasicDrawing drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
+            where C : ICoordinateSpace, new()
+        {
+            MessageVisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
         public override Action CreateGUI(QuaternionMsg message, MessageMetadata meta)

@@ -26,7 +26,7 @@ public class DefaultVisualizerMagneticField : DrawingVisualFactory<MagneticField
         {
             message.header.GUI();
             message.magnetic_field.GUI("Magnetic field (Tesla)");
-            MessageVisualizations.GUIGrid(message.magnetic_field_covariance, 3, "Covariance", ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.magnetic_field_covariance, 3, "Covariance", ref m_ViewCovariance);
         };
     }
 }

@@ -129,6 +129,10 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this));
             m_Topics.Add(topic, newTopic);
+            foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
+            {
+                callback(newTopic);
+            }
             return newTopic;
         }
 

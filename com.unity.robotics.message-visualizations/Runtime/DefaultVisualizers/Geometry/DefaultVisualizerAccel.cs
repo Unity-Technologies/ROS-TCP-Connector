@@ -22,7 +22,7 @@ public class DefaultVisualizerAccel : DrawingVisualFactory<AccelMsg>
     {
         Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
         drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
-        MessageVisualizations.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
+        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(AccelMsg message, MessageMetadata meta)

@@ -25,7 +25,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static void Draw<C>(TransformMsg transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
-            transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
+            DefaultVisualizerQuaternion.Draw<C>(transform.rotation, drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
 
         public override Action CreateGUI(TransformMsg message, MessageMetadata meta)

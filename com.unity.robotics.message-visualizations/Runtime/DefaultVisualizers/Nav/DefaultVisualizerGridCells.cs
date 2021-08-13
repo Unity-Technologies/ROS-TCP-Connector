@@ -13,7 +13,13 @@ public class DefaultVisualizerGridCells : DrawingVisualFactory<GridCellsMsg>
 
     public override void Draw(BasicDrawing drawing, GridCellsMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Radius);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Radius);
+    }
+
+    public static void Draw<C>(GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f)
+        where C : ICoordinateSpace, new()
+    {
+        MessageVisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);
     }
 
     public override Action CreateGUI(GridCellsMsg message, MessageMetadata meta) => () =>

@@ -201,7 +201,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             for (int i = 0; i < placements.Length; i++)
             {
-                MessageVisualizations.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
+                MessageVisualizationUtils.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
             }
         }
 

@@ -8,7 +8,7 @@ public abstract class VisualizerSettings : ScriptableObject
     public abstract string RosMessageName { get; }
 }
 
-public class VisualizerSettings<T> : VisualizerSettings, IVisualDrawer<T>
+public class VisualizerSettings<T> : VisualizerSettings
     where T : Message
 {
     public override string RosMessageName => MessageRegistry.GetRosMessageName<T>();

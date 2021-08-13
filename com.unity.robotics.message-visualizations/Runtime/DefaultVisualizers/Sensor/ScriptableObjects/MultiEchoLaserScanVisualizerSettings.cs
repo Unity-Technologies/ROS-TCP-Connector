@@ -13,7 +13,7 @@ public class MultiEchoLaserScanVisualizerSettings : VisualizerSettings<MultiEcho
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, this);
+        DefaultVisualizerMultiEchoLaserScan.Draw<FLU>(message, drawing, this);
     }
 
     public override Action CreateGUI(MultiEchoLaserScanMsg message, MessageMetadata meta)

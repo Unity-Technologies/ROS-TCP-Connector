@@ -37,9 +37,9 @@ public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
             message.header.GUI();
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nDistortion model: {message.distortion_model}");
             GUILayout.Label($"Distortion parameters: {string.Join(", ", message.d)}");
-            MessageVisualizations.GUIGrid(message.k, 3, "K", ref m_ViewK);
-            MessageVisualizations.GUIGrid(message.r, 3, "R", ref m_ViewR);
-            MessageVisualizations.GUIGrid(message.p, 3, "P", ref m_ViewP);
+            MessageVisualizationUtils.GUIGrid(message.k, 3, "K", ref m_ViewK);
+            MessageVisualizationUtils.GUIGrid(message.r, 3, "R", ref m_ViewR);
+            MessageVisualizationUtils.GUIGrid(message.p, 3, "P", ref m_ViewP);
             GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
             message.roi.GUI(tex);
         };

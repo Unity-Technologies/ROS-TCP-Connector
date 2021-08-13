@@ -25,7 +25,7 @@ public class DefaultVisualizerAccelWithCovarianceStamped : DrawingVisualFactory<
         {
             message.header.GUI();
             message.accel.accel.GUI();
-            MessageVisualizations.GUIGrid(message.accel.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.accel.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

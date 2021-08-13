@@ -1,23 +1,25 @@
 using RosMessageTypes.Std;
 using System;
+using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class DrawingVisual<T> : IVisual
+    public class MultiDrawingVisual<T> : IVisual
         where T : Message
     {
-        public T message { get; private set; }
-        public MessageMetadata meta { get; private set; }
+        Queue<Tuple<T, MessageMetadata>> messages = new Queue<Tuple<T, MessageMetadata>>();
 
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
-        DrawingVisualFactory<T> m_Factory;
+        MultiDrawingVisualFactory<T> m_Factory;
+        int m_HistoryLength;
 
-        public DrawingVisual(DrawingVisualFactory<T> factory)
+        public MultiDrawingVisual(MultiDrawingVisualFactory<T> factory, int historyLength)
         {
             m_Factory = factory;
+            m_HistoryLength = historyLength;
         }
 
         public void NewMessage(Message message, MessageMetadata meta)
@@ -25,8 +27,9 @@ namespace Unity.Robotics.MessageVisualizers
             if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
                 return;
 
-            this.message = (T)message;
-            this.meta = meta;
+            messages.Enqueue(new Tuple<T, MessageMetadata>((T)message, meta));
+            if (messages.Count > m_HistoryLength)
+                messages.Dequeue();
             m_GUIAction = null;
         }
 
@@ -37,7 +40,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_GUIAction == null)
             {
-                m_GUIAction = m_Factory.CreateGUI(message, meta);
+                m_GUIAction = m_Factory.CreateGUI(messages);
             }
             m_GUIAction();
         }
@@ -63,7 +66,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_BasicDrawing.Clear();
             }
 
-            m_Factory.Draw(m_BasicDrawing, message, meta);
+            m_Factory.Draw(m_BasicDrawing, messages);
         }
     }
 }

@@ -14,7 +14,19 @@ public class DefaultVisualizerPose : DrawingVisualFactory<PoseMsg>
 
     public override void Draw(BasicDrawing drawing, PoseMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
+        Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
+    }
+
+    public static void Draw<C>(PoseMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false)
+        where C : ICoordinateSpace, new()
+    {
+        MessageVisualizationUtils.DrawAxisVectors<C>(
+            drawing,
+            new Vector3Msg(message.position.x, message.position.y, message.position.z),
+            message.orientation,
+            size,
+            drawUnityAxes
+        );
     }
 
     public override Action CreateGUI(PoseMsg message, MessageMetadata meta)

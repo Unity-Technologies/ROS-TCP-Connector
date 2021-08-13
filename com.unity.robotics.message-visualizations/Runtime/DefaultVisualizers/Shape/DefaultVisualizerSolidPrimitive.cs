@@ -13,7 +13,39 @@ public class DefaultVisualizerSolidPrimitive : DrawingVisualFactory<SolidPrimiti
 
     public override void Draw(BasicDrawing drawing, SolidPrimitiveMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin);
+    }
+
+    public static void Draw<C>(SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)
+    where C : ICoordinateSpace, new()
+    {
+        Vector3 originPosition = origin != null ? origin.transform.position : Vector3.zero;
+        Quaternion originRotation = origin != null ? origin.transform.rotation : Quaternion.identity;
+        switch (message.type)
+        {
+            case SolidPrimitiveMsg.BOX:
+                drawing.DrawCuboid(
+                    originPosition,
+                    new Vector3<C>(
+                        (float)message.dimensions[SolidPrimitiveMsg.BOX_X] * 0.5f,
+                        (float)message.dimensions[SolidPrimitiveMsg.BOX_Y] * 0.5f,
+                        (float)message.dimensions[SolidPrimitiveMsg.BOX_Z] * 0.5f).toUnity,
+                    originRotation,
+                    color
+                );
+                break;
+            case SolidPrimitiveMsg.SPHERE:
+                drawing.DrawSphere(originPosition, color, (float)message.dimensions[SolidPrimitiveMsg.SPHERE_RADIUS]);
+                break;
+            case SolidPrimitiveMsg.CYLINDER:
+                Vector3 cylinderAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_HEIGHT] * 0.5f;
+                drawing.DrawCylinder(originPosition - cylinderAxis, originPosition + cylinderAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CYLINDER_RADIUS]);
+                break;
+            case SolidPrimitiveMsg.CONE:
+                Vector3 coneAxis = originRotation * Vector3.up * (float)message.dimensions[SolidPrimitiveMsg.CONE_HEIGHT] * 0.5f;
+                drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
+                break;
+        }
     }
 
     public override Action CreateGUI(SolidPrimitiveMsg message, MessageMetadata meta)

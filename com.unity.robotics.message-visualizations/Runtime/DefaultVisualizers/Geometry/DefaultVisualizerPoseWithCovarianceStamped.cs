@@ -15,7 +15,7 @@ public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<P
 
     public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        message.pose.pose.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
+        DefaultVisualizerPose.Draw<FLU>(message.pose.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 
     public override Action CreateGUI(PoseWithCovarianceStampedMsg message, MessageMetadata meta)
@@ -24,7 +24,7 @@ public class DefaultVisualizerPoseWithCovarianceStamped : DrawingVisualFactory<P
         {
             message.header.GUI();
             message.pose.pose.GUI();
-            MessageVisualizations.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

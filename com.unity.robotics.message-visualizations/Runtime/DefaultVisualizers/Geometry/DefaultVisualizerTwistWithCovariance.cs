@@ -29,7 +29,7 @@ namespace Unity.Robotics.MessageVisualizers
         public override Action CreateGUI(TwistWithCovarianceMsg message, MessageMetadata meta) => () =>
         {
             message.twist.GUI();
-            MessageVisualizations.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
+            MessageVisualizationUtils.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

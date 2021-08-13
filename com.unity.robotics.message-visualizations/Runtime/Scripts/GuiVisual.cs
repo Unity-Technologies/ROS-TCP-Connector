@@ -18,27 +18,16 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void NewMessage(Message message, MessageMetadata meta)
         {
+            if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
+                return;
+
             this.message = (T)message;
             this.meta = meta;
-        }
-
-        public bool AssertMessageType(Message message, MessageMetadata meta)
-        {
-            if (!(message is T))
-            {
-                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
-                return false;
-            }
-
-            return true;
+            m_GUIAction = null;
         }
 
         public T message { get; private set; }
         public MessageMetadata meta { get; private set; }
-
-        //        Message IVisual.message => message;
-
-        //        public MessageMetadata meta { get; }
 
         public bool hasDrawing => false;
         public bool hasAction => m_GUIAction != null;

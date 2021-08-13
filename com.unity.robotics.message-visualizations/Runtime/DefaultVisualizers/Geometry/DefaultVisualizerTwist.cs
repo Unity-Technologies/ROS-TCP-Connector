@@ -23,7 +23,7 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(TwistMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(origin, origin + message.linear.From<C>() * lengthScale, color, thickness);
-            MessageVisualizations.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
+            MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
         }
 
         public override Action CreateGUI(TwistMsg message, MessageMetadata meta) => () =>

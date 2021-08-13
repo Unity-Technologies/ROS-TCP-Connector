@@ -27,7 +27,7 @@ public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
         {
             pos += origin.transform.position;
         }
-        message.pose.pose.Draw<C>(drawing);
+        DefaultVisualizerPose.Draw<C>(message.pose.pose, drawing);
         DefaultVisualizerTwist.Draw<C>(message.twist.twist, drawing, color, pos, lengthScale, sphereRadius, thickness);
     }
 

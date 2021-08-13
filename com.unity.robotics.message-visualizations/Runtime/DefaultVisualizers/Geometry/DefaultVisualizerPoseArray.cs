@@ -14,7 +14,15 @@ public class DefaultVisualizerPoseArray : DrawingVisualFactory<PoseArrayMsg>
 
     public override void Draw(BasicDrawing drawing, PoseArrayMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
+        Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
+    }
+
+    public static void Draw<C>(PoseArrayMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+    {
+        foreach (PoseMsg pose in message.poses)
+        {
+            DefaultVisualizerPose.Draw<C>(pose, drawing, size, drawUnityAxes);
+        }
     }
 
     public override Action CreateGUI(PoseArrayMsg message, MessageMetadata meta)
