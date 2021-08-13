@@ -62,7 +62,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public OutgoingMessageQueue()
             {
-                outgoingMessageQueue = new ConcurrentQueue<SendsOutgoingMessages>();;
+                outgoingMessageQueue = new ConcurrentQueue<SendsOutgoingMessages>();
                 NewMessageReadyToSendEvent = new ManualResetEvent(false);
             }
 
@@ -222,7 +222,7 @@ namespace Unity.Robotics.ROSTCPConnector
             ROSPublisherBase publisher;
             int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
             bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
-            lock(dictionaryLock)
+            lock (dictionaryLock)
             {
                 if (m_Publishers.TryGetValue(rosTopicName, out publisher))
                 {
@@ -246,7 +246,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
             }
 
-            ROSPublisher<T> existingPublisher = (ROSPublisher<T>) publisher;
+            ROSPublisher<T> existingPublisher = (ROSPublisher<T>)publisher;
             if (existingPublisher == null)
             {
                 //Note this shouldn't happen, but to remove compiler warnings a null check is added.
@@ -393,7 +393,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void DeregisterAll()
         {
-            lock(dictionaryLock)
+            lock (dictionaryLock)
             {
                 foreach (var keyValue in m_Publishers)
                 {

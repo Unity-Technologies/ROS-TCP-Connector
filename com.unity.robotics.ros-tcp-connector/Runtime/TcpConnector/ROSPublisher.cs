@@ -7,7 +7,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 namespace Unity.Robotics.ROSTCPConnector
 {
 
-    public abstract class ROSPublisherBase : SendsOutgoingMessages {
+    public abstract class ROSPublisherBase : SendsOutgoingMessages
+    {
         public abstract string RosMessageName
         {
             get;
@@ -97,7 +98,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Publish(T message)
         {
-            lock(outgoingMessages)
+            lock (outgoingMessages)
             {
 
                 if (outgoingMessages.Count >= QueueSize)
@@ -126,7 +127,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             SendToState result = SendToState.NoMessageToSendError;
             messageToSend = null;
-            lock(outgoingMessages)
+            lock (outgoingMessages)
             {
                 if (queueOverflowUnsentCounter > 0)
                 {
@@ -135,7 +136,8 @@ namespace Unity.Robotics.ROSTCPConnector
                     queueOverflowUnsentCounter--;
                     messageToSend = null;
                     result = SendToState.QueueFullWarning;
-                } else if (outgoingMessages.Count > 0)
+                }
+                else if (outgoingMessages.Count > 0)
                 {
                     //Retrieve the next message and populate messageToSend.
                     messageToSend = outgoingMessages.First.Value;
@@ -226,7 +228,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
 
             List<T> toRecycle;
-            lock(outgoingMessages)
+            lock (outgoingMessages)
             {
                 toRecycle = new List<T>(outgoingMessages);
                 outgoingMessages.Clear();
@@ -257,7 +259,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     _messagePoolEnabled = value;
                     if (!_messagePoolEnabled)
                     {
-                        lock(inactiveMessagePool)
+                        lock (inactiveMessagePool)
                         {
                             inactiveMessagePool.Clear();
                         }
@@ -274,7 +276,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 //No message pooling, let the GC handle this message.
                 return;
             }
-            lock(inactiveMessagePool)
+            lock (inactiveMessagePool)
             {
                 if (inactiveMessagePool.Count < (QueueSize + 5))
                 {
@@ -292,7 +294,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             T result = null;
             MessagePoolEnabled = true;
-            lock(inactiveMessagePool)
+            lock (inactiveMessagePool)
             {
                 if (inactiveMessagePool.Count > 0)
                 {
