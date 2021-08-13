@@ -335,54 +335,6 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
         }
 
-        static string[] s_DiagnosticLevelTable = new string[]
-        {
-            "OK","WARN","ERROR","STALE"
-        };
-
-        public static void GUI(this DiagnosticStatusMsg message)
-        {
-            string status = (message.level >= 0 && message.level < s_DiagnosticLevelTable.Length) ? s_DiagnosticLevelTable[message.level] : "INVALID";
-            GUILayout.Label(message.hardware_id.Length > 0 ? $"Status of {message.name}|{message.hardware_id}: {status}" : $"Status of {message.name}: {status}");
-            GUILayout.Label(message.message);
-            foreach (KeyValueMsg keyValue in message.values)
-            {
-                GUILayout.Label($"   {keyValue.key}: {keyValue.value}");
-            }
-        }
-
-        public static void GUI(this DiagnosticArrayMsg message)
-        {
-            message.header.GUI();
-            foreach (DiagnosticStatusMsg status in message.status)
-                status.GUI();
-        }
-
-        static string[] s_GoalStatusTable = new string[]
-        {
-            "PENDING","ACTIVE","PREEMPTED","SUCCEEDED","ABORTED","REJECTED","PREEMPTING","RECALLING","RECALLED","LOST"
-        };
-
-        public static void GUI(this GoalIDMsg message)
-        {
-            message.stamp.GUI();
-            GUILayout.Label($"ID: {message.id}");
-        }
-
-        public static void GUI(this GoalStatusMsg message)
-        {
-            string status = (message.status >= 0 && message.status < s_GoalStatusTable.Length) ? s_GoalStatusTable[message.status] : $"INVALID({message.status})";
-            GUILayout.Label($"Status: {message.goal_id} = {status}");
-            GUILayout.Label(message.text);
-        }
-
-        public static void GUI(this GoalStatusArrayMsg message)
-        {
-            message.header.GUI();
-            foreach (GoalStatusMsg status in message.status_list)
-                status.GUI();
-        }
-
         public static void GUI(this HeaderMsg message)
         {
 #if !ROS2
@@ -546,7 +498,7 @@ namespace Unity.Robotics.MessageVisualizers
             string pass = message.passed != 0 ? "OK" : "FAIL";
             GUILayout.Label($"Self test {message.id}: {pass}");
             foreach (DiagnosticStatusMsg status in message.status)
-                status.GUI();
+                DiagnosticStatusDefaultVisualizer.GUI(status);
         }
 
         public static void GUI(this SolidPrimitiveMsg message)

@@ -3,7 +3,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(DefaultVisualizerMultiEchoLaserScan))]
+[CustomEditor(typeof(MultiEchoLaserScanDefaultVisualizer))]
 public class MultiEchoLaserScanEditor : SettingsBasedVisualizerEditor<MultiEchoLaserScanMsg, MultiEchoLaserScanVisualizerSettings>
 {
 }

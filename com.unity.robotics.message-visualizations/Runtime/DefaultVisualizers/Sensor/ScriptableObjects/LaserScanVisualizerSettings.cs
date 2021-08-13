@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
-public class LaserScanVisualizerSettings : VisualizerSettings<LaserScanMsg>
+public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
 {
     [SerializeField]
     TFTrackingType m_TFTrackingType = TFTrackingType.Exact;

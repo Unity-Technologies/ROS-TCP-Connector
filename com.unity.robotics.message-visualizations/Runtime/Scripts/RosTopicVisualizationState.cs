@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
+    // Additional properties associated with a specific RosTopicState
     public class RosTopicVisualizationState
     {
         static Dictionary<RosTopicState, RosTopicVisualizationState> m_VisualizationStatesByTopic = new Dictionary<RosTopicState, RosTopicVisualizationState>();
@@ -147,7 +148,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 m_Visual = visualizer.CreateVisual();
             }
-            m_Visual.NewMessage(message, meta);
+            m_Visual.AddMessage(message, meta);
             m_LastVisualFrameTime = Time.time;
 
             if (m_IsVisualizingDrawing)

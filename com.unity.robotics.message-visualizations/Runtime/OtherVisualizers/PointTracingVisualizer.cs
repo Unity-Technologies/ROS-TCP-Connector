@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class PointTracingVisualizer : MultiDrawingVisualFactory<PointMsg>
+    public class PointTracingVisualizer : MultiDrawingVisualizer<PointMsg>
     {
         [SerializeField]
         Color m_Color;

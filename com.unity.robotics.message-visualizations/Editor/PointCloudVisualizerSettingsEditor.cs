@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(DefaultVisualizerPointCloud))]
+[CustomEditor(typeof(PointCloudDefaultVisualizer))]
 public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointCloudMsg, PointCloudVisualizerSettings>
 {
 }

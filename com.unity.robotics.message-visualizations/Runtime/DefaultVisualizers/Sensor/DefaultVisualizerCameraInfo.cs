@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
+public class DefaultVisualizerCameraInfo : TextureVisualizer<CameraInfoMsg>
 {
     public string imageTopic;
     bool m_ViewK;

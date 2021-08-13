@@ -17,7 +17,7 @@ namespace Unity.Robotics.MessageVisualizers
     {
         bool hasDrawing { get; }
         bool hasAction { get; }
-        void NewMessage(Message message, MessageMetadata meta);
+        void AddMessage(Message message, MessageMetadata meta);
         void DeleteDrawing();
         void OnGUI();
         void CreateDrawing();
@@ -136,7 +136,7 @@ namespace Unity.Robotics.MessageVisualizers
                 public bool hasDrawing => false;
                 public bool hasAction => true;
 
-                public void NewMessage(Message newMessage, MessageMetadata newMeta)
+                public void AddMessage(Message newMessage, MessageMetadata newMeta)
                 {
                     message = newMessage;
                     meta = newMeta;

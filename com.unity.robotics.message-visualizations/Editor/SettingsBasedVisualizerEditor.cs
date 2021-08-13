@@ -7,14 +7,14 @@ using UnityEngine;
 
 public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSettings> : Editor
     where TMessageType : Message
-    where TVisualizerSettings : VisualizerSettings<TMessageType>
+    where TVisualizerSettings : BaseVisualizerSettings<TMessageType>
 {
     TVisualizerSettings m_Config;
     Editor m_Editor;
 
     public override void OnInspectorGUI()
     {
-        SettingsBasedVisualFactory<TMessageType, TVisualizerSettings> visualizer = (SettingsBasedVisualFactory<TMessageType, TVisualizerSettings>)target;
+        DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer = (DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings>)target;
         visualizer.Topic = EditorGUILayout.TextField("Topic", visualizer.Topic);
 
         m_Config = visualizer.Settings;
@@ -32,7 +32,7 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         }
     }
 
-    protected virtual void OnInspectorGUIForSettings(SettingsBasedVisualFactory<TMessageType, TVisualizerSettings> visualizer)
+    protected virtual void OnInspectorGUIForSettings(DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer)
     {
         CreateCachedEditor(m_Config, null, ref m_Editor);
         m_Editor.OnInspectorGUI();

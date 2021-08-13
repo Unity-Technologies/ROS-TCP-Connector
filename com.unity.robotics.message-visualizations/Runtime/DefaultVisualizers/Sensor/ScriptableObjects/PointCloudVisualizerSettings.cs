@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
-public class PointCloudVisualizerSettings : VisualizerSettings<PointCloudMsg>
+public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg>
 {
     public PointCloud2VisualizerSettings.ColorMode colorMode;
     public ChannelFloat32Msg[] channels;

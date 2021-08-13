@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(DefaultVisualizerPointCloud2))]
+[CustomEditor(typeof(PointCloud2DefaultVisualizer))]
 public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, PointCloud2VisualizerSettings>
 {
 }
