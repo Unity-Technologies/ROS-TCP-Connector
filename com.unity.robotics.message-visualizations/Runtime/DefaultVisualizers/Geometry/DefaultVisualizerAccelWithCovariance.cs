@@ -16,7 +16,12 @@ public class DefaultVisualizerAccelWithCovariance : DrawingVisualFactory<AccelWi
 
     public override void Draw(BasicDrawing drawing, AccelWithCovarianceMsg message, MessageMetadata meta)
     {
-        message.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
+    }
+
+    public static void Draw<C>(AccelWithCovarianceMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    {
+        DefaultVisualizerAccel.Draw<FLU>(message.accel, drawing, color, origin, lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(AccelWithCovarianceMsg message, MessageMetadata meta)

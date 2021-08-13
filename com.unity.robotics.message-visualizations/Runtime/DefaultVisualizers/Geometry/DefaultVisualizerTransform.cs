@@ -19,8 +19,13 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, TransformMsg message, MessageMetadata meta)
         {
-            message.Draw<FLU>(drawing, m_Size, m_DrawUnityAxes);
+            Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), message.translation.From<FLU>(), SelectColor(m_Color, meta), m_Size);
+        }
+
+        public static void Draw<C>(TransformMsg transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        {
+            transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
 
         public override Action CreateGUI(TransformMsg message, MessageMetadata meta)

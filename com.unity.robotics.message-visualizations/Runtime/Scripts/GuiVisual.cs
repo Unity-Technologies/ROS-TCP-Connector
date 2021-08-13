@@ -1,27 +1,44 @@
 using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class GuiVisual<TargetMessageType> : IVisual
-        where TargetMessageType : Message
+    public class GuiVisual<T> : IVisual
+        where T : Message
     {
-        GuiVisualFactory<TargetMessageType> m_Factory;
+        GuiVisualFactory<T> m_Factory;
 
         Action m_GUIAction;
 
-        public GuiVisual(TargetMessageType newMessage, MessageMetadata newMeta, GuiVisualFactory<TargetMessageType> factory)
+        public GuiVisual(GuiVisualFactory<T> factory)
         {
-            message = newMessage;
-            meta = newMeta;
             m_Factory = factory;
         }
 
-        public TargetMessageType message { get; }
+        public void NewMessage(Message message, MessageMetadata meta)
+        {
+            this.message = (T)message;
+            this.meta = meta;
+        }
 
-        Message IVisual.message => message;
+        public bool AssertMessageType(Message message, MessageMetadata meta)
+        {
+            if (!(message is T))
+            {
+                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
+                return false;
+            }
 
-        public MessageMetadata meta { get; }
+            return true;
+        }
+
+        public T message { get; private set; }
+        public MessageMetadata meta { get; private set; }
+
+        //        Message IVisual.message => message;
+
+        //        public MessageMetadata meta { get; }
 
         public bool hasDrawing => false;
         public bool hasAction => m_GUIAction != null;
@@ -37,6 +54,5 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DeleteDrawing() { }
         public void CreateDrawing() { }
-        public void Recycle(IVisual oldVisual) { }
     }
 }

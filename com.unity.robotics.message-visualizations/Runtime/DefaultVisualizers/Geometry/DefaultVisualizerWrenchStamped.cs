@@ -16,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, WrenchStampedMsg message, MessageMetadata meta)
         {
-            message.wrench.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
+            DefaultVisualizerWrench.Draw<FLU>(message.wrench, drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 
         public override Action CreateGUI(WrenchStampedMsg message, MessageMetadata meta) => () =>

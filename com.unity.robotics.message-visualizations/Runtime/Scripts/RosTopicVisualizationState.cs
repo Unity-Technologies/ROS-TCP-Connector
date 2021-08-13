@@ -143,9 +143,11 @@ namespace Unity.Robotics.MessageVisualizers
                 return;
             }
 
-            IVisual newVisual = visualizer.CreateVisual(message, meta);
-            newVisual.Recycle(m_Visual);
-            m_Visual = newVisual;
+            if (m_Visual == null)
+            {
+                m_Visual = visualizer.CreateVisual();
+            }
+            m_Visual.NewMessage(message, meta);
             m_LastVisualFrameTime = Time.time;
 
             if (m_IsVisualizingDrawing)

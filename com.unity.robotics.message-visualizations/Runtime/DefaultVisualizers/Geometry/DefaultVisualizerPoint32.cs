@@ -16,7 +16,18 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, Point32Msg message, MessageMetadata meta)
         {
-            message.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
+            Draw<FLU>(message, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
+        }
+
+        public static void Draw<C>(Point32Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawPoint(message.From<C>(), color, size);
+            drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
+        }
+
+        public static void Draw<C>(Point32Msg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        {
+            drawing.DrawPoint(message.From<C>(), color, size);
         }
 
         public override Action CreateGUI(Point32Msg message, MessageMetadata meta)

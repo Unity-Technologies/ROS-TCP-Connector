@@ -13,10 +13,13 @@ namespace Unity.Robotics.MessageVisualizers
         Color m_Color;
         [SerializeField]
         string m_Label;
+        [SerializeField]
+        TFTrackingType m_TFTrackingType;
 
         public override void Draw(BasicDrawing drawing, Vector3StampedMsg message, MessageMetadata meta)
         {
-            message.vector.Draw<FLU>(drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
+            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+            DefaultVisualizerVector3.Draw<FLU>(message.vector, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
         public override Action CreateGUI(Vector3StampedMsg message, MessageMetadata meta)

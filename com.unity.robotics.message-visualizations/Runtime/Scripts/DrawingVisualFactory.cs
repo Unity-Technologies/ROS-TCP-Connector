@@ -1,11 +1,12 @@
+using RosMessageTypes.Std;
 using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class DrawingVisualFactory<TMessageType> : MonoBehaviour, IVisualDrawer<TMessageType>, IVisualFactory, IPriority
-        where TMessageType : Message
+    public abstract class DrawingVisualFactory<T> : MonoBehaviour, IVisualDrawer<T>, IVisualFactory, IPriority
+        where T : Message
     {
         [SerializeField]
         string m_Topic;
@@ -15,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (string.IsNullOrEmpty(m_Topic))
             {
-                VisualFactoryRegistry.RegisterTypeVisualizer<TMessageType>(this, Priority);
+                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
             }
             else
             {
@@ -27,12 +28,14 @@ namespace Unity.Robotics.MessageVisualizers
 
         public bool CanShowDrawing => true;
 
-        public IVisual CreateVisual(Message message, MessageMetadata meta)
+        public virtual IVisual CreateVisual()
         {
-            if (!AssertMessageType(message, meta))
-                return null;
+            return new DrawingVisual<DrawingVisualFactory<T>, T>(this);
+        }
 
-            return new DrawingVisual<TMessageType>((TMessageType)message, meta, this);
+        public virtual HeaderMsg GetHeader(T message)
+        {
+            return null;
         }
 
         public static Color SelectColor(Color userColor, MessageMetadata meta)
@@ -54,22 +57,16 @@ namespace Unity.Robotics.MessageVisualizers
             return userLabel;
         }
 
-        public virtual void Draw(BasicDrawing drawing, TMessageType message, MessageMetadata meta) { }
+        public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta) { }
 
-        public bool AssertMessageType(Message message, MessageMetadata meta)
-        {
-            if (!(message is TMessageType))
-            {
-                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TMessageType)}).");
-                return false;
-            }
-
-            return true;
-        }
-
-        public virtual Action CreateGUI(TMessageType message, MessageMetadata meta)
+        public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
+        }
+
+        public virtual HeaderMsg GetHeader(Message message)
+        {
+            return null;
         }
     }
 }

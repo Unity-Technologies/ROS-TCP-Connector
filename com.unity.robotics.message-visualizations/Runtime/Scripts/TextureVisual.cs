@@ -4,27 +4,43 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class TextureVisual<TargetMessageType> : ITextureVisual
-        where TargetMessageType : Message
+    public class TextureVisual<T> : ITextureVisual
+        where T : Message
     {
-        TextureVisualFactory<TargetMessageType> m_Factory;
+        TextureVisualFactory<T> m_Factory;
 
         Action m_GUIAction;
         Texture2D m_Texture2D;
 
-        public TextureVisual(TargetMessageType newMessage, MessageMetadata newMeta, TextureVisualFactory<TargetMessageType> factory, Texture2D tex)
+        public TextureVisual(TextureVisualFactory<T> factory)
         {
-            message = newMessage;
-            meta = newMeta;
             m_Factory = factory;
-            m_Texture2D = tex;
         }
 
-        TargetMessageType message { get; }
+        public void NewMessage(Message message, MessageMetadata meta)
+        {
+            if (!AssertMessageType(message, meta))
+                return;
 
-        Message IVisual.message => message;
+            this.message = (T)message;
+            this.meta = meta;
+            m_Texture2D = m_Factory.CreateTexture(this.message);
+        }
 
-        public MessageMetadata meta { get; }
+        public bool AssertMessageType(Message message, MessageMetadata meta)
+        {
+            if (!(message is T))
+            {
+                Debug.LogError($"{GetType()}, DrawingSettings for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(T)}).");
+                return false;
+            }
+
+            return true;
+        }
+
+        public T message { get; private set; }
+
+        public MessageMetadata meta { get; private set; }
 
         public bool hasDrawing => false;
         public bool hasAction => m_GUIAction != null;

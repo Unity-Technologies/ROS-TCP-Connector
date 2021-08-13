@@ -1,3 +1,4 @@
+using RosMessageTypes.Std;
 using RosMessageTypes.Visualization;
 using System;
 using System.Collections;
@@ -20,7 +21,7 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
         VisualFactoryRegistry.RegisterTypeVisualizer<MarkerArrayMsg>(this, Priority);
     }
 
-    public IVisual CreateVisual(Message message, MessageMetadata meta)
+    public IVisual CreateVisual()
     {
         // TODO
         return null;
@@ -110,5 +111,10 @@ public class DefaultVisualizerMarker : MonoBehaviour, IVisualFactory, IPriority
 
     public void DeleteDrawing(object drawing)
     {
+    }
+
+    public HeaderMsg GetHeader(Message message)
+    {
+        return null;
     }
 }

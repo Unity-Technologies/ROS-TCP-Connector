@@ -18,7 +18,12 @@ namespace Unity.Robotics.MessageVisualizers
         public override void Draw(BasicDrawing drawing, TwistWithCovarianceMsg message, MessageMetadata meta)
         {
             var orig = origin == null ? Vector3.zero : origin.transform.position;
-            message.twist.Draw<FLU>(drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
+            Draw<FLU>(message, drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
+        }
+
+        public static void Draw<C>(TwistWithCovarianceMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            DefaultVisualizerTwist.Draw<FLU>(message.twist, drawing, color, origin, lengthScale, sphereRadius, thickness);
         }
 
         public override Action CreateGUI(TwistWithCovarianceMsg message, MessageMetadata meta) => () =>

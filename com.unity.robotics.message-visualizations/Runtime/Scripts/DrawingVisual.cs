@@ -11,29 +11,44 @@ namespace Unity.Robotics.MessageVisualizers
         Action CreateGUI(T message, MessageMetadata meta);
     }
 
-    public class DrawingVisual<T> : IVisual
-        where T : Message
+    public class DrawingVisual<TFactory, TMessage> : IVisual
+        where TFactory : DrawingVisualFactory<TMessage>
+        where TMessage : Message
     {
-        public T message { get; }
-        Message IVisual.message
-        {
-            get => message;
-        }
-        public MessageMetadata meta { get; }
+        public TMessage message { get; private set; }
+        public MessageMetadata meta { get; private set; }
 
         BasicDrawing m_BasicDrawing;
         Action m_GUIAction;
-        IVisualDrawer<T> m_Drawer;
+        TFactory m_Factory;
         TFTrackingType m_TFTrackingType;
         HeaderMsg m_HeaderMsg;
 
-        public DrawingVisual(T newMessage, MessageMetadata newMeta, IVisualDrawer<T> drawer, TFTrackingType tfTrackingType = TFTrackingType.None, HeaderMsg headerMsg = null)
+        public DrawingVisual(TFactory factory, TFTrackingType tfTrackingType = TFTrackingType.None, HeaderMsg headerMsg = null)
         {
-            message = newMessage;
-            meta = newMeta;
-            m_Drawer = drawer;
+            m_Factory = factory;
             m_TFTrackingType = tfTrackingType;
-            m_HeaderMsg = headerMsg;
+        }
+
+        public void NewMessage(Message message, MessageMetadata meta)
+        {
+            if (!AssertMessageType(message, meta))
+                return;
+
+            m_HeaderMsg = m_Factory.GetHeader(message);
+            this.message = (TMessage)message;
+            this.meta = meta;
+        }
+
+        public bool AssertMessageType(Message message, MessageMetadata meta)
+        {
+            if (!(message is TMessage))
+            {
+                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TMessage)}).");
+                return false;
+            }
+
+            return true;
         }
 
         public bool hasDrawing => m_BasicDrawing != null;
@@ -43,7 +58,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_GUIAction == null)
             {
-                m_GUIAction = m_Drawer.CreateGUI(message, meta);
+                m_GUIAction = m_Factory.CreateGUI(message, meta);
             }
             m_GUIAction();
         }
@@ -69,20 +84,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_BasicDrawing.Clear();
             }
 
-            m_Drawer.Draw(m_BasicDrawing, message, meta);
-        }
-
-        public void Recycle(IVisual oldVisual)
-        {
-            if (oldVisual is DrawingVisual<T> v)
-            {
-                m_BasicDrawing = v.m_BasicDrawing;
-                v.m_BasicDrawing = null;
-                if (m_BasicDrawing != null)
-                {
-                    m_BasicDrawing.Clear();
-                }
-            }
+            m_Factory.Draw(m_BasicDrawing, message, meta);
         }
     }
 }

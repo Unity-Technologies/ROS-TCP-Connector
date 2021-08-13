@@ -12,7 +12,12 @@ public class DefaultVisualizerMagneticField : DrawingVisualFactory<MagneticField
 
     public override void Draw(BasicDrawing drawing, MagneticFieldMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta));
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
+    }
+
+    public static void Draw<C>(MagneticFieldMsg message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
+    {
+        drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
     }
 
     public override Action CreateGUI(MagneticFieldMsg message, MessageMetadata meta)

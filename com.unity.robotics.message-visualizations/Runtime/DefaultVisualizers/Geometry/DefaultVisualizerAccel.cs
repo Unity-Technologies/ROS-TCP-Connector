@@ -15,7 +15,14 @@ public class DefaultVisualizerAccel : DrawingVisualFactory<AccelMsg>
 
     public override void Draw(BasicDrawing drawing, AccelMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
+    }
+
+    public static void Draw<C>(AccelMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    {
+        Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
+        drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
+        MessageVisualizations.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(AccelMsg message, MessageMetadata meta)

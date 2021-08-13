@@ -15,7 +15,20 @@ public class DefaultVisualizerOdometry : DrawingVisualFactory<OdometryMsg>
 
     public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
+    }
+
+    public static void Draw<C>(OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    {
+        // TODO
+        TFFrame frame = TFSystem.instance.GetTransform(message.header);
+        Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
+        if (origin != null)
+        {
+            pos += origin.transform.position;
+        }
+        message.pose.pose.Draw<C>(drawing);
+        DefaultVisualizerTwist.Draw<C>(message.twist.twist, drawing, color, pos, lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(OdometryMsg message, MessageMetadata meta) => () =>

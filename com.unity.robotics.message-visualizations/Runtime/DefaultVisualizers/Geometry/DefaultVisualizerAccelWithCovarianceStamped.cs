@@ -16,7 +16,7 @@ public class DefaultVisualizerAccelWithCovarianceStamped : DrawingVisualFactory<
 
     public override void Draw(BasicDrawing drawing, AccelWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        message.accel.accel.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
+        DefaultVisualizerAccelWithCovariance.Draw<FLU>(message.accel, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
     public override Action CreateGUI(AccelWithCovarianceStampedMsg message, MessageMetadata meta)

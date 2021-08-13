@@ -13,7 +13,7 @@ public class DefaultVisualizerInertia : DrawingVisualFactory<InertiaMsg>
 
     public override void Draw(BasicDrawing drawing, InertiaMsg message, MessageMetadata meta)
     {
-        message.com.Draw<FLU>(drawing, m_Origin, SelectColor(m_Color, meta), "Center of mass", m_Radius);
+        DefaultVisualizerVector3.Draw<FLU>(message.com, drawing, m_Origin, SelectColor(m_Color, meta), "Center of mass", m_Radius);
     }
 
     public override Action CreateGUI(InertiaMsg message, MessageMetadata meta)

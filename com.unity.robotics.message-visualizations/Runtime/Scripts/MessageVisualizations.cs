@@ -55,13 +55,6 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static void Draw<C>(this AccelMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
-            drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
-        }
-
         public static void Draw<C>(this GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             DrawPointCloud<C>(message.cells, drawing, color, radius);
@@ -70,14 +63,6 @@ namespace Unity.Robotics.MessageVisualizers
         public static void Draw<C>(this ImageMsg message, BasicDrawing drawing, Color color, PointMsg[] points, float radius = 0.01f) where C : ICoordinateSpace, new()
         {
             DrawPointCloud<C>(points, drawing, color, radius);
-        }
-
-        public static void Draw<C>(this ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            message.orientation.Draw<C>(drawing, frame.translation);
-            drawing.DrawArrow(frame.translation, frame.translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
         }
 
         public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f) where C : ICoordinateSpace, new()
@@ -94,11 +79,6 @@ namespace Unity.Robotics.MessageVisualizers
             foreach (Point32Msg p in points)
                 pointCloud.AddPoint(p.From<C>(), color, radius);
             pointCloud.Bake();
-        }
-
-        public static void Draw<C>(this MagneticFieldMsg message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
         }
 
         public static void Draw<C>(this MarkerMsg marker, BasicDrawing drawing) where C : ICoordinateSpace, new()
@@ -272,17 +252,6 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public static void Draw<C>(this MeshMsg message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
-        {
-            Mesh mesh = new Mesh();
-            mesh.vertices = message.vertices.Select(v => v.From<C>()).ToArray();
-            mesh.triangles = message.triangles.SelectMany(tri => tri.vertex_indices.Select(i => (int)i)).ToArray();
-            if (origin != null)
-                drawing.DrawMesh(mesh, origin.transform, color);
-            else
-                drawing.DrawMesh(mesh, Vector3.zero, Quaternion.identity, Vector3.one, color);
-        }
-
         public static void Draw<C>(this MultiEchoLaserScanMsg message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings cConfs) where C : ICoordinateSpace, new()
         {
             message.Draw<C>(drawing.AddPointCloud(message.ranges.Length), cConfs);
@@ -317,109 +286,6 @@ namespace Unity.Robotics.MessageVisualizers
                 angle -= message.angle_increment;
             }
             pointCloud.Bake();
-        }
-
-        static Mesh s_OccupancyGridMesh;
-        static Material s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/Color"));
-
-        public static void Draw<C>(this OccupancyGridMsg message, BasicDrawing drawing) where C : ICoordinateSpace, new()
-        {
-            Vector3 origin = message.info.origin.position.From<C>();
-            Quaternion rotation = message.info.origin.orientation.From<C>();
-            int width = (int)message.info.width;
-            int height = (int)message.info.height;
-            float scale = message.info.resolution;
-
-            if (s_OccupancyGridMesh == null)
-            {
-                s_OccupancyGridMesh = new Mesh();
-                s_OccupancyGridMesh.vertices = new Vector3[] { Vector3.zero, new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0) };
-                s_OccupancyGridMesh.uv = new Vector2[] { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
-                s_OccupancyGridMesh.triangles = new int[] { 0, 1, 2, 2, 3, 0, };
-                s_OccupancyGridMaterial = new Material(Shader.Find("Unlit/OccupancyGrid"));
-            }
-
-            Texture2D gridTexture = new Texture2D(width, height, TextureFormat.R8, true);
-            gridTexture.wrapMode = TextureWrapMode.Clamp;
-            gridTexture.filterMode = FilterMode.Point;
-            gridTexture.SetPixelData(message.data, 0);
-            gridTexture.Apply();
-
-            Material gridMaterial = new Material(s_OccupancyGridMaterial);
-            gridMaterial.mainTexture = gridTexture;
-
-            drawing.DrawMesh(s_OccupancyGridMesh, origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f), rotation, new Vector3(width * scale, 1, height * scale), gridMaterial);
-        }
-
-        public static void Draw<C>(this OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            // TODO
-            TFFrame frame = TFSystem.instance.GetTransform(message.header);
-            Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
-            if (origin != null)
-            {
-                pos += origin.transform.position;
-            }
-            message.pose.pose.Draw<C>(drawing);
-            message.twist.twist.Draw<C>(drawing, color, pos, lengthScale, sphereRadius, thickness);
-        }
-
-        public static void Draw<C>(this PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
-        }
-
-        public static void Draw<C>(this PlaneMsg message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f) where C : ICoordinateSpace, new()
-        {
-            message.Draw<C>(drawing, color, (center != null) ? center.transform.position : Vector3.zero, size);
-        }
-
-        public static void Draw<C>(this PlaneMsg message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
-        {
-            Vector3 normal = new Vector3<C>((float)message.coef[0], (float)message.coef[1], (float)message.coef[2]).toUnity;
-            float d = (float)message.coef[3];
-
-            float normalScale = (Vector3.Dot(normal, origin) + d) / normal.sqrMagnitude;
-            Vector3 center = origin - normal * normalScale;
-
-            Vector3 forward = (Mathf.Abs(normal.x) > Mathf.Abs(normal.y)) ? Vector3.Cross(normal, Vector3.up).normalized : Vector3.Cross(normal, Vector3.right).normalized;
-            Vector3 side = Vector3.Cross(normal, forward).normalized;
-            Vector3 diagonalA = (forward + side) * size;
-            Vector3 diagonalB = (forward - side) * size;
-            drawing.DrawQuad(center - diagonalA, center + diagonalB, center + diagonalA, center - diagonalB, color, true);
-        }
-
-        public static void Draw<C>(this PointMsg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-            drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
-        }
-
-        public static void Draw<C>(this PointMsg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-        }
-
-        public static void Draw<C>(this Point32Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-            drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
-        }
-
-        public static void Draw<C>(this Point32Msg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-        }
-
-        public static void Draw<C>(this PolygonMsg message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 prevPos = message.points[message.points.Length - 1].From<C>();
-            foreach (Point32Msg p in message.points)
-            {
-                Vector3 curPos = p.From<C>();
-                drawing.DrawLine(prevPos, curPos, color, thickness);
-                prevPos = curPos;
-            }
         }
 
         public static void Draw<C>(this PoseMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
@@ -500,44 +366,6 @@ namespace Unity.Robotics.MessageVisualizers
                     drawing.DrawCone(originPosition - coneAxis, originPosition + coneAxis, color, (float)message.dimensions[SolidPrimitiveMsg.CONE_RADIUS]);
                     break;
             }
-        }
-
-        public static void Draw<C>(this TransformMsg transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
-        {
-            transform.rotation.Draw<C>(drawing, transform.translation.From<C>(), size, drawUnityAxes);
-        }
-
-        public static void Draw<C>(this TwistMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawArrow(origin, origin + message.linear.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.angular.From<C>(), origin, color, sphereRadius, thickness);
-        }
-
-        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 point = message.From<C>();
-            drawing.DrawPoint(point, color, size);
-            drawing.DrawLabel(label, point, color, size * 1.5f);
-        }
-
-        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawPoint(message.From<C>(), color, size);
-        }
-
-        public static void Draw<C>(this Vector3Msg message, BasicDrawing drawing, GameObject origin, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
-        {
-            Vector3 point = message.From<C>();
-            if (origin != null)
-                point = origin.transform.TransformPoint(point);
-            drawing.DrawPoint(point, color, size);
-            drawing.DrawLabel(label, point, color, size * 1.5f);
-        }
-
-        public static void Draw<C>(this WrenchMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
-        {
-            drawing.DrawArrow(origin, origin + message.force.From<C>() * lengthScale, color, thickness);
-            DrawAngularVelocityArrow(drawing, message.torque.From<C>(), origin, color, sphereRadius, thickness);
         }
 
         public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)

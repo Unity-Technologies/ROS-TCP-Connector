@@ -1,11 +1,12 @@
+using RosMessageTypes.Std;
 using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class GuiVisualFactory<TargetMessageType> : MonoBehaviour, IVisualFactory, IPriority
-        where TargetMessageType : Message
+    public abstract class GuiVisualFactory<T> : MonoBehaviour, IVisualFactory, IPriority
+        where T : Message
     {
         [SerializeField]
         protected string m_Topic;
@@ -14,7 +15,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             if (m_Topic == "")
             {
-                VisualFactoryRegistry.RegisterTypeVisualizer<TargetMessageType>(this, Priority);
+                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
             }
             else
             {
@@ -26,26 +27,19 @@ namespace Unity.Robotics.MessageVisualizers
 
         public bool CanShowDrawing => false;
 
-        public IVisual CreateVisual(Message message, MessageMetadata meta)
+        public IVisual CreateVisual()
         {
-            if (!AssertMessageType(message, meta)) return null;
-            return new GuiVisual<TargetMessageType>((TargetMessageType)message, meta, this);
+            return new GuiVisual<T>(this);
         }
 
-        public virtual Action CreateGUI(TargetMessageType message, MessageMetadata meta)
+        public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
             return MessageVisualizations.CreateDefaultGUI(message, meta);
         }
 
-        public bool AssertMessageType(Message message, MessageMetadata meta)
+        public HeaderMsg GetHeader(Message message)
         {
-            if (!(message is TargetMessageType))
-            {
-                Debug.LogError($"{GetType()}, visualFactory for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TargetMessageType)}).");
-                return false;
-            }
-
-            return true;
+            return null;
         }
     }
 }

@@ -14,7 +14,18 @@ namespace Unity.Robotics.MessageVisualizers
 
         public override void Draw(BasicDrawing drawing, PolygonMsg message, MessageMetadata meta)
         {
-            message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
+            Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Thickness);
+        }
+
+        public static void Draw<C>(PolygonMsg message, BasicDrawing drawing, Color color, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        {
+            Vector3 prevPos = message.points[message.points.Length - 1].From<C>();
+            foreach (Point32Msg p in message.points)
+            {
+                Vector3 curPos = p.From<C>();
+                drawing.DrawLine(prevPos, curPos, color, thickness);
+                prevPos = curPos;
+            }
         }
 
         public override Action CreateGUI(PolygonMsg message, MessageMetadata meta)

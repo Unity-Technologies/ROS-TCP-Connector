@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
@@ -14,7 +15,13 @@ public class DefaultVisualizerPath : DrawingVisualFactory<PathMsg>
 
     public override void Draw(BasicDrawing drawing, PathMsg message, MessageMetadata meta)
     {
-        message.Draw<FLU>(drawing, SelectColor(m_Color, meta), m_Thickness);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Thickness);
+    }
+
+    public static void Draw<C>(PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f)
+        where C : ICoordinateSpace, new()
+    {
+        drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
     }
 
     public override Action CreateGUI(PathMsg message, MessageMetadata meta)

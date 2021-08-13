@@ -1,3 +1,4 @@
+using RosMessageTypes.Std;
 using System;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
@@ -5,16 +6,12 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class SettingsBasedVisualFactory<TMessageType, TDrawingSettings> : MonoBehaviour, IVisualFactory, IPriority
-        where TMessageType : Message
-        where TDrawingSettings : VisualizerSettings<TMessageType>
+    public abstract class SettingsBasedVisualFactory<TMessage, TDrawingSettings> : DrawingVisualFactory<TMessage>
+        where TMessage : Message
+        where TDrawingSettings : VisualizerSettings<TMessage>
     {
         public const string ScriptableObjectsSettingsPath = "ScriptableObjects/";
         public abstract string DefaultScriptableObjectPath { get; }
-
-        [SerializeField]
-        string m_Topic;
-        public string Topic { get => m_Topic; set => m_Topic = value; }
 
         [SerializeField]
         TDrawingSettings m_Settings;
@@ -36,38 +33,12 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public virtual void Start()
+        public override IVisual CreateVisual()
         {
-            if (m_Topic == null || m_Topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<TMessageType>(), this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
+            return new DrawingVisual<SettingsBasedVisualFactory<TMessage, TDrawingSettings>, TMessage>(this);
         }
 
-        public bool AssertMessageType(Message message, MessageMetadata meta)
-        {
-            if (!(message is TMessageType))
-            {
-                Debug.LogError($"{GetType()}, DrawingSettings for topic \"{meta.Topic}\": Can't visualize message type {message.GetType()}! (expected {typeof(TMessageType)}).");
-                return false;
-            }
-
-            return true;
-        }
-
-        public IVisual CreateVisual(Message message, MessageMetadata meta)
-        {
-            if (!AssertMessageType(message, meta))
-                return null;
-
-            return new DrawingVisual<TMessageType>((TMessageType)message, meta, m_Settings);
-        }
-
-        public void Draw(BasicDrawing drawing, TMessageType message, MessageMetadata meta)
+        public override void Draw(BasicDrawing drawing, TMessage message, MessageMetadata meta)
         {
             m_Settings.Draw(drawing, message, meta);
         }
@@ -84,9 +55,5 @@ namespace Unity.Robotics.MessageVisualizers
                 }
             }
         }
-
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => true;
     }
 }
