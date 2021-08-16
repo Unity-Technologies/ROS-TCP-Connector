@@ -19,6 +19,8 @@ Add the Ros Tcp Connector assembly to support Universal Windows Platform
 Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg, see:
 [CameraInfo Generator](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues/133)
 
+Add support for message visualization using multiple TF topics
+
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
 
