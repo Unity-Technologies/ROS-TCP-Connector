@@ -489,6 +489,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Topic: 
   m_TFTrackingType: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_TFTopic: /tf
 --- !u!114 &914411198878822707
 MonoBehaviour:
   m_ObjectHideFlags: 0

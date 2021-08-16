@@ -52,6 +52,10 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
+        [SerializeField]
+        string[] m_TFTopics = { "/tf" };
+        public string[] TFTopics { get => m_TFTopics; set => m_TFTopics = value; }
+
         const string k_SysCommand_Log = "__log";
         const string k_SysCommand_Warning = "__warn";
         const string k_SysCommand_Error = "__error";
@@ -278,7 +282,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
         }
 
-
         internal struct InternalAPI
         {
             ROSConnection m_Self;
@@ -371,7 +374,7 @@ namespace Unity.Robotics.ROSTCPConnector
             InitializeHUD();
 
             if (listenForTFMessages)
-                TFSystem.GetOrCreateInstance();
+                TFSystem.GetOrCreateInstance(m_TFTopics);
 
             if (ConnectOnStart)
                 Connect();
@@ -383,6 +386,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosPort = port;
             Connect();
         }
+
         public enum HudTabIndices
         {
             Topics = -3,
@@ -833,8 +837,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
         }
-
-
 
         //============ HUD logic =================
         class HUDLayoutSave

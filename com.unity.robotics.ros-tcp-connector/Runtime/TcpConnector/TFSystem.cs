@@ -20,17 +20,17 @@ public class TFSystem
     Dictionary<string, Transform> m_TrackingTransformTable = new Dictionary<string, Transform>();
     public static TFSystem instance { get; private set; }
 
-    public static TFSystem GetOrCreateInstance()
+    public static TFSystem GetOrCreateInstance(string[] tftopics)
     {
         if (instance == null)
         {
             instance = new TFSystem();
-            string[] topics = new string[] { "/findbot/tf", "/findbot2/tf", "/ferrybot/tf" };
-            SubscribeToMultipleTopics<TFMessageMsg>(topics, instance.ReceiveTF);
-            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
-            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF("/tf"));
-            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("findbot/tf", instance.ReceiveTF("findbot/tf"));
-            //ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("ferrybot/tf", instance.ReceiveTF("ferrybot/tf"));
+            SubscribeToMultipleTopics<TFMessageMsg>(tftopics, instance.ReceiveTF);
+            // foreach (string t in tftopics)
+            // {
+            //     string topic = t;
+            //     Debug.Log($"{topic}");
+            // }
         }
         return instance;
     }
