@@ -398,12 +398,6 @@ namespace Unity.Robotics.ROSTCPConnector
             RosPort = port;
             Connect();
         }
-        public enum HudTabIndices
-        {
-            Topics = -3,
-            TF = -2,
-            Layout = -1
-        }
 
         public void Connect()
         {

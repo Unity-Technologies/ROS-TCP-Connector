@@ -18,12 +18,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         string LayoutFilePath => System.IO.Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
-
         public void Start()
         {
-            HudPanel.RegisterTab(this, (int)ROSConnection.HudTabIndices.Topics);
-            HudPanel.RegisterTab(new VisualizationLayoutTab(this), (int)ROSConnection.HudTabIndices.Layout);
             m_Connection = ROSConnection.GetOrCreateInstance();
+            HudPanel.RegisterTab(this, (int)HudTabOrdering.Topics);
+            HudPanel.RegisterTab(new VisualizationLayoutTab(this), (int)HudTabOrdering.Layout);
+            HudPanel.RegisterTab(new VisualizationMarkersTab(m_Connection), (int)HudTabOrdering.Markers);
             LoadLayout();
             m_Connection.ListenForTopics(OnNewTopic, notifyAllExistingTopics: true);
         }
