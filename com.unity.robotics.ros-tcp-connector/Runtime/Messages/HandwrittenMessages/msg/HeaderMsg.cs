@@ -81,7 +81,7 @@ namespace RosMessageTypes.Std
 
         public override string ToString()
         {
-            return "MHeader: " +
+            return "Header: " +
 #if !ROS2
             "\nseq: " + seq.ToString() +
 #endif

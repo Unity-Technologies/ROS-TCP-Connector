@@ -551,7 +551,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     case "float":
                         if (float.TryParse(val, out float j))
                         {
-                            ret += val;
+                            ret += val + "f";
                         }
                         else
                         {
