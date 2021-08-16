@@ -19,6 +19,9 @@ Add the Ros Tcp Connector assembly to support Universal Windows Platform
 Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg, see:
 [CameraInfo Generator](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues/133)
 
+- Added an optional pooling system for ros publishers
+- Implemented a queueing and latching system to mimic the ROS implementation in Unity
+
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
 
@@ -28,6 +31,7 @@ Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg
 
 ### Fixed
   - Fixed the issue when queuing a message fails if the type is unspecified in compile type.
+  - Fixed and issue that Time.realtimeSinceStartup was being called on another thread when publishing from another Thread.
 
 
 ## [0.5.0-preview] - 2021-07-15
