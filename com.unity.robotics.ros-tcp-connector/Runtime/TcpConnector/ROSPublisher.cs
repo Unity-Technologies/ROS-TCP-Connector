@@ -3,37 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-
-    public abstract class ROSPublisherBase : SendsOutgoingMessages
+    public abstract class ROSPublisherBase : OutgoingMessageSender
     {
-        public abstract string RosMessageName
-        {
-            get;
-        }
+        public abstract string RosMessageName { get; }
 
-        public string TopicName
-        {
-            get;
-        }
+        public string TopicName { get; }
 
-        public int QueueSize
-        {
-            get;
-        }
+        public int QueueSize { get; }
 
-        public bool Latch
-        {
-            get;
-        }
+        public bool Latch { get; }
 
-        public bool PublisherRegistered
-        {
-            get;
-            set;
-        }
+        public bool PublisherRegistered { get; set; }
 
         protected ROSPublisherBase(string topicName, int queueSize, bool latch)
         {
@@ -41,37 +25,26 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 throw new Exception("Queue size must be greater than or equal to 1.");
             }
+
             TopicName = topicName;
             QueueSize = queueSize;
             Latch = latch;
             PublisherRegistered = false;
         }
 
-        public abstract bool IsType(Type messageType);
-
-        public bool EquivalentTo(string topicName, Type type, int? queueSize, bool? latch)
+        public bool EquivalentTo(string topicName, string messageName, int? queueSize, bool? latch)
         {
-            return TopicName == topicName && IsType(type) &&
+            return TopicName == topicName && RosMessageName == messageName &&
                    (!queueSize.HasValue || QueueSize == queueSize) &&
                    (!latch.HasValue || Latch == latch);
         }
 
         public abstract void OnConnectionEstablished(MessageSerializer m_MessageSerializer, Stream stream);
-
     }
 
     public class ROSPublisher<T> : ROSPublisherBase where T : Message
     {
-
-        public override string RosMessageName
-        {
-            get;
-        }
-
-        public override bool IsType(Type messageType)
-        {
-            return messageType == typeof(T);
-        }
+        public override string RosMessageName { get; }
 
         //Messages waiting to be sent queue.
         private LinkedList<T> outgoingMessages = new LinkedList<T>();
@@ -96,11 +69,10 @@ namespace Unity.Robotics.ROSTCPConnector
             this.RosMessageName = MessageRegistry.GetRosMessageName<T>();
         }
 
-        public void Publish(T message)
+        internal void PublishInternal(T message)
         {
             lock (outgoingMessages)
             {
-
                 if (outgoingMessages.Count >= QueueSize)
                 {
                     //Remove outgoing messages that don't fit in the queue.
@@ -120,7 +92,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             //Register the publisher with the ROS Endpoint.
             RegisterPublisherIfApplicable(m_MessageSerializer, stream);
-
         }
 
         private SendToState RemoveMessageToSend(out T messageToSend)
@@ -185,6 +156,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 return;
             }
+
             //Register the publisher before sending anything.
             SysCommandPublisherRegistration publisherRegistration =
                 new SysCommandPublisherRegistration(this);
@@ -214,19 +186,23 @@ namespace Unity.Robotics.ROSTCPConnector
                     {
                         RecycleMessage(lastMessageSent);
                     }
+
                     lastMessageSent = toSend;
                 }
                 else
                 {
-                    RecycleMessage(toSend);
+                    if (MessagePoolEnabled)
+                    {
+                        RecycleMessage(toSend);
+                    }
                 }
             }
+
             return sendToState;
         }
 
         public override void ClearAllQueuedData()
         {
-
             List<T> toRecycle;
             lock (outgoingMessages)
             {
@@ -265,20 +241,17 @@ namespace Unity.Robotics.ROSTCPConnector
                         }
                     }
                 }
-
             }
         }
 
         public void AddMessageToPool(T messageToRecycle)
         {
-            if (!MessagePoolEnabled)
-            {
-                //No message pooling, let the GC handle this message.
-                return;
-            }
+            Debug.Assert(MessagePoolEnabled,
+                "Adding a message to a message pool that is not enabled, please set MessagePoolEnabled to true.");
+
             lock (inactiveMessagePool)
             {
-                if (inactiveMessagePool.Count < (QueueSize + 5))
+                if (MessagePoolEnabled && inactiveMessagePool.Count < (QueueSize + 5))
                 {
                     //Make sure we're only pooling a reasonable amount.
                     //We shouldn't need any more than the queue size plus a little.
@@ -311,6 +284,5 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         #endregion
-
     }
 }

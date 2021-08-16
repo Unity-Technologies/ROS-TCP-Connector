@@ -49,32 +49,32 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
-        private const int k_DefaultPublisherQueueSize = 10;
-        private const bool k_DefaultPublisherLatch = false;
+        const int k_DefaultPublisherQueueSize = 10;
+        const bool k_DefaultPublisherLatch = false;
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
 
         class OutgoingMessageQueue
         {
-            private ConcurrentQueue<SendsOutgoingMessages> outgoingMessageQueue;
+            private ConcurrentQueue<OutgoingMessageSender> m_OutgoingMessageQueue;
             public readonly ManualResetEvent NewMessageReadyToSendEvent;
 
             public OutgoingMessageQueue()
             {
-                outgoingMessageQueue = new ConcurrentQueue<SendsOutgoingMessages>();
+                m_OutgoingMessageQueue = new ConcurrentQueue<OutgoingMessageSender>();
                 NewMessageReadyToSendEvent = new ManualResetEvent(false);
             }
 
-            public void Enqueue(SendsOutgoingMessages sendsOutgoingMessages)
+            public void Enqueue(OutgoingMessageSender outgoingMessageSender)
             {
-                outgoingMessageQueue.Enqueue(sendsOutgoingMessages);
+                m_OutgoingMessageQueue.Enqueue(outgoingMessageSender);
                 NewMessageReadyToSendEvent.Set();
             }
 
-            public bool TryDequeue(out SendsOutgoingMessages sendsOutgoingMessages)
+            public bool TryDequeue(out OutgoingMessageSender outgoingMessageSender)
             {
-                return outgoingMessageQueue.TryDequeue(out sendsOutgoingMessages);
+                return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Unity.Robotics.ROSTCPConnector
             public Func<Message, Message> callback;
         }
 
-        private object dictionaryLock = new object();
+        object m_DictionaryLock = new object();
         Dictionary<string, UnityServiceImplementation> m_UnityServices = new Dictionary<string, UnityServiceImplementation>();
         Dictionary<string, ROSPublisherBase> m_Publishers = new Dictionary<string, ROSPublisherBase>();
         Dictionary<string, string> m_RosServices = new Dictionary<string, string>();
@@ -216,44 +216,70 @@ namespace Unity.Robotics.ROSTCPConnector
         {
         }
 
-        public ROSPublisher<T> GetOrRegisterPublisher<T>(string rosTopicName,
+        public bool TryGetPublisher<T>(out ROSPublisher<T> result, string rosTopicName,
             int? queue_size = null, bool? latch = null) where T : Message
         {
             ROSPublisherBase publisher;
-            int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
-            bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
-            lock (dictionaryLock)
+            lock (m_DictionaryLock)
             {
                 if (m_Publishers.TryGetValue(rosTopicName, out publisher))
                 {
-                    if (publisher.EquivalentTo(rosTopicName, typeof(T), queue_size, latch))
+
+                    result = (ROSPublisher<T>)publisher;
+                    if (result == null)
+                    {
+                        Debug.LogError($"Existing publisher with topic {rosTopicName} is null!");
+                        return false;
+                    }
+
+                    string messageName = MessageRegistry.GetRosMessageName<T>();
+                    if (publisher.EquivalentTo(rosTopicName, messageName, queue_size, latch))
                     {
                         //We already have a valid existing publisher of the correct type.
+                        return true;
                     }
                     else
                     {
-                        Debug.LogWarning($"Publisher on topic {rosTopicName} has changed type! " +
-                                         $"Do you have multiple publishers on the same topic?");
-                        publisher = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
-                        m_Publishers[rosTopicName] = publisher;
+                        string errorMessage = $"Publisher on topic {rosTopicName} has changed type! " +
+                                              $"Do you have multiple publishers on the same topic?";
+                        Debug.LogError(errorMessage);
+                        return false;
                     }
                 }
                 else
                 {
-                    //Create a new publisher.
-                    publisher = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
-                    m_Publishers[rosTopicName] = publisher;
+                    //No publisher already exists.
+                    result = null;
+                    return false;
                 }
             }
+        }
 
-            ROSPublisher<T> existingPublisher = (ROSPublisher<T>)publisher;
-            if (existingPublisher == null)
+        public ROSPublisher<T> RegisterPublisher<T>(string rosTopicName,
+            int? queue_size = null, bool? latch = null) where T : Message
+        {
+            bool correctPublisherAlreadyExists = TryGetPublisher(out ROSPublisher<T> result, rosTopicName, queue_size, latch);
+            if (correctPublisherAlreadyExists)
             {
-                //Note this shouldn't happen, but to remove compiler warnings a null check is added.
-                throw new InvalidCastException("Failed publisher cast!");
+                Debug.LogWarning($"Publisher for topic {rosTopicName} registered twice!");
+                return result;
             }
-
-            return existingPublisher;
+            else
+            {
+                if (result == null)
+                {
+                    //Create a new publisher.
+                    int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
+                    bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
+                    result = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
+                    m_Publishers[rosTopicName] = result;
+                }
+                else
+                {
+                    throw new Exception("Failed to register publisher!");
+                }
+            }
+            return result;
         }
 
         public void RegisterRosService<T>(string topic) where T : Message
@@ -363,37 +389,45 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterAll(NetworkStream stream)
         {
-            lock (dictionaryLock)
+            lock (m_DictionaryLock)
             {
                 foreach (var keyValue in m_Subscribers)
                 {
                     if (keyValue.Value.rosMessageName != null)
+                    {
                         SendSubscriberRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
+                    }
                 }
 
                 foreach (var keyValue in m_UnityServices)
                 {
                     if (keyValue.Value.rosMessageName != null)
+                    {
                         SendUnityServiceRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
+                    }
                 }
 
                 foreach (var keyValue in m_Publishers)
                 {
                     if (keyValue.Value != null)
+                    {
                         keyValue.Value.OnConnectionEstablished(m_MessageSerializer, stream);
+                    }
                 }
 
                 foreach (var keyValue in m_RosServices)
                 {
                     if (keyValue.Value != null)
+                    {
                         SendRosServiceRegistration(keyValue.Key, keyValue.Value, stream);
+                    }
                 }
             }
         }
 
         void DeregisterAll()
         {
-            lock (dictionaryLock)
+            lock (m_DictionaryLock)
             {
                 foreach (var keyValue in m_Publishers)
                 {
@@ -579,7 +613,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         static void ClearMessageQueue(OutgoingMessageQueue queue)
         {
-            while (queue.TryDequeue(out SendsOutgoingMessages sendsOutgoingMessages))
+            while (queue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
             {
                 sendsOutgoingMessages.ClearAllQueuedData();
             }
@@ -629,10 +663,10 @@ namespace Unity.Robotics.ROSTCPConnector
                     while (true)
                     {
 
-                        bool messagesToSend = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
+                        bool messageReadyEventWasSet = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
                         token.ThrowIfCancellationRequested();
 
-                        if (messagesToSend)
+                        if (messageReadyEventWasSet)
                         {
                             outgoingQueue.NewMessageReadyToSendEvent.Reset();
                         }
@@ -645,22 +679,22 @@ namespace Unity.Robotics.ROSTCPConnector
                             }
                         }
 
-                        while (outgoingQueue.TryDequeue(out SendsOutgoingMessages sendsOutgoingMessages))
+                        while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
                         {
 
-                            SendsOutgoingMessages.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
+                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
                             switch (sendToState)
                             {
-                                case SendsOutgoingMessages.SendToState.Normal:
+                                case OutgoingMessageSender.SendToState.Normal:
                                     //This is normal operation.
                                     break;
-                                case SendsOutgoingMessages.SendToState.QueueFullWarning:
+                                case OutgoingMessageSender.SendToState.QueueFullWarning:
                                     //Unable to send messages to ROS as fast as we're generating them.
                                     //This could be caused by a TCP connection that is too slow.
                                     Debug.LogWarning($"Queue full! Messages are getting dropped! " +
                                                      "Try check your connection speed is fast enough to handle the traffic.");
                                     break;
-                                case SendsOutgoingMessages.SendToState.NoMessageToSendError:
+                                case OutgoingMessageSender.SendToState.NoMessageToSendError:
                                     //This indicates
                                     Debug.LogError(
                                         "Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
@@ -807,14 +841,13 @@ namespace Unity.Robotics.ROSTCPConnector
             m_OutgoingMessageQueue.Enqueue(new SimpleDataSender(m_MessageSerializer.GetBytesSequence()));
         }
 
-        public void Send<T>(string rosTopicName, T message, int? queue_size = null,
-            bool? latch = null) where T : Message
+        [ObsoleteAttribute("Use Publish instead of Send", false)]
+        public void Send<T>(string rosTopicName, T message) where T : Message
         {
-            Publish(rosTopicName, message, queue_size, latch);
+            Publish(rosTopicName, message);
         }
 
-        public void Publish<T>(string rosTopicName, T message, int? queue_size = null,
-            bool? latch = null) where T : Message
+        public void Publish<T>(string rosTopicName, T message) where T : Message
         {
             if (rosTopicName.StartsWith("__"))
             {
@@ -822,23 +855,29 @@ namespace Unity.Robotics.ROSTCPConnector
             }
             else
             {
-                //TODO - It seems that the new system requires the publisher to be registered first, should this implementation be changed?
-                //IE: if (!m_Publishers.ContainsKey(rosTopicName)) error unregistered topic!
                 //Find the publisher and queue the message for sending.
-                ROSPublisher<T> existingPublisher = GetOrRegisterPublisher<T>(rosTopicName, queue_size, latch);
-                existingPublisher.Publish(message);
-                m_OutgoingMessageQueue.Enqueue(existingPublisher);
+                if (TryGetPublisher(out ROSPublisher<T> existingPublisher, rosTopicName))
+                {
+                    existingPublisher.PublishInternal(message);
+                    m_OutgoingMessageQueue.Enqueue(existingPublisher);
 
-                if (m_HudPanel != null)
-                    m_HudPanel.SetLastMessageSent(rosTopicName, message);
+                    if (m_HudPanel != null)
+                        m_HudPanel.SetLastMessageSent(rosTopicName, message);
+                }
+                else
+                {
+                    throw new Exception($"No registered publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()}!");
+                }
             }
-
         }
 
         public static T GetFromPool<T>(string rosTopicName) where T : Message
         {
-            ROSPublisher<T> rosPublisher = instance.GetOrRegisterPublisher<T>(rosTopicName);
-            return rosPublisher.GetMessageFromPool();
+            if (instance.TryGetPublisher(out ROSPublisher<T> rosPublisher, rosTopicName))
+            {
+                return rosPublisher.GetMessageFromPool();
+            }
+            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)

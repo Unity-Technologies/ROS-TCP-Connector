@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public abstract class SendsOutgoingMessages
+    public abstract class OutgoingMessageSender
     {
 
         public enum SendToState
@@ -19,7 +19,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public abstract void ClearAllQueuedData();
     }
 
-    public class SimpleDataSender : SendsOutgoingMessages
+    public class SimpleDataSender : OutgoingMessageSender
     {
         private List<byte[]> m_ListOfSerializations;
 
