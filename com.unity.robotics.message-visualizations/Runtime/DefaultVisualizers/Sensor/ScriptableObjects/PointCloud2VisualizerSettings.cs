@@ -106,7 +106,7 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
                     case ColorMode.CombinedRGB:
                         if (m_RgbChannel.Length > 0)
                         {
-                            color = new Color32(message.data[iPointStep + rgbChannelOffset + 0], message.data[iPointStep + rgbChannelOffset + 1], message.data[iPointStep + rgbChannelOffset + 2], 255);
+                            color = new Color32(message.data[iPointStep + rgbChannelOffset + 2], message.data[iPointStep + rgbChannelOffset + 1], message.data[iPointStep + rgbChannelOffset], 255);
                         }
                         break;
                 }
