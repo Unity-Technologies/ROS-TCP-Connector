@@ -12,6 +12,7 @@ public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg
     public PointCloud2VisualizerSettings.ColorMode colorMode;
     public ChannelFloat32Msg[] channels;
     public string m_HueChannel = "";
+    public string m_RgbChannel = "";
     public string m_RChannel = "";
     public string m_GChannel = "";
     public string m_BChannel = "";
@@ -25,7 +26,6 @@ public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg
     public float m_Size = 0.05f;
 
     public bool m_UseRgbChannel;
-    public bool m_UseSeparateRgb = true;
     public bool m_UseSizeChannel;
 
     public override Action CreateGUI(PointCloudMsg message, MessageMetadata meta)
@@ -71,26 +71,24 @@ public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg
                             color = Color.HSVToRGB(Mathf.InverseLerp(m_HueRange[0], m_HueRange[1], colC), 1, 1);
                         }
                         break;
-                    case PointCloud2VisualizerSettings.ColorMode.RGB:
-                        if (m_UseSeparateRgb)
+                    case PointCloud2VisualizerSettings.ColorMode.SeparateRGB:
+                        if (m_RChannel.Length > 0 && m_GChannel.Length > 0 && m_BChannel.Length > 0)
                         {
-                            if (m_RChannel.Length > 0 && m_GChannel.Length > 0 && m_BChannel.Length > 0)
-                            {
-                                var colR = Mathf.InverseLerp(m_RRange[0], m_RRange[1], message.channels[channelToIdx[m_RChannel]].values[i]);
-                                var r = Mathf.InverseLerp(0, 1, colR);
+                            var colR = Mathf.InverseLerp(m_RRange[0], m_RRange[1], message.channels[channelToIdx[m_RChannel]].values[i]);
+                            var r = Mathf.InverseLerp(0, 1, colR);
 
-                                var colG = Mathf.InverseLerp(m_GRange[0], m_GRange[1], message.channels[channelToIdx[m_GChannel]].values[i]);
-                                var g = Mathf.InverseLerp(0, 1, colG);
+                            var colG = Mathf.InverseLerp(m_GRange[0], m_GRange[1], message.channels[channelToIdx[m_GChannel]].values[i]);
+                            var g = Mathf.InverseLerp(0, 1, colG);
 
-                                var colB = Mathf.InverseLerp(m_BRange[0], m_BRange[1], message.channels[channelToIdx[m_BChannel]].values[i]);
-                                var b = Mathf.InverseLerp(0, 1, colB);
-                                color = new Color(r, g, b, 1);
-                            }
+                            var colB = Mathf.InverseLerp(m_BRange[0], m_BRange[1], message.channels[channelToIdx[m_BChannel]].values[i]);
+                            var b = Mathf.InverseLerp(0, 1, colB);
+                            color = new Color(r, g, b, 1);
                         }
-                        else
+                        break;
+                    case PointCloud2VisualizerSettings.ColorMode.CombinedRGB:
+                        // uint8 (R,G,B) values packed into the least significant 24 bits, in order.
                         {
-                            // uint8 (R,G,B) values packed into the least significant 24 bits, in order.
-                            byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[m_HueChannel]].values[i]);
+                            byte[] rgb = BitConverter.GetBytes(message.channels[channelToIdx[m_RgbChannel]].values[i]);
 
                             var r = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 0));
                             var g = Mathf.InverseLerp(0, 1, BitConverter.ToSingle(rgb, 8));

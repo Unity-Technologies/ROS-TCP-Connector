@@ -88,27 +88,21 @@ public class PointCloudVisualSettingsEditor : Editor
             switch (settings.colorMode)
             {
                 case PointCloud2VisualizerSettings.ColorMode.HSV:
-                    CreateNewDropdown("RGB channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
+                    CreateNewDropdown("Hue channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
                     CreateMinMaxSlider(ref settings.m_HueRange, colorMinVal, colorMaxVal);
                     break;
-                case PointCloud2VisualizerSettings.ColorMode.RGB:
-                    settings.m_UseSeparateRgb = EditorGUILayout.ToggleLeft("Separate R, G, B channels?", settings.m_UseSeparateRgb);
+                case PointCloud2VisualizerSettings.ColorMode.CombinedRGB:
+                    CreateNewDropdown("RGB channel name:", settings, settings.m_RgbChannel, newChannel => { settings.m_RgbChannel = newChannel; });
+                    break;
+                case PointCloud2VisualizerSettings.ColorMode.SeparateRGB:
+                    CreateNewDropdown("R channel name:", settings, settings.m_RChannel, newChannel => { settings.m_RChannel = newChannel; });
+                    CreateMinMaxSlider(ref settings.m_RRange, colorMinVal, colorMaxVal);
 
-                    if (settings.m_UseSeparateRgb)
-                    {
-                        CreateNewDropdown("R channel name:", settings, settings.m_RChannel, newChannel => { settings.m_RChannel = newChannel; });
-                        CreateMinMaxSlider(ref settings.m_RRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("G channel name:", settings, settings.m_GChannel, newChannel => { settings.m_GChannel = newChannel; });
+                    CreateMinMaxSlider(ref settings.m_GRange, colorMinVal, colorMaxVal);
 
-                        CreateNewDropdown("G channel name:", settings, settings.m_GChannel, newChannel => { settings.m_GChannel = newChannel; });
-                        CreateMinMaxSlider(ref settings.m_GRange, colorMinVal, colorMaxVal);
-
-                        CreateNewDropdown("B channel name:", settings, settings.m_BChannel, newChannel => { settings.m_BChannel = newChannel; });
-                        CreateMinMaxSlider(ref settings.m_BRange, colorMinVal, colorMaxVal);
-                    }
-                    else
-                    {
-                        CreateNewDropdown("RGB channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
-                    }
+                    CreateNewDropdown("B channel name:", settings, settings.m_BChannel, newChannel => { settings.m_BChannel = newChannel; });
+                    CreateMinMaxSlider(ref settings.m_BRange, colorMinVal, colorMaxVal);
                     break;
             }
         }

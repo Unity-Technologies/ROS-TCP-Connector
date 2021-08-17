@@ -83,7 +83,8 @@ public class PointCloud2VisualizerSettingsEditor : Editor
         {
             settings.colorMode = (PointCloud2VisualizerSettings.ColorMode)EditorGUILayout.EnumPopup("Color mode", settings.colorMode);
 
-            MinMaxText("color", ref colorMinVal, ref colorMin, ref colorMaxVal, ref colorMax);
+            if (settings.colorMode != PointCloud2VisualizerSettings.ColorMode.CombinedRGB)
+                MinMaxText("color", ref colorMinVal, ref colorMin, ref colorMaxVal, ref colorMax);
 
             switch (settings.colorMode)
             {
@@ -91,7 +92,10 @@ public class PointCloud2VisualizerSettingsEditor : Editor
                     CreateNewDropdown(settings.channels, "Hue channel name:", settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
                     CreateMinMaxSlider(ref settings.m_HueRange, colorMinVal, colorMaxVal);
                     break;
-                case PointCloud2VisualizerSettings.ColorMode.RGB:
+                case PointCloud2VisualizerSettings.ColorMode.CombinedRGB:
+                    CreateNewDropdown(settings.channels, "Rgb channel name:", settings.m_RgbChannel, newChannel => { settings.m_RgbChannel = newChannel; });
+                    break;
+                case PointCloud2VisualizerSettings.ColorMode.SeparateRGB:
                     CreateNewDropdown(settings.channels, "R channel name:", settings.m_RChannel, newChannel => { settings.m_RChannel = newChannel; });
                     CreateMinMaxSlider(ref settings.m_RRange, colorMinVal, colorMaxVal);
 

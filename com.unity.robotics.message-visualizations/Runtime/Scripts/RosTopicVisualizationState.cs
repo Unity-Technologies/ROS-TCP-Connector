@@ -66,7 +66,7 @@ namespace Unity.Robotics.MessageVisualizers
         public bool IsVisualizingUI => m_IsVisualizingUI;
         bool m_IsVisualizingDrawing;
         public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
-        float m_LastVisualFrameTime;
+        float m_LastVisualFrameTime = -1;
         RosTopicVisualizationState m_ServiceResponseTopic;
 
         RosTopicVisualizationState(RosTopicState baseState)
@@ -97,8 +97,7 @@ namespace Unity.Robotics.MessageVisualizers
             else
                 m_VisualWindow = new HudWindow(save.Topic);
 
-            m_IsVisualizingUI = save.ShowWindow;
-            m_IsVisualizingDrawing = save.ShowDrawing;
+            SetVisualizing(save.ShowWindow, save.ShowDrawing);
         }
 
         public SaveState CreateSaveState()

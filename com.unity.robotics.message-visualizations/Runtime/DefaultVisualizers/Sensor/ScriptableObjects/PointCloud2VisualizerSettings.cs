@@ -13,7 +13,8 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
     public enum ColorMode
     {
         HSV,
-        RGB
+        SeparateRGB,
+        CombinedRGB,
     }
 
     public ColorMode colorMode;
@@ -25,6 +26,7 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
     public string m_YChannel = "y";
     public string m_ZChannel = "z";
     public string m_HueChannel = "x";
+    public string m_RgbChannel = "rgb";
     public string m_RChannel = "r";
     public string m_GChannel = "g";
     public string m_BChannel = "b";
@@ -57,12 +59,14 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
         int xChannelOffset = (int)message.fields[channelToIdx[m_XChannel]].offset;
         int yChannelOffset = (int)message.fields[channelToIdx[m_YChannel]].offset;
         int zChannelOffset = (int)message.fields[channelToIdx[m_ZChannel]].offset;
-        int rgbChannelOffset = (int)message.fields[channelToIdx[m_HueChannel]].offset;
+        int hueChannelOffset = (int)message.fields[channelToIdx[m_HueChannel]].offset;
+        int rgbChannelOffset = (int)message.fields[channelToIdx[m_RgbChannel]].offset;
         int rChannelOffset = (int)message.fields[channelToIdx[m_RChannel]].offset;
         int gChannelOffset = (int)message.fields[channelToIdx[m_GChannel]].offset;
         int bChannelOffset = (int)message.fields[channelToIdx[m_BChannel]].offset;
         int sizeChannelOffset = (int)message.fields[channelToIdx[m_SizeChannel]].offset;
-        for (int i = 0; i < message.data.Length / message.point_step; i++)
+        int maxI = message.data.Length / (int)message.point_step;
+        for (int i = 0; i < maxI; i++)
         {
             int iPointStep = i * (int)message.point_step;
             var x = BitConverter.ToSingle(message.data, iPointStep + xChannelOffset);
@@ -81,11 +85,11 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
                     case ColorMode.HSV:
                         if (m_HueChannel.Length > 0)
                         {
-                            int colC = BitConverter.ToInt16(message.data, (iPointStep + rgbChannelOffset));
+                            int colC = BitConverter.ToInt16(message.data, (iPointStep + hueChannelOffset));
                             color = Color.HSVToRGB(Mathf.InverseLerp(m_HueRange[0], m_HueRange[1], colC), 1, 1);
                         }
                         break;
-                    case ColorMode.RGB:
+                    case ColorMode.SeparateRGB:
                         if (m_RChannel.Length > 0 && m_GChannel.Length > 0 && m_BChannel.Length > 0)
                         {
                             var colR = Mathf.InverseLerp(m_RRange[0], m_RRange[1], BitConverter.ToSingle(message.data, iPointStep + rChannelOffset));
@@ -97,6 +101,12 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
                             var colB = Mathf.InverseLerp(m_BRange[0], m_BRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
                             var b = Mathf.InverseLerp(0, 1, colB);
                             color = new Color(r, g, b, 1);
+                        }
+                        break;
+                    case ColorMode.CombinedRGB:
+                        if (m_RgbChannel.Length > 0)
+                        {
+                            color = new Color32(message.data[iPointStep + rgbChannelOffset + 0], message.data[iPointStep + rgbChannelOffset + 1], message.data[iPointStep + rgbChannelOffset + 2], 255);
                         }
                         break;
                 }
