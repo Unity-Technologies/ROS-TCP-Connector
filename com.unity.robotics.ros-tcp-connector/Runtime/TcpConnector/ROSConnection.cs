@@ -838,7 +838,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public void QueueSysCommand(string command, object param)
         {
             PopulateSysCommand(m_MessageSerializer, command, param);
-            m_OutgoingMessageQueue.Enqueue(new SimpleDataSender(m_MessageSerializer.GetBytesSequence()));
+            m_OutgoingMessageQueue.Enqueue(new SysCommandSender(m_MessageSerializer.GetBytesSequence()));
         }
 
         [ObsoleteAttribute("Use Publish instead of Send", false)]

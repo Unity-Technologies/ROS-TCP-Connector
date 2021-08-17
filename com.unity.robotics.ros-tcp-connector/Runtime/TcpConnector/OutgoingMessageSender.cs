@@ -19,11 +19,15 @@ namespace Unity.Robotics.ROSTCPConnector
         public abstract void ClearAllQueuedData();
     }
 
-    public class SimpleDataSender : OutgoingMessageSender
+    /**
+     * Simple implementation of a OutgoingMessageSender that is used for sys commands
+     * as they are handled differently to typical ROS messages and sent as JSON strings.
+     */
+    public class SysCommandSender : OutgoingMessageSender
     {
         private List<byte[]> m_ListOfSerializations;
 
-        public SimpleDataSender(List<byte[]> m_ListOfSerializations)
+        public SysCommandSender(List<byte[]> m_ListOfSerializations)
         {
             this.m_ListOfSerializations = m_ListOfSerializations;
         }
