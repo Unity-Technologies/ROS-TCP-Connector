@@ -4,31 +4,32 @@ using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 using UnityEditor;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.ROSTCPConnector
 {
-    public class VisualizerSettingsTab : MonoBehaviour, IHudTab
+    public class VisualizerLayoutTab : IHudTab
     {
-        string IHudTab.Label => "Settings";
+        string IHudTab.Label => "Layout";
         string m_LayoutPath;
+        ROSConnection m_Connection;
 
-        void Start()
+        public VisualizerLayoutTab(ROSConnection connection)
         {
-            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.Settings);
+            m_Connection = connection;
         }
 
-        void IHudTab.OnGUI(HUDPanel hud)
+        void IHudTab.OnGUI(HudPanel hud)
         {
             // Save/Load layout files
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Export layout"))
             {
                 m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
-                hud.SaveLayout(m_LayoutPath);
+                m_Connection.SaveLayout(m_LayoutPath);
             }
             if (GUILayout.Button("Import layout"))
             {
                 m_LayoutPath = EditorUtility.OpenFilePanel("Select Visualizations Settings", "", "json");
-                hud.LoadLayout(m_LayoutPath);
+                m_Connection.LoadLayout(m_LayoutPath);
             }
             GUILayout.EndHorizontal();
         }

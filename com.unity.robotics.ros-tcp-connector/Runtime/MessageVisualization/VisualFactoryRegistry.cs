@@ -32,13 +32,13 @@ namespace Unity.Robotics.MessageVisualizers
     public readonly struct MessageMetadata
     {
         public readonly string Topic;
-        public readonly int FrameIndex;
+        public readonly float FrameTime;
         public readonly DateTime Timestamp;
 
-        public MessageMetadata(string topic, int frameIndex, DateTime timestamp)
+        public MessageMetadata(string topic, float frameTime, DateTime timestamp)
         {
             Topic = topic;
-            FrameIndex = frameIndex;
+            FrameTime = frameTime;
             Timestamp = timestamp;
         }
     }
@@ -98,10 +98,15 @@ namespace Unity.Robotics.MessageVisualizers
             if (result != null)
                 return result.Item1;
 
-            string messageName = HUDPanel.GetMessageNameByTopic(meta.Topic);
-            if (messageName == null)
-                Debug.Log($"Message name for topic {meta.Topic} is null!");
-            s_TypeVisualFactories.TryGetValue(HUDPanel.GetMessageNameByTopic(meta.Topic), out result);
+            RosTopicState topicState = ROSConnection.GetOrCreateInstance().GetTopic(meta.Topic);
+            if (topicState == null)
+            {
+                Debug.Log($"Message name for topic {meta.Topic} is null!?");
+                return s_DefaultVisualFactory;
+            }
+
+            string messageName = topicState.RosMessageName;
+            s_TypeVisualFactories.TryGetValue(messageName, out result);
             if (result != null)
                 return result.Item1;
 

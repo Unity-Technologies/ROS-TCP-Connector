@@ -17,10 +17,10 @@ public class DefaultVisualizerCameraInfo : TextureVisualFactory<CameraInfoMsg>
         // False if ROI not used, true if subwindow captured
         if (message.roi.do_rectify)
         {
-            var imageState = ROSConnection.instance.HUDPanel.GetVisualizationState(imageTopic, true);
-            if (imageState.WindowContents != null)
+            RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
+            if (imageState != null)
             {
-                var imageVisual = imageState.WindowContents.GetVisual() as ITextureVisual;
+                var imageVisual = imageState.Visual as ITextureVisual;
                 if (imageVisual != null)
                     return message.roi.RegionOfInterestTexture(imageVisual.GetTexture());
             }

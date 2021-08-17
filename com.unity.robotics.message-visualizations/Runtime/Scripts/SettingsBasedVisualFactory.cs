@@ -76,14 +76,11 @@ namespace Unity.Robotics.MessageVisualizers
         {
             // settings have changed - update the visualization
             IVisualFactory thisFactory = this;
-            foreach (TopicVisualizationState topic in HUDPanel.AllTopics.Values)
+            foreach (RosTopicState topic in ROSConnection.GetOrCreateInstance().AllTopics)
             {
-                if (topic == null)
-                    continue;
-                var contents = topic.WindowContents;
-                if (contents != null && contents.HasDrawing && contents.VisualFactory == thisFactory)
+                if (topic != null && topic.IsVisualizingDrawing && topic.GetVisualizer() == thisFactory)
                 {
-                    contents.GetVisual().CreateDrawing();
+                    topic.Visual.CreateDrawing();
                 }
             }
         }

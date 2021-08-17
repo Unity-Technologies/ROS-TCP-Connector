@@ -25,7 +25,7 @@ public class TFSystem
         if (instance == null)
         {
             instance = new TFSystem();
-            ROSConnection.instance.Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
+            ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>("/tf", instance.ReceiveTF);
         }
         return instance;
     }

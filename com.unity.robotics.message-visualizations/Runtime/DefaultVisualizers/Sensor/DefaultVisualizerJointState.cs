@@ -26,7 +26,8 @@ public class DefaultVisualizerJointState : DrawingVisualFactory<JointStateMsg>
     {
         var color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
-        if (m_ShowEffort) m_RobotData.DrawEffort(drawing, message, color);
+        if (m_ShowEffort)
+            m_RobotData.DrawEffort(drawing, message, color);
     }
 
     public override Action CreateGUI(JointStateMsg message, MessageMetadata meta)

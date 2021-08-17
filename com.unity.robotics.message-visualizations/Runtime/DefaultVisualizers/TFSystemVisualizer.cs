@@ -15,7 +15,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
-            HUDPanel.RegisterTab(this, (int)HUDPanel.HudTabIndices.TF);
+            ROSConnection.GetOrCreateInstance();
+            HudPanel.RegisterTab(this, (int)ROSConnection.HudTabIndices.TF);
             TFSystem.Register(this);
             if (color.a == 0)
                 color.a = 1;
@@ -92,7 +93,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
         }
 
-        void IHudTab.OnGUI(HUDPanel hud)
+        void IHudTab.OnGUI(HudPanel hud)
         {
             m_TransformMenuScrollPosition = GUILayout.BeginScrollView(m_TransformMenuScrollPosition);
 
