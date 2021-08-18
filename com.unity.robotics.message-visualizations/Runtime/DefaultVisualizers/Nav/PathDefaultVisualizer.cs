@@ -21,6 +21,7 @@ public class PathDefaultVisualizer : DrawingVisualizer<PathMsg>
     public static void Draw<C>(PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f)
         where C : ICoordinateSpace, new()
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);
     }
 

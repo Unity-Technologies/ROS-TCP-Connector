@@ -22,6 +22,7 @@ public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJoi
 
     public override void Draw(BasicDrawing drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
     }
 

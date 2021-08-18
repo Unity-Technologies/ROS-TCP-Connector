@@ -100,7 +100,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &180405073565077336
 MonoBehaviour:
@@ -399,6 +399,7 @@ Transform:
   - {fileID: 148721012047438994}
   - {fileID: 2705058716118802165}
   - {fileID: 5960358800852583846}
+  - {fileID: 7360238253594268207}
   - {fileID: 8087627403559164820}
   - {fileID: 1464881800879191381}
   - {fileID: 2863337946553629617}
@@ -469,7 +470,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7987089019447662417
 MonoBehaviour:
@@ -484,6 +485,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Radius: 0.1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &2161630915218032341
@@ -499,6 +501,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_TFTopic: /tf
 --- !u!114 &914411198878822707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,6 +517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -530,6 +536,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Thickness: 0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &6427473615223577401
@@ -561,7 +568,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1422201625839843008
 MonoBehaviour:
@@ -606,7 +613,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &631344391495192963
 MonoBehaviour:
@@ -704,7 +711,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2125246219557803249
 MonoBehaviour:
@@ -732,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  imageTopic: 
+  ImageTopic: 
 --- !u!114 &7441739547993683080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -798,6 +805,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -815,6 +823,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_ShowEffort: 0
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
@@ -884,6 +893,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &7632934765518367204
 MonoBehaviour:
@@ -898,6 +908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1883795035447010338
@@ -994,6 +1005,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &8531576909173476880
 MonoBehaviour:
@@ -1062,7 +1074,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8079308096200974559
 GameObject:
@@ -1167,6 +1179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1203,6 +1216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1237,6 +1251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Origin: {fileID: 0}
   m_Radius: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1286,6 +1301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
@@ -1317,6 +1333,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &5947260051662258799
@@ -1347,6 +1364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &1759114360125940856
@@ -1362,6 +1380,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &4772047444513335717
@@ -1392,6 +1411,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &7359414968208872101
@@ -1425,6 +1445,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Size: 0.01
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
@@ -1460,6 +1481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1495,6 +1517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1531,6 +1554,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1565,6 +1589,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_Label: 
@@ -1599,11 +1624,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
   origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+--- !u!1 &8536940991294045122
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7360238253594268207}
+  - component: {fileID: 231665046362329902}
+  m_Layer: 0
+  m_Name: Map
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7360238253594268207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8536940991294045122}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.36461377, y: -4.266717, z: 8.958949}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3885009520023495739}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &231665046362329902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8536940991294045122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af7eec661d9714ef88663f1e58db01e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Topic: 
+  m_TFTrackingType: 1
+  OccupancyGridTopic: 
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0
@@ -1634,7 +1706,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4817664980568396465
 MonoBehaviour:
@@ -1662,6 +1734,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_TFTrackingType: 1
   m_UrdfRobot: {fileID: 0}
   m_PathThickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1678,7 +1751,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_RootOrder
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_LocalPosition.x

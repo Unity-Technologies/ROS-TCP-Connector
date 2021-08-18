@@ -17,6 +17,7 @@ public class MagneticFieldDefaultVisualizer : DrawingVisualizer<MagneticFieldMsg
 
     public static void Draw<C>(MagneticFieldMsg message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
     }
 

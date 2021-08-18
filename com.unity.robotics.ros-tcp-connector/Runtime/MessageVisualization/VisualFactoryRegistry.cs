@@ -28,6 +28,15 @@ namespace Unity.Robotics.MessageVisualizers
         Texture2D GetTexture();
     }
 
+    public interface IDrawingTextureVisual : ITextureVisual
+    {
+        GameObject drawingObject { get; set; }
+        Texture2D texture2D { get; set; }
+        Material shaderMaterial { get; set; }
+        Material material { get; set; }
+        Mesh mesh { get; set; }
+    }
+
     public readonly struct MessageMetadata
     {
         public readonly string Topic;

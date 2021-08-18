@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TFTrackingType: 1
   m_UseIntensitySize: 0
-  m_PointRadius: 0.02
+  m_PointRadius: 0.1
   m_MaxIntensity: 100
+  m_TFTopic: /tf
   m_ColorMode: 2

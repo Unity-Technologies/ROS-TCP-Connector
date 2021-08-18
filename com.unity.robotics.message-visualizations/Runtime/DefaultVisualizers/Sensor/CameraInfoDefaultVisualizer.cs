@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
 {
-    public string imageTopic;
+    [SerializeField]
+    public string ImageTopic;
     bool m_ViewK;
     bool m_ViewP;
     bool m_ViewR;

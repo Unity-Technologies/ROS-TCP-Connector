@@ -19,6 +19,7 @@ public class GridCellsDefaultVisualizer : DrawingVisualizer<GridCellsMsg>
     public static void Draw<C>(GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f)
         where C : ICoordinateSpace, new()
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         MessageVisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);
     }
 
