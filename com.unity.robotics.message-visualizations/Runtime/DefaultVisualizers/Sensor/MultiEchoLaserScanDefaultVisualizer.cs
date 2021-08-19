@@ -1,6 +1,7 @@
 using System;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 

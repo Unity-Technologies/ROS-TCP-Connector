@@ -390,7 +390,7 @@ namespace Unity.Robotics.ROSTCPConnector
             HudPanel.RegisterHeader(DrawHeaderGUI);
 
             if (listenForTFMessages)
-                TFSystem.GetOrCreateInstance(m_TFTopics);
+                TFSystem.GetOrCreateInstance();
 
             if (ConnectOnStart)
                 Connect();

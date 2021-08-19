@@ -8,68 +8,145 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public interface ITFSystemVisualizer
-{
-    void OnChanged(TFStream stream);
-}
-
 public class TFSystem
 {
-    static ITFSystemVisualizer s_Visualizer;
-    Dictionary<string, Dictionary<string, TFStream>> m_TransformTable = new Dictionary<string, Dictionary<string, TFStream>>();
-    Dictionary<string, Transform> m_TrackingTransformTable = new Dictionary<string, Transform>();
     public static TFSystem instance { get; private set; }
+    Dictionary<string, TFTopicState> m_TFTopics = new Dictionary<string, TFTopicState>();
 
-    public static TFSystem GetOrCreateInstance(string[] tftopics)
+    class TFTopicState
     {
-        if (instance == null)
+        string m_TFTopic;
+        Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
+        List<Action<TFStream>> m_Listeners;
+
+        public TFTopicState(string tfTopic = "/tf")
         {
-            instance = new TFSystem();
-            SubscribeToMultipleTopics<TFMessageMsg>(tftopics, instance.ReceiveTF);
-            // foreach (string t in tftopics)
-            // {
-            //     string topic = t;
-            //     Debug.Log($"{topic}");
-            // }
+            m_TFTopic = tfTopic;
+            ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
+        }
+
+        public TFStream GetOrCreateTFStream(string frame_id)
+        {
+            TFStream tf;
+            while (frame_id.EndsWith("/"))
+                frame_id = frame_id.Substring(0, frame_id.Length - 1);
+
+            var slash = frame_id.LastIndexOf('/');
+            var singleName = slash == -1 ? frame_id : frame_id.Substring(slash + 1);
+            if (!m_TransformTable.TryGetValue(singleName, out tf) || tf == null)
+            {
+                if (slash <= 0)
+                {
+                    // there's no slash, or only an initial slash - just create a new root object
+                    // (set the parent later if and when we learn more)
+                    tf = new TFStream(null, singleName, m_TFTopic);
+                }
+                else
+                {
+                    var parent = GetOrCreateTFStream(frame_id.Substring(0, slash));
+                    tf = new TFStream(parent, singleName, m_TFTopic);
+                }
+
+                m_TransformTable[singleName] = tf;
+                NotifyChanged(tf);
+            }
+            else if (slash > 0 && tf.Parent == null)
+            {
+                tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash)));
+            }
+
+            return tf;
+        }
+
+        public void ReceiveTF(TFMessageMsg message)
+        {
+            foreach (var tf_message in message.transforms)
+            {
+                var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
+                var tf = GetOrCreateTFStream(frame_id);
+                tf.Add(
+                    tf_message.header.stamp.ToLongTime(),
+                    tf_message.transform.translation.From<FLU>(),
+                    tf_message.transform.rotation.From<FLU>()
+                );
+                NotifyChanged(tf);
+            }
+        }
+
+        public IEnumerable<string> GetTransformNames()
+        {
+            return m_TransformTable.Keys;
+        }
+
+        public IEnumerable<TFStream> GetTransforms()
+        {
+            return m_TransformTable.Values;
+        }
+
+        public TFStream GetTransformStream(string frame_id)
+        {
+            TFStream result = null;
+            m_TransformTable.TryGetValue(frame_id, out result);
+            return result;
+        }
+
+        public void AddListener(Action<TFStream> callback)
+        {
+            m_Listeners.Add(callback);
+        }
+
+        public void NotifyChanged(TFStream stream)
+        {
+            foreach (Action<TFStream> callback in m_Listeners)
+            {
+                callback(stream);
+            }
+        }
+
+        public void NotifyAllChanged()
+        {
+            foreach (var stream in m_TransformTable.Values)
+                NotifyChanged(stream);
+        }
+    }
+
+    private TFSystem()
+    {
+
+    }
+
+    public static TFSystem GetOrCreateInstance()
+    {
+        ROSConnection ros = ROSConnection.GetOrCreateInstance();
+        instance = new TFSystem();
+        foreach (string s in ros.TFTopics)
+        {
+            instance.GetOrCreateTFTopic(s);
         }
         return instance;
     }
 
-    static void SubscribeToMultipleTopics<Msg>(string[] topics, Action<Msg, string> callback) where Msg : Message
-    {
-        foreach (string t in topics)
-        {
-            string topic = t;  // C# design flaw
-            ROSConnection.GetOrCreateInstance().Subscribe<Msg>(
-                topic,
-                (Msg msg) => callback(msg, topic));
-        }
-    }
-
     public IEnumerable<string> GetTransformNames(string tfTopic = "/tf")
     {
-        CheckTFTopicInDictionary(tfTopic);
-        return m_TransformTable[tfTopic].Keys;
+        return GetOrCreateTFTopic(tfTopic).GetTransformNames();
     }
 
     public IEnumerable<TFStream> GetTransforms(string tfTopic = "/tf")
     {
-        CheckTFTopicInDictionary(tfTopic);
-        return m_TransformTable[tfTopic].Values;
+        return GetOrCreateTFTopic(tfTopic).GetTransforms();
     }
 
-    public static void Register(ITFSystemVisualizer visualizer, string tfTopic = "/tf")
+    public void AddListener(Action<TFStream> callback, bool notifyAllStreamsNow = true, string tfTopic = "/tf")
     {
-        s_Visualizer = visualizer;
-        if (instance != null)
-            foreach (var stream in instance.m_TransformTable[tfTopic].Values)
-                UpdateVisualization(stream);
+        TFTopicState state = GetOrCreateTFTopic(tfTopic);
+        state.AddListener(callback);
+        if (notifyAllStreamsNow)
+            state.NotifyAllChanged();
     }
 
-    public static void UpdateVisualization(TFStream stream)
+    public void NotifyAllChanged(TFStream stream)
     {
-        if (s_Visualizer != null)
-            s_Visualizer.OnChanged(stream);
+        GetOrCreateTFTopic(stream.TFTopic).NotifyAllChanged();
     }
 
     public TFFrame GetTransform(HeaderMsg header, string tfTopic = "/tf")
@@ -92,74 +169,23 @@ public class TFSystem
 
     public TFStream GetTransformStream(string frame_id, string tfTopic = "/tf")
     {
-        TFStream stream;
-        CheckTFTopicInDictionary(tfTopic);
-        m_TransformTable[tfTopic].TryGetValue(frame_id, out stream);
-        return stream;
+        return GetOrCreateTFTopic(tfTopic).GetTransformStream(frame_id);
     }
 
     public GameObject GetTransformObject(string frame_id, string tfTopic = "/tf")
     {
-        TFStream stream = GetOrCreateTFStream(frame_id, tfTopic);
+        TFStream stream = GetOrCreateTFTopic(tfTopic).GetOrCreateTFStream(frame_id);
         return stream.GameObject;
     }
 
-    public void CheckTFTopicInDictionary(string topic)
+    TFTopicState GetOrCreateTFTopic(string tfTopic)
     {
-        Dictionary<string, TFStream> tfDict;
-        if (!m_TransformTable.TryGetValue(topic, out tfDict))
+        TFTopicState tfTopicState;
+        if (!m_TFTopics.TryGetValue(tfTopic, out tfTopicState))
         {
-            m_TransformTable[topic] = new Dictionary<string, TFStream>();
+            tfTopicState = new TFTopicState(tfTopic);
+            m_TFTopics[tfTopic] = tfTopicState;
         }
-    }
-
-    TFStream GetOrCreateTFStream(string frame_id, string tfTopic = "/tf")
-    {
-        TFStream tf;
-        while (frame_id.EndsWith("/"))
-            frame_id = frame_id.Substring(0, frame_id.Length - 1);
-
-        var slash = frame_id.LastIndexOf('/');
-        var singleName = slash == -1 ? frame_id : frame_id.Substring(slash + 1);
-        CheckTFTopicInDictionary(tfTopic);
-        if (!m_TransformTable[tfTopic].TryGetValue(singleName, out tf) || tf == null)
-        {
-            if (slash <= 0)
-            {
-                // there's no slash, or only an initial slash - just create a new root object
-                // (set the parent later if and when we learn more)
-                tf = new TFStream(null, singleName);
-            }
-            else
-            {
-                var parent = GetOrCreateTFStream(frame_id.Substring(0, slash), tfTopic);
-                tf = new TFStream(parent, singleName);
-            }
-
-            m_TransformTable[tfTopic][singleName] = tf;
-            UpdateVisualization(tf);
-        }
-        else if (slash > 0 && tf.Parent == null)
-        {
-            tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash), tfTopic));
-        }
-
-        return tf;
-    }
-
-    void ReceiveTF(TFMessageMsg message, string tfTopic = "/tf")
-    // void ReceiveTF(TFMessageMsg message)
-    {
-        foreach (var tf_message in message.transforms)
-        {
-            var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
-            var tf = GetOrCreateTFStream(frame_id, tfTopic);
-            tf.Add(
-                tf_message.header.stamp.ToLongTime(),
-                tf_message.transform.translation.From<FLU>(),
-                tf_message.transform.rotation.From<FLU>()
-            );
-            UpdateVisualization(tf);
-        }
+        return tfTopicState;
     }
 }
