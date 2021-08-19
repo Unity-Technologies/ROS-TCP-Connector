@@ -14,6 +14,8 @@ public class JointStateDefaultVisualizer : DrawingVisualizer<JointStateMsg>
     Color m_Color;
     [SerializeField]
     RobotVisualization m_RobotData;
+    [SerializeField]
+    TFTrackingType m_TFTrackingType;
 
     public override void Start()
     {

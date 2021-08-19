@@ -13,6 +13,8 @@ namespace Unity.Robotics.MessageVisualizers
         public GameObject origin;
         [SerializeField]
         Color m_Color;
+        [SerializeField]
+        TFTrackingType m_TFTrackingType;
 
         public override void Draw(BasicDrawing drawing, TwistStampedMsg message, MessageMetadata meta)
         {

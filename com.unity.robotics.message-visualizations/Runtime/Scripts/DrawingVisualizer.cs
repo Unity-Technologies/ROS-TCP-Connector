@@ -30,7 +30,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual IVisual CreateVisual()
         {
-            return new Visual(this);
+            return new DrawingVisual(this);
         }
 
         public Color SelectColor(Color userColor, MessageMetadata meta)
@@ -50,7 +50,7 @@ namespace Unity.Robotics.MessageVisualizers
             return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
-        public class Visual : IVisual
+        public class DrawingVisual : IVisual
         {
             public T message { get; private set; }
             public MessageMetadata meta { get; private set; }
@@ -59,7 +59,7 @@ namespace Unity.Robotics.MessageVisualizers
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
 
-            public Visual(DrawingVisualizer<T> factory)
+            public DrawingVisual(DrawingVisualizer<T> factory)
             {
                 m_Factory = factory;
             }

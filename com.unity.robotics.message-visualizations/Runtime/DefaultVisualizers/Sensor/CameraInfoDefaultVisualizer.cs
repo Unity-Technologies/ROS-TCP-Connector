@@ -19,7 +19,7 @@ public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
         if (!message.roi.do_rectify)
             return null;
 
-        RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
+        RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(ImageTopic);
         if (imageState == null)
             return null;
 

@@ -9,26 +9,18 @@ public class OdometryDefaultVisualizer : DrawingVisualizer<OdometryMsg>
     public float thickness = 0.01f;
     public float lengthScale = 1.0f;
     public float sphereRadius = 1.0f;
-    public GameObject origin;
     [SerializeField]
     Color m_Color;
 
     public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
     {
-        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), origin, lengthScale, sphereRadius, thickness);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 
-    public static void Draw<C>(OdometryMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(OdometryMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
-        // TODO
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
-        Vector3 pos = frame.TransformPoint(message.pose.pose.position.From<C>());
-        if (origin != null)
-        {
-            pos += origin.transform.position;
-        }
         PoseDefaultVisualizer.Draw<C>(message.pose.pose, drawing);
-        TwistDefaultVisualizer.Draw<C>(message.twist.twist, drawing, color, pos, lengthScale, sphereRadius, thickness);
+        TwistDefaultVisualizer.Draw<C>(message.twist.twist, drawing, color, message.pose.pose.position.From<C>(), lengthScale, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(OdometryMsg message, MessageMetadata meta) => () =>

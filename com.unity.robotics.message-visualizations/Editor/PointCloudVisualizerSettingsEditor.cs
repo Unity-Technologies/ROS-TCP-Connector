@@ -36,7 +36,8 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
         GUILayout.EndHorizontal();
     }
 
-    void CreateMinMaxSlider(ref float[] range, float min, float max)
+    // NB, modifies 'range' array in place
+    void CreateMinMaxSlider(float[] range, float min, float max)
     {
         GUILayout.BeginHorizontal();
         GUILayout.Label(range[0].ToString());
@@ -64,9 +65,7 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
             MinMaxText("size", ref m_SizeMinVal, ref m_SizeMin, ref m_SizeMaxVal, ref m_SizeMax);
             CreateNewDropdown("Size channel name:", m_Config, m_Config.SizeChannel,
                 newChannel => { m_Config.SizeChannel = newChannel; });
-            var configSizeRange = m_Config.SizeRange;
-            CreateMinMaxSlider(ref configSizeRange, m_SizeMinVal, m_SizeMaxVal);
-            m_Config.SizeRange = configSizeRange;
+            CreateMinMaxSlider(m_Config.SizeRange, m_SizeMinVal, m_SizeMaxVal);
         }
 
         m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", m_Config.UseRgbChannel);
@@ -81,21 +80,21 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
             switch (m_Config.ColorMode)
             {
                 case PointCloud2VisualizerSettings.ColorMode.HSV:
-                    CreateNewDropdown("Hue channel name:", settings, settings.m_HueChannel, newChannel => { settings.m_HueChannel = newChannel; });
-                    CreateMinMaxSlider(ref settings.m_HueRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("Hue channel name:", m_Config, m_Config.HueChannel, newChannel => { m_Config.HueChannel = newChannel; });
+                    CreateMinMaxSlider(m_Config.HueRange, m_ColorMinVal, m_ColorMaxVal);
                     break;
                 case PointCloud2VisualizerSettings.ColorMode.CombinedRGB:
-                    CreateNewDropdown("RGB channel name:", settings, settings.m_RgbChannel, newChannel => { settings.m_RgbChannel = newChannel; });
+                    CreateNewDropdown("RGB channel name:", m_Config, m_Config.RgbChannel, newChannel => { m_Config.RgbChannel = newChannel; });
                     break;
                 case PointCloud2VisualizerSettings.ColorMode.SeparateRGB:
-                    CreateNewDropdown("R channel name:", settings, settings.m_RChannel, newChannel => { settings.m_RChannel = newChannel; });
-                    CreateMinMaxSlider(ref settings.m_RRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("R channel name:", m_Config, m_Config.RChannel, newChannel => { m_Config.RChannel = newChannel; });
+                    CreateMinMaxSlider(m_Config.RRange, m_ColorMinVal, m_ColorMaxVal);
 
-                    CreateNewDropdown("G channel name:", settings, settings.m_GChannel, newChannel => { settings.m_GChannel = newChannel; });
-                    CreateMinMaxSlider(ref settings.m_GRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("G channel name:", m_Config, m_Config.GChannel, newChannel => { m_Config.GChannel = newChannel; });
+                    CreateMinMaxSlider(m_Config.GRange, m_ColorMinVal, m_ColorMaxVal);
 
-                    CreateNewDropdown("B channel name:", settings, settings.m_BChannel, newChannel => { settings.m_BChannel = newChannel; });
-                    CreateMinMaxSlider(ref settings.m_BRange, colorMinVal, colorMaxVal);
+                    CreateNewDropdown("B channel name:", m_Config, m_Config.BChannel, newChannel => { m_Config.BChannel = newChannel; });
+                    CreateMinMaxSlider(m_Config.BRange, m_ColorMinVal, m_ColorMaxVal);
                     break;
             }
         }

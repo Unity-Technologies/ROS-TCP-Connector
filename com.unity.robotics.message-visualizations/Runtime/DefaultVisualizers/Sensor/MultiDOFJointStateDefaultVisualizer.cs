@@ -12,6 +12,8 @@ public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJoi
     Color m_Color;
     [SerializeField]
     RobotVisualization m_RobotData;
+    [SerializeField]
+    TFTrackingType m_TFTrackingType;
 
     public override void Start()
     {

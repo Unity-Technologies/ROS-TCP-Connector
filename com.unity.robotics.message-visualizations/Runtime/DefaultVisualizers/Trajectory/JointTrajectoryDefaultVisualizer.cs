@@ -12,6 +12,8 @@ public class JointTrajectoryDefaultVisualizer : DrawingVisualizer<JointTrajector
     float m_PathThickness = 0.01f;
     [SerializeField]
     Color m_Color;
+    [SerializeField]
+    TFTrackingType m_TFTrackingType;
 
     RobotVisualization m_RobotData;
 

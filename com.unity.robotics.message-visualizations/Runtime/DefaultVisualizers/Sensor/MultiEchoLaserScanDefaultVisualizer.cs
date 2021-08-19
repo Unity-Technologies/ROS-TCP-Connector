@@ -36,11 +36,11 @@ public class MultiEchoLaserScanDefaultVisualizer : DrawingVisualizerWithSettings
                 Vector3 worldPoint = frame.TransformPoint(localPoint);
                 Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
 
-                var radius = settings.m_PointRadius;
+                var radius = settings.PointRadius;
 
-                if (message.intensities.Length > 0 && settings.m_UseIntensitySize)
+                if (message.intensities.Length > 0 && settings.UseIntensitySize)
                 {
-                    radius = Mathf.InverseLerp(settings.m_SizeRange[0], settings.m_SizeRange[1], message.intensities[i].echoes[j]);
+                    radius = Mathf.InverseLerp(settings.SizeRange[0], settings.SizeRange[1], message.intensities[i].echoes[j]);
                 }
 
                 pointCloud.AddPoint(worldPoint, c, radius);

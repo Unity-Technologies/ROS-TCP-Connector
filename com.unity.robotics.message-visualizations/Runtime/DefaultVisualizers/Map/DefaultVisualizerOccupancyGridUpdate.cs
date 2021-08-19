@@ -5,48 +5,55 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class DefaultVisualizerOccupancyGridUpdate : TexturedDrawingVisualFactory<OccupancyGridUpdateMsg>
+public class DefaultVisualizerOccupancyGridUpdate : TexturedDrawingVisualizer<OccupancyGridUpdateMsg>
 {
     [SerializeField]
     public string OccupancyGridTopic;
-    RosTopicState state;
-    IDrawingTextureVisual visual;
+    RosTopicVisualizationState visState;
+    IDrawingTextureVisual m_Visual;
+
+    IDrawingTextureVisual GetVisual(string topic)
+    {
+        if (m_Visual == null)
+        {
+            RosTopicState state = ROSConnection.GetOrCreateInstance().GetTopic(topic);
+            if (state == null)
+                return null;
+
+            visState = RosTopicVisualizationState.GetOrCreate(state);
+            if (visState == null)
+                return null;
+
+            m_Visual = visState.Visual as IDrawingTextureVisual;
+        }
+        return m_Visual;
+    }
 
     public override void Draw(BasicDrawing drawing, OccupancyGridUpdateMsg message, MessageMetadata meta)
     {
-        if (state == null)
+        IDrawingTextureVisual visual = GetVisual(meta.Topic);
+
+        int width = (int)message.width;
+        int height = (int)message.height;
+        var updateTexture = new Texture2D(width, height, TextureFormat.R8, true);
+        updateTexture.wrapMode = TextureWrapMode.Clamp;
+        updateTexture.filterMode = FilterMode.Point;
+        updateTexture.SetPixelData(message.data, 0);
+        updateTexture.Apply();
+
+        if (visual.texture2D == null)
         {
-            state = ROSConnection.GetOrCreateInstance().GetTopic(m_Topic);
+            visual.texture2D = new Texture2D(width, height, TextureFormat.R8, true);
+            visual.texture2D.wrapMode = TextureWrapMode.Clamp;
+            visual.texture2D.filterMode = FilterMode.Point;
         }
+        visual.texture2D.SetPixels(message.x, message.y, width, height, updateTexture.GetPixels(0, 0, width, height));
+        visual.texture2D.Apply();
 
-        if (state != null)
-        {
-            if (visual == null)
-            {
-                visual = state.Visual as IDrawingTextureVisual;
-            }
-            int width = (int)message.width;
-            int height = (int)message.height;
-            var updateTexture = new Texture2D(width, height, TextureFormat.R8, true);
-            updateTexture.wrapMode = TextureWrapMode.Clamp;
-            updateTexture.filterMode = FilterMode.Point;
-            updateTexture.SetPixelData(message.data, 0);
-            updateTexture.Apply();
+        var gridMaterial = new Material(visual.shaderMaterial);
+        gridMaterial.mainTexture = visual.texture2D;
 
-            if (visual.texture2D == null)
-            {
-                visual.texture2D = new Texture2D(width, height, TextureFormat.R8, true);
-                visual.texture2D.wrapMode = TextureWrapMode.Clamp;
-                visual.texture2D.filterMode = FilterMode.Point;
-            }
-            visual.texture2D.SetPixels(message.x, message.y, width, height, updateTexture.GetPixels(0, 0, width, height));
-            visual.texture2D.Apply();
-
-            var gridMaterial = new Material(visual.shaderMaterial);
-            gridMaterial.mainTexture = visual.texture2D;
-
-            visual.drawingObject = drawing.DrawMesh(visual.mesh, visual.drawingObject.transform.position, visual.drawingObject.transform.rotation, visual.drawingObject.transform.localScale, gridMaterial);
-        }
+        visual.drawingObject = drawing.DrawMesh(visual.mesh, visual.drawingObject.transform.position, visual.drawingObject.transform.rotation, visual.drawingObject.transform.localScale, gridMaterial);
     }
 
     public override Action CreateGUI(OccupancyGridUpdateMsg message, MessageMetadata meta)
@@ -59,32 +66,25 @@ public class DefaultVisualizerOccupancyGridUpdate : TexturedDrawingVisualFactory
         };
     }
 
-    public override Texture2D CreateTexture(OccupancyGridUpdateMsg message)
+    public override Texture2D CreateTexture(OccupancyGridUpdateMsg message, MessageMetadata meta)
     {
-        state = ROSConnection.GetOrCreateInstance().GetTopic(m_Topic);
-        if (state != null)
-        {
-            var visual = state.Visual as ITextureVisual;
-            if (visual != null)
-            {
-                int width = (int)message.width;
-                int height = (int)message.height;
-                var updateTexture = new Texture2D(width, height, TextureFormat.R8, true);
-                updateTexture.wrapMode = TextureWrapMode.Clamp;
-                updateTexture.filterMode = FilterMode.Point;
-                updateTexture.SetPixelData(message.data, 0);
-                updateTexture.Apply();
-                var tex = visual.GetTexture();
-                tex.SetPixels(message.x, message.y, width, height, updateTexture.GetPixels(0, 0, width, height));
-                tex.Apply();
-                return tex;
-            }
-        }
-        else
+        IDrawingTextureVisual visual = GetVisual(meta.Topic);
+        if (visual == null)
         {
             Debug.LogError($"Did not find a valid visualization window for {OccupancyGridTopic}!");
+            return null;
         }
 
-        return null;
+        int width = (int)message.width;
+        int height = (int)message.height;
+        var updateTexture = new Texture2D(width, height, TextureFormat.R8, true);
+        updateTexture.wrapMode = TextureWrapMode.Clamp;
+        updateTexture.filterMode = FilterMode.Point;
+        updateTexture.SetPixelData(message.data, 0);
+        updateTexture.Apply();
+        var tex = visual.GetTexture();
+        tex.SetPixels(message.x, message.y, width, height, updateTexture.GetPixels(0, 0, width, height));
+        tex.Apply();
+        return tex;
     }
 }

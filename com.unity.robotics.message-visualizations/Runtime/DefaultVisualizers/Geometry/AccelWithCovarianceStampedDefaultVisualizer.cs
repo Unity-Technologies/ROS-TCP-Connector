@@ -13,6 +13,8 @@ public class AccelWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Acc
     [SerializeField]
     Color m_Color;
     bool m_ViewCovariance;
+    [SerializeField]
+    TFTrackingType m_TFTrackingType;
 
     public override void Draw(BasicDrawing drawing, AccelWithCovarianceStampedMsg message, MessageMetadata meta)
     {

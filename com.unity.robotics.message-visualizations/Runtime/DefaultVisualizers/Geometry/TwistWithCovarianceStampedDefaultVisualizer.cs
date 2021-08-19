@@ -14,6 +14,8 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
         bool m_ViewCovariance;
+        [SerializeField]
+        TFTrackingType m_TFTrackingType;
 
         public override void Draw(BasicDrawing drawing, TwistWithCovarianceStampedMsg message, MessageMetadata meta)
         {

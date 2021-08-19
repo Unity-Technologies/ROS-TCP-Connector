@@ -10,16 +10,17 @@ public class GridCellsDefaultVisualizer : DrawingVisualizer<GridCellsMsg>
     float m_Radius = 0.1f;
     [SerializeField]
     Color m_Color;
-
+    [SerializeField]
+    TFTrackingType m_TFTrackingType;
     public override void Draw(BasicDrawing drawing, GridCellsMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Radius);
     }
 
     public static void Draw<C>(GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f)
         where C : ICoordinateSpace, new()
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
         MessageVisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);
     }
 
