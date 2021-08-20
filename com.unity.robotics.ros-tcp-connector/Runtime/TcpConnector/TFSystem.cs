@@ -17,7 +17,7 @@ public class TFSystem
     {
         string m_TFTopic;
         Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
-        List<Action<TFStream>> m_Listeners;
+        List<Action<TFStream>> m_Listeners = new List<Action<TFStream>>();
 
         public TFTopicState(string tfTopic = "/tf")
         {
