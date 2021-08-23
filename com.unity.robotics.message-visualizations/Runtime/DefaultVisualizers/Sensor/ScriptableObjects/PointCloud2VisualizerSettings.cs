@@ -62,7 +62,7 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
 
     public override void Draw(BasicDrawing drawing, PointCloud2Msg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         var pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
 
         Channels = message.fields.Select(field => field.name).ToArray();

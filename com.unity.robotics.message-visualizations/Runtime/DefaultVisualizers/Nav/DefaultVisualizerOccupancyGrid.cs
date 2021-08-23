@@ -10,9 +10,7 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualizer<Occupanc
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
-    string m_TFTopic = "/tf";
-    [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
     int m_Height;
     int m_Width;
 
@@ -52,7 +50,7 @@ public class DefaultVisualizerOccupancyGrid : TexturedDrawingVisualizer<Occupanc
         rotation.eulerAngles += new Vector3(0, -90, 0); // TODO: Account for differing texture origin
         var scale = message.info.resolution;
 
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header, m_TFTopic);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         visual.drawingObject = drawing.DrawMesh(visual.mesh,
             origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f) + m_Offset, rotation,
             new Vector3(m_Width * scale, 1, m_Height * scale), visual.material);

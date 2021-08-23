@@ -13,11 +13,11 @@ public class InertiaStampedDefaultVisualizer : DrawingVisualizer<InertiaStampedM
     [SerializeField]
     string m_Label = "Center of mass";
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingType;
 
     public override void Draw(BasicDrawing drawing, InertiaStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingType, message.header);
         Vector3DefaultVisualizer.Draw<FLU>(message.inertia.com, drawing, m_Origin, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
     }
 

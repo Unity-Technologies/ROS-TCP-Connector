@@ -13,11 +13,11 @@ public class PoseWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Pose
     bool m_DrawUnityAxes;
     bool m_ViewCovariance;
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PoseDefaultVisualizer.Draw<FLU>(message.pose.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 

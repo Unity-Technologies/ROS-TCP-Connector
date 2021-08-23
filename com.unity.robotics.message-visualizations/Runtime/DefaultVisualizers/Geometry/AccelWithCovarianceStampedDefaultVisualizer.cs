@@ -14,11 +14,11 @@ public class AccelWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Acc
     Color m_Color;
     bool m_ViewCovariance;
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, AccelWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         AccelWithCovarianceDefaultVisualizer.Draw<FLU>(message.accel, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 

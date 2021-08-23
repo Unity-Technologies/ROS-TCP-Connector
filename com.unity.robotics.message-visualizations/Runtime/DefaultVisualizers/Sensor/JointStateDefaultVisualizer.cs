@@ -15,7 +15,7 @@ public class JointStateDefaultVisualizer : DrawingVisualizer<JointStateMsg>
     [SerializeField]
     RobotVisualization m_RobotData;
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Start()
     {
@@ -26,7 +26,7 @@ public class JointStateDefaultVisualizer : DrawingVisualizer<JointStateMsg>
 
     public override void Draw(BasicDrawing drawing, JointStateMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         var color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
         if (m_ShowEffort)

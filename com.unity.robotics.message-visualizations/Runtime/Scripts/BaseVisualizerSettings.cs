@@ -9,8 +9,8 @@ public class BaseVisualizerSettings<T> : ScriptableObject
     public string RosMessageName => MessageRegistry.GetRosMessageName<T>();
 
     [SerializeField]
-    protected TFTrackingType m_TFTrackingType = TFTrackingType.Exact;
-    public TFTrackingType TFTrackingType { get => m_TFTrackingType; set => m_TFTrackingType = value; }
+    protected TFTrackingSettings m_TFTrackingSettings = new TFTrackingSettings { type = TFTrackingType.Exact, tfTopic = "/tf" };
+    public TFTrackingSettings TFTrackingSettings { get => m_TFTrackingSettings; set => m_TFTrackingSettings = value; }
 
     public virtual Action CreateGUI(T message, MessageMetadata meta)
     {

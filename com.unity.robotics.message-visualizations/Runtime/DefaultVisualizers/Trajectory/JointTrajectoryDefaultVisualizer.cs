@@ -13,7 +13,7 @@ public class JointTrajectoryDefaultVisualizer : DrawingVisualizer<JointTrajector
     [SerializeField]
     Color m_Color;
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
 
     RobotVisualization m_RobotData;
 
@@ -28,7 +28,7 @@ public class JointTrajectoryDefaultVisualizer : DrawingVisualizer<JointTrajector
 
     public override void Draw(BasicDrawing drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
     }
 }

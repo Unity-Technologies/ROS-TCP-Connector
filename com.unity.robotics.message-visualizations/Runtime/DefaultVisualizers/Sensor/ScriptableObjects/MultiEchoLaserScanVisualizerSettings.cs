@@ -19,37 +19,9 @@ public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<Multi
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         MultiEchoLaserScanDefaultVisualizer.Draw<FLU>(message, drawing, this);
     }
-
-    /* FNF changes LRCTEMP
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
-        var pointCloud = drawing.AddPointCloud(message.ranges.Length);
-        pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
-
-        // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
-        float angle = -message.angle_min;
-        for (int i = 0; i < message.ranges.Length; i++)
-        {
-            var echoes = message.ranges[i].echoes;
-            for (int j = 0; j < echoes.Length; j++)
-            {
-                Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
-                Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
-
-                var radius = m_PointRadius;
-
-                if (message.intensities.Length > 0 && m_UseIntensitySize)
-                {
-                    radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], message.intensities[i].echoes[j]);
-                }
-
-                pointCloud.AddPoint(point, c, radius);
-            }
-            angle -= message.angle_increment;
-        }
-        pointCloud.Bake();
-    }*/
 
     public override Action CreateGUI(MultiEchoLaserScanMsg message, MessageMetadata meta)
     {

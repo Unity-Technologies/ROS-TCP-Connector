@@ -23,7 +23,6 @@ public class MultiEchoLaserScanDefaultVisualizer : DrawingVisualizerWithSettings
     public static void Draw<C>(MultiEchoLaserScanMsg message, PointCloudDrawing pointCloud, MultiEchoLaserScanVisualizerSettings settings) where C : ICoordinateSpace, new()
     {
         pointCloud.SetCapacity(message.ranges.Length * message.ranges[0].echoes.Length);
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
         // negate the angle because ROS coordinates are right-handed, unity coordinates are left-handed
         float angle = -message.angle_min;
         // foreach(MLaserEcho echo in message.ranges)
@@ -33,8 +32,7 @@ public class MultiEchoLaserScanDefaultVisualizer : DrawingVisualizerWithSettings
             // foreach (float range in echo.echoes)
             for (int j = 0; j < echoes.Length; j++)
             {
-                Vector3 localPoint = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
-                Vector3 worldPoint = frame.TransformPoint(localPoint);
+                Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * echoes[j];
                 Color c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, echoes[j]), 1, 1);
 
                 var radius = settings.PointRadius;
@@ -44,7 +42,7 @@ public class MultiEchoLaserScanDefaultVisualizer : DrawingVisualizerWithSettings
                     radius = Mathf.InverseLerp(settings.SizeRange[0], settings.SizeRange[1], message.intensities[i].echoes[j]);
                 }
 
-                pointCloud.AddPoint(worldPoint, c, radius);
+                pointCloud.AddPoint(point, c, radius);
             }
             angle -= message.angle_increment;
         }

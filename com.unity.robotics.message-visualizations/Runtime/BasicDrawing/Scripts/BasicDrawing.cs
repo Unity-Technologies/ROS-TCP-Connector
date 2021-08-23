@@ -11,6 +11,14 @@ namespace Unity.Robotics.MessageVisualizers
         Exact,
         TrackLatest,
     }
+
+    [System.Serializable]
+    public class TFTrackingSettings
+    {
+        public TFTrackingType type = TFTrackingType.Exact;
+        public string tfTopic = "/tf";
+    }
+
     public class BasicDrawing : MonoBehaviour
     {
         static GUIStyle s_LabelStyle;
@@ -68,20 +76,20 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void SetTFTrackingType(TFTrackingType tfTrackingType, HeaderMsg headerMsg, string tfTopic = "/tf")
+        public void SetTFTrackingSettings(TFTrackingSettings tfTrackingType, HeaderMsg headerMsg)
         {
-            switch (tfTrackingType)
+            switch (tfTrackingType.type)
             {
                 case TFTrackingType.Exact:
                     {
-                        TFFrame frame = TFSystem.instance.GetTransform(headerMsg, tfTopic);
+                        TFFrame frame = TFSystem.instance.GetTransform(headerMsg, tfTrackingType.tfTopic);
                         transform.position = frame.translation;
                         transform.rotation = frame.rotation;
                     }
                     break;
                 case TFTrackingType.TrackLatest:
                     {
-                        transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id, tfTopic).transform;
+                        transform.parent = TFSystem.instance.GetTransformObject(headerMsg.frame_id, tfTrackingType.tfTopic).transform;
                         transform.localPosition = Vector3.zero;
                         transform.localRotation = Quaternion.identity;
                     }
