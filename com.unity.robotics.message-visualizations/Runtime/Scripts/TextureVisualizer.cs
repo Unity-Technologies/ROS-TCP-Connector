@@ -1,5 +1,6 @@
 using RosMessageTypes.Std;
 using System;
+using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -44,6 +45,12 @@ namespace Unity.Robotics.MessageVisualizers
 
             Action m_GUIAction;
             Texture2D m_Texture2D;
+            List<Action<Texture2D>> m_OnChangeCallbacks = new List<Action<Texture2D>>();
+
+            public void ListenForTextureChange(Action<Texture2D> callback)
+            {
+                m_OnChangeCallbacks.Add(callback);
+            }
 
             public Visual(TextureVisualizer<T> factory)
             {
@@ -59,6 +66,10 @@ namespace Unity.Robotics.MessageVisualizers
                 this.meta = meta;
                 m_Texture2D = null;
                 m_GUIAction = null;
+
+                // if anyone wants to know about the texture, make sure it's updated for them
+                if (m_OnChangeCallbacks.Count > 0)
+                    GetTexture();
             }
 
             public T message { get; private set; }
@@ -82,6 +93,8 @@ namespace Unity.Robotics.MessageVisualizers
                 if (m_Texture2D == null)
                 {
                     m_Texture2D = m_Factory.CreateTexture(message);
+                    foreach (Action<Texture2D> callback in m_OnChangeCallbacks)
+                        callback(m_Texture2D);
                 }
                 return m_Texture2D;
             }

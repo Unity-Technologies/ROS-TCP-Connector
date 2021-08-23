@@ -15,8 +15,6 @@ namespace Unity.Robotics.MessageVisualizers
 
     public interface IVisual
     {
-        bool hasDrawing { get; }
-        bool hasAction { get; }
         void AddMessage(Message message, MessageMetadata meta);
         void DeleteDrawing();
         void OnGUI();
@@ -26,15 +24,7 @@ namespace Unity.Robotics.MessageVisualizers
     public interface ITextureVisual : IVisual
     {
         Texture2D GetTexture();
-    }
-
-    public interface IDrawingTextureVisual : ITextureVisual
-    {
-        GameObject drawingObject { get; set; }
-        Texture2D texture2D { get; set; }
-        Material shaderMaterial { get; set; }
-        Material material { get; set; }
-        Mesh mesh { get; set; }
+        void ListenForTextureChange(Action<Texture2D> callback);
     }
 
     public readonly struct MessageMetadata
@@ -144,6 +134,7 @@ namespace Unity.Robotics.MessageVisualizers
                 public MessageMetadata meta { get; private set; }
                 public bool hasDrawing => false;
                 public bool hasAction => true;
+
 
                 public void AddMessage(Message newMessage, MessageMetadata newMeta)
                 {

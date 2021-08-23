@@ -42,6 +42,10 @@ namespace Unity.Robotics.MessageVisualizers
         {
             return MessageVisualizationUtils.SelectLabel(userLabel, meta);
         }
+        public virtual void Draw(DrawingVisual drawing, T message, MessageMetadata meta)
+        {
+            Draw(drawing.BasicDrawing, message, meta);
+        }
 
         public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta) { }
 
@@ -56,6 +60,7 @@ namespace Unity.Robotics.MessageVisualizers
             public MessageMetadata meta { get; private set; }
 
             BasicDrawing m_BasicDrawing;
+            public BasicDrawing BasicDrawing => m_BasicDrawing;
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
 
@@ -64,7 +69,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Factory = factory;
             }
 
-            public void AddMessage(Message message, MessageMetadata meta)
+            public virtual void AddMessage(Message message, MessageMetadata meta)
             {
                 if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
                     return;
@@ -107,7 +112,7 @@ namespace Unity.Robotics.MessageVisualizers
                     m_BasicDrawing.Clear();
                 }
 
-                m_Factory.Draw(m_BasicDrawing, message, meta);
+                m_Factory.Draw(this, message, meta);
             }
         }
     }
