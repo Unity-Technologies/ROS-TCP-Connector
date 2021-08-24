@@ -32,6 +32,12 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         }
     }
 
+    public void VisualizerRedraw()
+    {
+        DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer = (DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings>)target;
+        visualizer.Redraw();
+    }
+
     protected virtual void OnInspectorGUIForSettings(DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer)
     {
         CreateCachedEditor(m_Config, null, ref m_Editor);

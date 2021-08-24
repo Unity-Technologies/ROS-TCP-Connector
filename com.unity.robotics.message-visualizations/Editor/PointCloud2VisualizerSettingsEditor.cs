@@ -30,6 +30,7 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
                 menu.AddItem(new GUIContent(c), c == channel, () =>
                 {
                     action(c);
+                    VisualizerRedraw();
                 });
             menu.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
         }
@@ -60,6 +61,7 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
     {
         base.OnInspectorGUI();
 
+        GUI.changed = false;
         CreateNewDropdown(m_Config.Channels, "X channel name:", m_Config.XChannel, newChannel => { m_Config.XChannel = newChannel; });
         CreateNewDropdown(m_Config.Channels, "Y channel name:", m_Config.YChannel, newChannel => { m_Config.YChannel = newChannel; });
         CreateNewDropdown(m_Config.Channels, "Z channel name:", m_Config.ZChannel, newChannel => { m_Config.ZChannel = newChannel; });
@@ -102,6 +104,11 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
                     CreateMinMaxSlider(m_Config.BRange, colorMinVal, colorMaxVal);
                     break;
             }
+        }
+
+        if (GUI.changed)
+        {
+            VisualizerRedraw();
         }
     }
 }
