@@ -8,7 +8,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class OccupancyGridDefaultVisualizer : IVisualFactory
+public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
 {
     [SerializeField]
     protected string m_OccupancyGridTopic;

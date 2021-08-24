@@ -100,7 +100,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &180405073565077336
 MonoBehaviour:
@@ -399,14 +399,12 @@ Transform:
   - {fileID: 148721012047438994}
   - {fileID: 2705058716118802165}
   - {fileID: 5960358800852583846}
-  - {fileID: 7360238253594268207}
   - {fileID: 8087627403559164820}
   - {fileID: 1464881800879191381}
   - {fileID: 2863337946553629617}
   - {fileID: 892830402226269397}
   - {fileID: 8625932825378670584}
   - {fileID: 8632442061405313714}
-  - {fileID: 8113179544072624406}
   - {fileID: 2742884835330475003}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -448,9 +446,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8087627403559164820}
   - component: {fileID: 7987089019447662417}
-  - component: {fileID: 2161630915218032341}
   - component: {fileID: 914411198878822707}
   - component: {fileID: 5913021767012963164}
+  - component: {fileID: 5289342980281234607}
   m_Layer: 0
   m_Name: Nav
   m_TagString: Untagged
@@ -470,7 +468,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7987089019447662417
 MonoBehaviour:
@@ -485,25 +483,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Radius: 0.1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
---- !u!114 &2161630915218032341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5021183695555063441}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2d74d6fca061174dbdcd7666ee6c108, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Topic: 
-  m_TFTrackingType: 1
-  m_Offset: {x: 0, y: 0, z: 0}
-  m_TFTopic: /tf
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &914411198878822707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -517,11 +501,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
-  origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &5913021767012963164
 MonoBehaviour:
@@ -536,52 +518,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Thickness: 0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
---- !u!1 &6427473615223577401
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8113179544072624406}
-  - component: {fileID: 1422201625839843008}
-  m_Layer: 0
-  m_Name: Visualization
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8113179544072624406
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6427473615223577401}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.4838246, y: -1.3398576, z: 0.5549712}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 10
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1422201625839843008
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
+--- !u!114 &5289342980281234607
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6427473615223577401}
+  m_GameObject: {fileID: 5021183695555063441}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 268f3be283eaab7448b397aeeb201249, type: 3}
+  m_Script: {fileID: 11500000, guid: 32ee8f2011c7b2b4ea58f0b05d0b1838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_OccupancyGridTopic: 
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!1 &7046769544666923959
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,7 +571,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &631344391495192963
 MonoBehaviour:
@@ -711,7 +669,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2125246219557803249
 MonoBehaviour:
@@ -805,7 +763,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -823,10 +780,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_ShowEffort: 0
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &3483943295354628174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -893,8 +852,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &7632934765518367204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -908,9 +869,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &1883795035447010338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1005,7 +968,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &8531576909173476880
 MonoBehaviour:
@@ -1074,7 +1036,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8079308096200974559
 GameObject:
@@ -1179,12 +1141,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &8450233287046239639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1216,12 +1180,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &1323506741032866252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1251,11 +1217,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Origin: {fileID: 0}
   m_Radius: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
+  m_TFTrackingType:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &2672417681116201770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1301,10 +1269,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &3645363982075483676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1333,9 +1303,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Thickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &5947260051662258799
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1364,7 +1336,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &1759114360125940856
@@ -1380,9 +1351,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &4772047444513335717
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1411,9 +1384,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &7359414968208872101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1445,12 +1420,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Size: 0.01
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &4961125574011629212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1481,11 +1458,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &172577741404724877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1517,12 +1496,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
   origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &7896709341418462393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1554,12 +1535,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
   origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &4837412502823219519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1589,10 +1572,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_Label: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &201639264244344553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1624,58 +1609,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
   origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
---- !u!1 &8536940991294045122
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7360238253594268207}
-  - component: {fileID: 231665046362329902}
-  m_Layer: 0
-  m_Name: Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7360238253594268207
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8536940991294045122}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.36461377, y: -4.266717, z: 8.958949}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &231665046362329902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8536940991294045122}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af7eec661d9714ef88663f1e58db01e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Topic: 
-  m_TFTrackingType: 1
-  OccupancyGridTopic: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0
@@ -1706,7 +1647,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3885009520023495739}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4817664980568396465
 MonoBehaviour:
@@ -1734,10 +1675,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_TFTrackingType: 1
   m_UrdfRobot: {fileID: 0}
   m_PathThickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!1001 &1914626938635344595
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1751,7 +1694,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_RootOrder
-      value: 11
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_LocalPosition.x
