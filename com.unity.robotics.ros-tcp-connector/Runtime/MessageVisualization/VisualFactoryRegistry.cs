@@ -10,7 +10,7 @@ namespace Unity.Robotics.MessageVisualizers
     public interface IVisualFactory
     {
         bool CanShowDrawing { get; }
-        IVisual CreateVisual();
+        IVisual GetOrCreateVisual(string topic);
     }
 
     public interface IVisual
@@ -113,18 +113,21 @@ namespace Unity.Robotics.MessageVisualizers
 
         class DefaultVisualFactory : IVisualFactory
         {
-            public IVisual CreateVisual()
+            Dictionary<string, IVisual> m_Visuals = new Dictionary<string, IVisual>();
+
+            public IVisual GetOrCreateVisual(string topic)
             {
-                return new DefaultVisual();
+                IVisual visual;
+                if (m_Visuals.TryGetValue(topic, out visual))
+                    return visual;
+
+                visual = new DefaultVisual();
+                m_Visuals.Add(topic, visual);
+                return visual;
             }
 
             // If you're trying to register the default visualFactory, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }
-
-            public HeaderMsg GetHeader(Message message)
-            {
-                return null;
-            }
 
             public bool CanShowDrawing => false;
 
@@ -134,7 +137,6 @@ namespace Unity.Robotics.MessageVisualizers
                 public MessageMetadata meta { get; private set; }
                 public bool hasDrawing => false;
                 public bool hasAction => true;
-
 
                 public void AddMessage(Message newMessage, MessageMetadata newMeta)
                 {

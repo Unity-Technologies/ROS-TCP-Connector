@@ -70,8 +70,11 @@ namespace Unity.Robotics.MessageVisualizers
             if (state == null)
                 return null;
 
-            RosTopicVisualizationState visState = RosTopicVisualizationState.GetOrCreate(state);
-            return visState.Visual;
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, state.RosMessageName);
+            if (factory == null)
+                return null;
+
+            return factory.GetOrCreateVisual(topic);
         }
 
         public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()

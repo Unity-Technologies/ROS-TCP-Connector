@@ -7,31 +7,10 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    // Additional properties associated with a specific RosTopicState
-    public class RosTopicVisualizationState
+    // Represents a single line in the VisualizationTopicsTab
+    // and saves and loads the options for that line, plus the associated hud windows etc.
+    public class VisualizationTopicsTabLine
     {
-        static Dictionary<RosTopicState, RosTopicVisualizationState> m_VisualizationStatesByTopic = new Dictionary<RosTopicState, RosTopicVisualizationState>();
-
-        public static RosTopicVisualizationState GetOrCreate(RosTopicState topicState)
-        {
-            RosTopicVisualizationState result;
-            if (!m_VisualizationStatesByTopic.TryGetValue(topicState, out result))
-            {
-                result = new RosTopicVisualizationState(topicState);
-                m_VisualizationStatesByTopic.Add(topicState, result);
-            }
-            return result;
-        }
-
-        public static void Load(SaveState saveState, ROSConnection connection)
-        {
-            RosTopicState topicState = connection.GetOrCreateTopic(saveState.Topic, saveState.RosMessageName);
-            RosTopicVisualizationState result = new RosTopicVisualizationState(saveState, topicState);
-            m_VisualizationStatesByTopic.Add(result.m_TopicState, result);
-        }
-
-        public static IEnumerable<RosTopicVisualizationState> AllTopics => m_VisualizationStatesByTopic.Values;
-
         RosTopicState m_TopicState;
         public string Topic => m_TopicState.Topic;
         public string RosMessageName => m_TopicState.RosMessageName;
@@ -41,24 +20,6 @@ namespace Unity.Robotics.MessageVisualizers
         bool m_NoVisualizerAvailable;
         bool m_DidSubscribe;
 
-        public IVisualFactory GetVisualizer()
-        {
-            if (m_CachedRosMessageName != RosMessageName)
-            {
-                // if the topic has changed, discard our cached data
-                m_VisualizerCached = null;
-                m_NoVisualizerAvailable = false;
-            }
-            if (m_VisualizerCached == null && !m_NoVisualizerAvailable)
-            {
-                m_VisualizerCached = VisualFactoryRegistry.GetVisualizer(m_TopicState.Topic, m_TopicState.RosMessageName);
-                m_CachedRosMessageName = RosMessageName;
-                if (m_VisualizerCached == null)
-                    m_NoVisualizerAvailable = true;
-            }
-            return m_VisualizerCached;
-        }
-
         IVisual m_Visual;
         public IVisual Visual => m_Visual;
         HudWindow m_VisualWindow;
@@ -67,16 +28,8 @@ namespace Unity.Robotics.MessageVisualizers
         bool m_IsVisualizingDrawing;
         public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
         float m_LastVisualFrameTime = -1;
-        RosTopicVisualizationState m_ServiceResponseTopic;
-
-        RosTopicVisualizationState(RosTopicState baseState)
-        {
-            m_TopicState = baseState;
-            if (baseState.ServiceResponseTopic != null)
-            {
-                m_ServiceResponseTopic = new RosTopicVisualizationState(baseState.ServiceResponseTopic);
-            }
-        }
+        // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
+        VisualizationTopicsTabLine m_ServiceResponseTopic;
 
         [Serializable]
         public class SaveState
@@ -89,7 +42,16 @@ namespace Unity.Robotics.MessageVisualizers
             public bool ShowDrawing;
         }
 
-        internal RosTopicVisualizationState(SaveState save, RosTopicState topicState)
+        public VisualizationTopicsTabLine(RosTopicState baseState)
+        {
+            m_TopicState = baseState;
+            if (baseState.ServiceResponseTopic != null)
+            {
+                m_ServiceResponseTopic = new VisualizationTopicsTabLine(baseState.ServiceResponseTopic);
+            }
+        }
+
+        internal VisualizationTopicsTabLine(SaveState save, RosTopicState topicState)
         {
             m_TopicState = topicState;
             if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
@@ -132,20 +94,38 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+        public IVisualFactory GetVisualizer()
+        {
+            if (m_CachedRosMessageName != RosMessageName)
+            {
+                // if the topic has changed, discard our cached data
+                m_VisualizerCached = null;
+                m_NoVisualizerAvailable = false;
+            }
+            if (m_VisualizerCached == null && !m_NoVisualizerAvailable)
+            {
+                m_VisualizerCached = VisualFactoryRegistry.GetVisualizer(m_TopicState.Topic, m_TopicState.RosMessageName);
+                m_CachedRosMessageName = RosMessageName;
+                if (m_VisualizerCached == null)
+                    m_NoVisualizerAvailable = true;
+            }
+            return m_VisualizerCached;
+        }
+
         void UpdateVisual(Message message)
         {
             MessageMetadata meta = new MessageMetadata(m_TopicState.Topic, Time.time, DateTime.Now);
-            IVisualFactory visualizer = GetVisualizer();
-            if (visualizer == null)
-            {
-                // this should never be null!? Clearly we know how to deserialize this message, so the default visualizer should at least be working.
-                Debug.LogError($"Unexpected error: No visualizer for {m_TopicState.RosMessageName} - message type {message?.GetType()}");
-                return;
-            }
 
             if (m_Visual == null)
             {
-                m_Visual = visualizer.CreateVisual();
+                IVisualFactory visualizer = GetVisualizer();
+                if (visualizer == null)
+                {
+                    // this should never be null!? Clearly we know how to deserialize this message, so the default visualizer should at least be working.
+                    Debug.LogError($"Unexpected error: No visualizer for {m_TopicState.RosMessageName} - message type {message?.GetType()}");
+                    return;
+                }
+                m_Visual = visualizer.GetOrCreateVisual(m_TopicState.Topic);
             }
             m_Visual.AddMessage(message, meta);
             m_LastVisualFrameTime = Time.time;
@@ -252,6 +232,5 @@ namespace Unity.Robotics.MessageVisualizers
             m_IsVisualizingUI = ui;
             m_IsVisualizingDrawing = drawing;
         }
-
     }
 }

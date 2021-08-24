@@ -1,49 +1,33 @@
 using RosMessageTypes.Std;
 using System;
+using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class GuiVisualizer<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class GuiVisualizer<T> : BaseVisualFactory<T>, IPriority
         where T : Message
     {
-        [SerializeField]
-        protected string m_Topic;
-
-        public virtual void Start()
+        protected override IVisual CreateVisual()
         {
-            if (m_Topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
+            return new GuiVisual(this);
         }
 
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => false;
-
-        public IVisual CreateVisual()
-        {
-            return new Visual(this);
-        }
+        public override bool CanShowDrawing => false;
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
             return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
-        public class Visual : IVisual
+        public class GuiVisual : IVisual
         {
             GuiVisualizer<T> m_Factory;
 
             Action m_GUIAction;
 
-            public Visual(GuiVisualizer<T> factory)
+            public GuiVisual(GuiVisualizer<T> factory)
             {
                 m_Factory = factory;
             }

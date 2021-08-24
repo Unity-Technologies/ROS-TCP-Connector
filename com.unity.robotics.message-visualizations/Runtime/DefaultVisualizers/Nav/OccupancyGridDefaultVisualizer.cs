@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RosMessageTypes.Map;
 using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
@@ -7,8 +8,16 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
+public class OccupancyGridDefaultVisualizer : IVisualFactory
 {
+    [SerializeField]
+    protected string m_OccupancyGridTopic;
+    public string OccupancyGridTopic { get => m_OccupancyGridTopic; set => m_OccupancyGridTopic = value; }
+
+    public int Priority { get; set; }
+
+    [SerializeField]
+    string m_OccupancyGridUpdateTopic;
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
@@ -16,9 +25,62 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
 
     public bool CanShowDrawing => true;
 
-    public IVisual CreateVisual()
+    Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
+    Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
+
+    public IVisual GetOrCreateVisual(string topic)
     {
-        return new OccupancyGridVisual(this);
+        OccupancyGridVisual baseVisual;
+        if (m_BaseVisuals.TryGetValue(topic, out baseVisual))
+            return baseVisual;
+        OccupancyGridUpdateVisual updateVisual;
+        if (m_UpdateVisuals.TryGetValue(topic, out updateVisual))
+            return updateVisual;
+
+        if (topic == m_OccupancyGridUpdateTopic && !string.IsNullOrEmpty(m_OccupancyGridTopic))
+        {
+            baseVisual = (OccupancyGridVisual)GetOrCreateVisual(m_OccupancyGridTopic);
+            updateVisual = new OccupancyGridUpdateVisual(baseVisual);
+            m_UpdateVisuals.Add(topic, updateVisual);
+            return updateVisual;
+        }
+
+        const string updateSuffix = "_update";
+        if (topic.EndsWith(updateSuffix))
+        {
+            string baseTopic = topic.Remove(topic.Length - updateSuffix.Length);
+            if (!m_BaseVisuals.TryGetValue(baseTopic, out baseVisual))
+            {
+                baseVisual = new OccupancyGridVisual(this);
+                m_BaseVisuals.Add(baseTopic, baseVisual);
+            }
+            updateVisual = new OccupancyGridUpdateVisual(baseVisual);
+            m_UpdateVisuals.Add(topic, updateVisual);
+            return updateVisual;
+        }
+        else
+        {
+            baseVisual = new OccupancyGridVisual(this);
+            m_BaseVisuals.Add(topic, baseVisual);
+            return baseVisual;
+        }
+    }
+
+    public void Start()
+    {
+        if (string.IsNullOrEmpty(m_OccupancyGridTopic))
+        {
+            VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridMsg>(this, Priority);
+            VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridUpdateMsg>(this, Priority);
+        }
+        else
+        {
+            VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridTopic, this, Priority);
+            if (!string.IsNullOrEmpty(m_OccupancyGridUpdateTopic))
+            {
+                VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridUpdateTopic, this, Priority);
+            }
+        }
     }
 
     public class OccupancyGridVisual : IVisual
@@ -138,6 +200,32 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         {
             m_Message.header.GUI();
             m_Message.info.GUI();
+        }
+    }
+
+    public class OccupancyGridUpdateVisual : IVisual
+    {
+        OccupancyGridVisual m_BaseVisual;
+        public OccupancyGridUpdateVisual(OccupancyGridVisual baseVisual)
+        {
+            m_BaseVisual = baseVisual;
+        }
+
+        public void AddMessage(Message message, MessageMetadata meta)
+        {
+            m_BaseVisual.AddUpdate((OccupancyGridUpdateMsg)message);
+        }
+
+        public void CreateDrawing()
+        {
+        }
+
+        public void DeleteDrawing()
+        {
+        }
+
+        public void OnGUI()
+        {
         }
     }
 }

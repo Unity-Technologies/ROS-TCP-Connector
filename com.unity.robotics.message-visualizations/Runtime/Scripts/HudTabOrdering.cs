@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
+    // By default a user-created tab is assigned a positive index.
+    // The built in tabs have a negative index so that they always come first.
     public enum HudTabOrdering
     {
         Topics = -4,

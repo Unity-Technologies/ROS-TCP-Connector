@@ -5,30 +5,12 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class DrawingVisualizer<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class DrawingVisualizer<T> : BaseVisualFactory<T>
         where T : Message
     {
-        [SerializeField]
-        string m_Topic;
-        public string Topic { get => m_Topic; set => m_Topic = value; }
+        public override bool CanShowDrawing => true;
 
-        public virtual void Start()
-        {
-            if (string.IsNullOrEmpty(m_Topic))
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
-        }
-
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => true;
-
-        public virtual IVisual CreateVisual()
+        protected override IVisual CreateVisual()
         {
             return new DrawingVisual(this);
         }

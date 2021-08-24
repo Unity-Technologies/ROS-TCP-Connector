@@ -6,34 +6,16 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class MultiDrawingVisualizer<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class MultiDrawingVisualizer<T> : BaseVisualFactory<T>
         where T : Message
     {
-        [SerializeField]
-        string m_Topic;
-        public string Topic { get => m_Topic; set => m_Topic = value; }
-
         [SerializeField]
         int m_HistoryLength;
         public int HistoryLength { get => m_HistoryLength; set => m_HistoryLength = value; }
 
-        public virtual void Start()
-        {
-            if (string.IsNullOrEmpty(m_Topic))
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
-        }
+        public override bool CanShowDrawing => true;
 
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => true;
-
-        public virtual IVisual CreateVisual()
+        protected override IVisual CreateVisual()
         {
             return new Visual(this, m_HistoryLength);
         }

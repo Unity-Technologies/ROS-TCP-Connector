@@ -6,14 +6,14 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class OccupancyGridUpdateDefaultVisualizer : MonoBehaviour, IVisualFactory
+public class OccupancyGridUpdateDefaultVisualizer : BaseVisualFactory<OccupancyGridUpdateMsg>
 {
     [SerializeField]
     string m_OccupancyGridTopic;
 
-    public bool CanShowDrawing => true;
+    public override bool CanShowDrawing => true;
 
-    public IVisual CreateVisual()
+    protected override IVisual CreateVisual()
     {
         return new OccupancyGridUpdateVisual(this);
     }

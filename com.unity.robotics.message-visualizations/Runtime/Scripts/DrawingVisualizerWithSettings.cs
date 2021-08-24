@@ -33,7 +33,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public override IVisual CreateVisual()
+        protected override IVisual CreateVisual()
         {
             return new DrawingVisual(this);
         }
@@ -46,13 +46,9 @@ namespace Unity.Robotics.MessageVisualizers
         public void Redraw()
         {
             // settings have changed - update the visualization
-            IVisualFactory thisFactory = this;
-            foreach (RosTopicVisualizationState topic in RosTopicVisualizationState.AllTopics)
+            foreach (IVisual visual in AllVisuals)
             {
-                if (topic != null && topic.IsVisualizingDrawing && topic.GetVisualizer() == thisFactory)
-                {
-                    topic.Visual.CreateDrawing();
-                }
+                visual.CreateDrawing();
             }
         }
     }

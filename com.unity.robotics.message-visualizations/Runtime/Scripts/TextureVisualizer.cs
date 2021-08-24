@@ -6,30 +6,14 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class TextureVisualizer<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class TextureVisualizer<T> : BaseVisualFactory<T>
         where T : Message
     {
-        [SerializeField]
-        protected string m_Topic;
+        public override bool CanShowDrawing => false;
 
-        public virtual void Start()
+        protected override IVisual CreateVisual()
         {
-            if (m_Topic == "")
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
-        }
-
-        public int Priority { get; set; }
-        public bool CanShowDrawing => false;
-
-        public IVisual CreateVisual()
-        {
-            return new Visual(this);
+            return new TextureVisual(this);
         }
 
         public abstract Texture2D CreateTexture(T message);
@@ -39,7 +23,7 @@ namespace Unity.Robotics.MessageVisualizers
             return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
-        public class Visual : ITextureVisual
+        public class TextureVisual : ITextureVisual
         {
             TextureVisualizer<T> m_Factory;
 
@@ -52,7 +36,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_OnChangeCallbacks.Add(callback);
             }
 
-            public Visual(TextureVisualizer<T> factory)
+            public TextureVisual(TextureVisualizer<T> factory)
             {
                 m_Factory = factory;
             }
