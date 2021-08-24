@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RosMessageTypes.Map;
+//using RosMessageTypes.Map;
 using RosMessageTypes.Nav;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector;
@@ -16,8 +16,8 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
 
     public int Priority { get; set; }
 
-    [SerializeField]
-    string m_OccupancyGridUpdateTopic;
+    //[SerializeField]
+    //string m_OccupancyGridUpdateTopic;
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
@@ -26,39 +26,41 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
     public bool CanShowDrawing => true;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
-    Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
+    //Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
 
     public IVisual GetOrCreateVisual(string topic)
     {
         OccupancyGridVisual baseVisual;
         if (m_BaseVisuals.TryGetValue(topic, out baseVisual))
             return baseVisual;
-        OccupancyGridUpdateVisual updateVisual;
-        if (m_UpdateVisuals.TryGetValue(topic, out updateVisual))
-            return updateVisual;
 
-        if (topic == m_OccupancyGridUpdateTopic && !string.IsNullOrEmpty(m_OccupancyGridTopic))
-        {
-            baseVisual = (OccupancyGridVisual)GetOrCreateVisual(m_OccupancyGridTopic);
-            updateVisual = new OccupancyGridUpdateVisual(baseVisual);
-            m_UpdateVisuals.Add(topic, updateVisual);
-            return updateVisual;
-        }
+        // TODO: test OccupancyGridUpdate messages
+        //OccupancyGridUpdateVisual updateVisual;
+        //if (m_UpdateVisuals.TryGetValue(topic, out updateVisual))
+        //return updateVisual;
 
-        const string updateSuffix = "_update";
-        if (topic.EndsWith(updateSuffix))
-        {
-            string baseTopic = topic.Remove(topic.Length - updateSuffix.Length);
-            if (!m_BaseVisuals.TryGetValue(baseTopic, out baseVisual))
-            {
-                baseVisual = new OccupancyGridVisual(this);
-                m_BaseVisuals.Add(baseTopic, baseVisual);
-            }
-            updateVisual = new OccupancyGridUpdateVisual(baseVisual);
-            m_UpdateVisuals.Add(topic, updateVisual);
-            return updateVisual;
-        }
-        else
+        //if (topic == m_OccupancyGridUpdateTopic && !string.IsNullOrEmpty(m_OccupancyGridTopic))
+        //{
+        //baseVisual = (OccupancyGridVisual)GetOrCreateVisual(m_OccupancyGridTopic);
+        //updateVisual = new OccupancyGridUpdateVisual(baseVisual);
+        //m_UpdateVisuals.Add(topic, updateVisual);
+        //return updateVisual;
+        //}
+
+        //const string updateSuffix = "_update";
+        //if (topic.EndsWith(updateSuffix))
+        //{
+        //string baseTopic = topic.Remove(topic.Length - updateSuffix.Length);
+        //if (!m_BaseVisuals.TryGetValue(baseTopic, out baseVisual))
+        //{
+        //baseVisual = new OccupancyGridVisual(this);
+        //m_BaseVisuals.Add(baseTopic, baseVisual);
+        //}
+        //updateVisual = new OccupancyGridUpdateVisual(baseVisual);
+        //m_UpdateVisuals.Add(topic, updateVisual);
+        //return updateVisual;
+        //}
+        //else
         {
             baseVisual = new OccupancyGridVisual(this);
             m_BaseVisuals.Add(topic, baseVisual);
@@ -71,15 +73,15 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
         if (string.IsNullOrEmpty(m_OccupancyGridTopic))
         {
             VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridMsg>(this, Priority);
-            VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridUpdateMsg>(this, Priority);
+            //VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridUpdateMsg>(this, Priority);
         }
         else
         {
             VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridTopic, this, Priority);
-            if (!string.IsNullOrEmpty(m_OccupancyGridUpdateTopic))
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridUpdateTopic, this, Priority);
-            }
+            //if (!string.IsNullOrEmpty(m_OccupancyGridUpdateTopic))
+            //{
+            //    VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridUpdateTopic, this, Priority);
+            //}
         }
     }
 
@@ -113,7 +115,7 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
             m_TextureIsDirty = true;
         }
 
-        public void AddUpdate(OccupancyGridUpdateMsg message)
+        /*public void AddUpdate(OccupancyGridUpdateMsg message)
         {
             int width = (int)message.width;
             int height = (int)message.height;
@@ -124,7 +126,7 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
                 colorBlock[Idx] = new Color32((byte)message.data[Idx], 0, 0, 0);
             texture.SetPixels32(message.x, message.y, width, height, colorBlock);
             texture.Apply();
-        }
+        }*/
 
         public void CreateDrawing()
         {
@@ -203,7 +205,7 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
         }
     }
 
-    public class OccupancyGridUpdateVisual : IVisual
+    /*public class OccupancyGridUpdateVisual : IVisual
     {
         OccupancyGridVisual m_BaseVisual;
         public OccupancyGridUpdateVisual(OccupancyGridVisual baseVisual)
@@ -227,5 +229,5 @@ public class OccupancyGridDefaultVisualizer : IVisualFactory
         public void OnGUI()
         {
         }
-    }
+    }*/
 }
