@@ -9,7 +9,7 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
     where TMessageType : Message
     where TVisualizerSettings : BaseVisualizerSettings<TMessageType>
 {
-    TVisualizerSettings m_Config;
+    protected TVisualizerSettings m_Config;
     Editor m_Editor;
 
     public override void OnInspectorGUI()
@@ -30,6 +30,12 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         {
             visualizer.Redraw();
         }
+    }
+
+    public void VisualizerRedraw()
+    {
+        DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer = (DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings>)target;
+        visualizer.Redraw();
     }
 
     protected virtual void OnInspectorGUIForSettings(DrawingVisualizerWithSettings<TMessageType, TVisualizerSettings> visualizer)
