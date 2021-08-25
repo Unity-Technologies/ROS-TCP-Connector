@@ -12,11 +12,11 @@ public class PoseStampedDefaultVisualizer : DrawingVisualizer<PoseStampedMsg>
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
     [SerializeField]
-    TFTrackingType m_TFTrackingType;
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, PoseStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PoseDefaultVisualizer.Draw<FLU>(message.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 

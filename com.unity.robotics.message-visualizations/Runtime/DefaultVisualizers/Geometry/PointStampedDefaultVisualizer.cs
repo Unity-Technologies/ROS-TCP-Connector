@@ -14,11 +14,11 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
         [SerializeField]
-        TFTrackingType m_TFTrackingType;
+        TFTrackingSettings m_TFTrackingSettings;
 
         public override void Draw(BasicDrawing drawing, PointStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             PointDefaultVisualizer.Draw<FLU>(message.point, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 

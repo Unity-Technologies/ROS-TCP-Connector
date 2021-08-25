@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class TFSystemVisualizer : MonoBehaviour, ITFSystemVisualizer, ROSTCPConnector.IHudTab
+    public class TFSystemVisualizer : MonoBehaviour, IHudTab
     {
         public float axesScale = 0.1f;
         public float lineThickness = 0.01f;
@@ -15,9 +15,8 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
-            ROSConnection.GetOrCreateInstance();
+            TFSystem.GetOrCreateInstance().AddListener(OnChanged);
             HudPanel.RegisterTab(this, (int)HudTabOrdering.TF);
-            TFSystem.Register(this);
             if (color.a == 0)
                 color.a = 1;
         }
@@ -150,7 +149,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (GUI.changed || globalChange)
             {
-                TFSystem.UpdateVisualization(stream);
+                TFSystem.instance.NotifyAllChanged(stream);
             }
 
             if (m_ShowExpanded[stream])

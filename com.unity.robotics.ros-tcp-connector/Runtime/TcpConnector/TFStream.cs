@@ -45,6 +45,7 @@ public struct TFFrame
 public class TFStream
 {
     public string Name { get; private set; }
+    public string TFTopic { get; private set; }
     public TFStream Parent { get; private set; }
     public IEnumerable<TFStream> Children => m_Children;
 
@@ -58,9 +59,10 @@ public class TFStream
     GameObject m_GameObject;
     public GameObject GameObject => m_GameObject;
 
-    public TFStream(TFStream parent, string name)
+    public TFStream(TFStream parent, string name, string tfTopic)
     {
         Name = name;
+        TFTopic = tfTopic;
         m_GameObject = new GameObject(name);
         SetParent(parent);
     }

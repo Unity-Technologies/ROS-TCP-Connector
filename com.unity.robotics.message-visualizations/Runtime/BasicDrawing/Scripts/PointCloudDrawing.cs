@@ -115,6 +115,7 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         // Bake all buffered data into a mesh. Clear the buffers.
+        // In most cases you don't need to call this - the mesh will be generated for you in the Update function.
         public void Bake()
         {
             GenerateMesh();

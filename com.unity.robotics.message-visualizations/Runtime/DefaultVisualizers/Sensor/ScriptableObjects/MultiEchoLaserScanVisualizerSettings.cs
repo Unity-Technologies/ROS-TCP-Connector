@@ -7,12 +7,19 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "MessageVisualizations/Sensor/MultiEchoLaserScan", order = 1)]
 public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<MultiEchoLaserScanMsg>
 {
-    public bool m_UseIntensitySize;
-    public float m_PointRadius = 0.05f;
-    public float[] m_SizeRange = { 0, 100 };
+    [SerializeField]
+    bool m_UseIntensitySize;
+    public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
+    [SerializeField]
+    float m_PointRadius = 0.05f;
+    public float PointRadius { get => m_PointRadius; set => m_PointRadius = value; }
+    [SerializeField]
+    float[] m_SizeRange = { 0, 100 };
+    public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
 
     public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         MultiEchoLaserScanDefaultVisualizer.Draw<FLU>(message, drawing, this);
     }
 

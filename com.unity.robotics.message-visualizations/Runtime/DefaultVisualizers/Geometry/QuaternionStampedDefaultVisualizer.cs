@@ -19,11 +19,11 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
         [SerializeField]
-        TFTrackingType m_TFTrackingType;
+        TFTrackingSettings m_TFTrackingSettings;
 
         public override void Draw(BasicDrawing drawing, QuaternionStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             QuaternionDefaultVisualizer.Draw<FLU>(message.quaternion, drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), transform.position, SelectColor(m_Color, meta), m_Size);
         }

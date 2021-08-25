@@ -5,32 +5,14 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public abstract class DrawingVisualizer<T> : MonoBehaviour, IVisualFactory, IPriority
+    public abstract class DrawingVisualizer<T> : BaseVisualFactory<T>
         where T : Message
     {
-        [SerializeField]
-        string m_Topic;
-        public string Topic { get => m_Topic; set => m_Topic = value; }
+        public override bool CanShowDrawing => true;
 
-        public virtual void Start()
+        protected override IVisual CreateVisual()
         {
-            if (string.IsNullOrEmpty(m_Topic))
-            {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
-            }
-            else
-            {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
-            }
-        }
-
-        public int Priority { get; set; }
-
-        public bool CanShowDrawing => true;
-
-        public virtual IVisual CreateVisual()
-        {
-            return new Visual(this);
+            return new DrawingVisual(this);
         }
 
         public Color SelectColor(Color userColor, MessageMetadata meta)
@@ -42,6 +24,10 @@ namespace Unity.Robotics.MessageVisualizers
         {
             return MessageVisualizationUtils.SelectLabel(userLabel, meta);
         }
+        public virtual void Draw(DrawingVisual drawing, T message, MessageMetadata meta)
+        {
+            Draw(drawing.BasicDrawing, message, meta);
+        }
 
         public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta) { }
 
@@ -50,21 +36,22 @@ namespace Unity.Robotics.MessageVisualizers
             return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
-        public class Visual : IVisual
+        public class DrawingVisual : IVisual
         {
             public T message { get; private set; }
             public MessageMetadata meta { get; private set; }
 
             BasicDrawing m_BasicDrawing;
+            public BasicDrawing BasicDrawing => m_BasicDrawing;
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
 
-            public Visual(DrawingVisualizer<T> factory)
+            public DrawingVisual(DrawingVisualizer<T> factory)
             {
                 m_Factory = factory;
             }
 
-            public void AddMessage(Message message, MessageMetadata meta)
+            public virtual void AddMessage(Message message, MessageMetadata meta)
             {
                 if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
                     return;
@@ -107,7 +94,7 @@ namespace Unity.Robotics.MessageVisualizers
                     m_BasicDrawing.Clear();
                 }
 
-                m_Factory.Draw(m_BasicDrawing, message, meta);
+                m_Factory.Draw(this, message, meta);
             }
         }
     }

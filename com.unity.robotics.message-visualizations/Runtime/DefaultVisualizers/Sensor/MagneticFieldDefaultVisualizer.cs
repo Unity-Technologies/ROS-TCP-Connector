@@ -9,9 +9,12 @@ public class MagneticFieldDefaultVisualizer : DrawingVisualizer<MagneticFieldMsg
     [SerializeField]
     Color m_Color;
     bool m_ViewCovariance;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, MagneticFieldMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 

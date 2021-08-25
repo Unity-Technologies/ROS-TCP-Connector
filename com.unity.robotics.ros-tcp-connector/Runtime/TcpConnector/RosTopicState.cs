@@ -13,6 +13,9 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_Topic;
         public string Topic => m_Topic;
 
+        MessageSubtopic m_Subtopic;
+        public MessageSubtopic Subtopic => m_Subtopic;
+
         string m_RosMessageName;
         public string RosMessageName => m_RosMessageName;
 
@@ -35,9 +38,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         bool m_SentSubscriberRegistration;
 
-        internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal)
+        internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             m_Topic = topic;
+            m_Subtopic = subtopic;
             m_RosMessageName = rosMessageName;
             m_Connection = connection;
             m_ConnectionInternal = connectionInternal;
@@ -103,7 +107,7 @@ namespace Unity.Robotics.ROSTCPConnector
         Message Deserialize(byte[] data)
         {
             if (m_Deserializer == null)
-                m_Deserializer = MessageRegistry.GetDeserializeFunction(m_RosMessageName);
+                m_Deserializer = MessageRegistry.GetDeserializeFunction(m_RosMessageName, m_Subtopic);
 
             m_ConnectionInternal.Deserializer.InitWithBuffer(data);
             return m_Deserializer(m_ConnectionInternal.Deserializer);
@@ -136,7 +140,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_ServiceImplementation = implementation;
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal);
+            m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
         public void RegisterPublisher()
@@ -149,7 +153,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_IsRosService = true;
             m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal);
+            m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
         public void RegisterAll(NetworkStream stream)

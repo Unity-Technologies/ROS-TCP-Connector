@@ -12,9 +12,12 @@ public class PathDefaultVisualizer : DrawingVisualizer<PathMsg>
     float m_Thickness;
     [SerializeField]
     Color m_Color;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, PathMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 
