@@ -118,14 +118,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (m_Visual == null)
             {
-                IVisualFactory visualizer = GetVisualizer();
-                if (visualizer == null)
-                {
-                    // this should never be null!? Clearly we know how to deserialize this message, so the default visualizer should at least be working.
-                    Debug.LogError($"Unexpected error: No visualizer for {m_TopicState.RosMessageName} - message type {message?.GetType()}");
-                    return;
-                }
-                m_Visual = visualizer.GetOrCreateVisual(m_TopicState.Topic);
+                m_Visual = MessageVisualizationUtils.GetVisual(m_TopicState.Topic, m_TopicState.RosMessageName, m_TopicState.Subtopic);
             }
             m_Visual.AddMessage(message, meta);
             m_LastVisualFrameTime = Time.time;

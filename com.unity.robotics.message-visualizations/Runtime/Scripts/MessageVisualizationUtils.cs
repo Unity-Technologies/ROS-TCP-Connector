@@ -64,13 +64,25 @@ namespace Unity.Robotics.MessageVisualizers
             return true;
         }
 
-        public static IVisual GetVisual(string topic)
+        public static IVisual GetVisual(string topic, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
-            RosTopicState state = ROSConnection.GetOrCreateInstance().GetTopic(topic);
-            if (state == null)
+            RosTopicState topicState = ROSConnection.GetOrCreateInstance().GetTopic(topic);
+            if (topicState != null && subtopic == MessageSubtopic.Response)
+                topicState = topicState.ServiceResponseTopic;
+
+            if (topicState == null)
                 return null;
 
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, state.RosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, topicState.RosMessageName);
+            if (factory == null)
+                return null;
+
+            return factory.GetOrCreateVisual(topic);
+        }
+
+        public static IVisual GetVisual(string topic, string rosMessageName, MessageSubtopic subtopic)
+        {
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
             if (factory == null)
                 return null;
 
