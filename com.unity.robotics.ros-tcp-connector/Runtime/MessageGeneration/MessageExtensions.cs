@@ -175,6 +175,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     case "rgb8":
                     case "bgra8":
                     case "rgba8":
+                    case "8SC4":
+                    case "8UC4":
                         convert = false;
                         break;
                 }
@@ -213,15 +215,29 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 int swapDistance = channels == 2 ? channelStride : channelStride * 2;
                 int dataLength = width * height * pixelStride;
 
-                for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
+                if (channelStride == 1)
                 {
-                    int channelEndByte = pixelIndex + channelStride;
-                    for (int byteIndex = pixelIndex; byteIndex < channelEndByte; byteIndex++)
+                    // special case for the 1-byte-per-channel formats: avoid the inner loop
+                    for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
                     {
-                        int swapB = byteIndex + swapDistance;
-                        byte temp = toConvert[byteIndex];
-                        toConvert[byteIndex] = toConvert[swapB];
+                        int swapB = pixelIndex + swapDistance;
+                        byte temp = toConvert[pixelIndex];
+                        toConvert[pixelIndex] = toConvert[swapB];
                         toConvert[swapB] = temp;
+                    }
+                }
+                else
+                {
+                    for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
+                    {
+                        int channelEndByte = pixelIndex + channelStride;
+                        for (int byteIndex = pixelIndex; byteIndex < channelEndByte; byteIndex++)
+                        {
+                            int swapB = byteIndex + swapDistance;
+                            byte temp = toConvert[byteIndex];
+                            toConvert[byteIndex] = toConvert[swapB];
+                            toConvert[swapB] = temp;
+                        }
                     }
                 }
             }
@@ -351,7 +367,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     return TextureFormat.RGB24;
                 case "8UC4":
                 case "8SC4":
-                    return TextureFormat.RGBA32;
+                case "bgra8":
+                    return TextureFormat.BGRA32; // unity supports these natively
                 case "16UC1":
                 case "16SC1":
                     return TextureFormat.R16;
@@ -389,11 +406,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "bgr8":
                     return TextureFormat.RGB24;
                 case "rgb8":
-                    return TextureFormat.RGB24;
-                case "bgra8":
-                    return TextureFormat.BGRA32;
+                    return TextureFormat.RGB24; // unity supports this natively
                 case "rgba8":
-                    return TextureFormat.RGBA32;
+                    return TextureFormat.RGBA32; // unity supports this natively
                 case "bayer_rggb8":
                 case "bayer_bggr8":
                 case "bayer_gbrg8":

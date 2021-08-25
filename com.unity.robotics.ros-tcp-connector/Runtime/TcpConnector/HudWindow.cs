@@ -28,6 +28,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_WindowID = HudPanel.GetNextWindowID();
             m_IsActive = true;
             m_AutoLayout = false;
+            m_WindowRect = rect;
         }
 
         public HudWindow(string title)
