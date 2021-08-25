@@ -9,7 +9,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     // Represents a single line in the VisualizationTopicsTab
     // and saves and loads the options for that line, plus the associated hud windows etc.
-    public class VisualizationTopicsTabLine
+    public class VisualizationTopicsTabEntry
     {
         RosTopicState m_TopicState;
         public string Topic => m_TopicState.Topic;
@@ -29,7 +29,7 @@ namespace Unity.Robotics.MessageVisualizers
         public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
         float m_LastVisualFrameTime = -1;
         // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
-        VisualizationTopicsTabLine m_ServiceResponseTopic;
+        VisualizationTopicsTabEntry m_ServiceResponseTopic;
 
         [Serializable]
         public class SaveState
@@ -42,16 +42,16 @@ namespace Unity.Robotics.MessageVisualizers
             public bool ShowDrawing;
         }
 
-        public VisualizationTopicsTabLine(RosTopicState baseState)
+        public VisualizationTopicsTabEntry(RosTopicState baseState)
         {
             m_TopicState = baseState;
             if (baseState.ServiceResponseTopic != null)
             {
-                m_ServiceResponseTopic = new VisualizationTopicsTabLine(baseState.ServiceResponseTopic);
+                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic);
             }
         }
 
-        internal VisualizationTopicsTabLine(SaveState save, RosTopicState topicState)
+        internal VisualizationTopicsTabEntry(SaveState save, RosTopicState topicState)
         {
             m_TopicState = topicState;
             if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)

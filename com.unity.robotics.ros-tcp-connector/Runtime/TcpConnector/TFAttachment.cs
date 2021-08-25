@@ -10,7 +10,7 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_FrameID;
         public string FrameID { get => m_FrameID; set => m_FrameID = value; }
         [SerializeField]
-        string m_TFTopic = "\tf";
+        string m_TFTopic = "/tf";
         public string TFTopic { get => m_TFTopic; set => m_TFTopic = value; }
 
         void Start()
