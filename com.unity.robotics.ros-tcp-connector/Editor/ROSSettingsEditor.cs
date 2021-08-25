@@ -14,7 +14,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
         {
             ROSSettingsEditor window = GetWindow<ROSSettingsEditor>(false, "ROS Settings", true);
             window.minSize = new Vector2(300, 65);
-            window.maxSize = new Vector2(600, 250);
+            window.maxSize = new Vector2(600, 500);
             window.Show();
         }
 
@@ -34,6 +34,9 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
         RosProtocol m_SelectedProtocol = RosProtocol.ROS1;
         const RosProtocol k_AlternateProtocol = RosProtocol.ROS2;
 #endif
+
+        [SerializeField] string[] m_TFTopics;
+        UnityEditor.Editor editor;
 
         protected virtual void OnGUI()
         {
@@ -116,10 +119,27 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
                 prefab.SleepTimeSeconds);
 
+            // TODO: make the settings input update the prefab
+            // EditorGUILayout.Space();
+            // if (!editor) { editor = UnityEditor.Editor.CreateEditor(this); }
+            // if (editor) { editor.OnInspectorGUI(); }
+
             if (GUI.changed)
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
+        }
+
+        void OnInspectorUpdate() { Repaint(); }
+    }
+
+    [CustomEditor(typeof(ROSSettingsEditor), true)]
+    public class TFTopicsEditorDrawer : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            var list = serializedObject.FindProperty("m_TFTopics");
+            EditorGUILayout.PropertyField(list, new GUIContent("TF Topics"), true);
         }
     }
 }

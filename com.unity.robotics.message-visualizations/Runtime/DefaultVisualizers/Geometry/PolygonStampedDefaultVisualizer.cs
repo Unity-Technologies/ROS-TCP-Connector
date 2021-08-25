@@ -12,11 +12,11 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
         [SerializeField]
-        TFTrackingType m_TFTrackingType;
+        TFTrackingSettings m_TFTrackingSettings;
 
         public override void Draw(BasicDrawing drawing, PolygonStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingType(m_TFTrackingType, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             PolygonDefaultVisualizer.Draw<FLU>(message.polygon, drawing, SelectColor(m_Color, meta), m_Thickness);
         }
 

@@ -16,19 +16,14 @@ public class RangeDefaultVisualizer : DrawingVisualizer<RangeMsg>
     }
 
     public static void Draw<C>(RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
-    where C : ICoordinateSpace, new()
+        where C : ICoordinateSpace, new()
     {
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
-
-        var s = Mathf.Asin(message.field_of_view);
-        var c = Mathf.Acos(message.field_of_view);
+        var asin = Mathf.Asin(message.field_of_view);
+        var acos = Mathf.Acos(message.field_of_view);
         Color col = Color.HSVToRGB(Mathf.InverseLerp(message.min_range, message.max_range, message.range), 1, 1);
+        Vector3 end = new Vector3<C>(message.range * acos, 0, message.range * asin).toUnity;
 
-        Vector3 end = new Vector3(message.range * c, 0, message.range * s);
-        Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, frame.rotation, Vector3.one);
-        end = matrix.MultiplyPoint(end);
-
-        drawing.DrawCone(frame.translation + end, frame.translation, col, Mathf.Rad2Deg * message.field_of_view / 2);
+        drawing.DrawCone(end, Vector3.zero, col, Mathf.Rad2Deg * message.field_of_view / 2);
     }
 
     public override Action CreateGUI(RangeMsg message, MessageMetadata meta)

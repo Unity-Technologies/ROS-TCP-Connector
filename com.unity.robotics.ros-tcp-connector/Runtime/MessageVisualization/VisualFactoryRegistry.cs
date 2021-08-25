@@ -10,13 +10,11 @@ namespace Unity.Robotics.MessageVisualizers
     public interface IVisualFactory
     {
         bool CanShowDrawing { get; }
-        IVisual CreateVisual();
+        IVisual GetOrCreateVisual(string topic);
     }
 
     public interface IVisual
     {
-        bool hasDrawing { get; }
-        bool hasAction { get; }
         void AddMessage(Message message, MessageMetadata meta);
         void DeleteDrawing();
         void OnGUI();
@@ -26,6 +24,7 @@ namespace Unity.Robotics.MessageVisualizers
     public interface ITextureVisual : IVisual
     {
         Texture2D GetTexture();
+        void ListenForTextureChange(Action<Texture2D> callback);
     }
 
     public readonly struct MessageMetadata
@@ -114,18 +113,21 @@ namespace Unity.Robotics.MessageVisualizers
 
         class DefaultVisualFactory : IVisualFactory
         {
-            public IVisual CreateVisual()
+            Dictionary<string, IVisual> m_Visuals = new Dictionary<string, IVisual>();
+
+            public IVisual GetOrCreateVisual(string topic)
             {
-                return new DefaultVisual();
+                IVisual visual;
+                if (m_Visuals.TryGetValue(topic, out visual))
+                    return visual;
+
+                visual = new DefaultVisual();
+                m_Visuals.Add(topic, visual);
+                return visual;
             }
 
             // If you're trying to register the default visualFactory, something has gone extremely wrong...
             public void Register(int priority) { throw new NotImplementedException(); }
-
-            public HeaderMsg GetHeader(Message message)
-            {
-                return null;
-            }
 
             public bool CanShowDrawing => false;
 

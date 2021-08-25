@@ -11,6 +11,7 @@ namespace RosMessageTypes.Tf2
     public class FrameGraphRequest : Message
     {
         public const string k_RosMessageName = "tf2_msgs/FrameGraph";
+        public override string RosMessageName => k_RosMessageName;
 
 
         public FrameGraphRequest()

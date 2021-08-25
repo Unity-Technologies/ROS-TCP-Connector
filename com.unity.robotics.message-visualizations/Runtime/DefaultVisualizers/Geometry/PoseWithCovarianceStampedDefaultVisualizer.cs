@@ -12,9 +12,12 @@ public class PoseWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Pose
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
     bool m_ViewCovariance;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PoseDefaultVisualizer.Draw<FLU>(message.pose.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 

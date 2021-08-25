@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
 {
-    public string imageTopic;
+    [SerializeField]
+    public string ImageTopic;
     bool m_ViewK;
     bool m_ViewP;
     bool m_ViewR;
@@ -18,12 +19,7 @@ public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
         if (!message.roi.do_rectify)
             return null;
 
-        RosTopicState imageState = ROSConnection.GetOrCreateInstance().GetTopic(imageTopic);
-        if (imageState == null)
-            return null;
-
-        RosTopicVisualizationState visualizationState = RosTopicVisualizationState.GetOrCreate(imageState);
-        var imageVisual = visualizationState.Visual as ITextureVisual;
+        ITextureVisual imageVisual = MessageVisualizationUtils.GetVisual(ImageTopic) as ITextureVisual;
         if (imageVisual == null)
             return null;
 

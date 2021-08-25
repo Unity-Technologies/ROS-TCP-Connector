@@ -10,6 +10,7 @@ namespace RosMessageTypes.Nav
         public const string k_RosMessageName = "nav_msgs/GetMapActionGoal";
         public override string RosMessageName => k_RosMessageName;
 
+
         public GetMapActionGoal() : base()
         {
             this.goal = new GetMapGoal();

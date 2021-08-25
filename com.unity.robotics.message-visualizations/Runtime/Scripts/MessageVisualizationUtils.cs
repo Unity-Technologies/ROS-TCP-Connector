@@ -13,6 +13,7 @@ using RosMessageTypes.BuiltinInterfaces;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
 
 namespace Unity.Robotics.MessageVisualizers
 {
@@ -62,6 +63,32 @@ namespace Unity.Robotics.MessageVisualizers
 
             return true;
         }
+
+        public static IVisual GetVisual(string topic, MessageSubtopic subtopic = MessageSubtopic.Default)
+        {
+            RosTopicState topicState = ROSConnection.GetOrCreateInstance().GetTopic(topic);
+            if (topicState != null && subtopic == MessageSubtopic.Response)
+                topicState = topicState.ServiceResponseTopic;
+
+            if (topicState == null)
+                return null;
+
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, topicState.RosMessageName);
+            if (factory == null)
+                return null;
+
+            return factory.GetOrCreateVisual(topic);
+        }
+
+        public static IVisual GetVisual(string topic, string rosMessageName, MessageSubtopic subtopic)
+        {
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
+            if (factory == null)
+                return null;
+
+            return factory.GetOrCreateVisual(topic);
+        }
+
         public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();

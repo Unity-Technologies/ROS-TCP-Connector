@@ -25,10 +25,9 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
 
     public static void Draw<C>(ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
-        TFFrame frame = TFSystem.instance.GetTransform(message.header);
-        QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing, frame.translation);
-        drawing.DrawArrow(frame.translation, frame.translation + message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), frame.translation, color, sphereRadius, thickness);
+        QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing);
+        drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
+        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(ImuMsg message, MessageMetadata meta)

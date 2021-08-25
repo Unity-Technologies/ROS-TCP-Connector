@@ -52,6 +52,10 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
+        [SerializeField]
+        string[] m_TFTopics = { "/tf" };
+        public string[] TFTopics { get => m_TFTopics; set => m_TFTopics = value; }
+
         const string k_SysCommand_Log = "__log";
         const string k_SysCommand_Warning = "__warn";
         const string k_SysCommand_Error = "__error";
@@ -198,9 +202,10 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         // Implement a service in Unity
-        public void ImplementService<REQUEST>(string topic, Func<REQUEST, Message> callback) where REQUEST : Message
+        public void ImplementService<TRequest>(string topic, Func<TRequest, Message> callback)
+            where TRequest : Message
         {
-            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<REQUEST>();
+            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<TRequest>();
 
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
@@ -208,7 +213,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 info = AddTopic(topic, rosMessageName);
             }
 
-            info.ImplementService((Message msg) => callback((REQUEST)msg));
+            info.ImplementService((Message msg) => callback((TRequest)msg));
         }
 
         // Send a request to a ros service
@@ -292,7 +297,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public void RegisterUnityService(string topic, string rosMessageName)
         {
         }
-
 
         internal struct InternalAPI
         {
@@ -837,7 +841,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
         }
-
 
         private void InitializeHUD()
         {

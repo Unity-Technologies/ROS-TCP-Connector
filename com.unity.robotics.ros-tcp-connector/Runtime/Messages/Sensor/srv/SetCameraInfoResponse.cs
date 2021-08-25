@@ -58,7 +58,7 @@ namespace RosMessageTypes.Sensor
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, Deserialize, MessageSubtopic.Response);
         }
     }
 }

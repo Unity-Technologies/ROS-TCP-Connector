@@ -17,36 +17,55 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
         CombinedRGB,
     }
 
-    public ColorMode colorMode;
+    [SerializeField]
+    ColorMode m_ColorModeSetting;
+    public ColorMode ColorModeSetting { get => m_ColorModeSetting; set => m_ColorModeSetting = value; }
+    public string[] Channels { get => m_Channels; set => m_Channels = value; }
+    string[] m_Channels;
 
-    [HideInInspector]
-    public string[] channels;
+    public string XChannel { get => m_XChannel; set => m_XChannel = value; }
+    string m_XChannel = "x";
+    public string YChannel { get => m_YChannel; set => m_YChannel = value; }
+    string m_YChannel = "y";
+    public string ZChannel { get => m_ZChannel; set => m_ZChannel = value; }
+    string m_ZChannel = "z";
+    public string HueChannel { get => m_HueChannel; set => m_HueChannel = value; }
+    string m_HueChannel = "";
+    public string RgbChannel { get => m_RgbChannel; set => m_RgbChannel = value; }
+    string m_RgbChannel = "rgb";
+    public string RChannel { get => m_RChannel; set => m_RChannel = value; }
+    string m_RChannel = "";
+    public string GChannel { get => m_GChannel; set => m_GChannel = value; }
+    string m_GChannel = "";
+    public string BChannel { get => m_BChannel; set => m_BChannel = value; }
+    string m_BChannel = "";
+    public string SizeChannel { get => m_SizeChannel; set => m_SizeChannel = value; }
+    string m_SizeChannel = "";
 
-    public string m_XChannel = "x";
-    public string m_YChannel = "y";
-    public string m_ZChannel = "z";
-    public string m_HueChannel = "x";
-    public string m_RgbChannel = "rgb";
-    public string m_RChannel = "r";
-    public string m_GChannel = "g";
-    public string m_BChannel = "b";
-    public string m_SizeChannel = "x";
+    public float[] HueRange { get => m_HueRange; set => m_HueRange = value; }
+    float[] m_HueRange = { 0, 100 };
+    public float[] RRange { get => m_RRange; set => m_RRange = value; }
+    float[] m_RRange = { 0, 100 };
+    public float[] GRange { get => m_GRange; set => m_GRange = value; }
+    float[] m_GRange = { 0, 100 };
+    public float[] BRange { get => m_BRange; set => m_BRange = value; }
+    float[] m_BRange = { 0, 100 };
+    public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
+    float[] m_SizeRange = { 0, 100 };
+    public float Size { get => m_Size; set => m_Size = value; }
+    float m_Size = 0.05f;
 
-    public float[] m_HueRange = { 0, 31 };
-    public float[] m_RRange = { -100, 100 };
-    public float[] m_GRange = { -100, 100 };
-    public float[] m_BRange = { -100, 100 };
-    public float[] m_SizeRange = { 0, 100 };
-    public float m_Size = 0.01f;
-
-    public bool m_UseRgbChannel;
-    public bool m_UseSizeChannel;
+    public bool UseRgbChannel { get => m_UseRgbChannel; set => m_UseRgbChannel = value; }
+    bool m_UseRgbChannel = true;
+    public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
+    bool m_UseSizeChannel = true;
 
     public override void Draw(BasicDrawing drawing, PointCloud2Msg message, MessageMetadata meta)
     {
-        PointCloudDrawing pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        var pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
 
-        channels = message.fields.Select(field => field.name).ToArray();
+        Channels = message.fields.Select(field => field.name).ToArray();
 
         Dictionary<string, int> channelToIdx = new Dictionary<string, int>();
         for (int i = 0; i < message.fields.Length; i++)
@@ -56,15 +75,61 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
 
         TFFrame frame = TFSystem.instance.GetTransform(message.header);
 
+        Func<int, Color> colorGenerator = (int iPointStep) => Color.white;
+
+        if (m_UseRgbChannel)
+        {
+            switch (ColorModeSetting)
+            {
+                case ColorMode.HSV:
+                    if (m_HueChannel.Length > 0)
+                    {
+                        int hueChannelOffset = (int)message.fields[channelToIdx[m_HueChannel]].offset;
+                        colorGenerator = (int iPointStep) =>
+                        {
+                            int colC = BitConverter.ToInt16(message.data, (iPointStep + hueChannelOffset));
+                            return Color.HSVToRGB(Mathf.InverseLerp(m_HueRange[0], m_HueRange[1], colC), 1, 1);
+                        };
+                    }
+                    break;
+                case ColorMode.SeparateRGB:
+                    if (m_RChannel.Length > 0 && m_GChannel.Length > 0 && m_BChannel.Length > 0)
+                    {
+                        int rChannelOffset = (int)message.fields[channelToIdx[m_RChannel]].offset;
+                        int gChannelOffset = (int)message.fields[channelToIdx[m_GChannel]].offset;
+                        int bChannelOffset = (int)message.fields[channelToIdx[m_BChannel]].offset;
+                        colorGenerator = (int iPointStep) =>
+                        {
+                            var colR = Mathf.InverseLerp(m_RRange[0], m_RRange[1], BitConverter.ToSingle(message.data, iPointStep + rChannelOffset));
+                            var colG = Mathf.InverseLerp(m_GRange[0], m_GRange[1], BitConverter.ToSingle(message.data, iPointStep + gChannelOffset));
+                            var colB = Mathf.InverseLerp(m_BRange[0], m_BRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
+                            return new Color(colR, colG, colB, 1);
+                        };
+                    }
+                    break;
+                case ColorMode.CombinedRGB:
+                    if (m_RgbChannel.Length > 0)
+                    {
+                        int rgbChannelOffset = (int)message.fields[channelToIdx[m_RgbChannel]].offset;
+                        colorGenerator = (int iPointStep) => new Color32
+                        (
+                            message.data[iPointStep + rgbChannelOffset + 2],
+                            message.data[iPointStep + rgbChannelOffset + 1],
+                            message.data[iPointStep + rgbChannelOffset],
+                            255
+                        );
+                    }
+                    break;
+            }
+        }
+
         int xChannelOffset = (int)message.fields[channelToIdx[m_XChannel]].offset;
         int yChannelOffset = (int)message.fields[channelToIdx[m_YChannel]].offset;
         int zChannelOffset = (int)message.fields[channelToIdx[m_ZChannel]].offset;
-        int hueChannelOffset = (int)message.fields[channelToIdx[m_HueChannel]].offset;
-        int rgbChannelOffset = (int)message.fields[channelToIdx[m_RgbChannel]].offset;
-        int rChannelOffset = (int)message.fields[channelToIdx[m_RChannel]].offset;
-        int gChannelOffset = (int)message.fields[channelToIdx[m_GChannel]].offset;
-        int bChannelOffset = (int)message.fields[channelToIdx[m_BChannel]].offset;
-        int sizeChannelOffset = (int)message.fields[channelToIdx[m_SizeChannel]].offset;
+        int sizeChannelOffset = 0;
+        bool useSizeChannel = m_UseSizeChannel && m_SizeChannel != "";
+        if (useSizeChannel)
+            sizeChannelOffset = (int)message.fields[channelToIdx[m_SizeChannel]].offset;
         int maxI = message.data.Length / (int)message.point_step;
         for (int i = 0; i < maxI; i++)
         {
@@ -72,55 +137,23 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
             var x = BitConverter.ToSingle(message.data, iPointStep + xChannelOffset);
             var y = BitConverter.ToSingle(message.data, iPointStep + yChannelOffset);
             var z = BitConverter.ToSingle(message.data, iPointStep + zChannelOffset);
-            Vector3<FLU> localRosPoint = new Vector3<FLU>(x, y, z);
-            Vector3 worldPoint = frame.TransformPoint(localRosPoint.toUnity);
+            Vector3<FLU> rosPoint = new Vector3<FLU>(x, y, z);
+            Vector3 unityPoint = rosPoint.toUnity;
 
-            Color color = Color.white;
+            Color color = colorGenerator(iPointStep);
 
-            // TODO: Parse type based on PointField?
-            if (m_UseRgbChannel)
-            {
-                switch (colorMode)
-                {
-                    case ColorMode.HSV:
-                        if (m_HueChannel.Length > 0)
-                        {
-                            int colC = BitConverter.ToInt16(message.data, (iPointStep + hueChannelOffset));
-                            color = Color.HSVToRGB(Mathf.InverseLerp(m_HueRange[0], m_HueRange[1], colC), 1, 1);
-                        }
-                        break;
-                    case ColorMode.SeparateRGB:
-                        if (m_RChannel.Length > 0 && m_GChannel.Length > 0 && m_BChannel.Length > 0)
-                        {
-                            var colR = Mathf.InverseLerp(m_RRange[0], m_RRange[1], BitConverter.ToSingle(message.data, iPointStep + rChannelOffset));
-                            var r = Mathf.InverseLerp(0, 1, colR);
-
-                            var colG = Mathf.InverseLerp(m_GRange[0], m_GRange[1], BitConverter.ToSingle(message.data, iPointStep + gChannelOffset));
-                            var g = Mathf.InverseLerp(0, 1, colG);
-
-                            var colB = Mathf.InverseLerp(m_BRange[0], m_BRange[1], BitConverter.ToSingle(message.data, iPointStep + bChannelOffset));
-                            var b = Mathf.InverseLerp(0, 1, colB);
-                            color = new Color(r, g, b, 1);
-                        }
-                        break;
-                    case ColorMode.CombinedRGB:
-                        if (m_RgbChannel.Length > 0)
-                        {
-                            color = new Color32(message.data[iPointStep + rgbChannelOffset + 2], message.data[iPointStep + rgbChannelOffset + 1], message.data[iPointStep + rgbChannelOffset], 255);
-                        }
-                        break;
-                }
-            }
-
-            var radius = m_Size;
-
-            if (m_UseSizeChannel)
+            float radius;
+            if (useSizeChannel)
             {
                 var size = BitConverter.ToSingle(message.data, iPointStep + sizeChannelOffset);
                 radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size);
             }
+            else
+            {
+                radius = m_Size;
+            }
 
-            pointCloud.AddPoint(worldPoint, color, radius);
+            pointCloud.AddPoint(unityPoint, color, radius);
         }
     }
 

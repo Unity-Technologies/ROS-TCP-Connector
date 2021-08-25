@@ -13,9 +13,12 @@ namespace Unity.Robotics.MessageVisualizers
         public GameObject origin;
         [SerializeField]
         Color m_Color;
+        [SerializeField]
+        TFTrackingSettings m_TFTrackingSettings;
 
         public override void Draw(BasicDrawing drawing, WrenchStampedMsg message, MessageMetadata meta)
         {
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             WrenchDefaultVisualizer.Draw<FLU>(message.wrench, drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 

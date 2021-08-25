@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7a16d0bc53a1492bb43ad71301a4a2e, type: 3}
-  m_Name: LaserScanVisualizerSettings
+  m_Name: LaserScanFerrybotVisualizerSettings
   m_EditorClassIdentifier: 
   m_TFTrackingType: 1
   m_UseIntensitySize: 0
   m_PointRadius: 0.1
   m_MaxIntensity: 100
-  m_TFTopic: /tf
+  m_TFTopic: /ferrybot/tf
   m_ColorMode: 2

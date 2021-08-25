@@ -7,24 +7,32 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<MessageDeserializer, Message>> s_DeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>();
+        static Dictionary<string, Func<MessageDeserializer, Message>>[] s_DeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>[]{
+            new Dictionary<string, Func<MessageDeserializer, Message>>(), // default
+            new Dictionary<string, Func<MessageDeserializer, Message>>(), // response
+            new Dictionary<string, Func<MessageDeserializer, Message>>(), // goal
+            new Dictionary<string, Func<MessageDeserializer, Message>>(), // feedback
+            new Dictionary<string, Func<MessageDeserializer, Message>>(), // result
+        };
         class RegistryEntry<T>
         {
             public static string s_RosMessageName;
             public static Func<MessageDeserializer, T> s_DeserializeFunction;
         }
 
-        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> deserialize) where T : Message
+        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> deserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
             RegistryEntry<T>.s_RosMessageName = rosMessageName;
             RegistryEntry<T>.s_DeserializeFunction = deserialize;
-            s_DeserializeFunctionsByName[rosMessageName] = deserialize;
+            if (s_DeserializeFunctionsByName[(int)subtopic].ContainsKey(rosMessageName))
+                Debug.LogWarning($"More than one message was registered as \"{rosMessageName}\" \"{subtopic}\"");
+            s_DeserializeFunctionsByName[(int)subtopic][rosMessageName] = deserialize;
         }
 
-        public static Func<MessageDeserializer, Message> GetDeserializeFunction(string rosMessageName)
+        public static Func<MessageDeserializer, Message> GetDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             Func<MessageDeserializer, Message> result;
-            s_DeserializeFunctionsByName.TryGetValue(rosMessageName, out result);
+            s_DeserializeFunctionsByName[(int)subtopic].TryGetValue(rosMessageName, out result);
             return result;
         }
 

@@ -9,6 +9,7 @@ namespace Unity.Robotics.MessageVisualizers
     public class VisualizationTopicsTab : MonoBehaviour, IHudTab
     {
         ROSConnection m_Connection;
+        Dictionary<string, VisualizationTopicsTabEntry> m_Topics = new Dictionary<string, VisualizationTopicsTabEntry>();
 
         string IHudTab.Label => "Topics";
 
@@ -30,7 +31,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         void OnNewTopic(RosTopicState state)
         {
-            RosTopicVisualizationState.GetOrCreate(state);
+            VisualizationTopicsTabEntry vis;
+            if (!m_Topics.TryGetValue(state.Topic, out vis))
+            {
+                vis = new VisualizationTopicsTabEntry(state);
+                m_Topics.Add(state.Topic, vis);
+            }
         }
 
 
@@ -50,7 +56,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
             var numTopicsShown = 0;
-            foreach (RosTopicVisualizationState topicState in RosTopicVisualizationState.AllTopics)
+            foreach (VisualizationTopicsTabEntry topicState in m_Topics.Values)
             {
                 var topic = topicState.Topic;
                 if (!topic.Contains(m_TopicFilter))
@@ -76,11 +82,11 @@ namespace Unity.Robotics.MessageVisualizers
 
         class HUDLayoutSave
         {
-            public RosTopicVisualizationState.SaveState[] Rules;
+            public VisualizationTopicsTabEntry.SaveState[] Rules;
 
-            public void AddRules(IEnumerable<RosTopicVisualizationState> rules)
+            public void AddRules(IEnumerable<VisualizationTopicsTabEntry> rules)
             {
-                var topicRuleSaves = new List<RosTopicVisualizationState.SaveState>();
+                var topicRuleSaves = new List<VisualizationTopicsTabEntry.SaveState>();
                 foreach (var rule in rules)
                 {
                     if (rule == null)
@@ -107,7 +113,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
 
             HUDLayoutSave saveState = new HUDLayoutSave { };
-            saveState.AddRules(RosTopicVisualizationState.AllTopics);
+            saveState.AddRules(m_Topics.Values);
             System.IO.File.WriteAllText(path, JsonUtility.ToJson(saveState));
         }
 
@@ -132,7 +138,9 @@ namespace Unity.Robotics.MessageVisualizers
         {
             foreach (var savedRule in saveState.Rules)
             {
-                RosTopicVisualizationState.Load(savedRule, m_Connection);
+                RosTopicState topicState = m_Connection.GetOrCreateTopic(savedRule.Topic, savedRule.RosMessageName);
+                VisualizationTopicsTabEntry vis = new VisualizationTopicsTabEntry(savedRule, topicState);
+                m_Topics.Add(savedRule.Topic, vis);
             }
         }
 

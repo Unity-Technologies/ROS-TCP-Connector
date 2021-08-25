@@ -12,6 +12,7 @@ namespace RosMessageTypes.Tf2
     public class LookupTransformGoal : Message
     {
         public const string k_RosMessageName = "tf2_msgs/LookupTransform";
+        public override string RosMessageName => k_RosMessageName;
 
         // Simple API
         public string target_frame;
@@ -89,7 +90,7 @@ namespace RosMessageTypes.Tf2
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, Deserialize, MessageSubtopic.Goal);
         }
     }
 }
