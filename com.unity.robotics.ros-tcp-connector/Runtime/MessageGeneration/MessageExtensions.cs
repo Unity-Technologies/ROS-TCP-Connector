@@ -153,63 +153,187 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new ColorRGBAMsg(color.r, color.g, color.b, color.a);
         }
 
-        static Dictionary<int, int> channelConversion = new Dictionary<int, int>()
-        {
-            { 0, 2 }, // B -> R
-            { 1, 1 }, // G -> G
-            { 2, 0 }, // R -> B
-            { 3, 3 }  // A -> A
-        };
+        static byte[] s_ScratchSpace;
 
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
         public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert, bool flipY)
         {
-            // No modifications necessary; return original array
+            // Number of channels in this encoding
+            int channels = EncodingGetChannelCount(from);
+
+            if (channels == 1)
+            {
+                convert = false;
+            }
+            else
+            {
+                // Unity natively supports these formats without needing to rearrange channels
+                switch (from)
+                {
+                    case "rgb8":
+                    case "bgra8":
+                    case "rgba8":
+                        convert = false;
+                        break;
+                }
+            }
+
+            // If no modifications are necessary, return original array
             if (!convert && !flipY)
                 return toConvert;
 
-            // Set number of channels to calculate conversion offsets
-            int channels = 3;
+            int channelStride = EncodingGetBytesPerChannel(from);
+            int pixelStride = channelStride * channels;
+            int rowStride = pixelStride * width;
 
-            if (from[from.Length - 1] == '1' || from.Contains("mono") || from.Contains("bayer"))
+            if (flipY)
             {
-                channels = 1;
-            }
-            else if (from[from.Length - 1] == '4' || from.Contains("a"))
-            {
-                channels = 4;
-            }
+                if (s_ScratchSpace == null || s_ScratchSpace.Length < rowStride)
+                    s_ScratchSpace = new byte[rowStride];
 
-            int idx = 0;
-            int pixel = 0;
-            int flipIdx;
-            int fromIdx;
-            int tmpR;
-            int tmpC;
-            int tmpH = height - 1;
-            int tmpW = width * channels;
+                int startRowIndex = 0;
+                int endRowIndex = (height - 1) * rowStride;
 
-            byte[] converted = new byte[toConvert.Length];
-
-            // Bit shift BGR->RGB and flip across X axis
-            for (int i = 0; i < toConvert.Length; i++)
-            {
-                pixel = i / channels;
-                tmpR = tmpH - (i / tmpW);
-                tmpC = i % tmpW;
-                flipIdx = (flipY) ? ((tmpR * tmpW) + tmpC) : i;
-                if (channels > 1)
-                    fromIdx = (convert) ? pixel * channels + channelConversion[idx] : pixel * channels + idx;
-                else
-                    fromIdx = pixel * channels;
-
-                converted[flipIdx] = toConvert[fromIdx];
-                idx = (idx + 1) % channels;
+                while (startRowIndex < endRowIndex)
+                {
+                    Buffer.BlockCopy(toConvert, startRowIndex, s_ScratchSpace, 0, rowStride);
+                    Buffer.BlockCopy(toConvert, endRowIndex, toConvert, startRowIndex, rowStride);
+                    Buffer.BlockCopy(s_ScratchSpace, 0, toConvert, endRowIndex, rowStride);
+                    startRowIndex += rowStride;
+                    endRowIndex -= rowStride;
+                }
             }
 
-            return converted;
+            if (convert)
+            {
+                // given two channels, we swap R with G (distance = 1).
+                // given three or more channels, we swap R with B (distance = 2).
+                int swapDistance = channels == 2 ? channelStride : channelStride * 2;
+                int dataLength = width * height * pixelStride;
+
+                for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
+                {
+                    int channelEndByte = pixelIndex + channelStride;
+                    for (int byteIndex = pixelIndex; byteIndex < channelEndByte; byteIndex++)
+                    {
+                        int swapB = byteIndex + swapDistance;
+                        byte temp = toConvert[byteIndex];
+                        toConvert[byteIndex] = toConvert[swapB];
+                        toConvert[swapB] = temp;
+                    }
+                }
+            }
+            return toConvert;
+        }
+
+        public static int EncodingGetChannelCount(this string encoding)
+        {
+            switch (encoding)
+            {
+                case "8SC1":
+                case "8UC1":
+                case "16SC1":
+                case "16UC1":
+                case "32FC1":
+                case "32SC1":
+                case "64FC1":
+                case "mono8":
+                case "mono16":
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return 1;
+                case "8SC2":
+                case "8UC2":
+                case "16SC2":
+                case "16UC2":
+                case "32FC2":
+                case "32SC2":
+                case "64FC2":
+                    return 2;
+                case "8SC3":
+                case "8UC3":
+                case "16SC3":
+                case "16UC3":
+                case "32FC3":
+                case "32SC3":
+                case "64FC3":
+                case "bgr8":
+                case "rgb8":
+                    return 3;
+                case "8SC4":
+                case "8UC4":
+                case "16SC4":
+                case "16UC4":
+                case "32FC4":
+                case "32SC4":
+                case "64FC4":
+                case "bgra8":
+                case "rgba8":
+                    return 4;
+            }
+            return 4;
+        }
+
+        public static int EncodingGetBytesPerChannel(this string encoding)
+        {
+            switch (encoding)
+            {
+                case "8SC1":
+                case "8SC2":
+                case "8SC3":
+                case "8SC4":
+                case "8UC1":
+                case "8UC2":
+                case "8UC3":
+                case "8UC4":
+                case "mono8":
+                case "bgr8":
+                case "rgb8":
+                case "bgra8":
+                case "rgba8":
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                    return 1;
+                case "16SC1":
+                case "16SC2":
+                case "16SC3":
+                case "16SC4":
+                case "16UC1":
+                case "16UC2":
+                case "16UC3":
+                case "16UC4":
+                case "mono16":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return 2;
+                case "32FC1":
+                case "32SC1":
+                case "32FC2":
+                case "32SC2":
+                case "32FC3":
+                case "32SC3":
+                case "32FC4":
+                case "32SC4":
+                    return 4;
+                case "64FC1":
+                case "64FC2":
+                case "64FC3":
+                case "64FC4":
+                    return 8;
+            }
+            return 1;
         }
 
         public static TextureFormat EncodingToTextureFormat(this string encoding)
@@ -217,61 +341,47 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             switch (encoding)
             {
                 case "8UC1":
-                    return TextureFormat.R8;
-                case "8UC2":
-                    return TextureFormat.RG16;
-                case "8UC3":
-                    return TextureFormat.RGB24;
-                case "8UC4":
-                    return TextureFormat.RGBA32;
                 case "8SC1":
                     return TextureFormat.R8;
+                case "8UC2":
                 case "8SC2":
                     return TextureFormat.RG16;
+                case "8UC3":
                 case "8SC3":
                     return TextureFormat.RGB24;
+                case "8UC4":
                 case "8SC4":
                     return TextureFormat.RGBA32;
                 case "16UC1":
-                    return TextureFormat.R16;
-                case "16UC2":
-                    return TextureFormat.RG32;
-                case "16UC3":
-                    return TextureFormat.RGB48;
-                case "16UC4":
-                    return TextureFormat.RGBA64;
                 case "16SC1":
                     return TextureFormat.R16;
+                case "16UC2":
                 case "16SC2":
                     return TextureFormat.RG32;
+                case "16UC3":
                 case "16SC3":
                     return TextureFormat.RGB48;
+                case "16UC4":
                 case "16SC4":
                     return TextureFormat.RGBA64;
                 case "32SC1":
-                    throw new NotImplementedException();
                 case "32SC2":
-                    throw new NotImplementedException();
                 case "32SC3":
-                    throw new NotImplementedException();
                 case "32SC4":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("32 bit integer texture formats are not supported");
                 case "32FC1":
                     return TextureFormat.RFloat;
                 case "32FC2":
                     return TextureFormat.RGFloat;
                 case "32FC3":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("32FC3 texture format is not supported");
                 case "32FC4":
                     return TextureFormat.RGBAFloat;
                 case "64FC1":
-                    return TextureFormat.RGB24;
                 case "64FC2":
-                    return TextureFormat.RGB24;
                 case "64FC3":
-                    return TextureFormat.RGB24;
                 case "64FC4":
-                    return TextureFormat.RGB24;
+                    throw new NotImplementedException("Double precision texture formats are not supported");
                 case "mono8":
                     return TextureFormat.R8;
                 case "mono16":
@@ -281,23 +391,17 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "rgb8":
                     return TextureFormat.RGB24;
                 case "bgra8":
-                    return TextureFormat.RGBA32;
+                    return TextureFormat.BGRA32;
                 case "rgba8":
                     return TextureFormat.RGBA32;
                 case "bayer_rggb8":
-                    return TextureFormat.R8;
                 case "bayer_bggr8":
-                    return TextureFormat.R8;
                 case "bayer_gbrg8":
-                    return TextureFormat.R8;
                 case "bayer_grbg8":
                     return TextureFormat.R8;
                 case "bayer_rggb16":
-                    return TextureFormat.R16;
                 case "bayer_bggr16":
-                    return TextureFormat.R16;
                 case "bayer_gbrg16":
-                    return TextureFormat.R16;
                 case "bayer_grbg16":
                     return TextureFormat.R16;
             }
