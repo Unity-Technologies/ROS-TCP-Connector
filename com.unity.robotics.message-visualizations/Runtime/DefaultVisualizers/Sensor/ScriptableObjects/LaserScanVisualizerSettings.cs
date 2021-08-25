@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
+[CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor/LaserScan", order = 1)]
 public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
 {
     [SerializeField]

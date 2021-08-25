@@ -6,7 +6,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
+[CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "Robotics/Sensor/PointCloud", order = 1)]
 public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg>
 {
     [SerializeField]

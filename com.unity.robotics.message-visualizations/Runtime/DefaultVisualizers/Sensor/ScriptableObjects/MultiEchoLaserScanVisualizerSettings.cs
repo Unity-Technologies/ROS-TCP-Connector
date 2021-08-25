@@ -4,7 +4,7 @@ using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "MessageVisualizations/Sensor/MultiEchoLaserScan", order = 1)]
+[CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "Robotics/Sensor/MultiEchoLaserScan", order = 1)]
 public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<MultiEchoLaserScanMsg>
 {
     [SerializeField]
