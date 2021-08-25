@@ -17,9 +17,12 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
     bool m_ViewAccel;
     bool m_ViewAngular;
     bool m_ViewOrientation;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, ImuMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
