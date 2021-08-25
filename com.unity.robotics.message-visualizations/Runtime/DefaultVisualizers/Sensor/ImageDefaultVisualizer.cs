@@ -19,6 +19,7 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
         return () =>
         {
             message.header.GUI();
+            GUILayout.Label($"{message.height}x{message.width}, encoding: {message.encoding}");
             if (message.data.Length > 0)
             {
                 GUILayout.BeginHorizontal();
@@ -28,7 +29,6 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
             }
 
             tex.GUITexture();
-            GUILayout.Label($"Height x Width: {message.height}x{message.width}\nEncoding: {message.encoding}");
         };
     }
 }
