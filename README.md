@@ -25,15 +25,17 @@ This repository contains two Unity packages: the ROS TCP Connector, for sending/
 To install from a local clone of the repository, see [installing a local package](https://docs.unity3d.com/Manual/upm-ui-local.html) in the Unity manual.
 
 ## Tutorials
-Scripts used to send [ROS](https://www.ros.org/) messages to an [TCP endpoint](https://github.com/Unity-Technologies/ROS_TCP_Endpoint) running as a ROS node.
+<!-- Scripts used to send [ROS](https://www.ros.org/) messages to an [TCP endpoint](https://github.com/Unity-Technologies/ROS_TCP_Endpoint) running as a ROS node. -->
 
-This Unity package provides three main features:
+This Unity package provides four main features:
 
-- ROSConnection: See the [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/main/tutorials/ros_unity_integration/README.md) repository for information and tutorials on how to use this component.
+- ROSConnection: A component that sets up communication between ROS and Unity. See the [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/main/tutorials/ros_unity_integration/README.md) for information and tutorials.
 
-- [Message Generation](MessageGeneration.md)
+- [Message Generation](MessageGeneration.md): A tool to generate C# classes for ROS message types.
 
-- [ROSGeometry](ROSGeometry.md)
+- [Message Visualization](com.unity.robotics.message-visualizations/Documentation~/default_viz_suite.md): A suite of default configurations and APIs to visualize incoming and outgoing information from ROS.
+
+- [ROSGeometry](ROSGeometry.md): A set of extensions that convert geometries between Unity and other coordinate frames.
 
 ## ROS#
 
