@@ -158,62 +158,33 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert, bool flipY)
+        static byte[] EncodingConversion(ImageMsg image, bool convertBRG, bool flipY)
         {
             // Number of channels in this encoding
-            int channels = EncodingGetChannelCount(from);
+            int channels = image.GetNumChannels();
 
-            if (channels == 1)
-            {
-                convert = false;
-            }
-            else
-            {
-                // Unity natively supports these formats without needing to rearrange channels
-                switch (from)
-                {
-                    case "rgb8":
-                    case "bgra8":
-                    case "rgba8":
-                    case "8SC4":
-                    case "8UC4":
-                        convert = false;
-                        break;
-                }
-            }
+            if (!image.EncodingRequiresBGRConversion())
+                convertBRG = false;
 
             // If no modifications are necessary, return original array
-            if (!convert && !flipY)
-                return toConvert;
+            if (!convertBRG && !flipY)
+                return image.data;
 
-            int channelStride = EncodingGetBytesPerChannel(from);
+            int channelStride = image.GetBytesPerChannel();
             int pixelStride = channelStride * channels;
-            int rowStride = pixelStride * width;
+            int rowStride = pixelStride * (int)image.width;
 
             if (flipY)
             {
-                if (s_ScratchSpace == null || s_ScratchSpace.Length < rowStride)
-                    s_ScratchSpace = new byte[rowStride];
-
-                int startRowIndex = 0;
-                int endRowIndex = (height - 1) * rowStride;
-
-                while (startRowIndex < endRowIndex)
-                {
-                    Buffer.BlockCopy(toConvert, startRowIndex, s_ScratchSpace, 0, rowStride);
-                    Buffer.BlockCopy(toConvert, endRowIndex, toConvert, startRowIndex, rowStride);
-                    Buffer.BlockCopy(s_ScratchSpace, 0, toConvert, endRowIndex, rowStride);
-                    startRowIndex += rowStride;
-                    endRowIndex -= rowStride;
-                }
+                ReverseInBlocks(image.data, rowStride, (int)image.height);
             }
 
-            if (convert)
+            if (convertBRG)
             {
                 // given two channels, we swap R with G (distance = 1).
                 // given three or more channels, we swap R with B (distance = 2).
                 int swapDistance = channels == 2 ? channelStride : channelStride * 2;
-                int dataLength = width * height * pixelStride;
+                int dataLength = (int)image.width * (int)image.height * pixelStride;
 
                 if (channelStride == 1)
                 {
@@ -221,9 +192,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
                     {
                         int swapB = pixelIndex + swapDistance;
-                        byte temp = toConvert[pixelIndex];
-                        toConvert[pixelIndex] = toConvert[swapB];
-                        toConvert[swapB] = temp;
+                        byte temp = image.data[pixelIndex];
+                        image.data[pixelIndex] = image.data[swapB];
+                        image.data[swapB] = temp;
                     }
                 }
                 else
@@ -234,19 +205,112 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                         for (int byteIndex = pixelIndex; byteIndex < channelEndByte; byteIndex++)
                         {
                             int swapB = byteIndex + swapDistance;
-                            byte temp = toConvert[byteIndex];
-                            toConvert[byteIndex] = toConvert[swapB];
-                            toConvert[swapB] = temp;
+                            byte temp = image.data[byteIndex];
+                            image.data[byteIndex] = image.data[swapB];
+                            image.data[swapB] = temp;
                         }
                     }
                 }
             }
-            return toConvert;
+            return image.data;
         }
 
-        public static int EncodingGetChannelCount(this string encoding)
+        static void ReverseInBlocks(byte[] array, int blockSize, int numBlocks)
         {
-            switch (encoding)
+            if (s_ScratchSpace == null || s_ScratchSpace.Length < blockSize)
+                s_ScratchSpace = new byte[blockSize];
+
+            int startBlockIndex = 0;
+            int endBlockIndex = ((int)numBlocks - 1) * blockSize;
+
+            while (startBlockIndex < endBlockIndex)
+            {
+                Buffer.BlockCopy(array, startBlockIndex, s_ScratchSpace, 0, blockSize);
+                Buffer.BlockCopy(array, endBlockIndex, array, startBlockIndex, blockSize);
+                Buffer.BlockCopy(s_ScratchSpace, 0, array, endBlockIndex, blockSize);
+                startBlockIndex += blockSize;
+                endBlockIndex -= blockSize;
+            }
+        }
+
+        public static void DebayerConvert(this ImageMsg image, bool flipY)
+        {
+            int channelStride = image.GetBytesPerChannel();
+            int width = (int)image.width;
+            int height = (int)image.height;
+            int rowStride = width * channelStride;
+            int dataSize = rowStride * height;
+            int finalPixelStride = channelStride * 4;
+
+            int[] reorderIndices;
+            switch (image.encoding)
+            {
+                case "bayer_rggb8":
+                    reorderIndices = new int[] { 0, 1, width + 1 };
+                    break;
+                case "bayer_bggr8":
+                    reorderIndices = new int[] { width + 1, 1, 0 };
+                    break;
+                case "bayer_gbrg8":
+                    reorderIndices = new int[] { width, 0, 1 };
+                    break;
+                case "bayer_grbg8":
+                    reorderIndices = new int[] { 1, 0, width };
+                    break;
+                case "bayer_rggb16":
+                    reorderIndices = new int[] { 0, 1, 2, 3, rowStride + 2, rowStride + 3 };
+                    break;
+                case "bayer_bggr16":
+                    reorderIndices = new int[] { rowStride + 2, rowStride + 3, 2, 3, 0, 1 };
+                    break;
+                case "bayer_gbrg16":
+                    reorderIndices = new int[] { rowStride, rowStride + 1, 0, 1, 2, 3 };
+                    break;
+                case "bayer_grbg16":
+                    reorderIndices = new int[] { 2, 3, 0, 1, rowStride, rowStride + 1 };
+                    break;
+                default:
+                    return;
+            }
+
+            if (flipY)
+            {
+                ReverseInBlocks(image.data, rowStride * 2, (int)image.height / 2);
+            }
+
+            if (s_ScratchSpace == null || s_ScratchSpace.Length < rowStride * 2)
+                s_ScratchSpace = new byte[rowStride * 2];
+
+            int rowStartIndex = 0;
+            while (rowStartIndex < dataSize)
+            {
+                Buffer.BlockCopy(image.data, rowStartIndex, s_ScratchSpace, 0, rowStride * 2);
+                int pixelReadIndex = 0;
+                int pixelWriteIndex = rowStartIndex;
+                while (pixelReadIndex < rowStride)
+                {
+                    for (int Idx = 0; Idx < reorderIndices.Length; ++Idx)
+                    {
+                        image.data[pixelWriteIndex + Idx] = s_ScratchSpace[pixelReadIndex + reorderIndices[Idx]];
+                    }
+                    image.data[pixelWriteIndex + reorderIndices.Length] = 255;
+                    if (channelStride == 2)
+                        image.data[pixelWriteIndex + reorderIndices.Length + 1] = 255;
+                    pixelReadIndex += channelStride * 2;
+                    pixelWriteIndex += finalPixelStride;
+                }
+                rowStartIndex += rowStride * 2;
+            }
+
+            image.width = image.width / 2;
+            image.height = image.height / 2;
+            image.encoding = channelStride == 1 ? "rgba8" : "rgba16";
+            image.step = (uint)(channelStride * image.width);
+        }
+
+        public static int GetNumChannels(this ImageMsg image)
+        {
+            switch (image.encoding)
             {
                 case "8SC1":
                 case "8UC1":
@@ -298,9 +362,60 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return 4;
         }
 
-        public static int EncodingGetBytesPerChannel(this string encoding)
+        public static bool IsBayerEncoded(this ImageMsg image)
         {
-            switch (encoding)
+            switch (image.encoding)
+            {
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool EncodingRequiresBGRConversion(this ImageMsg image)
+        {
+            switch (image.encoding)
+            {
+                case "8SC1":
+                case "8UC1":
+                case "16SC1":
+                case "16UC1":
+                case "32FC1":
+                case "32SC1":
+                case "64FC1":
+                case "mono8":
+                case "mono16":
+                    // single channel = nothing to swap
+                    return false;
+                case "8UC4":
+                case "8SC4":
+                case "bgra8":
+                    return false; // raw BGRA32 texture format
+                case "rgb8":
+                    return false; // raw RGB24 texture format
+                case "rgba8":
+                    return false; // raw RGB32 texture format
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                    return false; // bayer has its own conversions needed
+                default:
+                    return true;
+            }
+        }
+
+        public static int GetBytesPerChannel(this ImageMsg image)
+        {
+            switch (image.encoding)
             {
                 case "8SC1":
                 case "8SC2":
@@ -352,9 +467,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return 1;
         }
 
-        public static TextureFormat EncodingToTextureFormat(this string encoding)
+        public static TextureFormat GetTextureFormat(this ImageMsg image)
         {
-            switch (encoding)
+            switch (image.encoding)
             {
                 case "8UC1":
                 case "8SC1":
@@ -430,13 +545,24 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this ImageMsg message, bool convert, bool flipY)
+        public static Texture2D ToTexture2D(this ImageMsg message, bool convertBRG, bool debayer, bool flipY)
         {
-            var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
-            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
-            tex.LoadRawTextureData(data);
-            tex.Apply();
-            return tex;
+            if (debayer && message.IsBayerEncoded())
+            {
+                var tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                message.DebayerConvert(flipY);
+                tex.LoadRawTextureData(message.data);
+                tex.Apply();
+                return tex;
+            }
+            else
+            {
+                var tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                var data = EncodingConversion(message, convertBRG, flipY);
+                tex.LoadRawTextureData(data);
+                tex.Apply();
+                return tex;
+            }
         }
 
         /// <summary>
