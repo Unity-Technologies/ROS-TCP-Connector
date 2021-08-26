@@ -77,7 +77,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     //Remove outgoing messages that don't fit in the queue.
                     //Recycle the message if applicable
-                    RecycleMessage(outgoingMessages.First.Value);
+                    RecycleMessageIfApplicable(outgoingMessages.First.Value);
                     //Update the overflow counter.
                     queueOverflowUnsentCounter++;
                     outgoingMessages.RemoveFirst();
@@ -184,17 +184,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     if (lastMessageSent != null && lastMessageSent != toSend)
                     {
-                        RecycleMessage(lastMessageSent);
+                        RecycleMessageIfApplicable(lastMessageSent);
                     }
 
                     lastMessageSent = toSend;
                 }
                 else
                 {
-                    if (MessagePoolEnabled)
-                    {
-                        RecycleMessage(toSend);
-                    }
+                    RecycleMessageIfApplicable(toSend);
                 }
             }
 
@@ -213,12 +210,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
             foreach (T messageToRecycle in toRecycle)
             {
-                RecycleMessage(messageToRecycle);
+                RecycleMessageIfApplicable(messageToRecycle);
             }
         }
 
-        private void RecycleMessage(T toRecycle)
+        private void RecycleMessageIfApplicable(T toRecycle)
         {
+            if (!MessagePoolEnabled)
+            {
+                return;
+            }
+
             //Add the message back to the pool.
             AddMessageToPool(toRecycle);
         }
