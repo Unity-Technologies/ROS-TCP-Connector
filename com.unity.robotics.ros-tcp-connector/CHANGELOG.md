@@ -31,6 +31,8 @@ Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg
 ### Fixed
   - Fixed the issue when queuing a message fails if the type is unspecified in compile type.
 
+  - Added the missing SerializeTo function for DurationMsg
+
 
 ## [0.5.0-preview] - 2021-07-15
 
