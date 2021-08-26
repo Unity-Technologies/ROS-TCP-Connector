@@ -26,7 +26,7 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
                 GUILayout.BeginHorizontal();
                 if (message.EncodingRequiresBGRConversion())
                     m_ConvertBgr = GUILayout.Toggle(m_ConvertBgr, "From BGR");
-                if (message.EncodingRequiresBGRConversion())
+                if (message.IsBayerEncoded())
                     m_Debayer = GUILayout.Toggle(m_Debayer, "Debayer");
                 m_FlipY = GUILayout.Toggle(m_FlipY, "Flip Y");
                 GUILayout.EndHorizontal();
