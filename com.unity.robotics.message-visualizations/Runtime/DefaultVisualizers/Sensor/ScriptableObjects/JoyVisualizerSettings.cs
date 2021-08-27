@@ -69,58 +69,54 @@ public class JoyVisualizerSettings : ScriptableObject
         {
             message.header.GUI();
 
+            Rect layout = GUILayoutUtility.GetAspectRect(2);
+            float minX = layout.xMin;
+            float maxX = layout.xMax;
+            float midX = (minX + maxX) / 2;
+            float minY = layout.yMin;
+            float maxY = layout.yMax;
+            float midY = (minY + maxY) / 2;
+            float w = layout.width;
+            float h = layout.height;
+            float sw = w * 0.125f;
+            float sh = h * 0.25f;
+            float bw = w * 0.0625f;
+            float bh = h * 0.125f;
+
             // Triggers
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(TriggerTexture(GetInputFloat(message, m_LTrigger)));
-            GUILayout.Box(TriggerTexture(GetInputFloat(message, m_RTrigger)));
-            GUILayout.EndHorizontal();
+            GUI.Box(new Rect(minX + sw, minY, bw, sh), TriggerTexture(GetInputFloat(message, m_LTrigger)));
+            GUI.Box(new Rect(maxX - sw * 1.5f, minY, bw, sh), TriggerTexture(GetInputFloat(message, m_RTrigger)));
 
             // Shoulders
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_LShoulder)));
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_RShoulder)));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
+            GUI.Box(new Rect(minX + sw * 1.5f, minY + bh, bw, bh), ButtonTexture(GetInputBool(message, m_LShoulder)));
+            GUI.Box(new Rect(maxX - sw * 2.0f, minY + bh, bw, bh), ButtonTexture(GetInputBool(message, m_RShoulder)));
 
             // Dpad, central buttons
-            GUILayout.Box(StickTexture(
+            GUI.Box(new Rect(midX - sw * 2.5f, maxY - sh, sw, sh),
+                StickTexture(
                 GetInputAxisOrButtons(message, m_DPad_XAxis, m_DPad_Left, m_DPad_Right),
                 GetInputAxisOrButtons(message, m_DPad_YAxis, m_DPad_Up, m_DPad_Down),
                 false)
             );
 
             if (m_Button_Back != JoyInputType.None)
-                GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_Back)));
+                GUI.Box(new Rect(midX - bw * 2.5f, midY - bh, bw, bh), ButtonTexture(GetInputBool(message, m_Button_Back)));
             if (m_Button_Power != JoyInputType.None)
-                GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_Power)));
+                GUI.Box(new Rect(midX - bw * 0.5f, midY - bh, bw, bh), ButtonTexture(GetInputBool(message, m_Button_Power)));
             if (m_Button_Start != JoyInputType.None)
-                GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_Start)));
+                GUI.Box(new Rect(midX + bw * 1.5f, midY - bh, bw, bh), ButtonTexture(GetInputBool(message, m_Button_Start)));
 
             // N/E/S/W buttons
-            GUILayout.BeginVertical();
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_West)));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical();
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_North)));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_South)));
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical();
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.Box(ButtonTexture(GetInputBool(message, m_Button_East)));
-            GUILayoutUtility.GetAspectRect(1);
-            GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
+            float btnX = maxX - sw * 1.25f;
+            float btnY = midY - bh * 0.5f;
+            GUI.Box(new Rect(btnX - bw, btnY, bw, bh), ButtonTexture(GetInputBool(message, m_Button_West)));
+            GUI.Box(new Rect(btnX, btnY - bh, bw, bh), ButtonTexture(GetInputBool(message, m_Button_North)));
+            GUI.Box(new Rect(btnX, btnY + bh, bw, bh), ButtonTexture(GetInputBool(message, m_Button_South)));
+            GUI.Box(new Rect(btnX + bw, btnY, bw, bh), ButtonTexture(GetInputBool(message, m_Button_East)));
 
             // Joysticks
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(StickTexture(GetInputFloat(message, m_LStick_X), GetInputFloat(message, m_LStick_Y), GetInputBool(message, m_LStick_Click)));
-            GUILayout.Box(StickTexture(GetInputFloat(message, m_RStick_X), GetInputFloat(message, m_RStick_Y), GetInputBool(message, m_RStick_Click)));
-            GUILayout.EndHorizontal();
+            GUI.Box(new Rect(minX + sw * 0.5f, midY - sh * 0.5f, sw, sh), StickTexture(GetInputFloat(message, m_LStick_X), GetInputFloat(message, m_LStick_Y), GetInputBool(message, m_LStick_Click)));
+            GUI.Box(new Rect(midX + sw * 1.5f, maxY - sh, sw, sh), StickTexture(GetInputFloat(message, m_RStick_X), GetInputFloat(message, m_RStick_Y), GetInputBool(message, m_RStick_Click)));
         };
     }
 
