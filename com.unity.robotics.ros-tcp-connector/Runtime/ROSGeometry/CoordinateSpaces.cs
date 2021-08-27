@@ -119,6 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         {
             return new TransformMsg(new Vector3<C>(transform.position), new Quaternion<C>(transform.rotation));
         }
+        
         public static TransformMsg ToLocal<C>(this Transform transform) where C : ICoordinateSpace, new()
         {
             return new TransformMsg(new Vector3<C>(transform.localPosition), new Quaternion<C>(transform.localRotation));
