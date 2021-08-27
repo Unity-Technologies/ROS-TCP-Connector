@@ -505,6 +505,9 @@ MonoBehaviour:
   lengthScale: 1
   sphereRadius: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &5913021767012963164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -767,6 +770,9 @@ MonoBehaviour:
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Thickness: 0.01
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &8675186427272592650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -799,6 +805,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_Settings: {fileID: 11400000, guid: 39362f79ba2ad754a889a171562c7eea, type: 2}
 --- !u!114 &4257832478134861953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -969,6 +976,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Topic: 
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &8531576909173476880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1338,6 +1348,9 @@ MonoBehaviour:
   m_Topic: 
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &1759114360125940856
 MonoBehaviour:
   m_ObjectHideFlags: 0

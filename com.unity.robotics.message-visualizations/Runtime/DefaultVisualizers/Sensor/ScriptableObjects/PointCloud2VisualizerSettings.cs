@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "PointCloud2VisualizerSettings", menuName = "Robotics/Sensor/PointCloud2", order = 1)]
+[CreateAssetMenu(fileName = "PointCloud2VisualizerSettings", menuName = "Robotics/Sensor Visualizers/PointCloud2", order = 1)]
 public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2Msg>
 {
     public enum ColorMode
