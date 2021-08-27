@@ -158,16 +158,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        static byte[] EncodingConversion(ImageMsg image, bool convertBRG, bool flipY)
+        static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
         {
             // Number of channels in this encoding
             int channels = image.GetNumChannels();
 
             if (!image.EncodingRequiresBGRConversion())
-                convertBRG = false;
+                convertBGR = false;
 
             // If no modifications are necessary, return original array
-            if (!convertBRG && !flipY)
+            if (!convertBGR && !flipY)
                 return image.data;
 
             int channelStride = image.GetBytesPerChannel();
@@ -179,7 +179,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 ReverseInBlocks(image.data, rowStride, (int)image.height);
             }
 
-            if (convertBRG)
+            if (convertBGR)
             {
                 // given two channels, we swap R with G (distance = 1).
                 // given three or more channels, we swap R with B (distance = 2).
@@ -217,6 +217,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         static void ReverseInBlocks(byte[] array, int blockSize, int numBlocks)
         {
+            if (blockSize * numBlocks > array.Length)
+            {
+                Debug.LogError($"Invalid ReverseInBlocks, array length is {array.Length}, should be at least {blockSize * numBlocks}");
+                return;
+            }
+
             if (s_ScratchSpace == null || s_ScratchSpace.Length < blockSize)
                 s_ScratchSpace = new byte[blockSize];
 
@@ -233,7 +239,21 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
         }
 
-        public static void DebayerConvert(this ImageMsg image, bool flipY)
+        static void ReverseInBlocks<T1, T2>(T1[] fromArray, T2[] toArray, int blockSize, int numBlocks)
+        {
+            int startBlockIndex = 0;
+            int endBlockIndex = ((int)numBlocks - 1) * blockSize;
+
+            while (startBlockIndex < endBlockIndex)
+            {
+                Buffer.BlockCopy(fromArray, startBlockIndex, toArray, endBlockIndex, blockSize);
+                Buffer.BlockCopy(fromArray, endBlockIndex, toArray, startBlockIndex, blockSize);
+                startBlockIndex += blockSize;
+                endBlockIndex -= blockSize;
+            }
+        }
+
+        public static void DebayerConvert(this ImageMsg image, bool flipY = true)
         {
             int channelStride = image.GetBytesPerChannel();
             int width = (int)image.width;
@@ -545,24 +565,25 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this ImageMsg message, bool convertBRG, bool debayer, bool flipY)
+        public static Texture2D ToTexture2D(this ImageMsg message, bool debayer, bool convertBGR = true, bool flipY = true)
         {
+            Texture2D tex;
+            byte[] data;
             if (debayer && message.IsBayerEncoded())
             {
-                var tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
                 message.DebayerConvert(flipY);
-                tex.LoadRawTextureData(message.data);
-                tex.Apply();
-                return tex;
+                data = message.data;
             }
             else
             {
-                var tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
-                var data = EncodingConversion(message, convertBRG, flipY);
-                tex.LoadRawTextureData(data);
-                tex.Apply();
-                return tex;
+                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                data = EncodingConversion(message, convertBGR, flipY);
             }
+
+            tex.LoadRawTextureData(data);
+            tex.Apply();
+            return tex;
         }
 
         /// <summary>
@@ -632,17 +653,91 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format = "jpeg")
+        public static CompressedImageMsg CompressedImageMsg_JPG(this Texture2D tex)
         {
-            var data = tex.GetRawTextureData();
-            return new CompressedImageMsg(new HeaderMsg(), format, data);
+            return new CompressedImageMsg(new HeaderMsg(), "jpeg", tex.EncodeToJPG());
         }
 
-        public static ImageMsg ImageMsg(this Texture2D tex, string encoding = "RGBA", byte isBigEndian = 0, uint step = 4)
+        public static CompressedImageMsg CompressedImageMsg_PNG(this Texture2D tex)
         {
-            var data = tex.GetRawTextureData();
-            return new ImageMsg(new HeaderMsg(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
+            return new CompressedImageMsg(new HeaderMsg(), "png", tex.EncodeToPNG());
         }
+
+        public static ImageMsg ImageMsg(this Texture2D tex)
+        {
+            byte[] data = null;
+            string encoding = "rgba8";
+            switch (tex.format)
+            {
+                case TextureFormat.RGB24:
+                    data = new byte[tex.width * tex.height * 3];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgb8";
+                    ReverseInBlocks(data, tex.width * 3, tex.height);
+                    break;
+                case TextureFormat.RGBA32:
+                    data = new byte[tex.width * tex.height * 4];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgba8";
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    break;
+                case TextureFormat.R8:
+                    data = new byte[tex.width * tex.height];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "8UC1";
+                    ReverseInBlocks(data, tex.width, tex.height);
+                    break;
+                case TextureFormat.R16:
+                    data = new byte[tex.width * tex.height * 2];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "16UC1";
+                    ReverseInBlocks(data, tex.width * 2, tex.height);
+                    break;
+                default:
+                    Color32[] pixels = tex.GetPixels32();
+                    data = new byte[pixels.Length * 4];
+                    // this is painfully slow, but it does work... Surely there's a better way
+                    int writeIdx = 0;
+                    for (int Idx = 0; Idx < pixels.Length; ++Idx)
+                    {
+                        Color32 p = pixels[Idx];
+                        data[writeIdx] = p.r;
+                        data[writeIdx + 1] = p.g;
+                        data[writeIdx + 2] = p.b;
+                        data[writeIdx + 3] = p.a;
+                        writeIdx += 4;
+                    }
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    encoding = "rgba8";
+                    break;
+            }
+            return new ImageMsg(new HeaderMsg(), height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: 4, data: data);
+        }
+
+        /*
+        public static byte[] ToByteArray<T>(this T[] input)
+        {
+            ArrayToBytes<T> converter = new ArrayToBytes<T>();
+            converter.myTs = input;
+            return converter.mybytes;
+        }
+
+        public static T[] ToArrayOf<T>(this byte[] input)
+        {
+            ArrayToBytes<T> converter = new ArrayToBytes<T>();
+            converter.mybytes = input;
+            return converter.myTs;
+        }
+
+        // A magic struct with two arrays in the same memory space, allowing you to reinterpret from one to the other with negligible overhead
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
+        struct ArrayToBytes<T>
+        {
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            public byte[] mybytes;
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            public T[] myTs;
+        }*/
 
         static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>()
         {
