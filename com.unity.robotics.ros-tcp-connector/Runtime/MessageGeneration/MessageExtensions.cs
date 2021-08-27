@@ -153,8 +153,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new ColorRGBAMsg(color.r, color.g, color.b, color.a);
         }
 
-        static byte[] s_ScratchSpace;
-
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
@@ -214,6 +212,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
             return image.data;
         }
+
+        static byte[] s_ScratchSpace;
 
         static void ReverseInBlocks(byte[] array, int blockSize, int numBlocks)
         {
