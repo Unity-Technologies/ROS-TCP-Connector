@@ -24,7 +24,6 @@ namespace Tests.Runtime
             Assert.AreApproximatelyEqual(fluPosition.x, (float)testMsg.translation.x);
             Assert.AreApproximatelyEqual(fluPosition.y, (float)testMsg.translation.y);
             Assert.AreApproximatelyEqual(fluPosition.z, (float)testMsg.translation.z);
-            fluRotation.Normalize();
             Assert.AreApproximatelyEqual(fluRotation.x, (float)testMsg.rotation.x);
             Assert.AreApproximatelyEqual(fluRotation.y, (float)testMsg.rotation.y);
             Assert.AreApproximatelyEqual(fluRotation.z, (float)testMsg.rotation.z);
