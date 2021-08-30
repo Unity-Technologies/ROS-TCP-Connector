@@ -23,12 +23,16 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Export layout"))
             {
+#if UNITY_EDITOR
                 m_LayoutPath = EditorUtility.SaveFilePanel("Save Visualizations Settings", "", "RosHudLayout", "json");
+#endif
                 m_Topics.SaveLayout(m_LayoutPath);
             }
             if (GUILayout.Button("Import layout"))
             {
+#if UNITY_EDITOR
                 m_LayoutPath = EditorUtility.OpenFilePanel("Select Visualizations Settings", "", "json");
+#endif
                 m_Topics.LoadLayout(m_LayoutPath);
             }
             GUILayout.EndHorizontal();
