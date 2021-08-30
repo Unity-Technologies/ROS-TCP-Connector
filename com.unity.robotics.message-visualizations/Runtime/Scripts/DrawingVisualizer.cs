@@ -1,5 +1,6 @@
 using RosMessageTypes.Std;
 using System;
+using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -10,9 +11,9 @@ namespace Unity.Robotics.MessageVisualizers
     {
         public override bool CanShowDrawing => true;
 
-        protected override IVisual CreateVisual()
+        protected override IVisual CreateVisual(string topic)
         {
-            return new DrawingVisual(this);
+            return new DrawingVisual(topic, this);
         }
 
         public Color SelectColor(Color userColor, MessageMetadata meta)
@@ -24,6 +25,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             return MessageVisualizationUtils.SelectLabel(userLabel, meta);
         }
+
         public virtual void Draw(DrawingVisual drawing, T message, MessageMetadata meta)
         {
             Draw(drawing.BasicDrawing, message, meta);
@@ -45,27 +47,60 @@ namespace Unity.Robotics.MessageVisualizers
             public BasicDrawing BasicDrawing => m_BasicDrawing;
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
+            string m_Topic;
+            bool m_IsDrawingEnabled;
+            float m_LastDrawingFrameTime = -1;
 
-            public DrawingVisual(DrawingVisualizer<T> factory)
+            public DrawingVisual(string topic, DrawingVisualizer<T> factory)
             {
+                m_Topic = topic;
                 m_Factory = factory;
+
+                ROSConnection.GetOrCreateInstance().Subscribe<T>(topic, AddMessage);
             }
 
-            public virtual void AddMessage(Message message, MessageMetadata meta)
+            public virtual void AddMessage(Message message)
             {
-                if (!MessageVisualizationUtils.AssertMessageType<T>(message, meta))
+                MessageMetadata meta = new MessageMetadata(m_Topic, Time.time, DateTime.Now);
+
+                if (!MessageVisualizationUtils.AssertMessageType<T>(message, m_Topic))
                     return;
 
                 this.message = (T)message;
                 this.meta = meta;
                 m_GUIAction = null;
+
+                // If messages are coming in faster than 1 per frame, we only update the drawing once per frame
+                if (m_IsDrawingEnabled && Time.time > m_LastDrawingFrameTime)
+                {
+                    CreateDrawing();
+                }
+
+                m_LastDrawingFrameTime = Time.time;
+            }
+
+            public void SetDrawingEnabled(bool enabled)
+            {
+                if (m_IsDrawingEnabled == enabled)
+                    return;
+
+                if (!enabled && m_BasicDrawing != null)
+                {
+                    m_BasicDrawing.Clear();
+                }
+                m_IsDrawingEnabled = enabled;
             }
 
             public bool hasDrawing => m_BasicDrawing != null;
-            public bool hasAction => m_GUIAction != null;
 
             public void OnGUI()
             {
+                if (message == null)
+                {
+                    GUILayout.Label("Waiting for message...");
+                    return;
+                }
+
                 if (m_GUIAction == null)
                 {
                     m_GUIAction = m_Factory.CreateGUI(message, meta);

@@ -26,12 +26,12 @@ namespace Unity.Robotics.MessageVisualizers
             if (m_Visuals.TryGetValue(topic, out visual))
                 return visual;
 
-            visual = CreateVisual();
+            visual = CreateVisual(topic);
             m_Visuals.Add(topic, visual);
             return visual;
         }
 
-        protected abstract IVisual CreateVisual();
+        protected abstract IVisual CreateVisual(string topic);
 
         public virtual void Start()
         {

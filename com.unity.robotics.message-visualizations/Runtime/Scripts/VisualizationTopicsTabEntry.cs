@@ -27,7 +27,6 @@ namespace Unity.Robotics.MessageVisualizers
         public bool IsVisualizingUI => m_IsVisualizingUI;
         bool m_IsVisualizingDrawing;
         public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
-        float m_LastVisualFrameTime = -1;
         // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
         VisualizationTopicsTabEntry m_ServiceResponseTopic;
 
@@ -65,7 +64,6 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (m_VisualWindow != null)
             {
-                m_VisualWindow.SetOnGUI(DefaultWindowContents);
                 HudPanel.AddWindow(m_VisualWindow);
             }
 
@@ -88,22 +86,6 @@ namespace Unity.Robotics.MessageVisualizers
             };
         }
 
-        public void OnMessageSent(Message message)
-        {
-            if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
-            {
-                UpdateVisual(message);
-            }
-        }
-
-        public void OnMessageReceived(Message message)
-        {
-            if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
-            {
-                UpdateVisual(message);
-            }
-        }
-
         public IVisualFactory GetVisualizer()
         {
             if (m_CachedRosMessageName != RosMessageName)
@@ -120,24 +102,6 @@ namespace Unity.Robotics.MessageVisualizers
                     m_NoVisualizerAvailable = true;
             }
             return m_VisualizerCached;
-        }
-
-        void UpdateVisual(Message message)
-        {
-            MessageMetadata meta = new MessageMetadata(m_TopicState.Topic, Time.time, DateTime.Now);
-
-            if (m_Visual == null)
-            {
-                m_Visual = MessageVisualizationUtils.GetVisual(m_TopicState.Topic, m_TopicState.RosMessageName, m_TopicState.Subtopic);
-            }
-            m_Visual.AddMessage(message, meta);
-            m_LastVisualFrameTime = Time.time;
-
-            if (m_IsVisualizingDrawing)
-                m_Visual.CreateDrawing();
-
-            if (m_VisualWindow != null)
-                m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
         }
 
         public void DrawGUILine()
@@ -197,11 +161,6 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        void DefaultWindowContents()
-        {
-            GUILayout.Label("Waiting for message...");
-        }
-
         public void SetVisualizing(bool ui, bool drawing)
         {
             if (m_VisualWindow != null)
@@ -211,25 +170,20 @@ namespace Unity.Robotics.MessageVisualizers
             else if (ui)
             {
                 m_VisualWindow = new HudWindow(Topic);
-                m_VisualWindow.SetOnGUI(DefaultWindowContents);
                 HudPanel.AddWindow(m_VisualWindow);
+            }
+
+            if ((ui || drawing) && m_Visual == null)
+            {
+                m_Visual = GetVisualizer().GetOrCreateVisual(Topic);
             }
 
             if (m_Visual != null)
             {
-                m_Visual.DeleteDrawing();
-
-                if (drawing)
-                    m_Visual.CreateDrawing();
+                m_Visual.SetDrawingEnabled(drawing);
 
                 if (m_VisualWindow != null)
                     m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
-            }
-
-            if ((ui || drawing) && !m_DidSubscribe)
-            {
-                m_TopicState.AddSubscriber(OnMessageReceived);
-                m_DidSubscribe = true;
             }
 
             m_IsVisualizingUI = ui;

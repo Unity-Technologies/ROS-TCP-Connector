@@ -53,11 +53,11 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
-        public static bool AssertMessageType<T>(Message message, MessageMetadata meta)
+        public static bool AssertMessageType<T>(Message message, string topic)
         {
             if (!(message is T))
             {
-                Debug.LogError($"Topic \"{meta.Topic}\": Can't visualize a message of type {message.GetType()}! (expected {typeof(T)}).");
+                Debug.LogError($"Topic \"{topic}\": Can't visualize a message of type {message.GetType()}! (expected {typeof(T)}).");
                 return false;
             }
 

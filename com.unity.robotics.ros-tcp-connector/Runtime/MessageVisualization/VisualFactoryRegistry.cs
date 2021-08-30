@@ -15,10 +15,9 @@ namespace Unity.Robotics.MessageVisualizers
 
     public interface IVisual
     {
-        void AddMessage(Message message, MessageMetadata meta);
-        void DeleteDrawing();
-        void OnGUI();
+        void SetDrawingEnabled(bool enabled);
         void CreateDrawing();
+        void OnGUI();
     }
 
     public interface ITextureVisual : IVisual
@@ -121,7 +120,7 @@ namespace Unity.Robotics.MessageVisualizers
                 if (m_Visuals.TryGetValue(topic, out visual))
                     return visual;
 
-                visual = new DefaultVisual();
+                visual = new DefaultVisual(topic);
                 m_Visuals.Add(topic, visual);
                 return visual;
             }
@@ -134,24 +133,32 @@ namespace Unity.Robotics.MessageVisualizers
             class DefaultVisual : IVisual
             {
                 public Message message { get; private set; }
-                public MessageMetadata meta { get; private set; }
-                public bool hasDrawing => false;
-                public bool hasAction => true;
 
-                public void AddMessage(Message newMessage, MessageMetadata newMeta)
+                public DefaultVisual(string topic)
+                {
+                    ROSConnection ros = ROSConnection.GetOrCreateInstance();
+                    RosTopicState state = ros.GetTopic(topic);
+                    state.AddSubscriber(AddMessage);
+                }
+
+                public void AddMessage(Message newMessage)
                 {
                     message = newMessage;
-                    meta = newMeta;
                 }
 
                 public void OnGUI()
                 {
+                    if (message == null)
+                    {
+                        GUILayout.Label("Waiting for message...");
+                        return;
+                    }
+
                     string text = message.ToString();
                     GUILayout.Label(text);
                 }
-
+                public void SetDrawingEnabled(bool enabled) { }
                 public void CreateDrawing() { }
-                public void DeleteDrawing() { }
             }
         }
     }
