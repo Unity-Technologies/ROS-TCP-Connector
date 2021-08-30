@@ -10,6 +10,7 @@ namespace Unity.Robotics.MessageVisualizers
     {
         ROSConnection m_Connection;
         Dictionary<string, VisualizationTopicsTabEntry> m_Topics = new Dictionary<string, VisualizationTopicsTabEntry>();
+        List<VisualizationTopicsTabEntry> m_TopicsSorted;
 
         string IHudTab.Label => "Topics";
 
@@ -19,12 +20,21 @@ namespace Unity.Robotics.MessageVisualizers
 
         string LayoutFilePath => System.IO.Path.Combine(Application.persistentDataPath, "RosHudLayout.json");
 
+        enum SortMode
+        {
+            Normal,
+            UI,
+            Viz,
+            Topic,
+            TopicDescending,
+        }
+        SortMode m_SortMode;
+
         public void Start()
         {
             m_Connection = ROSConnection.GetOrCreateInstance();
             HudPanel.RegisterTab(this, (int)HudTabOrdering.Topics);
             HudPanel.RegisterTab(new VisualizationLayoutTab(this), (int)HudTabOrdering.Layout);
-            HudPanel.RegisterTab(new VisualizationMarkersTab(m_Connection), (int)HudTabOrdering.Markers);
             LoadLayout();
             m_Connection.ListenForTopics(OnNewTopic, notifyAllExistingTopics: true);
         }
@@ -36,6 +46,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 vis = new VisualizationTopicsTabEntry(state);
                 m_Topics.Add(state.Topic, vis);
+                m_TopicsSorted = null;
             }
         }
 
@@ -50,13 +61,32 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("UI", HudPanel.s_BoldStyle, GUILayout.Width(20));
-            GUILayout.Label("Viz", HudPanel.s_BoldStyle);
+            if (GUILayout.Button("UI", HudPanel.s_BoldStyle, GUILayout.Width(20)))
+            {
+                SetSortMode(m_SortMode == SortMode.UI ? SortMode.Normal : SortMode.UI);
+            }
+            if (GUILayout.Button("Viz", HudPanel.s_BoldStyle, GUILayout.Width(30)))
+            {
+                SetSortMode(m_SortMode == SortMode.Viz ? SortMode.Normal : SortMode.Viz);
+            }
+            if (GUILayout.Button("Topic", HudPanel.s_BoldStyle))
+            {
+                if (m_SortMode == SortMode.TopicDescending)
+                    SetSortMode(SortMode.Normal);
+                else if (m_SortMode == SortMode.Topic)
+                    SetSortMode(SortMode.TopicDescending);
+                else
+                    SetSortMode(SortMode.Topic);
+            }
             GUILayout.EndHorizontal();
 
             m_TopicMenuScrollPosition = GUILayout.BeginScrollView(m_TopicMenuScrollPosition);
             var numTopicsShown = 0;
-            foreach (VisualizationTopicsTabEntry topicState in m_Topics.Values)
+
+            if (m_TopicsSorted == null)
+                SortTopics();
+
+            foreach (VisualizationTopicsTabEntry topicState in m_TopicsSorted)
             {
                 var topic = topicState.Topic;
                 if (!topic.Contains(m_TopicFilter))
@@ -74,6 +104,53 @@ namespace Unity.Robotics.MessageVisualizers
                     GUILayout.Label("No topics registered");
                 else
                     GUILayout.Label($"No topics named \"{m_TopicFilter}\"!");
+            }
+        }
+
+        void SetSortMode(SortMode sortMode)
+        {
+            m_SortMode = sortMode;
+            m_TopicsSorted = null;
+        }
+
+        void SortTopics()
+        {
+            m_TopicsSorted = m_Topics.Values.ToList();
+            switch (m_SortMode)
+            {
+                case SortMode.UI:
+                    m_TopicsSorted.Sort(
+                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
+                        {
+                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
+                            return (primary != 0) ? primary : b.IsVisualizingUI.CompareTo(a.IsVisualizingUI);
+                        }
+                    );
+                    break;
+                case SortMode.Viz:
+                    m_TopicsSorted.Sort(
+                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
+                        {
+                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
+                            if (primary != 0)
+                                return primary;
+                            int secondary = b.CanShowDrawing.CompareTo(a.CanShowDrawing);
+                            return (secondary != 0) ? secondary : b.IsVisualizingDrawing.CompareTo(a.IsVisualizingDrawing);
+                        }
+                    );
+                    break;
+                case SortMode.Topic:
+                    m_TopicsSorted.Sort(
+                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) => a.Topic.CompareTo(b.Topic)
+                    );
+                    break;
+                case SortMode.TopicDescending:
+                    m_TopicsSorted.Sort(
+                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) => b.Topic.CompareTo(a.Topic)
+                    );
+                    break;
+                default:
+                    break;
             }
         }
 

@@ -104,14 +104,16 @@ namespace Unity.Robotics.MessageVisualizers
             return m_VisualizerCached;
         }
 
+        public bool CanShowWindow => GetVisualizer() != null;
+        public bool CanShowDrawing => GetVisualizer() != null && m_VisualizerCached.CanShowDrawing;
+
         public void DrawGUILine()
         {
             bool showWindow = IsVisualizingUI;
             bool showDrawing = IsVisualizingDrawing;
 
-            IVisualFactory visualizer = GetVisualizer();
-            bool canShowWindow = visualizer != null;
-            bool canShowDrawing = visualizer != null ? visualizer.CanShowDrawing : false;
+            bool canShowWindow = CanShowWindow;
+            bool canShowDrawing = CanShowDrawing;
 
             var hasWindow = showWindow;
             var hasDrawing = showDrawing;

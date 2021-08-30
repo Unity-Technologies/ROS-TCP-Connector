@@ -343,21 +343,22 @@ namespace Unity.Robotics.MessageVisualizers
                     if (ringIdx + 1 < numRings)
                     {
                         AddQuad(start + 2,
-                            vertexIdx * numRings + ringIdx,
-                            vertexIdx * numRings + ringIdx + 1,
+                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx,
                             ((vertexIdx + 1) % numDivisions) * numRings + ringIdx + 1,
-                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx);
+                            vertexIdx * numRings + ringIdx + 1,
+                            vertexIdx * numRings + ringIdx
+                        );
                     }
                 }
 
                 AddTriangles(start,
                     0,
-                    2 + vertexIdx * numRings,
                     2 + ((vertexIdx + 1) % numDivisions) * numRings,
+                    2 + vertexIdx * numRings,
 
                     1,
-                    lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings,
-                    lastRingStart + vertexIdx * numRings
+                    lastRingStart + vertexIdx * numRings,
+                    lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings
                 );
             }
             SetDirty();
