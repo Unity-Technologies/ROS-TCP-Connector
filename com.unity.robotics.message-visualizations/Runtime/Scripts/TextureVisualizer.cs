@@ -56,9 +56,11 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Texture2D = null;
                 m_GUIAction = null;
 
-                // if anyone wants to know about the texture, make sure it's updated for them
-                if (m_OnChangeCallbacks.Count > 0)
-                    GetTexture();
+                // notify anyone who requested updates when the texture changes
+                foreach (Action<Texture2D> callback in m_OnChangeCallbacks)
+                {
+                    callback(GetTexture());
+                }
             }
 
             public T message { get; private set; }
@@ -85,8 +87,6 @@ namespace Unity.Robotics.MessageVisualizers
                 if (m_Texture2D == null && message != null)
                 {
                     m_Texture2D = m_Factory.CreateTexture(message);
-                    foreach (Action<Texture2D> callback in m_OnChangeCallbacks)
-                        callback(m_Texture2D);
                 }
                 return m_Texture2D;
             }
