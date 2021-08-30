@@ -16,10 +16,11 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 
 ### Added
 
-Add the Ros Tcp Connector assembly to support Universal Windows Platform
+  - Add the Ros Tcp Connector assembly to support Universal Windows Platform
 
-Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg, see:
-[CameraInfo Generator](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues/133)
+  - Added the CameraInfoGenerator that takes a Unity Camera and a provided HeaderMsg, generate a corresponding CameraInfoMsg, see:
+    [CameraInfo Generator](https://github.com/Unity-Technologies/ROS-TCP-Connector/issues/133)
+  - Added API to create TransformMsg using local frame of a transform in Unity
 
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
