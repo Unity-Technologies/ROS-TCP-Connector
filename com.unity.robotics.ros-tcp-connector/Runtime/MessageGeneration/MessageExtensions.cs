@@ -153,125 +153,387 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return new ColorRGBAMsg(color.r, color.g, color.b, color.a);
         }
 
-        static Dictionary<int, int> channelConversion = new Dictionary<int, int>()
-        {
-            { 0, 2 }, // B -> R
-            { 1, 1 }, // G -> G
-            { 2, 0 }, // R -> B
-            { 3, 3 }  // A -> A
-        };
-
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        public static byte[] EncodingConversion(byte[] toConvert, string from, int width, int height, bool convert, bool flipY)
+        static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
         {
-            // No modifications necessary; return original array
-            if (!convert && !flipY)
-                return toConvert;
+            // Number of channels in this encoding
+            int channels = image.GetNumChannels();
 
-            // Set number of channels to calculate conversion offsets
-            int channels = 3;
+            if (!image.EncodingRequiresBGRConversion())
+                convertBGR = false;
 
-            if (from[from.Length - 1] == '1' || from.Contains("mono") || from.Contains("bayer"))
+            // If no modifications are necessary, return original array
+            if (!convertBGR && !flipY)
+                return image.data;
+
+            int channelStride = image.GetBytesPerChannel();
+            int pixelStride = channelStride * channels;
+            int rowStride = pixelStride * (int)image.width;
+
+            if (flipY)
             {
-                channels = 1;
+                ReverseInBlocks(image.data, rowStride, (int)image.height);
             }
-            else if (from[from.Length - 1] == '4' || from.Contains("a"))
+
+            if (convertBGR)
             {
-                channels = 4;
-            }
+                // given two channels, we swap R with G (distance = 1).
+                // given three or more channels, we swap R with B (distance = 2).
+                int swapDistance = channels == 2 ? channelStride : channelStride * 2;
+                int dataLength = (int)image.width * (int)image.height * pixelStride;
 
-            int idx = 0;
-            int pixel = 0;
-            int flipIdx;
-            int fromIdx;
-            int tmpR;
-            int tmpC;
-            int tmpH = height - 1;
-            int tmpW = width * channels;
-
-            byte[] converted = new byte[toConvert.Length];
-
-            // Bit shift BGR->RGB and flip across X axis
-            for (int i = 0; i < toConvert.Length; i++)
-            {
-                pixel = i / channels;
-                tmpR = tmpH - (i / tmpW);
-                tmpC = i % tmpW;
-                flipIdx = (flipY) ? ((tmpR * tmpW) + tmpC) : i;
-                if (channels > 1)
-                    fromIdx = (convert) ? pixel * channels + channelConversion[idx] : pixel * channels + idx;
+                if (channelStride == 1)
+                {
+                    // special case for the 1-byte-per-channel formats: avoid the inner loop
+                    for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
+                    {
+                        int swapB = pixelIndex + swapDistance;
+                        byte temp = image.data[pixelIndex];
+                        image.data[pixelIndex] = image.data[swapB];
+                        image.data[swapB] = temp;
+                    }
+                }
                 else
-                    fromIdx = pixel * channels;
-
-                converted[flipIdx] = toConvert[fromIdx];
-                idx = (idx + 1) % channels;
+                {
+                    for (int pixelIndex = 0; pixelIndex < dataLength; pixelIndex += pixelStride)
+                    {
+                        int channelEndByte = pixelIndex + channelStride;
+                        for (int byteIndex = pixelIndex; byteIndex < channelEndByte; byteIndex++)
+                        {
+                            int swapB = byteIndex + swapDistance;
+                            byte temp = image.data[byteIndex];
+                            image.data[byteIndex] = image.data[swapB];
+                            image.data[swapB] = temp;
+                        }
+                    }
+                }
             }
-
-            return converted;
+            return image.data;
         }
 
-        public static TextureFormat EncodingToTextureFormat(this string encoding)
+        static byte[] s_ScratchSpace;
+
+        static void ReverseInBlocks(byte[] array, int blockSize, int numBlocks)
         {
-            switch (encoding)
+            if (blockSize * numBlocks > array.Length)
+            {
+                Debug.LogError($"Invalid ReverseInBlocks, array length is {array.Length}, should be at least {blockSize * numBlocks}");
+                return;
+            }
+
+            if (s_ScratchSpace == null || s_ScratchSpace.Length < blockSize)
+                s_ScratchSpace = new byte[blockSize];
+
+            int startBlockIndex = 0;
+            int endBlockIndex = ((int)numBlocks - 1) * blockSize;
+
+            while (startBlockIndex < endBlockIndex)
+            {
+                Buffer.BlockCopy(array, startBlockIndex, s_ScratchSpace, 0, blockSize);
+                Buffer.BlockCopy(array, endBlockIndex, array, startBlockIndex, blockSize);
+                Buffer.BlockCopy(s_ScratchSpace, 0, array, endBlockIndex, blockSize);
+                startBlockIndex += blockSize;
+                endBlockIndex -= blockSize;
+            }
+        }
+
+        static void ReverseInBlocks<T1, T2>(T1[] fromArray, T2[] toArray, int blockSize, int numBlocks)
+        {
+            int startBlockIndex = 0;
+            int endBlockIndex = ((int)numBlocks - 1) * blockSize;
+
+            while (startBlockIndex < endBlockIndex)
+            {
+                Buffer.BlockCopy(fromArray, startBlockIndex, toArray, endBlockIndex, blockSize);
+                Buffer.BlockCopy(fromArray, endBlockIndex, toArray, startBlockIndex, blockSize);
+                startBlockIndex += blockSize;
+                endBlockIndex -= blockSize;
+            }
+        }
+
+        public static void DebayerConvert(this ImageMsg image, bool flipY = true)
+        {
+            int channelStride = image.GetBytesPerChannel();
+            int width = (int)image.width;
+            int height = (int)image.height;
+            int rowStride = width * channelStride;
+            int dataSize = rowStride * height;
+            int finalPixelStride = channelStride * 4;
+
+            int[] reorderIndices;
+            switch (image.encoding)
+            {
+                case "bayer_rggb8":
+                    reorderIndices = new int[] { 0, 1, width + 1 };
+                    break;
+                case "bayer_bggr8":
+                    reorderIndices = new int[] { width + 1, 1, 0 };
+                    break;
+                case "bayer_gbrg8":
+                    reorderIndices = new int[] { width, 0, 1 };
+                    break;
+                case "bayer_grbg8":
+                    reorderIndices = new int[] { 1, 0, width };
+                    break;
+                case "bayer_rggb16":
+                    reorderIndices = new int[] { 0, 1, 2, 3, rowStride + 2, rowStride + 3 };
+                    break;
+                case "bayer_bggr16":
+                    reorderIndices = new int[] { rowStride + 2, rowStride + 3, 2, 3, 0, 1 };
+                    break;
+                case "bayer_gbrg16":
+                    reorderIndices = new int[] { rowStride, rowStride + 1, 0, 1, 2, 3 };
+                    break;
+                case "bayer_grbg16":
+                    reorderIndices = new int[] { 2, 3, 0, 1, rowStride, rowStride + 1 };
+                    break;
+                default:
+                    return;
+            }
+
+            if (flipY)
+            {
+                ReverseInBlocks(image.data, rowStride * 2, (int)image.height / 2);
+            }
+
+            if (s_ScratchSpace == null || s_ScratchSpace.Length < rowStride * 2)
+                s_ScratchSpace = new byte[rowStride * 2];
+
+            int rowStartIndex = 0;
+            while (rowStartIndex < dataSize)
+            {
+                Buffer.BlockCopy(image.data, rowStartIndex, s_ScratchSpace, 0, rowStride * 2);
+                int pixelReadIndex = 0;
+                int pixelWriteIndex = rowStartIndex;
+                while (pixelReadIndex < rowStride)
+                {
+                    for (int Idx = 0; Idx < reorderIndices.Length; ++Idx)
+                    {
+                        image.data[pixelWriteIndex + Idx] = s_ScratchSpace[pixelReadIndex + reorderIndices[Idx]];
+                    }
+                    image.data[pixelWriteIndex + reorderIndices.Length] = 255;
+                    if (channelStride == 2)
+                        image.data[pixelWriteIndex + reorderIndices.Length + 1] = 255;
+                    pixelReadIndex += channelStride * 2;
+                    pixelWriteIndex += finalPixelStride;
+                }
+                rowStartIndex += rowStride * 2;
+            }
+
+            image.width = image.width / 2;
+            image.height = image.height / 2;
+            image.encoding = channelStride == 1 ? "rgba8" : "rgba16";
+            image.step = (uint)(channelStride * image.width);
+        }
+
+        public static int GetNumChannels(this ImageMsg image)
+        {
+            switch (image.encoding)
+            {
+                case "8SC1":
+                case "8UC1":
+                case "16SC1":
+                case "16UC1":
+                case "32FC1":
+                case "32SC1":
+                case "64FC1":
+                case "mono8":
+                case "mono16":
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return 1;
+                case "8SC2":
+                case "8UC2":
+                case "16SC2":
+                case "16UC2":
+                case "32FC2":
+                case "32SC2":
+                case "64FC2":
+                    return 2;
+                case "8SC3":
+                case "8UC3":
+                case "16SC3":
+                case "16UC3":
+                case "32FC3":
+                case "32SC3":
+                case "64FC3":
+                case "bgr8":
+                case "rgb8":
+                    return 3;
+                case "8SC4":
+                case "8UC4":
+                case "16SC4":
+                case "16UC4":
+                case "32FC4":
+                case "32SC4":
+                case "64FC4":
+                case "bgra8":
+                case "rgba8":
+                    return 4;
+            }
+            return 4;
+        }
+
+        public static bool IsBayerEncoded(this ImageMsg image)
+        {
+            switch (image.encoding)
+            {
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool EncodingRequiresBGRConversion(this ImageMsg image)
+        {
+            switch (image.encoding)
+            {
+                case "8SC1":
+                case "8UC1":
+                case "16SC1":
+                case "16UC1":
+                case "32FC1":
+                case "32SC1":
+                case "64FC1":
+                case "mono8":
+                case "mono16":
+                    // single channel = nothing to swap
+                    return false;
+                case "8UC4":
+                case "8SC4":
+                case "bgra8":
+                    return false; // raw BGRA32 texture format
+                case "rgb8":
+                    return false; // raw RGB24 texture format
+                case "rgba8":
+                    return false; // raw RGB32 texture format
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                    return false; // bayer has its own conversions needed
+                default:
+                    return true;
+            }
+        }
+
+        public static int GetBytesPerChannel(this ImageMsg image)
+        {
+            switch (image.encoding)
+            {
+                case "8SC1":
+                case "8SC2":
+                case "8SC3":
+                case "8SC4":
+                case "8UC1":
+                case "8UC2":
+                case "8UC3":
+                case "8UC4":
+                case "mono8":
+                case "bgr8":
+                case "rgb8":
+                case "bgra8":
+                case "rgba8":
+                case "bayer_rggb8":
+                case "bayer_bggr8":
+                case "bayer_gbrg8":
+                case "bayer_grbg8":
+                    return 1;
+                case "16SC1":
+                case "16SC2":
+                case "16SC3":
+                case "16SC4":
+                case "16UC1":
+                case "16UC2":
+                case "16UC3":
+                case "16UC4":
+                case "mono16":
+                case "bayer_rggb16":
+                case "bayer_bggr16":
+                case "bayer_gbrg16":
+                case "bayer_grbg16":
+                    return 2;
+                case "32FC1":
+                case "32SC1":
+                case "32FC2":
+                case "32SC2":
+                case "32FC3":
+                case "32SC3":
+                case "32FC4":
+                case "32SC4":
+                    return 4;
+                case "64FC1":
+                case "64FC2":
+                case "64FC3":
+                case "64FC4":
+                    return 8;
+            }
+            return 1;
+        }
+
+        public static TextureFormat GetTextureFormat(this ImageMsg image)
+        {
+            switch (image.encoding)
             {
                 case "8UC1":
-                    return TextureFormat.R8;
-                case "8UC2":
-                    return TextureFormat.RG16;
-                case "8UC3":
-                    return TextureFormat.RGB24;
-                case "8UC4":
-                    return TextureFormat.RGBA32;
                 case "8SC1":
                     return TextureFormat.R8;
+                case "8UC2":
                 case "8SC2":
                     return TextureFormat.RG16;
+                case "8UC3":
                 case "8SC3":
                     return TextureFormat.RGB24;
+                case "8UC4":
                 case "8SC4":
-                    return TextureFormat.RGBA32;
+                case "bgra8":
+                    return TextureFormat.BGRA32; // unity supports these natively
                 case "16UC1":
-                    return TextureFormat.R16;
-                case "16UC2":
-                    return TextureFormat.RG32;
-                case "16UC3":
-                    return TextureFormat.RGB48;
-                case "16UC4":
-                    return TextureFormat.RGBA64;
                 case "16SC1":
                     return TextureFormat.R16;
+                case "16UC2":
                 case "16SC2":
                     return TextureFormat.RG32;
+                case "16UC3":
                 case "16SC3":
                     return TextureFormat.RGB48;
+                case "16UC4":
                 case "16SC4":
                     return TextureFormat.RGBA64;
                 case "32SC1":
-                    throw new NotImplementedException();
                 case "32SC2":
-                    throw new NotImplementedException();
                 case "32SC3":
-                    throw new NotImplementedException();
                 case "32SC4":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("32 bit integer texture formats are not supported");
                 case "32FC1":
                     return TextureFormat.RFloat;
                 case "32FC2":
                     return TextureFormat.RGFloat;
                 case "32FC3":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("32FC3 texture format is not supported");
                 case "32FC4":
                     return TextureFormat.RGBAFloat;
                 case "64FC1":
-                    return TextureFormat.RGB24;
                 case "64FC2":
-                    return TextureFormat.RGB24;
                 case "64FC3":
-                    return TextureFormat.RGB24;
                 case "64FC4":
-                    return TextureFormat.RGB24;
+                    throw new NotImplementedException("Double precision texture formats are not supported");
                 case "mono8":
                     return TextureFormat.R8;
                 case "mono16":
@@ -279,25 +541,17 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "bgr8":
                     return TextureFormat.RGB24;
                 case "rgb8":
-                    return TextureFormat.RGB24;
-                case "bgra8":
-                    return TextureFormat.RGBA32;
+                    return TextureFormat.RGB24; // unity supports this natively
                 case "rgba8":
-                    return TextureFormat.RGBA32;
+                    return TextureFormat.RGBA32; // unity supports this natively
                 case "bayer_rggb8":
-                    return TextureFormat.R8;
                 case "bayer_bggr8":
-                    return TextureFormat.R8;
                 case "bayer_gbrg8":
-                    return TextureFormat.R8;
                 case "bayer_grbg8":
                     return TextureFormat.R8;
                 case "bayer_rggb16":
-                    return TextureFormat.R16;
                 case "bayer_bggr16":
-                    return TextureFormat.R16;
                 case "bayer_gbrg16":
-                    return TextureFormat.R16;
                 case "bayer_grbg16":
                     return TextureFormat.R16;
             }
@@ -311,10 +565,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this ImageMsg message, bool convert, bool flipY)
+        public static Texture2D ToTexture2D(this ImageMsg message, bool debayer, bool convertBGR = true, bool flipY = true)
         {
-            var tex = new Texture2D((int)message.width, (int)message.height, message.encoding.EncodingToTextureFormat(), false);
-            var data = EncodingConversion(message.data, message.encoding, (int)message.width, (int)message.height, convert, flipY);
+            Texture2D tex;
+            byte[] data;
+            if (debayer && message.IsBayerEncoded())
+            {
+                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                message.DebayerConvert(flipY);
+                data = message.data;
+            }
+            else
+            {
+                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                data = EncodingConversion(message, convertBGR, flipY);
+            }
+
             tex.LoadRawTextureData(data);
             tex.Apply();
             return tex;
@@ -387,17 +653,91 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static CompressedImageMsg CompressedImageMsg(this Texture2D tex, string format = "jpeg")
+        public static CompressedImageMsg CompressedImageMsg_JPG(this Texture2D tex)
         {
-            var data = tex.GetRawTextureData();
-            return new CompressedImageMsg(new HeaderMsg(), format, data);
+            return new CompressedImageMsg(new HeaderMsg(), "jpeg", tex.EncodeToJPG());
         }
 
-        public static ImageMsg ImageMsg(this Texture2D tex, string encoding = "RGBA", byte isBigEndian = 0, uint step = 4)
+        public static CompressedImageMsg CompressedImageMsg_PNG(this Texture2D tex)
         {
-            var data = tex.GetRawTextureData();
-            return new ImageMsg(new HeaderMsg(), (uint)tex.width, (uint)tex.height, encoding, isBigEndian, step, data);
+            return new CompressedImageMsg(new HeaderMsg(), "png", tex.EncodeToPNG());
         }
+
+        public static ImageMsg ImageMsg(this Texture2D tex)
+        {
+            byte[] data = null;
+            string encoding = "rgba8";
+            switch (tex.format)
+            {
+                case TextureFormat.RGB24:
+                    data = new byte[tex.width * tex.height * 3];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgb8";
+                    ReverseInBlocks(data, tex.width * 3, tex.height);
+                    break;
+                case TextureFormat.RGBA32:
+                    data = new byte[tex.width * tex.height * 4];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgba8";
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    break;
+                case TextureFormat.R8:
+                    data = new byte[tex.width * tex.height];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "8UC1";
+                    ReverseInBlocks(data, tex.width, tex.height);
+                    break;
+                case TextureFormat.R16:
+                    data = new byte[tex.width * tex.height * 2];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "16UC1";
+                    ReverseInBlocks(data, tex.width * 2, tex.height);
+                    break;
+                default:
+                    Color32[] pixels = tex.GetPixels32();
+                    data = new byte[pixels.Length * 4];
+                    // this is painfully slow, but it does work... Surely there's a better way
+                    int writeIdx = 0;
+                    for (int Idx = 0; Idx < pixels.Length; ++Idx)
+                    {
+                        Color32 p = pixels[Idx];
+                        data[writeIdx] = p.r;
+                        data[writeIdx + 1] = p.g;
+                        data[writeIdx + 2] = p.b;
+                        data[writeIdx + 3] = p.a;
+                        writeIdx += 4;
+                    }
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    encoding = "rgba8";
+                    break;
+            }
+            return new ImageMsg(new HeaderMsg(), height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: 4, data: data);
+        }
+
+        /*
+        public static byte[] ToByteArray<T>(this T[] input)
+        {
+            ArrayToBytes<T> converter = new ArrayToBytes<T>();
+            converter.myTs = input;
+            return converter.mybytes;
+        }
+
+        public static T[] ToArrayOf<T>(this byte[] input)
+        {
+            ArrayToBytes<T> converter = new ArrayToBytes<T>();
+            converter.mybytes = input;
+            return converter.myTs;
+        }
+
+        // A magic struct with two arrays in the same memory space, allowing you to reinterpret from one to the other with negligible overhead
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
+        struct ArrayToBytes<T>
+        {
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            public byte[] mybytes;
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            public T[] myTs;
+        }*/
 
         static Dictionary<JoyRegion, int> joyDS4 = new Dictionary<JoyRegion, int>()
         {

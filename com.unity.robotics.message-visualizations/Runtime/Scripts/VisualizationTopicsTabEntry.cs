@@ -55,9 +55,19 @@ namespace Unity.Robotics.MessageVisualizers
         {
             m_TopicState = topicState;
             if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
+            {
                 m_VisualWindow = new HudWindow(save.Topic, save.Rect);
-            else
+            }
+            else if (save.ShowWindow)
+            {
                 m_VisualWindow = new HudWindow(save.Topic);
+            }
+
+            if (m_VisualWindow != null)
+            {
+                m_VisualWindow.SetOnGUI(DefaultWindowContents);
+                HudPanel.AddWindow(m_VisualWindow);
+            }
 
             SetVisualizing(save.ShowWindow, save.ShowDrawing);
         }

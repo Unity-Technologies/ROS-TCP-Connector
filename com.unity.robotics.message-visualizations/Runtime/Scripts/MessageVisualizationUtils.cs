@@ -204,10 +204,26 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUITexture(this Texture2D tex)
         {
             // TODO: Rescale/recenter image based on window height/width
-            if (tex != null)
+            if (tex == null)
+                return;
+
+            var origRatio = tex.width / (float)tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+        }
+
+        public static void GUITexture(this Texture2D tex, Material material)
+        {
+            if (tex == null)
+                return;
+            var origRatio = tex.width / (float)tex.height;
+            Rect textureRect = GUILayoutUtility.GetAspectRect(origRatio);
+            if (Event.current.type == EventType.Repaint)
             {
-                var origRatio = tex.width / (float)tex.height;
-                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+                Graphics.DrawTexture(textureRect, tex, material);
+            }
+            else
+            {
+                UnityEngine.GUI.Box(textureRect, tex);
             }
         }
 
