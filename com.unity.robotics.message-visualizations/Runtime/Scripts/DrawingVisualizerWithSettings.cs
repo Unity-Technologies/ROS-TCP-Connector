@@ -43,6 +43,11 @@ namespace Unity.Robotics.MessageVisualizers
             m_Settings.Draw(drawing, message, meta);
         }
 
+        public override Action CreateGUI(TMessage message, MessageMetadata meta)
+        {
+            return m_Settings.CreateGUI(message, meta);
+        }
+
         public void Redraw()
         {
             // settings have changed - update the visualization

@@ -9,7 +9,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
 public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg>
 {
-    [SerializeField]
     PointCloud2VisualizerSettings.ColorMode m_ColorMode;
     public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 

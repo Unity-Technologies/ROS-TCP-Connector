@@ -23,7 +23,7 @@ public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
         Intensity,
         Angle,
     }
-    [SerializeField]
+
     ColorModeType m_ColorMode;
     public ColorModeType ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 

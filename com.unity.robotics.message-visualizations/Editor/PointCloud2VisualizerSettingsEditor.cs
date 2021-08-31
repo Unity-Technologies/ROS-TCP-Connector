@@ -66,7 +66,7 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
         CreateNewDropdown(m_Config.Channels, "Y channel name:", m_Config.YChannel, newChannel => { m_Config.YChannel = newChannel; });
         CreateNewDropdown(m_Config.Channels, "Z channel name:", m_Config.ZChannel, newChannel => { m_Config.ZChannel = newChannel; });
 
-        m_Config.UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", m_Config.UseSizeChannel);
+        m_Config.UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel", m_Config.UseSizeChannel);
 
         if (m_Config.UseSizeChannel)
         {
@@ -75,7 +75,7 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
             CreateMinMaxSlider(m_Config.SizeRange, sizeMinVal, sizeMaxVal);
         }
 
-        m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", m_Config.UseRgbChannel);
+        m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel", m_Config.UseRgbChannel);
 
         if (m_Config.UseRgbChannel)
         {
