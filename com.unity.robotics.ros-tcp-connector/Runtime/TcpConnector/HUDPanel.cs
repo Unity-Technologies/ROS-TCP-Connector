@@ -55,7 +55,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_LastMessageSent = new MessageViewState() { label = "Last Message Sent:", message = message };
             m_LastMessageSentMeta = $"{topic} (time: {System.DateTime.Now.TimeOfDay})";
-            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
         }
 
         MessageViewState m_LastMessageReceived;

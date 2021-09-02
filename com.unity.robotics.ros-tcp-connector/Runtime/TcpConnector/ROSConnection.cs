@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using System.Globalization;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
@@ -52,21 +49,37 @@ namespace Unity.Robotics.ROSTCPConnector
         bool m_ShowHUD = true;
         public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
-        const string k_SysCommand_Log = "__log";
-        const string k_SysCommand_Warning = "__warn";
-        const string k_SysCommand_Error = "__error";
-        const string k_SysCommand_ServiceRequest = "__request";
-        const string k_SysCommand_ServiceResponse = "__response";
-        const string k_SysCommand_Subscribe = "__subscribe";
-        const string k_SysCommand_Publish = "__publish";
-        const string k_SysCommand_RosService = "__ros_service";
-        const string k_SysCommand_UnityService = "__unity_service";
-        const string k_SysCommand_TopicList = "__topic_list";
+        const int k_DefaultPublisherQueueSize = 10;
+        const bool k_DefaultPublisherLatch = false;
 
         // GUI window variables
         internal HUDPanel m_HudPanel = null;
 
-        ConcurrentQueue<List<byte[]>> m_OutgoingMessages = new ConcurrentQueue<List<byte[]>>();
+        class OutgoingMessageQueue
+        {
+            private ConcurrentQueue<OutgoingMessageSender> m_OutgoingMessageQueue;
+            public readonly ManualResetEvent NewMessageReadyToSendEvent;
+
+            public OutgoingMessageQueue()
+            {
+                m_OutgoingMessageQueue = new ConcurrentQueue<OutgoingMessageSender>();
+                NewMessageReadyToSendEvent = new ManualResetEvent(false);
+            }
+
+            public void Enqueue(OutgoingMessageSender outgoingMessageSender)
+            {
+                m_OutgoingMessageQueue.Enqueue(outgoingMessageSender);
+                NewMessageReadyToSendEvent.Set();
+            }
+
+            public bool TryDequeue(out OutgoingMessageSender outgoingMessageSender)
+            {
+                return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
+            }
+        }
+
+        private OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
+
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
@@ -75,7 +88,8 @@ namespace Unity.Robotics.ROSTCPConnector
         static bool m_HasConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
 
-        static float s_RealTimeSinceStartup = 0.0f;// only the main thread can access Time.realTimeSinceStartup, so make a copy here
+        // only the main thread can access Time.*, so make a copy here
+        public static float s_RealTimeSinceStartup = 0.0f;
 
         readonly object m_ServiceRequestLock = new object();
         int m_NextSrvID = 101;
@@ -97,8 +111,9 @@ namespace Unity.Robotics.ROSTCPConnector
             public Func<Message, Message> callback;
         }
 
+        object m_DictionaryLock = new object();
         Dictionary<string, UnityServiceImplementation> m_UnityServices = new Dictionary<string, UnityServiceImplementation>();
-        Dictionary<string, string> m_Publishers = new Dictionary<string, string>();
+        Dictionary<string, ROSPublisherBase> m_Publishers = new Dictionary<string, ROSPublisherBase>();
         Dictionary<string, string> m_RosServices = new Dictionary<string, string>();
         MessageSerializer m_MessageSerializer = new MessageSerializer();
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
@@ -175,8 +190,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ServicesWaiting.Add(srvID, pauser);
             }
 
-            SendSysCommand(k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
-            SendInternal(rosServiceName, serviceRequest);
+            SendSysCommand(SysCommand.k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = srvID });
+            Publish(rosServiceName, serviceRequest);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
 
@@ -187,13 +202,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public void GetTopicList(Action<string[]> callback)
         {
             m_TopicsListCallbacks.Add(callback);
-            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+            SendSysCommand(SysCommand.k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
         public void GetTopicAndTypeList(Action<Dictionary<string, string>> callback)
         {
             m_TopicsAndTypesListCallbacks.Add(callback);
-            SendSysCommand(k_SysCommand_TopicList, new SysCommand_TopicsRequest());
+            SendSysCommand(SysCommand.k_SysCommand_TopicList, new SysCommand_TopicsRequest());
         }
 
         [Obsolete("Calling Subscribe now implicitly registers a subscriber")]
@@ -201,16 +216,70 @@ namespace Unity.Robotics.ROSTCPConnector
         {
         }
 
-        public void RegisterPublisher<T>(string topic) where T : Message
+        public bool TryGetPublisher<T>(out ROSPublisher<T> result, string rosTopicName,
+            int? queue_size = null, bool? latch = null) where T : Message
         {
-            RegisterPublisher(topic, MessageRegistry.GetRosMessageName<T>());
+            ROSPublisherBase publisher;
+            lock (m_DictionaryLock)
+            {
+                if (m_Publishers.TryGetValue(rosTopicName, out publisher))
+                {
+
+                    result = (ROSPublisher<T>)publisher;
+                    if (result == null)
+                    {
+                        Debug.LogError($"Existing publisher with topic {rosTopicName} is null!");
+                        return false;
+                    }
+
+                    string messageName = MessageRegistry.GetRosMessageName<T>();
+                    if (publisher.EquivalentTo(rosTopicName, messageName, queue_size, latch))
+                    {
+                        //We already have a valid existing publisher of the correct type.
+                        return true;
+                    }
+                    else
+                    {
+                        string errorMessage = $"Publisher on topic {rosTopicName} has changed type! " +
+                                              $"Do you have multiple publishers on the same topic?";
+                        Debug.LogError(errorMessage);
+                        return false;
+                    }
+                }
+                else
+                {
+                    //No publisher already exists.
+                    result = null;
+                    return false;
+                }
+            }
         }
 
-        public void RegisterPublisher(string topic, string rosMessageName)
+        public ROSPublisher<T> RegisterPublisher<T>(string rosTopicName,
+            int? queue_size = null, bool? latch = null) where T : Message
         {
-            m_Publishers[topic] = rosMessageName;
-            if (HasConnectionThread)
-                SendPublisherRegistration(topic, rosMessageName);
+            bool correctPublisherAlreadyExists = TryGetPublisher(out ROSPublisher<T> result, rosTopicName, queue_size, latch);
+            if (correctPublisherAlreadyExists)
+            {
+                Debug.LogWarning($"Publisher for topic {rosTopicName} registered twice!");
+                return result;
+            }
+            else
+            {
+                if (result == null)
+                {
+                    //Create a new publisher.
+                    int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
+                    bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
+                    result = new ROSPublisher<T>(rosTopicName, resolvedQueueSize, resolvedLatch);
+                    m_Publishers[rosTopicName] = result;
+                }
+                else
+                {
+                    throw new Exception("Failed to register publisher!");
+                }
+            }
+            return result;
         }
 
         public void RegisterRosService<T>(string topic) where T : Message
@@ -233,22 +302,17 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
-        }
-
-        void SendPublisherRegistration(string topic, string rosMessageName, NetworkStream stream = null)
-        {
-            SendSysCommand(k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         void SendUnityServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
         {
-            SendSysCommand(k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+            SendSysCommand(SysCommand.k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
         }
 
         private static ROSConnection _instance;
@@ -316,7 +380,8 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
                 RegisterAll,
-                m_OutgoingMessages,
+                DeregisterAll,
+                m_OutgoingMessageQueue,
                 m_IncomingMessages,
                 m_ConnectionThreadCancellation.Token
             ));
@@ -324,35 +389,60 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterAll(NetworkStream stream)
         {
-            foreach (var keyValue in m_Subscribers)
+            lock (m_DictionaryLock)
             {
-                if (keyValue.Value.rosMessageName != null)
-                    SendSubscriberRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
-            }
+                foreach (var keyValue in m_Subscribers)
+                {
+                    if (keyValue.Value.rosMessageName != null)
+                    {
+                        SendSubscriberRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
+                    }
+                }
 
-            foreach (var keyValue in m_UnityServices)
-            {
-                if (keyValue.Value.rosMessageName != null)
-                    SendUnityServiceRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
-            }
+                foreach (var keyValue in m_UnityServices)
+                {
+                    if (keyValue.Value.rosMessageName != null)
+                    {
+                        SendUnityServiceRegistration(keyValue.Key, keyValue.Value.rosMessageName, stream);
+                    }
+                }
 
-            foreach (var keyValue in m_Publishers)
-            {
-                if (keyValue.Value != null)
-                    SendPublisherRegistration(keyValue.Key, keyValue.Value, stream);
-            }
+                foreach (var keyValue in m_Publishers)
+                {
+                    if (keyValue.Value != null)
+                    {
+                        keyValue.Value.OnConnectionEstablished(m_MessageSerializer, stream);
+                    }
+                }
 
-            foreach (var keyValue in m_RosServices)
+                foreach (var keyValue in m_RosServices)
+                {
+                    if (keyValue.Value != null)
+                    {
+                        SendRosServiceRegistration(keyValue.Key, keyValue.Value, stream);
+                    }
+                }
+            }
+        }
+
+        void DeregisterAll()
+        {
+            lock (m_DictionaryLock)
             {
-                if (keyValue.Value != null)
-                    SendRosServiceRegistration(keyValue.Key, keyValue.Value, stream);
+                foreach (var keyValue in m_Publishers)
+                {
+                    //For all publishers, notify that they need to re-register.
+                    if (keyValue.Value != null)
+                        keyValue.Value.PublisherRegistered = false;
+                }
             }
         }
 
         public void Disconnect()
         {
-            if (m_ConnectionThreadCancellation != null)
-                m_ConnectionThreadCancellation.Cancel();
+            m_ConnectionThreadCancellation?.Cancel();
+            //The thread may be waiting on a ManualResetEvent, if so, this will wake it so it can exit immediately.
+            m_OutgoingMessageQueue?.NewMessageReadyToSendEvent?.Set();
             m_ConnectionThreadCancellation = null;
         }
 
@@ -416,25 +506,25 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             switch (topic)
             {
-                case k_SysCommand_Log:
+                case SysCommand.k_SysCommand_Log:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.Log(logCommand.text);
                     }
                     break;
-                case k_SysCommand_Warning:
+                case SysCommand.k_SysCommand_Warning:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.LogWarning(logCommand.text);
                     }
                     break;
-                case k_SysCommand_Error:
+                case SysCommand.k_SysCommand_Error:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
                         Debug.LogError(logCommand.text);
                     }
                     break;
-                case k_SysCommand_ServiceRequest:
+                case SysCommand.k_SysCommand_ServiceRequest:
                     {
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
 
@@ -459,13 +549,13 @@ namespace Unity.Robotics.ROSTCPConnector
                             Message responseMessage = service.callback(requestMessage);
 
                             // send the response message back
-                            SendSysCommand(k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
-                            SendInternal(serviceTopic, responseMessage);
+                            SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
+                            Publish(serviceTopic, responseMessage);
                         };
                     }
                     break;
 
-                case k_SysCommand_ServiceResponse:
+                case SysCommand.k_SysCommand_ServiceResponse:
                     {
                         // it's a response from a ros service
                         var serviceCommand = JsonUtility.FromJson<SysCommand_Service>(json);
@@ -489,7 +579,7 @@ namespace Unity.Robotics.ROSTCPConnector
                     }
                     break;
 
-                case k_SysCommand_TopicList:
+                case SysCommand.k_SysCommand_TopicList:
                     {
                         var topicsResponse = JsonUtility.FromJson<SysCommand_TopicsResponse>(json);
                         if (m_TopicsAndTypesListCallbacks.Count > 0)
@@ -516,11 +606,11 @@ namespace Unity.Robotics.ROSTCPConnector
             stream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
         }
 
-        static void ClearMessageQueue(ConcurrentQueue<List<byte[]>> queue)
+        static void ClearMessageQueue(OutgoingMessageQueue queue)
         {
-            List<byte[]> unused;
-            while (queue.TryDequeue(out unused))
+            while (queue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
             {
+                sendsOutgoingMessages.ClearAllQueuedData();
             }
         }
 
@@ -531,7 +621,8 @@ namespace Unity.Robotics.ROSTCPConnector
             float keepaliveTime,
             int sleepMilliseconds,
             Action<NetworkStream> RegisterAll,
-            ConcurrentQueue<List<byte[]>> outgoingQueue,
+            Action DeregisterAll,
+            OutgoingMessageQueue outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
         {
@@ -563,25 +654,51 @@ namespace Unity.Robotics.ROSTCPConnector
                     nextReaderIdx++;
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
+                    float waitingSinceRealTime = s_RealTimeSinceStartup;
                     while (true)
                     {
-                        List<byte[]> data;
-                        float waitingSinceRealTime = s_RealTimeSinceStartup;
+
+                        bool messageReadyEventWasSet = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
                         token.ThrowIfCancellationRequested();
-                        while (!outgoingQueue.TryDequeue(out data))
+
+                        if (messageReadyEventWasSet)
                         {
-                            // nothing to send right now, let's wait and see if something comes in
-                            Thread.Sleep(sleepMilliseconds);
+                            outgoingQueue.NewMessageReadyToSendEvent.Reset();
+                        }
+                        else
+                        {
                             if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
                             {
                                 SendKeepalive(networkStream);
                                 waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
-                            token.ThrowIfCancellationRequested();
                         }
 
-                        foreach (byte[] statement in data)
-                            networkStream.Write(statement, 0, statement.Length);
+                        while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
+                        {
+
+                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
+                            switch (sendToState)
+                            {
+                                case OutgoingMessageSender.SendToState.Normal:
+                                    //This is normal operation.
+                                    break;
+                                case OutgoingMessageSender.SendToState.QueueFullWarning:
+                                    //Unable to send messages to ROS as fast as we're generating them.
+                                    //This could be caused by a TCP connection that is too slow.
+                                    Debug.LogWarning($"Queue full! Messages are getting dropped! " +
+                                                     "Try check your connection speed is fast enough to handle the traffic.");
+                                    break;
+                                case OutgoingMessageSender.SendToState.NoMessageToSendError:
+                                    //This indicates
+                                    Debug.LogError(
+                                        "Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
+                                    break;
+                            }
+
+                            token.ThrowIfCancellationRequested();
+                            waitingSinceRealTime = s_RealTimeSinceStartup;
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -603,6 +720,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     // clear the message queue
                     ClearMessageQueue(outgoingQueue);
+                    DeregisterAll();
                 }
                 await Task.Yield();
             }
@@ -679,49 +797,46 @@ namespace Unity.Robotics.ROSTCPConnector
             Disconnect();
         }
 
-        public struct SysCommand_TopicAndType
-        {
-            public string topic;
-            public string message_name;
-        }
 
-        struct SysCommand_Log
-        {
-            public string text;
-        }
-
-        struct SysCommand_Service
-        {
-            public int srv_id;
-        }
-
-        struct SysCommand_TopicsRequest
-        {
-        }
-
-        struct SysCommand_TopicsResponse
-        {
-            public string[] topics;
-            public string[] types;
-        }
 
         void SendSysCommand(string command, object param, NetworkStream stream = null)
         {
-            m_MessageSerializer.Clear();
+            if (stream != null)
+                SendSysCommandImmediate(command, param, stream);
+            else
+                QueueSysCommand(command, param);
+        }
+
+        private static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
+        {
+            messageSerializer.Clear();
             // syscommands are sent as:
             // 4 byte command length, followed by that many bytes of the command
             // (all command names start with __ to distinguish them from ros topics)
-            m_MessageSerializer.Write(command);
+            messageSerializer.Write(command);
             // 4-byte json length, followed by a json string of that length
             string json = JsonUtility.ToJson(param);
-            m_MessageSerializer.WriteUnaligned(json);
-
-            if (stream != null)
-                m_MessageSerializer.SendTo(stream);
-            else
-                m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+            messageSerializer.WriteUnaligned(json);
         }
 
+        static void SendSysCommandImmediate(string command, object param, NetworkStream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentException("stream cannot be null!");
+            }
+            MessageSerializer messageSerializer = new MessageSerializer();
+            PopulateSysCommand(messageSerializer, command, param);
+            messageSerializer.SendTo(stream);
+        }
+
+        public void QueueSysCommand(string command, object param)
+        {
+            PopulateSysCommand(m_MessageSerializer, command, param);
+            m_OutgoingMessageQueue.Enqueue(new SysCommandSender(m_MessageSerializer.GetBytesSequence()));
+        }
+
+        [ObsoleteAttribute("Use Publish instead of Send", false)]
         public void Send<T>(string rosTopicName, T message) where T : Message
         {
             Publish(rosTopicName, message);
@@ -729,30 +844,35 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Publish<T>(string rosTopicName, T message) where T : Message
         {
-            if (!rosTopicName.StartsWith("__"))
+            if (rosTopicName.StartsWith("__"))
             {
-                if (!m_Publishers.ContainsKey(rosTopicName))
-                {
-                    Debug.LogError($"Can't publish a message to an unregistered topic '{rosTopicName}'");
-                    return;
-                }
-
-                if (m_HudPanel != null)
-                    m_HudPanel.SetLastMessageSent(rosTopicName, message);
+                QueueSysCommand(rosTopicName, message);
             }
-            SendInternal(rosTopicName, message);
+            else
+            {
+                //Find the publisher and queue the message for sending.
+                if (TryGetPublisher(out ROSPublisher<T> existingPublisher, rosTopicName))
+                {
+                    existingPublisher.PublishInternal(message);
+                    m_OutgoingMessageQueue.Enqueue(existingPublisher);
+
+                    if (m_HudPanel != null)
+                        m_HudPanel.SetLastMessageSent(rosTopicName, message);
+                }
+                else
+                {
+                    throw new Exception($"No registered publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()}!");
+                }
+            }
         }
 
-        void SendInternal<T>(string rosTopicName, T message) where T : Message
+        public static T GetFromPool<T>(string rosTopicName) where T : Message
         {
-            m_MessageSerializer.Clear();
-            // ros messages sent on our network channel contain:
-            // 4 byte topic length, followed by that many bytes of the topic name
-            m_MessageSerializer.Write(rosTopicName);
-            // 4-byte message length, followed by that many bytes of the message
-            m_MessageSerializer.SerializeMessageWithLength(message);
-
-            m_OutgoingMessages.Enqueue(m_MessageSerializer.GetBytesSequence());
+            if (instance.TryGetPublisher(out ROSPublisher<T> rosPublisher, rosTopicName))
+            {
+                return rosPublisher.GetMessageFromPool();
+            }
+            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
