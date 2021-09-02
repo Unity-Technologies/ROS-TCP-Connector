@@ -40,6 +40,8 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 
   - Allow switching protocol to ROS2 in different build targets (Standalone, WSA, etc.).
 
+  - Fixed dotnet format
+
 ## [0.5.0-preview] - 2021-07-15
 
 ### Upgrade Notes
