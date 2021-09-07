@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -26,6 +25,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool IsRosService => m_IsRosService;
 
         ROSConnection m_Connection;
+        public ROSConnection Connection => m_Connection;
+
         ROSConnection.InternalAPI m_ConnectionInternal;
         Func<MessageDeserializer, Message> m_Deserializer;
         Func<Message, Message> m_ServiceImplementation;
@@ -37,6 +38,12 @@ namespace Unity.Robotics.ROSTCPConnector
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         bool m_SentSubscriberRegistration;
+        public bool SentSubscriberRegistration => m_SentSubscriberRegistration;
+
+        float m_LastMessageReceivedRealtime;
+        float m_LastMessageSentRealtime;
+        public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
+        public float LastMessageSentRealtime => m_LastMessageSentRealtime;
 
         internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
@@ -58,6 +65,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void OnMessageReceived(byte[] data)
         {
+            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
             if (m_IsRosService && m_ServiceResponseTopic != null)
             {
                 //  For a service, incoming messages are a different type from outgoing messages.
@@ -79,6 +87,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void OnMessageSent(Message message)
         {
+            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
             if (m_RosMessageName == null)
             {
                 ChangeRosMessageName(message.RosMessageName);

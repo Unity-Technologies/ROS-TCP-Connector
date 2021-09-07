@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Robotics.MessageVisualizers;
 
 // Represents a transform - position and rotation.
 //(Like the Unity Transform class, but without the GameObject baggage that comes with it.)

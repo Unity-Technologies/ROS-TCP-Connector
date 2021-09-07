@@ -53,6 +53,19 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
+        public static Texture2D MakeTexture(int width, int height, Color color)
+        {
+            Color[] pix = new Color[16 * 16];
+
+            for (int i = 0; i < pix.Length; i++)
+                pix[i] = color;
+
+            Texture2D result = new Texture2D(width, height);
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
+        }
+
         public static bool AssertMessageType<T>(Message message, string topic)
         {
             if (!(message is T))
@@ -73,7 +86,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (topicState == null)
                 return null;
 
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, topicState.RosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, topicState.RosMessageName);
             if (factory == null)
                 return null;
 
@@ -82,7 +95,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static IVisual GetVisual(string topic, string rosMessageName, MessageSubtopic subtopic)
         {
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, rosMessageName);
             if (factory == null)
                 return null;
 

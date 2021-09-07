@@ -45,6 +45,11 @@ namespace Unity.Robotics.MessageVisualizers
                     ros.Subscribe<MarkerMsg>(topic, OnMarker);
             }
 
+            public void Destroy()
+            {
+
+            }
+
             public void OnGUI()
             {
                 foreach (KeyValuePair<string, Dictionary<int, BasicDrawing>> element in m_DrawingNamespaces)

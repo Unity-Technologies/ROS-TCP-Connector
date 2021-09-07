@@ -29,9 +29,12 @@ namespace Unity.Robotics.MessageVisualizers
             TopicDescending,
         }
         SortMode m_SortMode;
+        Texture2D m_FillTexture;
 
         public void Start()
         {
+            m_FillTexture = MessageVisualizationUtils.MakeTexture(16, 16, new Color(0.125f, 0.19f, 0.25f));
+
             m_Connection = ROSConnection.GetOrCreateInstance();
             HudPanel.RegisterTab(this, (int)HudTabOrdering.Topics);
             HudPanel.RegisterTab(new VisualizationLayoutTab(this), (int)HudTabOrdering.Layout);
@@ -44,7 +47,7 @@ namespace Unity.Robotics.MessageVisualizers
             VisualizationTopicsTabEntry vis;
             if (!m_Topics.TryGetValue(state.Topic, out vis))
             {
-                vis = new VisualizationTopicsTabEntry(state);
+                vis = new VisualizationTopicsTabEntry(state, m_FillTexture);
                 m_Topics.Add(state.Topic, vis);
                 m_TopicsSorted = null;
             }
@@ -93,7 +96,7 @@ namespace Unity.Robotics.MessageVisualizers
                     continue;
 
                 numTopicsShown++;
-                topicState.DrawGUILine();
+                topicState.DrawGUI();
             }
 
             GUILayout.EndScrollView();
@@ -118,27 +121,27 @@ namespace Unity.Robotics.MessageVisualizers
             m_TopicsSorted = m_Topics.Values.ToList();
             switch (m_SortMode)
             {
-                case SortMode.UI:
-                    m_TopicsSorted.Sort(
-                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
-                        {
-                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
-                            return (primary != 0) ? primary : b.IsVisualizingUI.CompareTo(a.IsVisualizingUI);
-                        }
-                    );
-                    break;
-                case SortMode.Viz:
-                    m_TopicsSorted.Sort(
-                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
-                        {
-                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
-                            if (primary != 0)
-                                return primary;
-                            int secondary = b.CanShowDrawing.CompareTo(a.CanShowDrawing);
-                            return (secondary != 0) ? secondary : b.IsVisualizingDrawing.CompareTo(a.IsVisualizingDrawing);
-                        }
-                    );
-                    break;
+                /*                case SortMode.UI:
+                                    m_TopicsSorted.Sort(
+                                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
+                                        {
+                                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
+                                            return (primary != 0) ? primary : b.IsVisualizingUI.CompareTo(a.IsVisualizingUI);
+                                        }
+                                    );
+                                    break;
+                                case SortMode.Viz:
+                                    m_TopicsSorted.Sort(
+                                        (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) =>
+                                        {
+                                            int primary = b.CanShowWindow.CompareTo(a.CanShowWindow);
+                                            if (primary != 0)
+                                                return primary;
+                                            int secondary = b.CanShowDrawing.CompareTo(a.CanShowDrawing);
+                                            return (secondary != 0) ? secondary : b.IsVisualizingDrawing.CompareTo(a.IsVisualizingDrawing);
+                                        }
+                                    );
+                                    break;*/
                 case SortMode.Topic:
                     m_TopicsSorted.Sort(
                         (VisualizationTopicsTabEntry a, VisualizationTopicsTabEntry b) => a.Topic.CompareTo(b.Topic)
@@ -216,7 +219,7 @@ namespace Unity.Robotics.MessageVisualizers
             foreach (var savedRule in saveState.Rules)
             {
                 RosTopicState topicState = m_Connection.GetOrCreateTopic(savedRule.Topic, savedRule.RosMessageName);
-                VisualizationTopicsTabEntry vis = new VisualizationTopicsTabEntry(savedRule, topicState);
+                VisualizationTopicsTabEntry vis = new VisualizationTopicsTabEntry(savedRule, topicState, m_FillTexture);
                 m_Topics.Add(savedRule.Topic, vis);
             }
         }

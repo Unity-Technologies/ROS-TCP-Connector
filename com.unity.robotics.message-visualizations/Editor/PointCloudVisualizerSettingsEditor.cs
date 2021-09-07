@@ -67,6 +67,10 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
                 newChannel => { m_Config.SizeChannel = newChannel; });
             CreateMinMaxSlider(m_Config.SizeRange, m_SizeMinVal, m_SizeMaxVal);
         }
+        else
+        {
+            m_Config.Size = EditorGUILayout.FloatField("Size:", m_Config.Size);
+        }
 
         m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", m_Config.UseRgbChannel);
 

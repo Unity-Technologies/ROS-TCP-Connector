@@ -7,7 +7,7 @@ using UnityEngine;
 
 public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSettings> : Editor
     where TMessageType : Message
-    where TVisualizerSettings : BaseVisualizerSettings<TMessageType>
+    where TVisualizerSettings : VisualizerSettingsGeneric<TMessageType>
 {
     protected TVisualizerSettings m_Config;
     Editor m_Editor;

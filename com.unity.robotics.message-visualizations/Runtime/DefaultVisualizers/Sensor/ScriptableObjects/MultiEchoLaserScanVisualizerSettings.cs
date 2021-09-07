@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "MessageVisualizations/Sensor/MultiEchoLaserScan", order = 1)]
-public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<MultiEchoLaserScanMsg>
+public class MultiEchoLaserScanVisualizerSettings : VisualizerSettingsGeneric<MultiEchoLaserScanMsg>
 {
     [SerializeField]
     bool m_UseIntensitySize;

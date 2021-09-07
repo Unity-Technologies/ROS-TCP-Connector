@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
-public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
+public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMsg>
 {
     [SerializeField]
     bool m_UseIntensitySize;

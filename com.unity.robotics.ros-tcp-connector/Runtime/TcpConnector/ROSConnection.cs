@@ -857,15 +857,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void DrawHeaderGUI()
         {
-            GUIStyle connectionArrowStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.white },
-                fontSize = 22,
-                fontStyle = FontStyle.Bold,
-                fixedWidth = 250
-            };
-
             GUIStyle labelStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleLeft,
@@ -885,14 +876,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
             // ROS IP Setup
             GUILayout.BeginHorizontal();
-            var baseColor = GUI.color;
-            GUI.color = Color.white;
-            GUI.Label(new Rect(4, 5, 25, 15), "I", connectionArrowStyle);
-            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - LastMessageReceivedRealtime);
-            GUI.Label(new Rect(8, 6, 25, 15), "\u2190", connectionArrowStyle);
-            GUI.color = GetConnectionColor(Time.realtimeSinceStartup - LastMessageSentRealtime);
-            GUI.Label(new Rect(8, 0, 25, 15), "\u2192", connectionArrowStyle);
-            GUI.color = baseColor;
+            DrawConnectionArrows(
+                true,
+                0,
+                0,
+                Time.realtimeSinceStartup - LastMessageReceivedRealtime,
+                Time.realtimeSinceStartup - LastMessageSentRealtime,
+                HasConnectionThread,
+                HasConnectionThread,
+                HasConnectionError
+            );
 
 #if ROS2
             string protocolName = "ROS2";
@@ -929,6 +922,33 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+        static GUIStyle s_ConnectionArrowStyle;
+
+        public static void DrawConnectionArrows(bool withBar, float x, float y, float receivedTime, float sentTime, bool isPublisher, bool isSubscriber, bool hasError)
+        {
+            if (s_ConnectionArrowStyle == null)
+            {
+                s_ConnectionArrowStyle = new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    normal = { textColor = Color.white },
+                    fontSize = 22,
+                    fontStyle = FontStyle.Bold,
+                    fixedWidth = 250
+                };
+            }
+
+            var baseColor = GUI.color;
+            GUI.color = Color.white;
+            if (withBar)
+                GUI.Label(new Rect(x + 4, y + 5, 25, 15), "I", s_ConnectionArrowStyle);
+            GUI.color = GetConnectionColor(receivedTime, isSubscriber, hasError);
+            GUI.Label(new Rect(x + 8, y + 6, 25, 15), "\u2190", s_ConnectionArrowStyle);
+            GUI.color = GetConnectionColor(sentTime, isPublisher, hasError);
+            GUI.Label(new Rect(x + 8, y + 0, 25, 15), "\u2192", s_ConnectionArrowStyle);
+            GUI.color = baseColor;
+        }
+
         public static void SetIPPref(string ipAddress)
         {
             PlayerPrefs.SetString(PlayerPrefsKey_ROS_IP, ipAddress);
@@ -939,7 +959,7 @@ namespace Unity.Robotics.ROSTCPConnector
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
         }
 
-        Color GetConnectionColor(float elapsedTime)
+        public static Color GetConnectionColor(float elapsedTime, bool hasConnection, bool hasError)
         {
             var bright = new Color(1, 1, 0.5f);
             var mid = new Color(0, 1, 1);
@@ -947,9 +967,9 @@ namespace Unity.Robotics.ROSTCPConnector
             const float brightDuration = 0.03f;
             const float fadeToDarkDuration = 1.0f;
 
-            if (!HasConnectionThread)
+            if (!hasConnection)
                 return Color.gray;
-            if (HasConnectionError)
+            if (hasError)
                 return Color.red;
 
             if (elapsedTime <= brightDuration)

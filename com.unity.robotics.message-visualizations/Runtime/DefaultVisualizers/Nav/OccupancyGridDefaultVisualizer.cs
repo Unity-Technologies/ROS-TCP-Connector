@@ -8,13 +8,11 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
+public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg>
 {
     [SerializeField]
     protected string m_OccupancyGridTopic;
     public string OccupancyGridTopic { get => m_OccupancyGridTopic; set => m_OccupancyGridTopic = value; }
-
-    public int Priority { get; set; }
 
     //[SerializeField]
     //string m_OccupancyGridUpdateTopic;
@@ -23,12 +21,12 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public bool CanShowDrawing => true;
+    public override bool CanShowDrawing => true;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
     //Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
 
-    public IVisual GetOrCreateVisual(string topic)
+    public override IVisual GetOrCreateVisual(string topic)
     {
         OccupancyGridVisual baseVisual;
         if (m_BaseVisuals.TryGetValue(topic, out baseVisual))
@@ -68,7 +66,7 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         }
     }
 
-    public void Start()
+    public override void Start()
     {
         if (string.IsNullOrEmpty(m_OccupancyGridTopic))
         {
@@ -84,6 +82,8 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
             //}
         }
     }
+
+    protected override IVisual CreateVisual(string topic) => throw new NotImplementedException();
 
     public class OccupancyGridVisual : IVisual
     {
