@@ -15,9 +15,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public int QueueSize { get; private set; }
 
-        public bool Latch { get; private set; }
+        public bool IsLatchEnabled { get; private set; }
 
-        public bool PublisherRegistered { get; private set; }
+        public bool DidRegisterPublisher { get; private set; }
 
         //Messages waiting to be sent queue.
         LinkedList<Message> m_OutgoingMessages = new LinkedList<Message>();
@@ -34,25 +34,17 @@ namespace Unity.Robotics.ROSTCPConnector
         //Optional, used if you want to pool messages and reuse them when they are no longer in use.
         Queue<Message> m_InactiveMessagePool = new Queue<Message>();
 
-        public RosPublisher(string topicName, string rosMessageName, int queueSize, bool latch)
+        public RosPublisher(string topicName, string rosMessageName, int queueSize, bool isLatchEnabled)
         {
             if (queueSize < 1)
             {
                 throw new Exception("Queue size must be greater than or equal to 1.");
             }
 
-            RosMessageName = rosMessageName;
             TopicName = topicName;
+            RosMessageName = rosMessageName;
             QueueSize = queueSize;
-            Latch = latch;
-            PublisherRegistered = false;
-        }
-
-        public bool EquivalentTo(string topicName, string messageName, int? queueSize, bool? latch)
-        {
-            return TopicName == topicName && RosMessageName == messageName &&
-                   (!queueSize.HasValue || QueueSize == queueSize) &&
-                   (!latch.HasValue || Latch == latch);
+            IsLatchEnabled = isLatchEnabled;
         }
 
         internal void PublishInternal(Message message)
@@ -63,7 +55,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     //Remove outgoing messages that don't fit in the queue.
                     //Recycle the message if applicable
-                    RecycleMessageIfApplicable(m_OutgoingMessages.First.Value);
+                    TryRecycleMessage(m_OutgoingMessages.First.Value);
                     //Update the overflow counter.
                     m_QueueOverflowUnsentCounter++;
                     m_OutgoingMessages.RemoveFirst();
@@ -74,18 +66,18 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void OnConnectionEstablished(MessageSerializer m_MessageSerializer, Stream stream)
+        public void OnConnectionEstablished(Stream stream)
         {
-            //Register the publisher with the ROS Endpoint.
-            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
+            //Register the publisher with the ROS Endpoint, and re-send the last message if Latched.
+            RegisterPublisherIfApplicable(stream);
         }
 
         public void OnConnectionLost()
         {
-            PublisherRegistered = false;
+            DidRegisterPublisher = false;
         }
 
-        SendToState RemoveMessageToSend(out Message messageToSend)
+        SendToState GetMessageToSend(out Message messageToSend)
         {
             SendToState result = SendToState.NoMessageToSendError;
             messageToSend = null;
@@ -130,7 +122,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendMessageWithStream(MessageSerializer messageSerializer, Stream stream, Message message)
         {
-            RegisterPublisherIfApplicable(messageSerializer, stream);
+            RegisterPublisherIfApplicable(stream, messageSerializer);
 
             //Clear the serializer
             messageSerializer.Clear();
@@ -141,20 +133,20 @@ namespace Unity.Robotics.ROSTCPConnector
             messageSerializer.SendTo(stream);
         }
 
-        void RegisterPublisherIfApplicable(MessageSerializer messageSerializer, Stream stream)
+        public void RegisterPublisherIfApplicable(Stream stream, MessageSerializer messageSerializer = null)
         {
-            if (PublisherRegistered)
+            if (DidRegisterPublisher)
             {
                 return;
             }
 
             //Register the publisher before sending anything.
-            SysCommandPublisherRegistration publisherRegistration =
-                new SysCommandPublisherRegistration(this);
+            SysCommandPublisherRegistration publisherRegistration = new SysCommandPublisherRegistration(this);
             publisherRegistration.SendTo(stream, messageSerializer);
-            PublisherRegistered = true;
 
-            if (Latch && m_LastMessageSent != null)
+            DidRegisterPublisher = true;
+
+            if (IsLatchEnabled && m_LastMessageSent != null)
             {
                 //This topic is latching, so to mimic that functionality,
                 //here the last sent message is sent again with the new connection.
@@ -162,27 +154,27 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        internal override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)
+        internal override SendToState SendInternal(MessageSerializer messageSerializer, Stream stream)
         {
-            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
-            SendToState sendToState = RemoveMessageToSend(out Message toSend);
+            RegisterPublisherIfApplicable(stream, messageSerializer);
+            SendToState sendToState = GetMessageToSend(out Message toSend);
             if (sendToState == SendToState.Normal)
             {
-                SendMessageWithStream(m_MessageSerializer, stream, toSend);
+                SendMessageWithStream(messageSerializer, stream, toSend);
 
                 //Recycle the message (if applicable).
-                if (Latch)
+                if (IsLatchEnabled)
                 {
                     if (m_LastMessageSent != null && m_LastMessageSent != toSend)
                     {
-                        RecycleMessageIfApplicable(m_LastMessageSent);
+                        TryRecycleMessage(m_LastMessageSent);
                     }
 
                     m_LastMessageSent = toSend;
                 }
                 else
                 {
-                    RecycleMessageIfApplicable(toSend);
+                    TryRecycleMessage(toSend);
                 }
             }
 
@@ -201,11 +193,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
             foreach (Message messageToRecycle in toRecycle)
             {
-                RecycleMessageIfApplicable(messageToRecycle);
+                TryRecycleMessage(messageToRecycle);
             }
         }
 
-        void RecycleMessageIfApplicable(Message toRecycle)
+        void TryRecycleMessage(Message toRecycle)
         {
             if (!MessagePoolEnabled)
             {

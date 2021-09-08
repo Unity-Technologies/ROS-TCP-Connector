@@ -297,8 +297,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 //Create a new publisher.
                 int resolvedQueueSize = queue_size.GetValueOrDefault(k_DefaultPublisherQueueSize);
                 bool resolvedLatch = latch.GetValueOrDefault(k_DefaultPublisherLatch);
-                topicState.RegisterPublisher(resolvedQueueSize, resolvedLatch);
-                return topicState.Publisher;
+                return topicState.CreatePublisher(resolvedQueueSize, resolvedLatch);
             }
         }
 
@@ -329,11 +328,6 @@ namespace Unity.Robotics.ROSTCPConnector
             public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
-            }
-
-            public void SendPublisherRegistration(string topic, string rosMessageName, NetworkStream stream = null)
-            {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Publish, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
             }
 
             public void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)

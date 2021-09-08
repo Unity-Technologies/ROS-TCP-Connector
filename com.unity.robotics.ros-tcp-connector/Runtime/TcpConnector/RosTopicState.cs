@@ -19,7 +19,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public string RosMessageName => m_RosMessageName;
 
         RosPublisher m_Publisher;
-        public RosPublisher Publisher;
+        public RosPublisher Publisher => m_Publisher;
         public bool IsPublisher => m_Publisher != null;
 
         bool m_IsRosService;
@@ -153,10 +153,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public RosPublisher RegisterPublisher(int queueSize, bool latch)
+        public RosPublisher CreatePublisher(int queueSize, bool latch)
         {
             m_Publisher = new RosPublisher(Topic, m_RosMessageName, queueSize, latch);
-            m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName);
             return m_Publisher;
         }
 
@@ -188,7 +187,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (m_Publisher != null)
             {
-                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, stream);
+                m_Publisher.OnConnectionEstablished(stream);
             }
 
             if (m_IsRosService)

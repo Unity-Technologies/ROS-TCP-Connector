@@ -23,6 +23,7 @@ namespace Unity.Robotics.MessageVisualizers
         Texture2D m_Background;
         GUIStyle m_LineStyle;
         GUIStyle m_HoverStyle;
+        bool m_IsServiceResponse;
 
         List<VisualRow> m_VisualRows = new List<VisualRow>();
 
@@ -137,7 +138,7 @@ namespace Unity.Robotics.MessageVisualizers
             public bool CanShowWindow => GetVisualFactory() != null;
             public bool CanShowDrawing => GetVisualFactory() != null && m_VisualFactory.CanShowDrawing;
 
-            public void DrawGUILine(bool firstLine)
+            public void DrawGUILine()
             {
                 bool showWindow = IsVisualizingUI;
                 bool showDrawing = IsVisualizingDrawing;
@@ -175,7 +176,11 @@ namespace Unity.Robotics.MessageVisualizers
                     m_Entry.TopicState.SentSubscriberRegistration,
                     m_Entry.m_TopicState.Connection.HasConnectionError);
 
-                if (GUILayout.Button(m_Entry.Topic, m_Entry.m_LineStyle, GUILayout.Width(240)))
+                string topicName = m_Entry.Topic;
+                if (m_Entry.m_IsServiceResponse)
+                    topicName += " (response)";
+
+                if (GUILayout.Button(topicName, m_Entry.m_LineStyle, GUILayout.Width(240)))
                 {
                     if (!canShowWindow)
                     {
@@ -199,12 +204,9 @@ namespace Unity.Robotics.MessageVisualizers
                 Rect horizontalRect = GUILayoutUtility.GetLastRect();
 
 #if UNITY_EDITOR
-                if (firstLine)
-                {
-                    Rect buttonRect = new Rect(horizontalRect.xMax - 20, horizontalRect.center.y - 10, 20, 20);
-                    if (GUI.Button(buttonRect, "\u2630"))
-                        m_Entry.ShowOptionsMenu(buttonRect);
-                }
+                Rect buttonRect = new Rect(horizontalRect.xMax - 20, horizontalRect.center.y - 10, 20, 20);
+                if (GUI.Button(buttonRect, "\u2630"))
+                    m_Entry.ShowOptionsMenu(buttonRect);
 #endif
 
                 if (m_IsHovering)
@@ -264,15 +266,16 @@ namespace Unity.Robotics.MessageVisualizers
             public List<VisualRow.SaveState> Rows;
         }
 
-        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background)
+        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background, bool isResponse = false)
         {
             m_TopicState = baseState;
             m_Background = background;
             m_VisualRows.Add(new VisualRow(this));
+            m_IsServiceResponse = isResponse;
 
             if (baseState.ServiceResponseTopic != null)
             {
-                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background);
+                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background, true);
             }
         }
 
@@ -314,11 +317,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawGUI()
         {
-            bool firstLine = true;
             foreach (VisualRow row in m_VisualRows)
             {
-                row.DrawGUILine(firstLine);
-                firstLine = false;
+                row.DrawGUILine();
             }
 
             if (m_ServiceResponseTopic != null)

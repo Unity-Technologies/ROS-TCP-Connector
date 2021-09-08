@@ -95,7 +95,7 @@ namespace Unity.Robotics.ROSTCPConnector
         [SerializeField] public bool latch;
 
         public SysCommandPublisherRegistration(RosPublisher rosPublisher) : this(
-            rosPublisher.TopicName, rosPublisher.RosMessageName, rosPublisher.QueueSize, rosPublisher.Latch)
+            rosPublisher.TopicName, rosPublisher.RosMessageName, rosPublisher.QueueSize, rosPublisher.IsLatchEnabled)
         {
         }
 
