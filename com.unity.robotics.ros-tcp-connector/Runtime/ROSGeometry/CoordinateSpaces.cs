@@ -20,7 +20,14 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     {
     }
 
-    //RUF is the Unity coordinate space, so no conversion needed
+    /// <summary>
+    /// RUF is the Unity coordinate space, so no conversion needed
+    /// <list type="bullet">
+    ///     <item><term>X axis: </term><description>Right and South</description></item>
+    ///     <item><term>Y axis: </term><description>Up</description></item>
+    ///     <item><term>Z axis: </term><description>Forward and East</description></item>
+    /// </list>
+    /// </summary>
     public class RUF : ICoordinateSpace
     {
         public Vector3 ConvertFromRUF(Vector3 v) => v;
@@ -29,6 +36,14 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion ConvertToRUF(Quaternion q) => q;
     }
 
+    /// <summary>
+    /// ROS standard forward, left, up (FLU) coordinate (REP-103)
+    /// <list type="bullet">
+    ///     <item><term>X axis: </term><description>Forward and East</description></item>
+    ///     <item><term>Y axis: </term><description>Left and North</description></item>
+    ///     <item><term>Z axis: </term><description>Up</description></item>
+    /// </list>
+    /// </summary>
     public class FLU : ICoordinateSpace
     {
         public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, -v.x, v.y);
@@ -37,21 +52,31 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.y, q.z, q.x, -q.w);
     }
 
+    /// <summary>
+    /// Local north, east, down (NED) coordinates for outdoor systems, such as airplane and submarine (REP-103)
+    /// <list type="bullet">
+    ///     <item><term>X axis: </term><description>North</description></item>
+    ///     <item><term>Y axis: </term><description>East</description></item>
+    ///     <item><term>Z axis: </term><description>Down</description></item>
+    /// </list>
+    /// </summary>
     public class NED : ICoordinateSpace
     {
-        public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
-        public Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
-        public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
-        public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
+        public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(-v.x, v.z, -v.y);
+        public Vector3 ConvertToRUF(Vector3 v) => new Vector3(-v.x, -v.z, v.y);
+        public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(-q.x, q.z, -q.y, -q.w);
+        public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.x, -q.z, q.y, -q.w);
     }
 
-    public class ENU : ICoordinateSpace
-    {
-        public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.x, v.z, v.y);
-        public Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.x, v.z, v.y);
-        public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.x, q.z, q.y, -q.w);
-        public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.x, q.z, q.y, -q.w);
-    }
+    /// <summary>
+    /// Local east, north, up (ENU) coordinates for short-range Cartesian representations of geographic locations (REP-103)
+    /// <list type="bullet">
+    ///     <item><term>X axis: </term><description>East</description></item>
+    ///     <item><term>Y axis: </term><description>North</description></item>
+    ///     <item><term>Z axis: </term><description>Up</description></item>
+    /// </list>
+    /// </summary>
+    public class ENU : FLU { }
 
     public enum CoordinateSpaceSelection
     {
