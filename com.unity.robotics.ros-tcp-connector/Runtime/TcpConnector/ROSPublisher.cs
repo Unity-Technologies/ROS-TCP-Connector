@@ -7,45 +7,41 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class ROSPublisher : OutgoingMessageSender
+    public class RosPublisher : OutgoingMessageSender
     {
-        public string RosMessageName { get; }
+        public string RosMessageName { get; private set; }
 
-        public bool PublisherRegistered { get; set; }
+        public string TopicName { get; private set; }
+
+        public int QueueSize { get; private set; }
+
+        public bool Latch { get; private set; }
+
+        public bool PublisherRegistered { get; private set; }
 
         //Messages waiting to be sent queue.
-        private LinkedList<Message> outgoingMessages = new LinkedList<Message>();
+        LinkedList<Message> m_OutgoingMessages = new LinkedList<Message>();
 
         //Keeps track of how many outgoing messages were removed due to queue overflow.
         //If a message is published but the queue is full, the counter is incremented, the
         //first message in the queue is recycled and the message to publish is put on the end of the queue.
         //If this is non 0, a SendTo call will decrement the counter instead of sending data.
-        private int queueOverflowUnsentCounter = 0;
+        int m_QueueOverflowUnsentCounter = 0;
 
         //Latching - This message will be set if latching is enabled, and on reconnection, it will be sent again.
-        private Message lastMessageSent = null;
-
-        //Whether you want to pool messages for reuse (Used to reduce GC calls).
-        private volatile bool _messagePoolEnabled;
+        Message m_LastMessageSent = null;
 
         //Optional, used if you want to pool messages and reuse them when they are no longer in use.
-        private Queue<Message> inactiveMessagePool = new Queue<Message>();
+        Queue<Message> m_InactiveMessagePool = new Queue<Message>();
 
-        public string TopicName { get; }
-
-        public int QueueSize { get; }
-
-        public bool Latch { get; }
-
-        public ROSPublisher(string topicName, int queueSize, bool latch)
+        public RosPublisher(string topicName, string rosMessageName, int queueSize, bool latch)
         {
-            this.RosMessageName = MessageRegistry.GetRosMessageName<Message>();
-
             if (queueSize < 1)
             {
                 throw new Exception("Queue size must be greater than or equal to 1.");
             }
 
+            RosMessageName = rosMessageName;
             TopicName = topicName;
             QueueSize = queueSize;
             Latch = latch;
@@ -61,20 +57,20 @@ namespace Unity.Robotics.ROSTCPConnector
 
         internal void PublishInternal(Message message)
         {
-            lock (outgoingMessages)
+            lock (m_OutgoingMessages)
             {
-                if (outgoingMessages.Count >= QueueSize)
+                if (m_OutgoingMessages.Count >= QueueSize)
                 {
                     //Remove outgoing messages that don't fit in the queue.
                     //Recycle the message if applicable
-                    RecycleMessageIfApplicable(outgoingMessages.First.Value);
+                    RecycleMessageIfApplicable(m_OutgoingMessages.First.Value);
                     //Update the overflow counter.
-                    queueOverflowUnsentCounter++;
-                    outgoingMessages.RemoveFirst();
+                    m_QueueOverflowUnsentCounter++;
+                    m_OutgoingMessages.RemoveFirst();
                 }
 
                 //Add a new valid message to the end.
-                outgoingMessages.AddLast(message);
+                m_OutgoingMessages.AddLast(message);
             }
         }
 
@@ -84,25 +80,30 @@ namespace Unity.Robotics.ROSTCPConnector
             RegisterPublisherIfApplicable(m_MessageSerializer, stream);
         }
 
-        private SendToState RemoveMessageToSend(out Message messageToSend)
+        public void OnConnectionLost()
+        {
+            PublisherRegistered = false;
+        }
+
+        SendToState RemoveMessageToSend(out Message messageToSend)
         {
             SendToState result = SendToState.NoMessageToSendError;
             messageToSend = null;
-            lock (outgoingMessages)
+            lock (m_OutgoingMessages)
             {
-                if (queueOverflowUnsentCounter > 0)
+                if (m_QueueOverflowUnsentCounter > 0)
                 {
                     //This means that we can't send message to ROS as fast as we're generating them.
                     //This could potentially be bad as it means that we are dropping messages!
-                    queueOverflowUnsentCounter--;
+                    m_QueueOverflowUnsentCounter--;
                     messageToSend = null;
                     result = SendToState.QueueFullWarning;
                 }
-                else if (outgoingMessages.Count > 0)
+                else if (m_OutgoingMessages.Count > 0)
                 {
                     //Retrieve the next message and populate messageToSend.
-                    messageToSend = outgoingMessages.First.Value;
-                    outgoingMessages.RemoveFirst();
+                    messageToSend = m_OutgoingMessages.First.Value;
+                    m_OutgoingMessages.RemoveFirst();
                     result = SendToState.Normal;
                 }
             }
@@ -114,11 +115,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             bool result = false;
             messageToSend = null;
-            lock (outgoingMessages)
+            lock (m_OutgoingMessages)
             {
-                if (outgoingMessages.Count > 0)
+                if (m_OutgoingMessages.Count > 0)
                 {
-                    messageToSend = outgoingMessages.First.Value;
+                    messageToSend = m_OutgoingMessages.First.Value;
                     result = true;
                 }
             }
@@ -127,20 +128,20 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        private void SendMessageWithStream(MessageSerializer m_MessageSerializer, Stream stream, Message message)
+        void SendMessageWithStream(MessageSerializer messageSerializer, Stream stream, Message message)
         {
-            RegisterPublisherIfApplicable(m_MessageSerializer, stream);
+            RegisterPublisherIfApplicable(messageSerializer, stream);
 
             //Clear the serializer
-            m_MessageSerializer.Clear();
+            messageSerializer.Clear();
             //Prepare the data to send.
-            m_MessageSerializer.Write(TopicName);
-            m_MessageSerializer.SerializeMessageWithLength(message);
+            messageSerializer.Write(TopicName);
+            messageSerializer.SerializeMessageWithLength(message);
             //Send via the stream.
-            m_MessageSerializer.SendTo(stream);
+            messageSerializer.SendTo(stream);
         }
 
-        private void RegisterPublisherIfApplicable(MessageSerializer m_MessageSerializer, Stream stream)
+        void RegisterPublisherIfApplicable(MessageSerializer messageSerializer, Stream stream)
         {
             if (PublisherRegistered)
             {
@@ -150,18 +151,18 @@ namespace Unity.Robotics.ROSTCPConnector
             //Register the publisher before sending anything.
             SysCommandPublisherRegistration publisherRegistration =
                 new SysCommandPublisherRegistration(this);
-            publisherRegistration.SendTo(stream, m_MessageSerializer);
+            publisherRegistration.SendTo(stream, messageSerializer);
             PublisherRegistered = true;
 
-            if (Latch && lastMessageSent != null)
+            if (Latch && m_LastMessageSent != null)
             {
                 //This topic is latching, so to mimic that functionality,
                 //here the last sent message is sent again with the new connection.
-                SendMessageWithStream(m_MessageSerializer, stream, lastMessageSent);
+                SendMessageWithStream(messageSerializer, stream, m_LastMessageSent);
             }
         }
 
-        public override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)
+        internal override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)
         {
             RegisterPublisherIfApplicable(m_MessageSerializer, stream);
             SendToState sendToState = RemoveMessageToSend(out Message toSend);
@@ -172,12 +173,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 //Recycle the message (if applicable).
                 if (Latch)
                 {
-                    if (lastMessageSent != null && lastMessageSent != toSend)
+                    if (m_LastMessageSent != null && m_LastMessageSent != toSend)
                     {
-                        RecycleMessageIfApplicable(lastMessageSent);
+                        RecycleMessageIfApplicable(m_LastMessageSent);
                     }
 
-                    lastMessageSent = toSend;
+                    m_LastMessageSent = toSend;
                 }
                 else
                 {
@@ -191,11 +192,11 @@ namespace Unity.Robotics.ROSTCPConnector
         public override void ClearAllQueuedData()
         {
             List<Message> toRecycle;
-            lock (outgoingMessages)
+            lock (m_OutgoingMessages)
             {
-                toRecycle = new List<Message>(outgoingMessages);
-                outgoingMessages.Clear();
-                queueOverflowUnsentCounter = 0;
+                toRecycle = new List<Message>(m_OutgoingMessages);
+                m_OutgoingMessages.Clear();
+                m_QueueOverflowUnsentCounter = 0;
             }
 
             foreach (Message messageToRecycle in toRecycle)
@@ -204,7 +205,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        private void RecycleMessageIfApplicable(Message toRecycle)
+        void RecycleMessageIfApplicable(Message toRecycle)
         {
             if (!MessagePoolEnabled)
             {
@@ -217,21 +218,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
         #region Message Pooling
 
-        public bool MessagePoolEnabled
+        //Whether you want to pool messages for reuse (Used to reduce GC calls).
+        volatile bool m_MessagePoolEnabled;
+
+        public bool MessagePoolEnabled => m_MessagePoolEnabled;
+
+        public void SetMessagePoolEnabled(bool enabled)
         {
-            get => _messagePoolEnabled;
-            set
+            if (m_MessagePoolEnabled == enabled)
+                return;
+
+            m_MessagePoolEnabled = enabled;
+            if (!m_MessagePoolEnabled)
             {
-                if (_messagePoolEnabled != value)
+                lock (m_InactiveMessagePool)
                 {
-                    _messagePoolEnabled = value;
-                    if (!_messagePoolEnabled)
-                    {
-                        lock (inactiveMessagePool)
-                        {
-                            inactiveMessagePool.Clear();
-                        }
-                    }
+                    m_InactiveMessagePool.Clear();
                 }
             }
         }
@@ -241,13 +243,13 @@ namespace Unity.Robotics.ROSTCPConnector
             Debug.Assert(MessagePoolEnabled,
                 "Adding a message to a message pool that is not enabled, please set MessagePoolEnabled to true.");
 
-            lock (inactiveMessagePool)
+            lock (m_InactiveMessagePool)
             {
-                if (MessagePoolEnabled && inactiveMessagePool.Count < (QueueSize + 5))
+                if (MessagePoolEnabled && m_InactiveMessagePool.Count < (QueueSize + 5))
                 {
                     //Make sure we're only pooling a reasonable amount.
                     //We shouldn't need any more than the queue size plus a little.
-                    inactiveMessagePool.Enqueue(messageToRecycle);
+                    m_InactiveMessagePool.Enqueue(messageToRecycle);
                 }
             }
         }
@@ -258,12 +260,12 @@ namespace Unity.Robotics.ROSTCPConnector
         public Message GetMessageFromPool()
         {
             Message result = null;
-            MessagePoolEnabled = true;
-            lock (inactiveMessagePool)
+            SetMessagePoolEnabled(true);
+            lock (m_InactiveMessagePool)
             {
-                if (inactiveMessagePool.Count > 0)
+                if (m_InactiveMessagePool.Count > 0)
                 {
-                    result = inactiveMessagePool.Dequeue();
+                    result = m_InactiveMessagePool.Dequeue();
                 }
             }
 

@@ -7,7 +7,6 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public abstract class SysCommand
     {
-
         public const string k_SysCommand_Log = "__log";
         public const string k_SysCommand_Warning = "__warn";
         public const string k_SysCommand_Error = "__error";
@@ -18,6 +17,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string k_SysCommand_RosService = "__ros_service";
         public const string k_SysCommand_UnityService = "__unity_service";
         public const string k_SysCommand_TopicList = "__topic_list";
+        public const string k_SysCommand_RemoveSubscriber = "__remove_subscriber";
+        public const string k_SysCommand_RemovePublisher = "__remove_publisher";
+        public const string k_SysCommand_RemoveRosService = "__remove_ros_service";
+        public const string k_SysCommand_RemoveUnityService = "__remove_unity_service";
 
         public abstract string Command
         {
@@ -53,6 +56,11 @@ namespace Unity.Robotics.ROSTCPConnector
         }
     }
 
+    public struct SysCommand_Topic
+    {
+        public string topic;
+    }
+
     public struct SysCommand_TopicAndType
     {
         public string topic;
@@ -86,7 +94,7 @@ namespace Unity.Robotics.ROSTCPConnector
         [SerializeField] public int queue_size;
         [SerializeField] public bool latch;
 
-        public SysCommandPublisherRegistration(ROSPublisher rosPublisher) : this(
+        public SysCommandPublisherRegistration(RosPublisher rosPublisher) : this(
             rosPublisher.TopicName, rosPublisher.RosMessageName, rosPublisher.QueueSize, rosPublisher.Latch)
         {
         }
