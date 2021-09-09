@@ -9,9 +9,12 @@ public class RangeDefaultVisualizer : DrawingVisualizer<RangeMsg>
 {
     [SerializeField]
     Color m_Color;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, RangeMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 

@@ -11,9 +11,12 @@ public class PoseArrayDefaultVisualizer : DrawingVisualizer<PoseArrayMsg>
     [SerializeField]
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, PoseArrayMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
     }
 

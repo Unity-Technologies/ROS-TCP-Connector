@@ -11,9 +11,12 @@ public class OdometryDefaultVisualizer : DrawingVisualizer<OdometryMsg>
     public float sphereRadius = 1.0f;
     [SerializeField]
     Color m_Color;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
     public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 
