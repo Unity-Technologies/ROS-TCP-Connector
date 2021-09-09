@@ -71,7 +71,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
     abstract class BaseCompass
     {
-        public CardinalDirection m_UnityZAxisDirection;
+        protected CardinalDirection m_UnityZAxisDirection;
 
         public abstract Vector3 FromUnity(Vector3 v);       // convert this vector from the Unity coordinate space into geo coordinate
         public abstract Quaternion FromUnity(Quaternion q); // convert this quaternion from the Unity coordinate space into geo coordinate
