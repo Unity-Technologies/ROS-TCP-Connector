@@ -52,6 +52,11 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void OnGUI()
             {
+                if (m_DrawingNamespaces.Count == 0)
+                {
+                    GUILayout.Label("Waiting for messages...");
+                }
+
                 foreach (KeyValuePair<string, Dictionary<int, BasicDrawing>> element in m_DrawingNamespaces)
                 {
                     string key = element.Key;

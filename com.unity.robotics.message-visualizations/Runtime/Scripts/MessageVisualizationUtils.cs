@@ -368,7 +368,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void GUI(this RegionOfInterestMsg message, Texture2D tex)
+        public static void GUI(this RegionOfInterestMsg message, Texture2D tex = null)
         {
             if (tex != null)
             {

@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 8c8b9a5a-112f-4b96-aca3-59258fc3b4f3
+  m_ID: 0-0
 --- !u!114 &486083820894217633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,7 +73,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 97e5fd24-7d77-42af-b76b-ee5712c411ad
+  m_ID: 0-0
 --- !u!1 &2932710031339968934
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 39827fde-1f6c-433f-b2bd-e47c7999c215
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &8047805054313730080
 MonoBehaviour:
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fef35cb5-10f8-47ad-9ca8-ee2928ca7119
+  m_ID: 0-0
 --- !u!114 &2383384678607936081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,7 +173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 8727bdfa-5bcd-4140-8456-c5a2e85d5520
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &3295410404439277723
 MonoBehaviour:
@@ -188,7 +188,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: df591541-6077-4e35-b996-947c882d1a4e
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &6160762975729603870
 MonoBehaviour:
@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: ba935e3f-4d92-4ead-8e87-ac65b6ec7eb7
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &6946897536552733743
 MonoBehaviour:
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: b8f9ddb7-d61d-4855-97b7-f6cfaf8d30e9
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &8352815775925742287
 MonoBehaviour:
@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: b1d9ea45-3740-47be-9f98-bad1bcc47d23
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &7303645469756119746
 MonoBehaviour:
@@ -248,7 +248,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: d5ed8ad2-3e37-48f9-b228-d906cbf8c771
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &1773035749431174605
 MonoBehaviour:
@@ -263,7 +263,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 21e0816f-2331-4f59-afe3-7c62e32cfd17
+  m_ID: 0-0
 --- !u!114 &8123718758661203652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 9dc2e3b4-0a42-48ce-a5d6-994ab3cee4ba
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &8529573832713912522
 MonoBehaviour:
@@ -292,7 +292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: bae325c3-8f5e-413b-98d6-2af51063c8d8
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &4462889497226351521
 MonoBehaviour:
@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fd26bb85-d942-442d-a418-b6ffcfe59156
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!114 &6182971199690518249
 MonoBehaviour:
@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: d2248108-165b-479b-b411-934e316ba641
+  m_ID: 0-0
   m_Tabulate: 1
 --- !u!1 &3663615855669088657
 GameObject:
@@ -384,7 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: f14f8de9-9e10-4420-b72f-caa0aa800156
+  m_ID: 0-0
 --- !u!114 &7470566491277804637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: a8fde853-99d3-493c-8082-e5bf42874cf8
+  m_ID: 0-0
 --- !u!114 &1003854720124934146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,7 +412,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: b43b62ba-ec16-4420-a990-b7544efc92b3
+  m_ID: 0-0
 --- !u!1 &3885009520023495737
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,7 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fcc380ab-9ba0-44fd-ab6c-d726058b4ab3
+  m_ID: 0-0
   m_Radius: 0.1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_TFTrackingSettings:
@@ -563,11 +563,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 05c29a53-3193-433f-bec4-eba090decd5c
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &5913021767012963164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,7 +584,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fe8b5bbd-0dbe-4c3d-a9c5-126c9a0d5a0c
+  m_ID: 0-0
   m_Thickness: 0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_TFTrackingSettings:
@@ -600,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 62b326d9-a1fe-4376-864a-e3ebeaec456f
+  m_ID: 0-0
   m_OccupancyGridTopic: 
   m_Offset: {x: 0, y: 0, z: 0}
   m_TFTrackingSettings:
@@ -666,7 +669,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: f67a1f68-c7ca-4627-aadd-58f9da98c200
+  m_ID: 0-0
   m_Origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &10134729756461994
@@ -682,7 +685,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: a0726bbe-0ed7-4731-bfdb-03497b29e404
+  m_ID: 0-0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &9170035167368884274
 MonoBehaviour:
@@ -697,7 +700,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 4c9ca3f6-f719-4130-861e-c8f2737bb3fc
+  m_ID: 0-0
   m_Origin: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &7636441891634033707
@@ -781,7 +784,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: ae5f0ce7-4439-4a48-8707-821b2d17cb0b
+  m_ID: 0-0
 --- !u!114 &6093731158808447741
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -795,7 +798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 6b08e845-6668-4521-bdec-2c5b55a33ad3
+  m_ID: 0-0
   ImageTopic: 
 --- !u!114 &7441739547993683080
 MonoBehaviour:
@@ -810,7 +813,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 1d4c86bb-04d2-4948-b6de-75f73b3277c2
+  m_ID: 0-0
 --- !u!114 &155092798885258574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -824,7 +827,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: ef012355-cc52-44d5-ada3-9aa1efc13c44
+  m_ID: 0-0
 --- !u!114 &2935548991656734054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -838,7 +841,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: aeae86bc-6187-43e6-97dd-54295f2ee108
+  m_ID: 0-0
 --- !u!114 &5889424268785120784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -852,7 +855,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 9cd87d1f-c93f-4518-9080-4cdd1bbdf352
+  m_ID: 0-0
   m_Debayer: 1
 --- !u!114 &5976578650414877411
 MonoBehaviour:
@@ -867,11 +870,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: e6d695e6-b58b-41d5-a71f-218508d531cc
+  m_ID: 0-0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_LengthScale: 1
   m_SphereRadius: 1
   m_Thickness: 0.01
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &8675186427272592650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -885,7 +891,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 06733201-f926-4828-af53-27578bf951ae
+  m_ID: 0-0
   m_ShowEffort: 0
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
@@ -905,7 +911,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: c4d44f16-150a-424f-b95d-b3f5ff07538b
+  m_ID: 0-0
 --- !u!114 &4257832478134861953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -919,7 +925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 2d9bd09d-0fd2-41e4-a9d7-3d1c84f87f70
+  m_ID: 0-0
 --- !u!114 &80403428171741797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -933,7 +939,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 7d606aa6-fc5b-4e67-b3db-83f6f2ab6d86
+  m_ID: 0-0
 --- !u!114 &8504106144864944755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -962,7 +968,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 1c232455-bd74-4273-b7ec-c440c705a3aa
+  m_ID: 0-0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_TFTrackingSettings:
     type: 1
@@ -980,7 +986,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 82b23ac1-1c3d-42f1-acbd-d4a89fc1d4cb
+  m_ID: 0-0
   m_UrdfRobot: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_TFTrackingSettings:
@@ -1014,7 +1020,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: ce166dc1-a2d8-473d-98ee-d039973faaec
+  m_ID: 0-0
 --- !u!114 &3089997538344452000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1028,7 +1034,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: b8b6e55d-d155-4aac-bd3d-24cfb70466a0
+  m_ID: 0-0
 --- !u!114 &799052654498225059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1072,7 +1078,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: d7a8128a-40c3-4949-8195-c10303dbee69
+  m_ID: 0-0
 --- !u!114 &2543319158761722970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1086,8 +1092,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fc28b0dc-a63f-4252-9b38-32533e52486b
+  m_ID: 0-0
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &8531576909173476880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1101,7 +1110,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: e47b061c-53af-4f0b-9461-0a452a364031
+  m_ID: 0-0
 --- !u!114 &6456219811023967801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1115,7 +1124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: d1219c87-9008-4611-bf9f-852cb843887b
+  m_ID: 0-0
 --- !u!114 &4100153632918593568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1129,7 +1138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: aaa03f12-5048-4032-b0cf-20ea2471ff6d
+  m_ID: 0-0
 --- !u!1 &7744532052838294221
 GameObject:
   m_ObjectHideFlags: 0
@@ -1140,6 +1149,7 @@ GameObject:
   m_Component:
   - component: {fileID: 892830402226269397}
   - component: {fileID: 6283067704607370707}
+  - component: {fileID: 2564371781862700316}
   m_Layer: 0
   m_Name: Stereo
   m_TagString: Untagged
@@ -1174,6 +1184,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Priority: -1
+--- !u!114 &2564371781862700316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7744532052838294221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64f41ca8e53c67c4b8ae0a8f503acec6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Topic: 
+  m_ID: 0-0
 --- !u!1 &8079308096200974559
 GameObject:
   m_ObjectHideFlags: 0
@@ -1259,7 +1283,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 73e403d9-7ebb-4b79-84ab-604876a9f9a0
+  m_ID: 0-0
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1278,7 +1302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 5825e195-53e5-4f08-b9ba-75abd57bd175
+  m_ID: 0-0
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1300,7 +1324,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 68b6ea4b-b392-4658-bda3-54cbb6b14992
+  m_ID: 0-0
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1319,7 +1343,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 8e0e98b3-e666-422b-833c-8419b3db147e
+  m_ID: 0-0
   m_Thickness: 0.01
   m_LengthScale: 1
   m_SphereRadius: 1
@@ -1341,7 +1365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 49f7bd49-6fcc-4d9c-8a41-861923703b03
+  m_ID: 0-0
   m_Origin: {fileID: 0}
   m_Radius: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1358,7 +1382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 1b8e729d-0e8d-453d-a180-d3921e3f1de1
+  m_ID: 0-0
   m_Origin: {fileID: 0}
   m_Radius: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1379,7 +1403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: fbfb3e76-231f-4370-b2bf-bd3b1c9c3ee7
+  m_ID: 0-0
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
@@ -1396,7 +1420,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: a54e23ab-55a8-4fcd-9e8f-1a0c9cffcd0a
+  m_ID: 0-0
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
@@ -1413,7 +1437,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: b63803c2-390f-4ecb-9dab-ea4c2ba4fddc
+  m_ID: 0-0
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_Label: 
@@ -1433,7 +1457,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: dc24cf14-cd54-4e1d-ada9-a52b9ff24b64
+  m_ID: 0-0
   m_Thickness: 0.1
   m_Color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &3528554124578749351
@@ -1449,7 +1473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 7fdf1dbe-9b87-4e1e-aba2-ee98e8edaaab
+  m_ID: 0-0
   m_Thickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_TFTrackingSettings:
@@ -1468,7 +1492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: c0b7a090-92b3-4ae4-be3b-0e9a7ea203d6
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &4733426239935653971
@@ -1484,9 +1508,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 4e49e309-dd7b-4987-9bd2-4169a2192a97
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
 --- !u!114 &1759114360125940856
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1500,7 +1527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 826be420-bb60-43fb-8447-ef9d1aa42232
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_TFTrackingSettings:
@@ -1519,7 +1546,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 40f0f8b7-4d5d-4f8d-8e19-45baf976a5e6
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
 --- !u!114 &1342705377526844242
@@ -1535,7 +1562,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 1d2219d0-db73-4aea-a47a-e13e27564460
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_TFTrackingSettings:
@@ -1554,7 +1581,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: c81ddb3d-5ecb-4dcc-ae03-4902fd8497b7
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
@@ -1573,7 +1600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: e0c08734-8921-4ef9-9deb-668581b26034
+  m_ID: 0-0
   m_Size: 0.01
   m_DrawAtPosition: {fileID: 0}
   m_DrawUnityAxes: 0
@@ -1595,7 +1622,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 9e50726c-c98d-4f48-8fde-de0b7ce8c248
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1613,7 +1640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 2c185164-4cf2-4ed3-af64-6dba7260bb27
+  m_ID: 0-0
   m_Size: 0.1
   m_DrawUnityAxes: 0
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -1634,7 +1661,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: e3bbdc29-aa33-4ad3-8df5-ca4c40675c10
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1653,7 +1680,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 47d98241-28e0-4145-8f13-4a47607c2916
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1675,7 +1702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 802bb051-a476-4c82-8705-b6d75ccd1c24
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1694,7 +1721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: ee649fdc-fea5-4275-add4-ad936f68a09b
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1716,7 +1743,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 5947d5ca-3eb5-4306-9970-827dec874b02
+  m_ID: 0-0
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_Label: 
@@ -1733,7 +1760,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 47e5296e-2690-405b-b3b1-e5bdae9ea868
+  m_ID: 0-0
   m_Radius: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_Label: 
@@ -1753,7 +1780,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 154620bf-51f8-4980-bf9c-086ae6927ce2
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1772,7 +1799,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: c35e65f8-ef87-4c55-92c3-92dad0d20d82
+  m_ID: 0-0
   thickness: 0.01
   lengthScale: 1
   sphereRadius: 1
@@ -1839,7 +1866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 05c5b6d8-4b5b-4b5a-888d-282646724217
+  m_ID: 0-0
 --- !u!1 &8908437654478296370
 GameObject:
   m_ObjectHideFlags: 0
@@ -1898,7 +1925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_ID: 3d016909-5d9d-4122-9e9b-c8ca8cb1b8a4
+  m_ID: 0-0
   m_UrdfRobot: {fileID: 0}
   m_PathThickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 1}
