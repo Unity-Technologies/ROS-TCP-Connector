@@ -18,8 +18,9 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_RosMessageName;
         public string RosMessageName => m_RosMessageName;
 
-        bool m_CanPublish;
-        public bool IsPublisher => m_CanPublish;
+        RosPublisher m_Publisher;
+        public RosPublisher Publisher => m_Publisher;
+        public bool IsPublisher => m_Publisher != null;
 
         bool m_IsRosService;
         public bool IsRosService => m_IsRosService;
@@ -152,10 +153,10 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public void RegisterPublisher()
+        public RosPublisher CreatePublisher(int queueSize, bool latch)
         {
-            m_CanPublish = true;
-            m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName);
+            m_Publisher = new RosPublisher(Topic, m_RosMessageName, queueSize, latch);
+            return m_Publisher;
         }
 
         public void RegisterRosService(string responseMessageName)
@@ -165,9 +166,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public void RegisterAll(NetworkStream stream)
+        public void OnConnectionEstablished(NetworkStream stream)
         {
-            if (m_SubscriberCallbacks.Count > 0)
+            if (m_SubscriberCallbacks.Count > 0 && !m_SentSubscriberRegistration)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
                 m_SentSubscriberRegistration = true;
@@ -178,15 +179,23 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
 
-            if (m_CanPublish)
+            if (m_Publisher != null)
             {
-                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, stream);
+                m_Publisher.OnConnectionEstablished(stream);
             }
 
             if (m_IsRosService)
             {
                 m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
+        }
+
+        public void OnConnectionLost()
+        {
+            if (m_Publisher != null)
+                m_Publisher.OnConnectionLost();
+
+            m_SentSubscriberRegistration = false;
         }
     }
 }

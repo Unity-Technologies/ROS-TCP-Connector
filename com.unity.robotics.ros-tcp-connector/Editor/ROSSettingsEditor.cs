@@ -73,12 +73,22 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                 m_SelectedProtocol = (RosProtocol)EditorGUILayout.EnumPopup("Protocol", m_SelectedProtocol);
                 if (m_SelectedProtocol == k_AlternateProtocol)
                 {
-                    List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
+                    var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+                    var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+
+                    List<string> allDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
                     if (m_SelectedProtocol == RosProtocol.ROS1)
+                    {
                         allDefines.Remove("ROS2");
+                        Debug.Log($"Removing 'ROS2' from the scripting define symbols for build target '{buildTargetGroup}'.");
+                    }
                     else
+                    {
                         allDefines.Add("ROS2");
-                    PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, string.Join(";", allDefines));
+                        Debug.Log($"Adding 'ROS2' to the scripting define symbols for build target '{buildTargetGroup}'.");
+                    }
+
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", allDefines));
                 }
             }
 
