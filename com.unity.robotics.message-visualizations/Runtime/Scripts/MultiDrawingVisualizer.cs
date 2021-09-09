@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
             return new MultiDrawingVisual(topic, this, m_HistoryLength);
         }
 
-        public virtual void Draw(BasicDrawing drawing, IEnumerable<Tuple<T, MessageMetadata>> messages) { }
+        public virtual void Draw(Drawing3d drawing, IEnumerable<Tuple<T, MessageMetadata>> messages) { }
 
         public virtual Action CreateGUI(IEnumerable<Tuple<T, MessageMetadata>> messages)
         {
@@ -43,7 +43,7 @@ namespace Unity.Robotics.MessageVisualizers
             string m_Topic;
             Queue<Tuple<T, MessageMetadata>> messages = new Queue<Tuple<T, MessageMetadata>>();
 
-            BasicDrawing m_BasicDrawing;
+            Drawing3d m_BasicDrawing;
             Action m_GUIAction;
             MultiDrawingVisualizer<T> m_Factory;
             int m_HistoryLength;
@@ -115,7 +115,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 if (m_BasicDrawing == null)
                 {
-                    m_BasicDrawing = BasicDrawingManager.CreateDrawing();
+                    m_BasicDrawing = Drawing3dManager.CreateDrawing();
                 }
                 else
                 {

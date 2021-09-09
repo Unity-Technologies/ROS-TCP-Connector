@@ -32,7 +32,7 @@ public class JointTrajectoryDefaultVisualizer : DrawingVisualizer<JointTrajector
 #endif
     }
 
-    public override void Draw(BasicDrawing drawing, JointTrajectoryMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
 #if URDF_IMPORTER
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);

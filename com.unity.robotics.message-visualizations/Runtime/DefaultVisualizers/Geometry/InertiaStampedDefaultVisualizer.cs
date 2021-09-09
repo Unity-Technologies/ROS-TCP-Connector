@@ -15,7 +15,7 @@ public class InertiaStampedDefaultVisualizer : DrawingVisualizer<InertiaStampedM
     [SerializeField]
     TFTrackingSettings m_TFTrackingType;
 
-    public override void Draw(BasicDrawing drawing, InertiaStampedMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, InertiaStampedMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingType, message.header);
         Vector3DefaultVisualizer.Draw<FLU>(message.inertia.com, drawing, m_Origin, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);

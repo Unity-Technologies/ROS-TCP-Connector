@@ -12,13 +12,13 @@ public class MagneticFieldDefaultVisualizer : DrawingVisualizer<MagneticFieldMsg
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, MagneticFieldMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MagneticFieldMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 
-    public static void Draw<C>(MagneticFieldMsg message, BasicDrawing drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
+    public static void Draw<C>(MagneticFieldMsg message, Drawing3d drawing, Color color, float lengthScale = 1) where C : ICoordinateSpace, new()
     {
         drawing.DrawArrow(Vector3.zero, message.magnetic_field.From<C>() * lengthScale, color);
     }

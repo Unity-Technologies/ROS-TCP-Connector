@@ -31,7 +31,7 @@ namespace Unity.Robotics.MessageVisualizers
         public class MarkersVisual : IVisual
         {
             public string Label => $"Markers ({m_DrawingNamespaces.Count})";
-            Dictionary<string, Dictionary<int, BasicDrawing>> m_DrawingNamespaces = new Dictionary<string, Dictionary<int, BasicDrawing>>();
+            Dictionary<string, Dictionary<int, Drawing3d>> m_DrawingNamespaces = new Dictionary<string, Dictionary<int, Drawing3d>>();
             HashSet<string> m_HiddenNamespaces = new HashSet<string>();
             bool m_IsDrawingEnabled;
 
@@ -57,7 +57,7 @@ namespace Unity.Robotics.MessageVisualizers
                     GUILayout.Label("Waiting for messages...");
                 }
 
-                foreach (KeyValuePair<string, Dictionary<int, BasicDrawing>> element in m_DrawingNamespaces)
+                foreach (KeyValuePair<string, Dictionary<int, Drawing3d>> element in m_DrawingNamespaces)
                 {
                     string key = element.Key;
                     bool hidden = m_HiddenNamespaces.Contains(key);
@@ -67,7 +67,7 @@ namespace Unity.Robotics.MessageVisualizers
                         if (newHidden)
                         {
                             m_HiddenNamespaces.Remove(key);
-                            foreach (BasicDrawing drawing in element.Value.Values)
+                            foreach (Drawing3d drawing in element.Value.Values)
                             {
                                 drawing.gameObject.SetActive(false);
                             }
@@ -75,7 +75,7 @@ namespace Unity.Robotics.MessageVisualizers
                         else
                         {
                             m_HiddenNamespaces.Add(key);
-                            foreach (BasicDrawing drawing in element.Value.Values)
+                            foreach (Drawing3d drawing in element.Value.Values)
                             {
                                 drawing.gameObject.SetActive(true);
                             }
@@ -92,25 +92,25 @@ namespace Unity.Robotics.MessageVisualizers
 
             void OnMarker(MarkerMsg marker)
             {
-                Dictionary<int, BasicDrawing> ns;
-                BasicDrawing drawing;
+                Dictionary<int, Drawing3d> ns;
+                Drawing3d drawing;
                 switch (marker.action)
                 {
                     case MarkerMsg.DELETEALL:
-                        foreach (Dictionary<int, BasicDrawing> namespaceToDestroy in m_DrawingNamespaces.Values)
-                            foreach (BasicDrawing drawingToDestroy in namespaceToDestroy.Values)
+                        foreach (Dictionary<int, Drawing3d> namespaceToDestroy in m_DrawingNamespaces.Values)
+                            foreach (Drawing3d drawingToDestroy in namespaceToDestroy.Values)
                                 drawingToDestroy.Destroy();
                         m_DrawingNamespaces.Clear();
                         break;
                     case MarkerMsg.ADD:
                         if (!m_DrawingNamespaces.TryGetValue(marker.ns, out ns))
                         {
-                            ns = new Dictionary<int, BasicDrawing>();
+                            ns = new Dictionary<int, Drawing3d>();
                             m_DrawingNamespaces.Add(marker.ns, ns);
                         }
                         if (!ns.TryGetValue(marker.id, out drawing))
                         {
-                            drawing = BasicDrawing.Create();
+                            drawing = Drawing3d.Create();
                             ns.Add(marker.id, drawing);
                         }
                         if (marker.lifetime.sec == 0 && marker.lifetime.nanosec == 0)
@@ -123,7 +123,7 @@ namespace Unity.Robotics.MessageVisualizers
                     case MarkerMsg.DELETE:
                         if (!m_DrawingNamespaces.TryGetValue(marker.ns, out ns))
                         {
-                            ns = new Dictionary<int, BasicDrawing>();
+                            ns = new Dictionary<int, Drawing3d>();
                             m_DrawingNamespaces.Add(marker.ns, ns);
                         }
                         if (ns.TryGetValue(marker.id, out drawing))
@@ -135,7 +135,7 @@ namespace Unity.Robotics.MessageVisualizers
                 }
             }
 
-            public static void Draw<C>(MarkerMsg marker, BasicDrawing drawing)
+            public static void Draw<C>(MarkerMsg marker, Drawing3d drawing)
                 where C : ICoordinateSpace, new()
             {
                 switch (marker.type)
@@ -314,7 +314,7 @@ namespace Unity.Robotics.MessageVisualizers
 
                 foreach (var ns in m_DrawingNamespaces.Values)
                 {
-                    foreach (BasicDrawing drawing in ns.Values)
+                    foreach (Drawing3d drawing in ns.Values)
                         drawing.enabled = enabled;
                 }
                 m_IsDrawingEnabled = enabled;

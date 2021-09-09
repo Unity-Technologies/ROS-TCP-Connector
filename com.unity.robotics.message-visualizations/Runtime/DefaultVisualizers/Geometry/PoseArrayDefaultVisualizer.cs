@@ -14,13 +14,13 @@ public class PoseArrayDefaultVisualizer : DrawingVisualizer<PoseArrayMsg>
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, PoseArrayMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PoseArrayMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public static void Draw<C>(PoseArrayMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+    public static void Draw<C>(PoseArrayMsg message, Drawing3d drawing, float size = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
     {
         foreach (PoseMsg pose in message.poses)
         {

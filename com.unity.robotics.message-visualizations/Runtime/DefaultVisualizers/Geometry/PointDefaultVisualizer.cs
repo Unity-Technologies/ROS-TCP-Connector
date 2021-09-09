@@ -15,18 +15,18 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, PointMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, PointMsg message, MessageMetadata meta)
         {
             Draw<FLU>(message, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 
-        public static void Draw<C>(PointMsg message, BasicDrawing drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(PointMsg message, Drawing3d drawing, Color color, string label, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
             drawing.DrawLabel(label, message.From<C>(), color, size * 1.5f);
         }
 
-        public static void Draw<C>(PointMsg message, BasicDrawing drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(PointMsg message, Drawing3d drawing, Color color, float size = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawPoint(message.From<C>(), color, size);
         }

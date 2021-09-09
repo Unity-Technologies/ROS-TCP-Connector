@@ -27,7 +27,7 @@ public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMs
     ColorModeType m_ColorMode;
     public ColorModeType ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, LaserScanMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
 

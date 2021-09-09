@@ -95,7 +95,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         bool m_IsDrawingEnabled;
         float m_LastDrawingFrameTime = -1;
 
-        BasicDrawing m_BasicDrawing;
+        Drawing3d m_BasicDrawing;
         OccupancyGridDefaultVisualizer m_Settings;
         OccupancyGridMsg m_Message;
 
@@ -161,7 +161,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 
             if (m_BasicDrawing == null)
             {
-                m_BasicDrawing = BasicDrawingManager.CreateDrawing();
+                m_BasicDrawing = Drawing3dManager.CreateDrawing();
             }
             else
             {

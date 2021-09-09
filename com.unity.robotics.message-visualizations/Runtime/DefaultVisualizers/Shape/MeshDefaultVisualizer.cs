@@ -12,12 +12,12 @@ public class MeshDefaultVisualizer : DrawingVisualizer<MeshMsg>
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, MeshMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MeshMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin);
     }
 
-    public static void Draw<C>(MeshMsg message, BasicDrawing drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
+    public static void Draw<C>(MeshMsg message, Drawing3d drawing, Color color, GameObject origin = null) where C : ICoordinateSpace, new()
     {
         Mesh mesh = new Mesh();
         mesh.vertices = message.vertices.Select(v => v.From<C>()).ToArray();

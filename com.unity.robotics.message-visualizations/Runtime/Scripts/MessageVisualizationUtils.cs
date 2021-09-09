@@ -102,7 +102,7 @@ namespace Unity.Robotics.MessageVisualizers
             return factory.GetOrCreateVisual(topic);
         }
 
-        public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
+        public static void DrawAxisVectors<C>(Drawing3d drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();
             Quaternion unityRotation = rotation.From<C>();
@@ -124,7 +124,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+        public static void DrawPointCloud<C>(PointMsg[] points, Drawing3d drawing, Color color, float radius = 0.01f)
             where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
@@ -133,7 +133,7 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void DrawPointCloud<C>(Point32Msg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+        public static void DrawPointCloud<C>(Point32Msg[] points, Drawing3d drawing, Color color, float radius = 0.01f)
             where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
@@ -142,12 +142,12 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawAngularVelocityArrow(Drawing3d drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(BasicDrawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(Drawing3d drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 axis;
             float angleDegrees;
@@ -155,7 +155,7 @@ namespace Unity.Robotics.MessageVisualizers
             DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(BasicDrawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(Drawing3d drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
             if (startVector.sqrMagnitude < 0.01f)

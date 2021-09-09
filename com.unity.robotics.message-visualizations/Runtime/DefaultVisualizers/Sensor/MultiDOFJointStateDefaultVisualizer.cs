@@ -27,7 +27,7 @@ public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJoi
 #endif
     }
 
-    public override void Draw(BasicDrawing drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
     {
 #if URDF_IMPORTER
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);

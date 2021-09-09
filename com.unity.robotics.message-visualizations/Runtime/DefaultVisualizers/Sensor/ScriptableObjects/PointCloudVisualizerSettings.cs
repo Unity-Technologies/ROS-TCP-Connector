@@ -59,7 +59,7 @@ public class PointCloudVisualizerSettings : VisualizerSettingsGeneric<PointCloud
         };
     }
 
-    public override void Draw(BasicDrawing drawing, PointCloudMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloudMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();

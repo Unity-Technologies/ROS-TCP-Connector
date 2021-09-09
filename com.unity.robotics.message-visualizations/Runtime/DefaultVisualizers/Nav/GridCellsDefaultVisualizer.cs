@@ -12,13 +12,13 @@ public class GridCellsDefaultVisualizer : DrawingVisualizer<GridCellsMsg>
     Color m_Color;
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
-    public override void Draw(BasicDrawing drawing, GridCellsMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, GridCellsMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Radius);
     }
 
-    public static void Draw<C>(GridCellsMsg message, BasicDrawing drawing, Color color, float radius = 0.01f)
+    public static void Draw<C>(GridCellsMsg message, Drawing3d drawing, Color color, float radius = 0.01f)
         where C : ICoordinateSpace, new()
     {
         MessageVisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);

@@ -159,7 +159,7 @@ namespace Unity.Robotics.MessageVisualizers
             return result.Joint;
         }
 
-        public void DrawJointPaths(BasicDrawing drawing, JointTrajectoryMsg message, Color color, float pathThickness)
+        public void DrawJointPaths(Drawing3d drawing, JointTrajectoryMsg message, Color color, float pathThickness)
         {
             JointPlacement[][] jointPlacements = GetJointPlacements(message);
             for (int Idx = 0; Idx < message.joint_names.Length; ++Idx)
@@ -168,7 +168,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawJointPaths(BasicDrawing drawing, JointPlacement[][] jointPlacements, Color color, float pathThickness)
+        public void DrawJointPaths(Drawing3d drawing, JointPlacement[][] jointPlacements, Color color, float pathThickness)
         {
             for (int pathIdx = 1; pathIdx < jointPlacements.Length; ++pathIdx)
             {
@@ -181,12 +181,12 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawJointPath(BasicDrawing drawing, JointTrajectoryMsg message, int jointIndex, Color color, float pathThickness)
+        public void DrawJointPath(Drawing3d drawing, JointTrajectoryMsg message, int jointIndex, Color color, float pathThickness)
         {
             DrawJointPath(drawing, GetJointPlacements(message), jointIndex, color, pathThickness);
         }
 
-        public void DrawEffort(BasicDrawing drawing, JointStateMsg message, Color color)
+        public void DrawEffort(Drawing3d drawing, JointStateMsg message, Color color)
         {
             if (message.effort.Length > 0)
             {
@@ -199,7 +199,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawEffort(BasicDrawing drawing, JointPlacement[] placements, Color color, double[] radii)
+        public void DrawEffort(Drawing3d drawing, JointPlacement[] placements, Color color, double[] radii)
         {
             for (int i = 0; i < placements.Length; i++)
             {
@@ -207,32 +207,32 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public void DrawGhost(BasicDrawing drawing, JointTrajectoryMsg message, int pointIndex, Color color)
+        public void DrawGhost(Drawing3d drawing, JointTrajectoryMsg message, int pointIndex, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message.points[pointIndex], message.joint_names), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, JointTrajectoryPointMsg message, string[] jointNames, Color color)
+        public void DrawGhost(Drawing3d drawing, JointTrajectoryPointMsg message, string[] jointNames, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message, jointNames), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, JointStateMsg message, Color color)
+        public void DrawGhost(Drawing3d drawing, JointStateMsg message, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message), color);
         }
 
-        public void DrawGhost(BasicDrawing drawing, MultiDOFJointStateMsg message, Color color)
+        public void DrawGhost(Drawing3d drawing, MultiDOFJointStateMsg message, Color color)
         {
             DrawGhost(drawing, GetJointPlacements(message), color);
         }
 
-        public void DrawJointPath(BasicDrawing drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
+        public void DrawJointPath(Drawing3d drawing, JointPlacement[][] jointPlacements, int jointIndex, Color color, float pathThickness)
         {
             drawing.DrawLineStrip(jointPlacements.Select(p => p[jointIndex].Position).ToArray(), color, pathThickness);
         }
 
-        public void DrawGhost(BasicDrawing drawing, JointPlacement[] placements, Color color)
+        public void DrawGhost(Drawing3d drawing, JointPlacement[] placements, Color color)
         {
             foreach (JointPlacement jointPlacement in placements)
             {

@@ -35,7 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        public override void Draw(BasicDrawing drawing, TMessage message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, TMessage message, MessageMetadata meta)
         {
             m_Settings.Draw(drawing, message, meta);
         }

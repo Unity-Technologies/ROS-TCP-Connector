@@ -16,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         TFTrackingSettings m_TFTrackingSettings;
 
-        public override void Draw(BasicDrawing drawing, TwistStampedMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, TwistStampedMsg message, MessageMetadata meta)
         {
             drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             var orig = origin == null ? Vector3.zero : origin.transform.position;

@@ -31,7 +31,7 @@ namespace Unity.Robotics.MessageVisualizers
             Draw(drawing.BasicDrawing, message, meta);
         }
 
-        public virtual void Draw(BasicDrawing drawing, T message, MessageMetadata meta) { }
+        public virtual void Draw(Drawing3d drawing, T message, MessageMetadata meta) { }
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
@@ -43,8 +43,8 @@ namespace Unity.Robotics.MessageVisualizers
             public T message { get; private set; }
             public MessageMetadata meta { get; private set; }
 
-            BasicDrawing m_BasicDrawing;
-            public BasicDrawing BasicDrawing => m_BasicDrawing;
+            Drawing3d m_BasicDrawing;
+            public Drawing3d BasicDrawing => m_BasicDrawing;
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
             string m_Topic;
@@ -122,7 +122,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 if (m_BasicDrawing == null)
                 {
-                    m_BasicDrawing = BasicDrawingManager.CreateDrawing();
+                    m_BasicDrawing = Drawing3dManager.CreateDrawing();
                 }
                 else
                 {
