@@ -191,7 +191,7 @@ namespace Unity.Robotics.MessageVisualizers
                 SetVisualizing(showWindow, showDrawing);
             }
 
-            if (m_TopicState.ServiceResponseTopic != null)
+            if (m_ServiceResponseTopic != null)
             {
                 m_ServiceResponseTopic.DrawGUILine();
             }

@@ -19,6 +19,8 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
     //[SerializeField]
     //string m_OccupancyGridUpdateTopic;
     [SerializeField]
+    Color m_Color = Color.white;
+    [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
@@ -26,6 +28,8 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
     public bool CanShowDrawing => true;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
+    static readonly int k_Color0 = Shader.PropertyToID("_Color0");
+
     //Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
 
     public IVisual GetOrCreateVisual(string topic)
@@ -62,7 +66,7 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         //}
         //else
         {
-            baseVisual = new OccupancyGridVisual(this);
+            baseVisual = new OccupancyGridVisual(this, m_Color);
             m_BaseVisuals.Add(topic, baseVisual);
             return baseVisual;
         }
@@ -89,6 +93,7 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
     {
         Mesh m_Mesh;
         Material m_Material;
+        Color m_Color;
         Texture2D m_Texture;
         bool m_TextureIsDirty = true;
         BasicDrawing m_BasicDrawing;
@@ -100,9 +105,10 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         public uint Width => m_Message.info.width;
         public uint Height => m_Message.info.height;
 
-        public OccupancyGridVisual(OccupancyGridDefaultVisualizer settings)
+        public OccupancyGridVisual(OccupancyGridDefaultVisualizer settings, Color color)
         {
             m_Settings = settings;
+            m_Color = color;
         }
 
         public void AddMessage(Message message, MessageMetadata meta)
@@ -144,6 +150,7 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
                 m_Material = new Material(Shader.Find("Unlit/OccupancyGrid"));
             }
             m_Material.mainTexture = GetTexture();
+            m_Material.SetColor(k_Color0, m_Color);
 
             var origin = m_Message.info.origin.position.From<FLU>();
             var rotation = m_Message.info.origin.orientation.From<FLU>();
