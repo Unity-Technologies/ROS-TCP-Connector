@@ -431,7 +431,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
                 OnConnectionStartedCallback,
-                DeregisterAll,
+                OnConnectionLostCallback,
                 m_OutgoingMessageQueue,
                 m_IncomingMessages,
                 m_ConnectionThreadCancellation.Token
@@ -444,21 +444,20 @@ namespace Unity.Robotics.ROSTCPConnector
             lock (m_Topics)
             {
                 foreach (RosTopicState topicInfo in AllTopics)
-                    topicInfo.RegisterAll(stream);
+                    topicInfo.OnConnectionEstablished(stream);
             }
 
             RefreshTopicsList();
         }
 
-        void DeregisterAll()
+        void OnConnectionLostCallback()
         {
             lock (m_Topics)
             {
                 foreach (RosTopicState topicInfo in AllTopics)
                 {
                     //For all publishers, notify that they need to re-register.
-                    if (topicInfo.IsPublisher)
-                        topicInfo.OnDeregister();
+                    topicInfo.OnConnectionLost();
                 }
             }
         }

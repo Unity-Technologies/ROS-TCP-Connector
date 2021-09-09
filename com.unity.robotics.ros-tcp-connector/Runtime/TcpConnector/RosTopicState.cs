@@ -159,12 +159,6 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Publisher;
         }
 
-        public void OnDeregister()
-        {
-            if (m_Publisher != null)
-                m_Publisher.OnConnectionLost();
-        }
-
         public void RegisterRosService(string responseMessageName)
         {
             m_IsRosService = true;
@@ -172,9 +166,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public void RegisterAll(NetworkStream stream)
+        public void OnConnectionEstablished(NetworkStream stream)
         {
-            if (m_SubscriberCallbacks.Count > 0)
+            if (m_SubscriberCallbacks.Count > 0 && !m_SentSubscriberRegistration)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
                 m_SentSubscriberRegistration = true;
@@ -194,6 +188,14 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
+        }
+
+        public void OnConnectionLost()
+        {
+            if (m_Publisher != null)
+                m_Publisher.OnConnectionLost();
+
+            m_SentSubscriberRegistration = false;
         }
     }
 }
