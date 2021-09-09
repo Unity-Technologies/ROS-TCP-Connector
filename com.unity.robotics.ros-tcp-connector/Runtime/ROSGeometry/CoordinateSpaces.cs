@@ -62,10 +62,23 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     /// </summary>
     public class NED : ICoordinateSpace
     {
+        private static Quaternion s_GeographicRotationOffset = Quaternion.Euler(0, 0,  90);
+        private static Quaternion s_GeographicInverseRotationOffset = Quaternion.Euler(0, 0,  -90);
+
         public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(-v.x, v.z, -v.y);
         public Vector3 ConvertToRUF(Vector3 v) => new Vector3(-v.x, -v.z, v.y);
-        public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(-q.x, q.z, -q.y, -q.w);
-        public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.x, -q.z, q.y, -q.w);
+        public Quaternion ConvertFromRUF(Quaternion q)
+        {
+            // Identity quaternion is forwarding to East (z-axis) in RUF and it should face to North (x-axis) in NED
+            var geoQuaternion = q * s_GeographicRotationOffset;
+            return new Quaternion(-geoQuaternion.x, geoQuaternion.z, -geoQuaternion.y, -geoQuaternion.w);
+        }
+        public Quaternion ConvertToRUF(Quaternion q)
+        {
+            var r = new Quaternion(-q.x, -q.z, q.y, -q.w);
+            // Identity quaternion if facing to North in NED and it should be rotated to East in RUF
+            return r * s_GeographicInverseRotationOffset;
+        }
     }
 
     /// <summary>
