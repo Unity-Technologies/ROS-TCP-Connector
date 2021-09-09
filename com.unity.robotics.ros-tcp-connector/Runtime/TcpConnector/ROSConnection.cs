@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Linq;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -144,7 +145,10 @@ namespace Unity.Robotics.ROSTCPConnector
         RosTopicState AddTopic(string topic, string rosMessageName)
         {
             RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this));
-            m_Topics.Add(topic, newTopic);
+            lock (m_Topics)
+            {
+                m_Topics.Add(topic, newTopic);
+            }
             foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
             {
                 callback(newTopic);
@@ -441,24 +445,30 @@ namespace Unity.Robotics.ROSTCPConnector
         // NB this callback is not running on the main thread, be cautious about modifying data here
         void OnConnectionStartedCallback(NetworkStream stream)
         {
+            RosTopicState[] topics;
             lock (m_Topics)
             {
-                foreach (RosTopicState topicInfo in AllTopics)
-                    topicInfo.OnConnectionEstablished(stream);
+                topics = AllTopics.ToArray();
             }
+
+            foreach (RosTopicState topicInfo in m_Topics.Values.ToArray())
+                topicInfo.OnConnectionEstablished(stream);
 
             RefreshTopicsList();
         }
 
         void OnConnectionLostCallback()
         {
+            RosTopicState[] topics;
             lock (m_Topics)
             {
-                foreach (RosTopicState topicInfo in AllTopics)
-                {
-                    //For all publishers, notify that they need to re-register.
-                    topicInfo.OnConnectionLost();
-                }
+                topics = AllTopics.ToArray();
+            }
+
+            foreach (RosTopicState topicInfo in AllTopics)
+            {
+                //For all publishers, notify that they need to re-register.
+                topicInfo.OnConnectionLost();
             }
         }
 
