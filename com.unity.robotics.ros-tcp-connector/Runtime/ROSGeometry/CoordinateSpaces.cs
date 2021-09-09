@@ -62,8 +62,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     /// </summary>
     public class NED : ICoordinateSpace
     {
-        private static Quaternion s_GeographicRotationOffset = Quaternion.Euler(0, 0,  90);
-        private static Quaternion s_GeographicInverseRotationOffset = Quaternion.Euler(0, 0,  -90);
+        private static Quaternion s_GeographicRotationOffset = Quaternion.Euler(0, 0, 90);
+        private static Quaternion s_GeographicInverseRotationOffset = Quaternion.Euler(0, 0, -90);
 
         public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(-v.x, v.z, -v.y);
         public Vector3 ConvertToRUF(Vector3 v) => new Vector3(-v.x, -v.z, v.y);
