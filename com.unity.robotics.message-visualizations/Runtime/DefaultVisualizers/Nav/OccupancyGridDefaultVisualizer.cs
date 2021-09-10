@@ -8,13 +8,11 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
+public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg>
 {
     [SerializeField]
     protected string m_OccupancyGridTopic;
     public string OccupancyGridTopic { get => m_OccupancyGridTopic; set => m_OccupancyGridTopic = value; }
-
-    public int Priority { get; set; }
 
     //[SerializeField]
     //string m_OccupancyGridUpdateTopic;
@@ -23,12 +21,12 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public bool CanShowDrawing => true;
+    public override bool CanShowDrawing => true;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
     //Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
 
-    public IVisual GetOrCreateVisual(string topic)
+    public override IVisual GetOrCreateVisual(string topic)
     {
         OccupancyGridVisual baseVisual;
         if (m_BaseVisuals.TryGetValue(topic, out baseVisual))
@@ -62,13 +60,13 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         //}
         //else
         {
-            baseVisual = new OccupancyGridVisual(this);
+            baseVisual = new OccupancyGridVisual(topic, this);
             m_BaseVisuals.Add(topic, baseVisual);
             return baseVisual;
         }
     }
 
-    public void Start()
+    public override void Start()
     {
         if (string.IsNullOrEmpty(m_OccupancyGridTopic))
         {
@@ -85,34 +83,45 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
         }
     }
 
+    protected override IVisual CreateVisual(string topic) => throw new NotImplementedException();
+
     public class OccupancyGridVisual : IVisual
     {
+        string m_Topic;
         Mesh m_Mesh;
         Material m_Material;
         Texture2D m_Texture;
         bool m_TextureIsDirty = true;
-        BasicDrawing m_BasicDrawing;
-        OccupancyGridDefaultVisualizer m_Settings;
+        bool m_IsDrawingEnabled;
+        float m_LastDrawingFrameTime = -1;
 
+        Drawing3d m_BasicDrawing;
+        OccupancyGridDefaultVisualizer m_Settings;
         OccupancyGridMsg m_Message;
-        MessageMetadata m_Meta;
 
         public uint Width => m_Message.info.width;
         public uint Height => m_Message.info.height;
 
-        public OccupancyGridVisual(OccupancyGridDefaultVisualizer settings)
+        public OccupancyGridVisual(string topic, OccupancyGridDefaultVisualizer settings)
         {
+            m_Topic = topic;
             m_Settings = settings;
+
+            ROSConnection.GetOrCreateInstance().Subscribe<OccupancyGridMsg>(m_Topic, AddMessage);
         }
 
-        public void AddMessage(Message message, MessageMetadata meta)
+        public void AddMessage(Message message)
         {
-            if (!MessageVisualizationUtils.AssertMessageType<OccupancyGridMsg>(message, meta))
+            if (!MessageVisualizationUtils.AssertMessageType<OccupancyGridMsg>(message, m_Topic))
                 return;
 
             m_Message = (OccupancyGridMsg)message;
-            m_Meta = meta;
             m_TextureIsDirty = true;
+
+            if (m_IsDrawingEnabled && Time.time > m_LastDrawingFrameTime)
+                CreateDrawing();
+
+            m_LastDrawingFrameTime = Time.time;
         }
 
         /*public void AddUpdate(OccupancyGridUpdateMsg message)
@@ -152,7 +161,7 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
 
             if (m_BasicDrawing == null)
             {
-                m_BasicDrawing = BasicDrawingManager.CreateDrawing();
+                m_BasicDrawing = Drawing3dManager.CreateDrawing();
             }
             else
             {
@@ -200,8 +209,19 @@ public class OccupancyGridDefaultVisualizer : MonoBehaviour, IVisualFactory
 
         public void OnGUI()
         {
+            if (m_Message == null)
+            {
+                GUILayout.Label("Waiting for message...");
+                return;
+            }
+
             m_Message.header.GUI();
             m_Message.info.GUI();
+        }
+
+        public void SetDrawingEnabled(bool enabled)
+        {
+            m_IsDrawingEnabled = enabled;
         }
     }
 

@@ -17,13 +17,16 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
     bool m_ViewAccel;
     bool m_ViewAngular;
     bool m_ViewOrientation;
+    [SerializeField]
+    TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, ImuMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, ImuMsg message, MessageMetadata meta)
     {
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
-    public static void Draw<C>(ImuMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(ImuMsg message, Drawing3d drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
         QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing);
         drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);

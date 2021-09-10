@@ -15,13 +15,13 @@ public class PathDefaultVisualizer : DrawingVisualizer<PathMsg>
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, PathMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PathMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Thickness);
     }
 
-    public static void Draw<C>(PathMsg message, BasicDrawing drawing, Color color, float thickness = 0.1f)
+    public static void Draw<C>(PathMsg message, Drawing3d drawing, Color color, float thickness = 0.1f)
         where C : ICoordinateSpace, new()
     {
         drawing.DrawPath(message.poses.Select(pose => pose.pose.position.From<C>()), color, thickness);

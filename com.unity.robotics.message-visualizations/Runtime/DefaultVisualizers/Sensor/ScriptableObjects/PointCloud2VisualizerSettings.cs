@@ -7,8 +7,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "PointCloud2VisualizerSettings", menuName = "Robotics/Sensor/PointCloud2", order = 1)]
-public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2Msg>
+[CreateAssetMenu(fileName = "PointCloud2VisualizerSettings", menuName = "Robotics/Sensor Visualizers/PointCloud2", order = 1)]
+public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointCloud2Msg>
 {
     public enum ColorMode
     {
@@ -60,7 +60,7 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
     public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
     bool m_UseSizeChannel = true;
 
-    public override void Draw(BasicDrawing drawing, PointCloud2Msg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloud2Msg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         var pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
@@ -146,7 +146,7 @@ public class PointCloud2VisualizerSettings : BaseVisualizerSettings<PointCloud2M
             if (useSizeChannel)
             {
                 var size = BitConverter.ToSingle(message.data, iPointStep + sizeChannelOffset);
-                radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size);
+                radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size) * m_Size;
             }
             else
             {

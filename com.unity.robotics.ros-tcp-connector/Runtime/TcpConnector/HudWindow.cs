@@ -1,9 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
+    public interface IMenuFiller
+    {
+        void AddItem(GUIContent name, bool selected, System.Action callback);
+    }
+
     public class HudWindow
     {
         const float c_DraggableSize = 8;
@@ -20,6 +26,7 @@ namespace Unity.Robotics.ROSTCPConnector
         Vector2 m_DragMouseOffset;
         Vector2 m_ContentScrollPosition;
         System.Action m_GuiDrawer;
+        System.Action<IMenuFiller> m_GuiMenu;
         int m_WindowID;
 
         public HudWindow(string title, Rect rect)
@@ -28,6 +35,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_WindowID = HudPanel.GetNextWindowID();
             m_IsActive = true;
             m_AutoLayout = false;
+            m_WindowRect = rect;
         }
 
         public HudWindow(string title)
@@ -45,9 +53,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool HasActiveRect => m_IsActive && !m_AutoLayout;
 
-        public void SetOnGUI(System.Action guiDrawer)
+        public void SetOnGUI(Action guiDrawer)
         {
             m_GuiDrawer = guiDrawer;
+        }
+
+        public void SetGUIMenu(Action<IMenuFiller> guiMenu)
+        {
+            m_GuiMenu = guiMenu;
         }
 
         public void DrawWindow(HudPanel hud)
@@ -63,11 +76,45 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
+
+#if UNITY_EDITOR
+        class EditorMenuBuilder : IMenuFiller
+        {
+            UnityEditor.GenericMenu m_Menu;
+            public EditorMenuBuilder()
+            {
+                m_Menu = new UnityEditor.GenericMenu();
+            }
+
+            public void AddItem(GUIContent name, bool selected, Action callback)
+            {
+                m_Menu.AddItem(name, selected, ()=>callback());
+            }
+
+            public void Show(Vector2 position)
+            {
+                m_Menu.DropDown(new Rect(position.x, position.y, 0f, 0f));
+            }
+        }
+#endif
+
         void DrawWindowContents(int id)
         {
             m_ContentScrollPosition = GUILayout.BeginScrollView(m_ContentScrollPosition);
             m_GuiDrawer();
             GUILayout.EndScrollView();
+            if (m_GuiMenu != null)
+            {
+                Rect scrollRect = GUILayoutUtility.GetLastRect();
+                if (GUI.Button(new Rect(scrollRect.xMin - 5, scrollRect.yMin - 17, 20, 20), "\u2630"))
+                {
+#if UNITY_EDITOR
+                    EditorMenuBuilder menuBuilder = new EditorMenuBuilder();
+                    m_GuiMenu(menuBuilder);
+                    menuBuilder.Show(new Vector2(scrollRect.xMin, scrollRect.yMin+70));
+#endif
+                }
+            }
         }
 
         public bool TryDragWindow(Event current)

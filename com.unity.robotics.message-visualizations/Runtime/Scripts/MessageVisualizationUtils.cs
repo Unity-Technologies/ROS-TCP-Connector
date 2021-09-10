@@ -53,11 +53,24 @@ namespace Unity.Robotics.MessageVisualizers
             return new Color32(bytes[0], bytes[1], bytes[2], 255);
         }
 
-        public static bool AssertMessageType<T>(Message message, MessageMetadata meta)
+        public static Texture2D MakeTexture(int width, int height, Color color)
+        {
+            Color[] pix = new Color[16 * 16];
+
+            for (int i = 0; i < pix.Length; i++)
+                pix[i] = color;
+
+            Texture2D result = new Texture2D(width, height);
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
+        }
+
+        public static bool AssertMessageType<T>(Message message, string topic)
         {
             if (!(message is T))
             {
-                Debug.LogError($"Topic \"{meta.Topic}\": Can't visualize a message of type {message.GetType()}! (expected {typeof(T)}).");
+                Debug.LogError($"Topic \"{topic}\": Can't visualize a message of type {message.GetType()}! (expected {typeof(T)}).");
                 return false;
             }
 
@@ -73,7 +86,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (topicState == null)
                 return null;
 
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, topicState.RosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, topicState.RosMessageName);
             if (factory == null)
                 return null;
 
@@ -82,14 +95,14 @@ namespace Unity.Robotics.MessageVisualizers
 
         public static IVisual GetVisual(string topic, string rosMessageName, MessageSubtopic subtopic)
         {
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualizer(topic, rosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, rosMessageName);
             if (factory == null)
                 return null;
 
             return factory.GetOrCreateVisual(topic);
         }
 
-        public static void DrawAxisVectors<C>(BasicDrawing drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
+        public static void DrawAxisVectors<C>(Drawing3d drawing, Vector3Msg position, QuaternionMsg rotation, float size, bool drawUnityAxes) where C : ICoordinateSpace, new()
         {
             Vector3 unityPosition = position.From<C>();
             Quaternion unityRotation = rotation.From<C>();
@@ -111,7 +124,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.DrawLine(unityPosition, unityPosition + z, Color.blue, size * 0.1f);
         }
 
-        public static void DrawPointCloud<C>(PointMsg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+        public static void DrawPointCloud<C>(PointMsg[] points, Drawing3d drawing, Color color, float radius = 0.01f)
             where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
@@ -120,7 +133,7 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void DrawPointCloud<C>(Point32Msg[] points, BasicDrawing drawing, Color color, float radius = 0.01f)
+        public static void DrawPointCloud<C>(Point32Msg[] points, Drawing3d drawing, Color color, float radius = 0.01f)
             where C : ICoordinateSpace, new()
         {
             PointCloudDrawing pointCloud = drawing.AddPointCloud(points.Length);
@@ -129,12 +142,12 @@ namespace Unity.Robotics.MessageVisualizers
             pointCloud.Bake();
         }
 
-        public static void DrawAngularVelocityArrow(BasicDrawing drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawAngularVelocityArrow(Drawing3d drawing, Vector3 angularVelocity, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             DrawRotationArrow(drawing, angularVelocity.normalized, angularVelocity.magnitude * Mathf.Rad2Deg, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(BasicDrawing drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(Drawing3d drawing, Quaternion rotation, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 axis;
             float angleDegrees;
@@ -142,7 +155,7 @@ namespace Unity.Robotics.MessageVisualizers
             DrawRotationArrow(drawing, axis, angleDegrees, sphereCenter, color, sphereRadius, arrowThickness);
         }
 
-        public static void DrawRotationArrow(BasicDrawing drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
+        public static void DrawRotationArrow(Drawing3d drawing, Vector3 rotationAxis, float rotationDegrees, Vector3 sphereCenter, Color32 color, float sphereRadius = 1.0f, float arrowThickness = 0.01f)
         {
             Vector3 startVector = Vector3.Cross(Vector3.up, rotationAxis);
             if (startVector.sqrMagnitude < 0.01f)
@@ -204,10 +217,26 @@ namespace Unity.Robotics.MessageVisualizers
         public static void GUITexture(this Texture2D tex)
         {
             // TODO: Rescale/recenter image based on window height/width
-            if (tex != null)
+            if (tex == null)
+                return;
+
+            var origRatio = tex.width / (float)tex.height;
+            UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+        }
+
+        public static void GUITexture(this Texture2D tex, Material material)
+        {
+            if (tex == null)
+                return;
+            var origRatio = tex.width / (float)tex.height;
+            Rect textureRect = GUILayoutUtility.GetAspectRect(origRatio);
+            if (Event.current.type == EventType.Repaint)
             {
-                var origRatio = tex.width / (float)tex.height;
-                UnityEngine.GUI.Box(GUILayoutUtility.GetAspectRect(origRatio), tex);
+                Graphics.DrawTexture(textureRect, tex, material);
+            }
+            else
+            {
+                UnityEngine.GUI.Box(textureRect, tex);
             }
         }
 
@@ -339,7 +368,7 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.Label($"[{message.x:F2}, {message.y:F2}, {message.z:F2}, {message.w:F2}]");
         }
 
-        public static void GUI(this RegionOfInterestMsg message, Texture2D tex)
+        public static void GUI(this RegionOfInterestMsg message, Texture2D tex = null)
         {
             if (tex != null)
             {

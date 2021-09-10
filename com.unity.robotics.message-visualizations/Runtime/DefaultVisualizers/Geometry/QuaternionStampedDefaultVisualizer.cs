@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         TFTrackingSettings m_TFTrackingSettings;
 
-        public override void Draw(BasicDrawing drawing, QuaternionStampedMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, QuaternionStampedMsg message, MessageMetadata meta)
         {
             drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             QuaternionDefaultVisualizer.Draw<FLU>(message.quaternion, drawing, m_DrawAtPosition, m_Size, m_DrawUnityAxes);

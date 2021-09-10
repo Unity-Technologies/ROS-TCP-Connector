@@ -11,12 +11,12 @@ public class SolidPrimitiveDefaultVisualizer : DrawingVisualizer<SolidPrimitiveM
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, SolidPrimitiveMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, SolidPrimitiveMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin);
     }
 
-    public static void Draw<C>(SolidPrimitiveMsg message, BasicDrawing drawing, Color color, GameObject origin = null)
+    public static void Draw<C>(SolidPrimitiveMsg message, Drawing3d drawing, Color color, GameObject origin = null)
     where C : ICoordinateSpace, new()
     {
         Vector3 originPosition = origin != null ? origin.transform.position : Vector3.zero;

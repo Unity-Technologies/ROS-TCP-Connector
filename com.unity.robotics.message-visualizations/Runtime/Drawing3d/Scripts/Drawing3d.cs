@@ -19,11 +19,11 @@ namespace Unity.Robotics.MessageVisualizers
         public string tfTopic = "/tf";
     }
 
-    public class BasicDrawing : MonoBehaviour
+    public class Drawing3d : MonoBehaviour
     {
         static GUIStyle s_LabelStyle;
 
-        struct LabelInfo3D
+        struct LabelInfo3d
         {
             public Vector3 position;
             public string text;
@@ -41,16 +41,16 @@ namespace Unity.Robotics.MessageVisualizers
         List<PointCloudDrawing> m_PointClouds = new List<PointCloudDrawing>();
         Queue<PointCloudDrawing> m_DormantPointClouds = new Queue<PointCloudDrawing>();
         List<int> m_Triangles = new List<int>();
-        List<LabelInfo3D> m_Labels = new List<LabelInfo3D>();
+        List<LabelInfo3d> m_Labels = new List<LabelInfo3d>();
         bool m_isDirty = false;
         Coroutine m_DestroyAfterDelay;
 
-        public static BasicDrawing Create(float duration = -1, Material material = null)
+        public static Drawing3d Create(float duration = -1, Material material = null)
         {
-            return BasicDrawingManager.CreateDrawing(duration, material);
+            return Drawing3dManager.CreateDrawing(duration, material);
         }
 
-        public void Init(BasicDrawingManager parent, Material material, float duration = -1)
+        public void Init(Drawing3dManager parent, Material material, float duration = -1)
         {
             m_Mesh = new Mesh();
 
@@ -343,21 +343,22 @@ namespace Unity.Robotics.MessageVisualizers
                     if (ringIdx + 1 < numRings)
                     {
                         AddQuad(start + 2,
-                            vertexIdx * numRings + ringIdx,
-                            vertexIdx * numRings + ringIdx + 1,
+                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx,
                             ((vertexIdx + 1) % numDivisions) * numRings + ringIdx + 1,
-                            ((vertexIdx + 1) % numDivisions) * numRings + ringIdx);
+                            vertexIdx * numRings + ringIdx + 1,
+                            vertexIdx * numRings + ringIdx
+                        );
                     }
                 }
 
                 AddTriangles(start,
                     0,
-                    2 + vertexIdx * numRings,
                     2 + ((vertexIdx + 1) % numDivisions) * numRings,
+                    2 + vertexIdx * numRings,
 
                     1,
-                    lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings,
-                    lastRingStart + vertexIdx * numRings
+                    lastRingStart + vertexIdx * numRings,
+                    lastRingStart + ((vertexIdx + 1) % numDivisions) * numRings
                 );
             }
             SetDirty();
@@ -631,7 +632,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void DrawLabel(string text, Vector3 position, Color color, float worldSpacing = 0)
         {
-            m_Labels.Add(new LabelInfo3D { text = text, position = position, color = color, worldSpacing = worldSpacing });
+            m_Labels.Add(new LabelInfo3d { text = text, position = position, color = color, worldSpacing = worldSpacing });
         }
 
         public void DrawMesh(Mesh source, Transform transform, Color32 color)
@@ -642,8 +643,8 @@ namespace Unity.Robotics.MessageVisualizers
         public void DrawMesh(Mesh source, Vector3 position, Quaternion rotation, Vector3 scale, Color32 color)
         {
             Material colorMaterial = (color.a < 255) ?
-                new Material(BasicDrawingManager.instance.UnlitColorAlphaMaterial) :
-                new Material(BasicDrawingManager.instance.UnlitColorMaterial);
+                new Material(Drawing3dManager.instance.UnlitColorAlphaMaterial) :
+                new Material(Drawing3dManager.instance.UnlitColorMaterial);
             colorMaterial.color = color;
             DrawMesh(source, position, rotation, scale, colorMaterial);
         }
@@ -720,7 +721,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         internal void OnDrawingGUI(Camera cam)
         {
-            foreach (LabelInfo3D label in m_Labels)
+            foreach (LabelInfo3d label in m_Labels)
             {
                 Vector3 screenPos = cam.WorldToScreenPoint(transform.TransformPoint(label.position) + cam.transform.right * label.worldSpacing);
                 Vector3 guiPos = GUIUtility.ScreenToGUIPoint(screenPos);
@@ -741,7 +742,7 @@ namespace Unity.Robotics.MessageVisualizers
                 return;
             Camera cam = UnityEditor.SceneView.currentDrawingSceneView.camera;
             GUIStyle style = new GUIStyle();
-            foreach (LabelInfo3D label in m_Labels)
+            foreach (LabelInfo3d label in m_Labels)
             {
                 style.normal.textColor = label.color;
                 Vector3 worldPos = transform.TransformPoint(label.position + cam.transform.right * label.worldSpacing);
@@ -766,7 +767,7 @@ namespace Unity.Robotics.MessageVisualizers
             if (!m_isDirty)
             {
                 m_isDirty = true;
-                BasicDrawingManager.instance.AddDirty(this);
+                Drawing3dManager.instance.AddDirty(this);
             }
         }
     }

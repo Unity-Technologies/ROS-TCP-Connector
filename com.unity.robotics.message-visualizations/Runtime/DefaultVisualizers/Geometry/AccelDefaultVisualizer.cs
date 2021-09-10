@@ -13,12 +13,12 @@ public class AccelDefaultVisualizer : DrawingVisualizer<AccelMsg>
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, AccelMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, AccelMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
-    public static void Draw<C>(AccelMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(AccelMsg message, Drawing3d drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
         Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
         drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);

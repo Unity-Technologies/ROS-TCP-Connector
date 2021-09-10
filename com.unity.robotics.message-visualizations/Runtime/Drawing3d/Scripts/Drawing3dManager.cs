@@ -4,21 +4,21 @@ using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
 {
-    public class BasicDrawingManager : MonoBehaviour
+    public class Drawing3dManager : MonoBehaviour
     {
-        static BasicDrawingManager s_Instance;
-        public static BasicDrawingManager instance
+        static Drawing3dManager s_Instance;
+        public static Drawing3dManager instance
         {
             get
             {
 #if UNITY_EDITOR
                 if (s_Instance == null)
                 {
-                    s_Instance = FindObjectOfType<BasicDrawingManager>();
+                    s_Instance = FindObjectOfType<Drawing3dManager>();
                     if (s_Instance == null)
                     {
                         GameObject newDebugDrawObj = new GameObject("DrawingManager");
-                        s_Instance = newDebugDrawObj.AddComponent<BasicDrawingManager>();
+                        s_Instance = newDebugDrawObj.AddComponent<Drawing3dManager>();
                         s_Instance.m_UnlitVertexColorMaterial = new Material(Shader.Find("Unlit/VertexColor"));
                         s_Instance.m_UnlitColorMaterial = new Material(Shader.Find("Unlit/Color"));
                         s_Instance.m_UnlitColorAlphaMaterial = new Material(Shader.Find("Unlit/ColorAlpha"));
@@ -31,8 +31,8 @@ namespace Unity.Robotics.MessageVisualizers
         }
 
         Camera m_Camera;
-        List<BasicDrawing> m_Drawings = new List<BasicDrawing>();
-        List<BasicDrawing> m_Dirty = new List<BasicDrawing>();
+        List<Drawing3d> m_Drawings = new List<Drawing3d>();
+        List<Drawing3d> m_Dirty = new List<Drawing3d>();
 
         [SerializeField]
         Material m_UnlitVertexColorMaterial;
@@ -54,21 +54,21 @@ namespace Unity.Robotics.MessageVisualizers
             m_Camera = Camera.main;
         }
 
-        public void AddDirty(BasicDrawing drawing)
+        public void AddDirty(Drawing3d drawing)
         {
             m_Dirty.Add(drawing);
         }
 
-        public void DestroyDrawing(BasicDrawing drawing)
+        public void DestroyDrawing(Drawing3d drawing)
         {
             m_Drawings.Remove(drawing);
             GameObject.Destroy(drawing.gameObject);
         }
 
-        public static BasicDrawing CreateDrawing(float duration = -1, Material material = null)
+        public static Drawing3d CreateDrawing(float duration = -1, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("Drawing");
-            BasicDrawing newDrawing = newDrawingObj.AddComponent<BasicDrawing>();
+            Drawing3d newDrawing = newDrawingObj.AddComponent<Drawing3d>();
             newDrawing.Init(instance, material != null ? material : instance.UnlitVertexColorMaterial, duration);
             instance.m_Drawings.Add(newDrawing);
             return newDrawing;
@@ -77,7 +77,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         void LateUpdate()
         {
-            foreach (BasicDrawing drawing in m_Dirty)
+            foreach (Drawing3d drawing in m_Dirty)
             {
                 if (drawing != null)
                     drawing.Refresh();

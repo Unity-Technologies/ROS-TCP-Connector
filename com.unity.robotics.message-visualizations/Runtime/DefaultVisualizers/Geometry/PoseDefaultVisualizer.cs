@@ -12,12 +12,12 @@ public class PoseDefaultVisualizer : DrawingVisualizer<PoseMsg>
     [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
     bool m_DrawUnityAxes;
 
-    public override void Draw(BasicDrawing drawing, PoseMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PoseMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
     }
 
-    public static void Draw<C>(PoseMsg message, BasicDrawing drawing, float size = 0.1f, bool drawUnityAxes = false)
+    public static void Draw<C>(PoseMsg message, Drawing3d drawing, float size = 0.1f, bool drawUnityAxes = false)
         where C : ICoordinateSpace, new()
     {
         MessageVisualizationUtils.DrawAxisVectors<C>(

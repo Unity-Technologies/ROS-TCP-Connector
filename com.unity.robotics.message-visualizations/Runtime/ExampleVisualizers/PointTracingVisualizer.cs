@@ -16,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, IEnumerable<Tuple<PointMsg, MessageMetadata>> messages)
+        public override void Draw(Drawing3d drawing, IEnumerable<Tuple<PointMsg, MessageMetadata>> messages)
         {
             bool firstPass = true;
             Vector3 prevPoint = Vector3.zero;

@@ -51,7 +51,7 @@ namespace Unity.Robotics.MessageVisualizers
         public void SetMaterial(Material material)
         {
             if (material == null)
-                material = BasicDrawingManager.instance.UnlitPointCloudMaterial;
+                material = Drawing3dManager.instance.UnlitPointCloudMaterial;
 
             m_MeshRenderer.sharedMaterial = material;
         }
