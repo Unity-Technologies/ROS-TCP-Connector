@@ -7,14 +7,14 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
-public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg>
+public class PointCloudVisualizerSettings : VisualizerSettingsGeneric<PointCloudMsg>
 {
     [SerializeField]
     PointCloud2VisualizerSettings.ColorMode m_ColorMode;
     public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    public ChannelFloat32Msg[] Channels { get => m_Channels; set => m_Channels = value; }
-    ChannelFloat32Msg[] m_Channels;
+    public string[] Channels { get => m_Channels; set => m_Channels = value; }
+    string[] m_Channels;
     public string HueChannel { get => m_HueChannel; set => m_HueChannel = value; }
     string m_HueChannel = "";
     public string RgbChannel { get => m_RgbChannel; set => m_RgbChannel = value; }
@@ -59,14 +59,11 @@ public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg
         };
     }
 
-    public override void Draw(BasicDrawing drawing, PointCloudMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloudMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();
-        Channels = message.channels.Select(field => field).ToArray();
-
-        if (m_Channels == null)
-            m_Channels = message.channels;
+        Channels = message.channels.Select(field => field.name).ToArray();
 
         pointCloud.SetCapacity(message.points.Length);
 

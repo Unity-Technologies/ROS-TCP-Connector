@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LaserScanVisualizerSettings", menuName = "Robotics/Sensor Messages/LaserScan", order = 1)]
-public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
+public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMsg>
 {
     [SerializeField]
     bool m_UseIntensitySize;
@@ -27,7 +27,7 @@ public class LaserScanVisualizerSettings : BaseVisualizerSettings<LaserScanMsg>
     ColorModeType m_ColorMode;
     public ColorModeType ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    public override void Draw(BasicDrawing drawing, LaserScanMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, LaserScanMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
 

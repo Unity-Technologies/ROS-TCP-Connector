@@ -9,12 +9,12 @@ public class MultiEchoLaserScanDefaultVisualizer : DrawingVisualizerWithSettings
 {
     public override string DefaultScriptableObjectPath => "VisualizerSettings/MultiEchoLaserScanVisualizerSettings";
 
-    public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, Settings);
     }
 
-    public static void Draw<C>(MultiEchoLaserScanMsg message, BasicDrawing drawing, MultiEchoLaserScanVisualizerSettings settings)
+    public static void Draw<C>(MultiEchoLaserScanMsg message, Drawing3d drawing, MultiEchoLaserScanVisualizerSettings settings)
         where C : ICoordinateSpace, new()
     {
         Draw<C>(message, drawing.AddPointCloud(message.ranges.Length), settings);

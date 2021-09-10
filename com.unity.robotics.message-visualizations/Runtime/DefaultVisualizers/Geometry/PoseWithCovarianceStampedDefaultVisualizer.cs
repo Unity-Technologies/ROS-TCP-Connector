@@ -15,7 +15,7 @@ public class PoseWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Pose
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PoseWithCovarianceStampedMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PoseDefaultVisualizer.Draw<FLU>(message.pose.pose, drawing, m_Size, m_DrawUnityAxes);

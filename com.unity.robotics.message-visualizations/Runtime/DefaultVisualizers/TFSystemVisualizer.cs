@@ -11,7 +11,7 @@ namespace Unity.Robotics.MessageVisualizers
         public float axesScale = 0.1f;
         public float lineThickness = 0.01f;
         public Color color = Color.white;
-        Dictionary<string, BasicDrawing> drawings = new Dictionary<string, BasicDrawing>();
+        Dictionary<string, Drawing3d> drawings = new Dictionary<string, Drawing3d>();
 
         public void Start()
         {
@@ -34,15 +34,15 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void OnChanged(TFStream stream)
         {
-            BasicDrawing drawing;
+            Drawing3d drawing;
             if (!drawings.TryGetValue(stream.Name, out drawing))
             {
-                drawing = BasicDrawing.Create();
+                drawing = Drawing3d.Create();
                 drawings[stream.Name] = drawing;
                 if (stream.Parent != null)
                 {
                     OnChanged(stream.Parent);
-                    BasicDrawing parentStream;
+                    Drawing3d parentStream;
                     if (drawings.TryGetValue(stream.Parent.Name, out parentStream))
                     {
                         drawing.transform.parent = parentStream.transform;

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -19,13 +18,16 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_RosMessageName;
         public string RosMessageName => m_RosMessageName;
 
-        bool m_CanPublish;
-        public bool IsPublisher => m_CanPublish;
+        RosPublisher m_Publisher;
+        public RosPublisher Publisher => m_Publisher;
+        public bool IsPublisher => m_Publisher != null;
 
         bool m_IsRosService;
         public bool IsRosService => m_IsRosService;
 
         ROSConnection m_Connection;
+        public ROSConnection Connection => m_Connection;
+
         ROSConnection.InternalAPI m_ConnectionInternal;
         Func<MessageDeserializer, Message> m_Deserializer;
         Func<Message, Message> m_ServiceImplementation;
@@ -37,6 +39,12 @@ namespace Unity.Robotics.ROSTCPConnector
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         bool m_SentSubscriberRegistration;
+        public bool SentSubscriberRegistration => m_SentSubscriberRegistration;
+
+        float m_LastMessageReceivedRealtime;
+        float m_LastMessageSentRealtime;
+        public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
+        public float LastMessageSentRealtime => m_LastMessageSentRealtime;
 
         internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
@@ -58,6 +66,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void OnMessageReceived(byte[] data)
         {
+            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
             if (m_IsRosService && m_ServiceResponseTopic != null)
             {
                 //  For a service, incoming messages are a different type from outgoing messages.
@@ -79,6 +88,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void OnMessageSent(Message message)
         {
+            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
             if (m_RosMessageName == null)
             {
                 ChangeRosMessageName(message.RosMessageName);
@@ -143,10 +153,10 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public void RegisterPublisher()
+        public RosPublisher CreatePublisher(int queueSize, bool latch)
         {
-            m_CanPublish = true;
-            m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName);
+            m_Publisher = new RosPublisher(Topic, m_RosMessageName, queueSize, latch);
+            return m_Publisher;
         }
 
         public void RegisterRosService(string responseMessageName)
@@ -156,9 +166,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }
 
-        public void RegisterAll(NetworkStream stream)
+        public void OnConnectionEstablished(NetworkStream stream)
         {
-            if (m_SubscriberCallbacks.Count > 0)
+            if (m_SubscriberCallbacks.Count > 0 && !m_SentSubscriberRegistration)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
                 m_SentSubscriberRegistration = true;
@@ -169,15 +179,23 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
 
-            if (m_CanPublish)
+            if (m_Publisher != null)
             {
-                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, stream);
+                m_Publisher.OnConnectionEstablished(stream);
             }
 
             if (m_IsRosService)
             {
                 m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, stream);
             }
+        }
+
+        public void OnConnectionLost()
+        {
+            if (m_Publisher != null)
+                m_Publisher.OnConnectionLost();
+
+            m_SentSubscriberRegistration = false;
         }
     }
 }

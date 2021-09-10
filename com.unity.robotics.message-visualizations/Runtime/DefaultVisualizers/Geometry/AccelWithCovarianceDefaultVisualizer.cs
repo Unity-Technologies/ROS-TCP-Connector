@@ -14,12 +14,12 @@ public class AccelWithCovarianceDefaultVisualizer : DrawingVisualizer<AccelWithC
     Color m_Color;
     bool m_ViewCovariance;
 
-    public override void Draw(BasicDrawing drawing, AccelWithCovarianceMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, AccelWithCovarianceMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 
-    public static void Draw<C>(AccelWithCovarianceMsg message, BasicDrawing drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(AccelWithCovarianceMsg message, Drawing3d drawing, Color color, GameObject origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
         AccelDefaultVisualizer.Draw<FLU>(message.accel, drawing, color, origin, lengthScale, sphereRadius, thickness);
     }

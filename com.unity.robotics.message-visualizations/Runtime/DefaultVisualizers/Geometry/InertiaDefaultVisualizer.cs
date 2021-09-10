@@ -11,7 +11,7 @@ public class InertiaDefaultVisualizer : DrawingVisualizer<InertiaMsg>
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, InertiaMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, InertiaMsg message, MessageMetadata meta)
     {
         Vector3DefaultVisualizer.Draw<FLU>(message.com, drawing, m_Origin, SelectColor(m_Color, meta), "Center of mass", m_Radius);
     }

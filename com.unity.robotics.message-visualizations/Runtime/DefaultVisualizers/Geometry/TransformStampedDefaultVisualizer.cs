@@ -19,7 +19,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         TFTrackingSettings m_TFTrackingSettings;
 
-        public override void Draw(BasicDrawing drawing, TransformStampedMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, TransformStampedMsg message, MessageMetadata meta)
         {
             drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
             TransformDefaultVisualizer.Draw<FLU>(message.transform, drawing, m_Size, m_DrawUnityAxes);
