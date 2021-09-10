@@ -49,6 +49,8 @@ These are fully-fledged Vector3 and Quaternion classes, so if you want, you can 
 
 These are the types returned by the `To<FLU>()` calls above. Vector3<C> also has implicit conversions to MPoint, MPoint32, and MVector3, which is how this one call can be used to convert to all three data types.
 
+In conversions between RUF and geographical coordinate systems, such as NED and ENU, the north direction is equivalent to the z-axis (forward) in RUF by default and the rotation conversions is only for local coordinates without considering the global cardinal directions (north, east, south, and west). Thus, the identity orientation of `To<ENU>` is facing north instead of east. To convert the global geographic coordinate, you can use the `Campass` component, set the cardinal direction of the z-axis in Unity, and transform the coordinate between RUF and ENU or NED, such as using `compass.ToENU(Vector3)`.
+
 # Converting between frames:
 
 If, for example, you need to convert an object's position into the FLU coordinate frame, you might explicitly create a Vector3<FLU> like this:
