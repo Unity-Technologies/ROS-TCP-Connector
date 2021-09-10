@@ -911,6 +911,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
+  m_Settings: {fileID: 11400000, guid: 39362f79ba2ad754a889a171562c7eea, type: 2}
   m_ID: 0-0
 --- !u!114 &4257832478134861953
 MonoBehaviour:
