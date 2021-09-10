@@ -11,12 +11,6 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         West = 3,
     }
 
-    public enum GeographicCoordinate
-    {
-        ENU,
-        NED,
-    }
-
     public class Compass : MonoBehaviour
     {
         [SerializeField]
@@ -27,101 +21,42 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             set => m_UnityZAxisDirection = value;
         }
 
-        [SerializeField]
-        GeographicCoordinate m_Coordinate;
-        public GeographicCoordinate Coordinate
-        {
-            get => m_Coordinate;
-            set => m_Coordinate = value;
-        }
-
-        BaseCompass compass;
-
-        public Vector3 FromUnity(Vector3 v) => compass.FromUnity(v);
-        public Quaternion FromUnity(Quaternion q) => compass.FromUnity(q);
-        public Vector3 ToUnity(Vector3 v) => compass.ToUnity(v);
-        public Quaternion ToUnity(Quaternion q) => compass.ToUnity(q);
-
-        void OnValidate()
-        {
-            Initialize();
-        }
-
-        void Start()
-        {
-            if (compass == null)
-            {
-                Initialize();
-            }
-        }
-
-        void Initialize()
-        {
-            switch (Coordinate)
-            {
-                case GeographicCoordinate.ENU:
-                    compass = new EnuCompass(m_UnityZAxisDirection);
-                    break;
-                case GeographicCoordinate.NED:
-                    compass = new NedCompass(m_UnityZAxisDirection);
-                    break;
-            }
-        }
-    }
-
-    abstract class BaseCompass
-    {
-        protected CardinalDirection m_UnityZAxisDirection;
-
-        public abstract Vector3 FromUnity(Vector3 v);       // convert this vector from the Unity coordinate space into geo coordinate
-        public abstract Quaternion FromUnity(Quaternion q); // convert this quaternion from the Unity coordinate space into geo coordinate
-        public abstract Vector3 ToUnity(Vector3 v);         // convert this vector from the geo coordinate space into Unity coordinate
-        public abstract Quaternion ToUnity(Quaternion q);   // convert this quaternion from the geo coordinate space into Unity coordinate
-    }
-
-    class EnuCompass : BaseCompass
-    {
-        public EnuCompass(CardinalDirection zDirection)
-        {
-            m_UnityZAxisDirection = zDirection;
-        }
-
-        public override Vector3 FromUnity(Vector3 v)
+        public Vector3<ENU> ToENU(Vector3 v)
         {
             switch (m_UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3(v.x, v.z, v.y);
+                    return new Vector3<ENU>(v.x, v.z, v.y);
                 case CardinalDirection.East:
-                    return new Vector3(v.z, -v.x, v.y);
+                    return new Vector3<ENU>(v.z, -v.x, v.y);
                 case CardinalDirection.South:
-                    return new Vector3(-v.x, -v.z, v.y);
+                    return new Vector3<ENU>(-v.x, -v.z, v.y);
                 case CardinalDirection.West:
-                    return new Vector3(-v.z, v.x, v.y);
+                    return new Vector3<ENU>(-v.z, v.x, v.y);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public override Quaternion FromUnity(Quaternion q)
+        public Quaternion<ENU> ToENU(Quaternion q)
         {
             var r = q * Quaternion.Euler(0, 90 * ((int)m_UnityZAxisDirection - 1), 0);
             switch (m_UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Quaternion(r.x, r.z, r.y, -r.w);
+                    return new Quaternion<ENU>(r.x, r.z, r.y, -r.w);
                 case CardinalDirection.East:
-                    return new Quaternion(r.z, -r.x, r.y, -r.w);
+                    return new Quaternion<ENU>(r.z, -r.x, r.y, -r.w);
                 case CardinalDirection.South:
-                    return new Quaternion(-r.x, -r.z, r.y, -r.w);
+                    return new Quaternion<ENU>(-r.x, -r.z, r.y, -r.w);
                 case CardinalDirection.West:
-                    return new Quaternion(-r.z, r.x, r.y, -r.w);
+                    return new Quaternion<ENU>(-r.z, r.x, r.y, -r.w);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public override Vector3 ToUnity(Vector3 v)
+        public Vector3 FromENU(Vector3<ENU> v)
         {
             switch (m_UnityZAxisDirection)
             {
@@ -138,7 +73,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public override Quaternion ToUnity(Quaternion q)
+        public Quaternion FromENU(Quaternion<ENU> q)
         {
             var inverseRotationOffset = Quaternion.Euler(0, -90 * ((int)m_UnityZAxisDirection - 1), 0);
             switch (m_UnityZAxisDirection)
@@ -155,51 +90,43 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     throw new NotSupportedException();
             }
         }
-    }
 
-    class NedCompass : BaseCompass
-    {
-        public NedCompass(CardinalDirection zDirection)
-        {
-            m_UnityZAxisDirection = zDirection;
-        }
-
-        public override Vector3 FromUnity(Vector3 v)
+        public Vector3<NED> ToNED(Vector3 v)
         {
             switch (m_UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3(v.z, v.x, -v.y);
+                    return new Vector3<NED>(v.z, v.x, -v.y);
                 case CardinalDirection.East:
-                    return new Vector3(-v.x, v.z, -v.y);
+                    return new Vector3<NED>(-v.x, v.z, -v.y);
                 case CardinalDirection.South:
-                    return new Vector3(-v.z, -v.x, -v.y);
+                    return new Vector3<NED>(-v.z, -v.x, -v.y);
                 case CardinalDirection.West:
-                    return new Vector3(v.x, -v.z, -v.y);
+                    return new Vector3<NED>(v.x, -v.z, -v.y);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public override Quaternion FromUnity(Quaternion q)
+        public Quaternion<NED> ToNED(Quaternion q)
         {
             var r = q * Quaternion.Euler(0, 90 * (int)m_UnityZAxisDirection, 0);
             switch (m_UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Quaternion(r.z, r.x, -r.y, -r.w);
+                    return new Quaternion<NED>(r.z, r.x, -r.y, -r.w);
                 case CardinalDirection.East:
-                    return new Quaternion(-r.x, r.z, -r.y, -r.w);
+                    return new Quaternion<NED>(-r.x, r.z, -r.y, -r.w);
                 case CardinalDirection.South:
-                    return new Quaternion(-r.z, -r.x, -r.y, -r.w);
+                    return new Quaternion<NED>(-r.z, -r.x, -r.y, -r.w);
                 case CardinalDirection.West:
-                    return new Quaternion(r.x, -r.z, -r.y, -r.w);
+                    return new Quaternion<NED>(r.x, -r.z, -r.y, -r.w);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public override Vector3 ToUnity(Vector3 v)
+        public Vector3 FromNED(Vector3<NED> v)
         {
             switch (m_UnityZAxisDirection)
             {
@@ -216,7 +143,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public override Quaternion ToUnity(Quaternion q)
+        public Quaternion FromNED(Quaternion<NED> q)
         {
             var inverseRotationOffset = Quaternion.Euler(0, -90 * (int)m_UnityZAxisDirection, 0);
             switch (m_UnityZAxisDirection)
