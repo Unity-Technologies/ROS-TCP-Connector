@@ -644,14 +644,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static CompressedImageMsg CompressedImageMsg_JPG(this Texture2D tex)
+        public static CompressedImageMsg CompressedImageMsg_JPG(this Texture2D tex, HeaderMsg header)
         {
-            return new CompressedImageMsg(new HeaderMsg(), "jpeg", tex.EncodeToJPG());
+            return new CompressedImageMsg(header, "jpeg", tex.EncodeToJPG());
         }
 
-        public static CompressedImageMsg CompressedImageMsg_PNG(this Texture2D tex)
+        public static CompressedImageMsg CompressedImageMsg_PNG(this Texture2D tex, HeaderMsg header)
         {
-            return new CompressedImageMsg(new HeaderMsg(), "png", tex.EncodeToPNG());
+            return new CompressedImageMsg(header, "png", tex.EncodeToPNG());
         }
 
         /// <summary>
