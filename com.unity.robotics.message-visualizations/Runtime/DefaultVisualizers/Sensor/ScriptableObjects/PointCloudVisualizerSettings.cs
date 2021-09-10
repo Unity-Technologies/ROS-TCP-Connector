@@ -13,8 +13,8 @@ public class PointCloudVisualizerSettings : VisualizerSettingsGeneric<PointCloud
     PointCloud2VisualizerSettings.ColorMode m_ColorMode;
     public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
 
-    public ChannelFloat32Msg[] Channels { get => m_Channels; set => m_Channels = value; }
-    ChannelFloat32Msg[] m_Channels;
+    public string[] Channels { get => m_Channels; set => m_Channels = value; }
+    string[] m_Channels;
     public string HueChannel { get => m_HueChannel; set => m_HueChannel = value; }
     string m_HueChannel = "";
     public string RgbChannel { get => m_RgbChannel; set => m_RgbChannel = value; }
@@ -63,10 +63,7 @@ public class PointCloudVisualizerSettings : VisualizerSettingsGeneric<PointCloud
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();
-        Channels = message.channels.Select(field => field).ToArray();
-
-        if (m_Channels == null)
-            m_Channels = message.channels;
+        Channels = message.channels.Select(field => field.name).ToArray();
 
         pointCloud.SetCapacity(message.points.Length);
 

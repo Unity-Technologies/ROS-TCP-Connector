@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
-using UnityEditor;
 using UnityEngine;
 
 namespace Unity.Robotics.MessageVisualizers
@@ -331,7 +330,7 @@ namespace Unity.Robotics.MessageVisualizers
 #if UNITY_EDITOR
         void ShowOptionsMenu(Rect position)
         {
-            GenericMenu menu = new UnityEditor.GenericMenu();
+            UnityEditor.GenericMenu menu = new UnityEditor.GenericMenu();
             foreach(IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
             {
                 bool isSelected = m_VisualRows.Any(r => r.GetVisualFactory() == factory);
@@ -342,7 +341,6 @@ namespace Unity.Robotics.MessageVisualizers
             }
             menu.DropDown(position);
         }
-#endif
 
         //TODO: turn on/off multiple visualizations
         void Select(IVisualFactory factory)
@@ -352,6 +350,9 @@ namespace Unity.Robotics.MessageVisualizers
 
         void Deselect(IVisualFactory factory)
         {
+            UnityEngine.Object factoryObject = (UnityEngine.Object)factory;
+            UnityEditor.Selection.activeObject = factoryObject;
         }
+#endif
     }
 }

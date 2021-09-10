@@ -52,4 +52,38 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         CreateCachedEditor(m_Config, null, ref m_Editor);
         m_Editor.OnInspectorGUI();
     }
+
+    public void CreateNewDropdown(string[] channels, string label, string channel, System.Action<string> action)
+    {
+        if (channels == null)
+            return;
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label);
+        if (EditorGUILayout.DropdownButton(new GUIContent(channel), FocusType.Keyboard))
+        {
+            var menu = new GenericMenu();
+            foreach (var c in channels)
+                menu.AddItem(new GUIContent(c), c == channel, () =>
+                {
+                    action(c);
+                    VisualizerRedraw();
+                });
+            menu.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
+        }
+
+        GUILayout.EndHorizontal();
+    }
+
+    // NB, this modifies the 'range' array in place
+    public void CreateMinMaxEditor(string label1, string label2, float[] range)
+    {
+        GUILayout.BeginHorizontal();
+        range[0] = EditorGUILayout.FloatField(label1, range[0]);
+        //GUILayout.Space(30);
+        GUILayout.Label(label2);
+        range[1] = EditorGUILayout.FloatField(range[1], GUILayout.Width(70));
+        GUILayout.EndHorizontal();
+    }
+
 }

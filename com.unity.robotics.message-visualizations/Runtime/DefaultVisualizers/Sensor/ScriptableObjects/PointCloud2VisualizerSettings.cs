@@ -146,7 +146,7 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
             if (useSizeChannel)
             {
                 var size = BitConverter.ToSingle(message.data, iPointStep + sizeChannelOffset);
-                radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size);
+                radius = Mathf.InverseLerp(m_SizeRange[0], m_SizeRange[1], size) * m_Size;
             }
             else
             {
