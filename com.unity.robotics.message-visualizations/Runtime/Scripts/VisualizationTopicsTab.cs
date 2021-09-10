@@ -64,11 +64,13 @@ namespace Unity.Robotics.MessageVisualizers
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("UI", HudPanel.s_BoldStyle, GUILayout.Width(20)))
+            GUILayout.Space(5);
+            if (GUILayout.Button("2D", HudPanel.s_BoldStyle, GUILayout.Width(20)))
             {
                 SetSortMode(m_SortMode == SortMode.UI ? SortMode.Normal : SortMode.UI);
             }
-            if (GUILayout.Button("Viz", HudPanel.s_BoldStyle, GUILayout.Width(30)))
+            GUILayout.Space(5);
+            if (GUILayout.Button("3D", HudPanel.s_BoldStyle, GUILayout.Width(25)))
             {
                 SetSortMode(m_SortMode == SortMode.Viz ? SortMode.Normal : SortMode.Viz);
             }
