@@ -2,26 +2,26 @@ using System;
 using System.Collections.Generic;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
+public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
 {
     [SerializeField]
     bool m_Debayer = true;
 
-    public override Texture2D CreateTexture(ImageMsg message)
-    {
-        return message.data.Length > 0 ? message.ToTexture2D(m_Debayer) : null;
-    }
+    public override bool CanShowDrawing => false;
 
-    protected override IVisual CreateVisual()
+    protected override IVisual CreateVisual(string topic)
     {
-        return new ImageVisual(this);
+        return new ImageVisual(topic, this);
     }
 
     public class ImageVisual : ITextureVisual
     {
+        string m_Topic;
+
         // cache the original image height, width and encoding here so that we if we have to debayer the image (which resizes it) we still show the real values
         int m_Width;
         int m_Height;
@@ -30,7 +30,6 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
 
         ImageDefaultVisualizer m_Factory;
 
-        Action m_GUIAction;
         // after anyone asks for it, we cache the properly processed texture here
         Texture2D m_Texture2D;
         // if nobody asks for the proper texture, we generate CheapTexture2D: this is just
@@ -45,43 +44,45 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
             m_OnChangeCallbacks.Add(callback);
         }
 
-        public ImageVisual(ImageDefaultVisualizer factory)
+        public ImageVisual(string topic, ImageDefaultVisualizer factory)
         {
+            m_Topic = topic;
             m_Factory = factory;
-            m_Debayer = factory.m_Debayer;
+            m_Debayer = m_Factory.m_Debayer;
             m_CheapTextureMaterial = new Material(Shader.Find("Unlit/ImageMsg"));
+
+            ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(m_Topic, AddMessage);
         }
 
-        public virtual void AddMessage(Message message, MessageMetadata meta)
+        public virtual void AddMessage(Message message)
         {
-            if (!MessageVisualizationUtils.AssertMessageType<ImageMsg>(message, meta))
+            if (!MessageVisualizationUtils.AssertMessageType<ImageMsg>(message, m_Topic))
                 return;
 
             this.message = (ImageMsg)message;
-            this.meta = meta;
             m_Texture2D = null;
             m_CheapTexture2D = null;
-            m_GUIAction = null;
             m_Width = (int)this.message.width;
             m_Height = (int)this.message.height;
             m_Encoding = this.message.encoding;
             //m_CheapTextureMaterial.SetFloat("_gray", this.message.GetNumChannels() == 1 ? 1.0f : 0.0f);
             m_CheapTextureMaterial.SetFloat("_convertBGR", this.message.EncodingRequiresBGRConversion() ? 1.0f : 0.0f);
 
-            // if anyone wants to know about the texture, make sure it's updated for them
+            // if anyone wants to know about the texture, notify them
             if (m_OnChangeCallbacks.Count > 0)
                 GetTexture();
         }
 
         public ImageMsg message { get; private set; }
 
-        public MessageMetadata meta { get; private set; }
-
-        public bool hasDrawing => false;
-        public bool hasAction => m_GUIAction != null;
-
         public void OnGUI()
         {
+            if (message == null)
+            {
+                GUILayout.Label("Waiting for message...");
+                return;
+            }
+
             message.header.GUI();
             GUILayout.Label($"{m_Height}x{m_Width}, encoding: {m_Encoding}");
             if (message.data.Length > 0)
@@ -119,7 +120,7 @@ public class ImageDefaultVisualizer : TextureVisualizer<ImageMsg>
             return m_Texture2D;
         }
 
-        public void DeleteDrawing() { }
+        public void SetDrawingEnabled(bool enabled) { }
         public void CreateDrawing() { }
     }
 }

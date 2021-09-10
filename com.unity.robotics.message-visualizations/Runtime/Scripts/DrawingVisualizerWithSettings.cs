@@ -8,7 +8,7 @@ namespace Unity.Robotics.MessageVisualizers
 {
     public abstract class DrawingVisualizerWithSettings<TMessage, TDrawingSettings> : DrawingVisualizer<TMessage>
         where TMessage : Message
-        where TDrawingSettings : BaseVisualizerSettings<TMessage>
+        where TDrawingSettings : VisualizerSettingsGeneric<TMessage>
     {
         public const string ScriptableObjectsSettingsPath = "ScriptableObjects/";
         public abstract string DefaultScriptableObjectPath { get; }
@@ -16,6 +16,8 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         TDrawingSettings m_Settings;
         public TDrawingSettings Settings { get => m_Settings; set => m_Settings = value; }
+
+        public override string Name => (string.IsNullOrEmpty(m_Topic) ? "" : $"({m_Topic}) ") + Settings.name;
 
         void Awake()
         {
@@ -33,12 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
-        protected override IVisual CreateVisual()
-        {
-            return new DrawingVisual(this);
-        }
-
-        public override void Draw(BasicDrawing drawing, TMessage message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, TMessage message, MessageMetadata meta)
         {
             m_Settings.Draw(drawing, message, meta);
         }

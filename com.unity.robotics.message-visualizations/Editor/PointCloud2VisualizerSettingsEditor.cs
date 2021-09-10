@@ -74,6 +74,10 @@ public class PointCloud2Editor : SettingsBasedVisualizerEditor<PointCloud2Msg, P
             CreateNewDropdown(m_Config.Channels, "Size channel name:", m_Config.SizeChannel, newChannel => { m_Config.SizeChannel = newChannel; });
             CreateMinMaxSlider(m_Config.SizeRange, sizeMinVal, sizeMaxVal);
         }
+        else
+        {
+            m_Config.Size = EditorGUILayout.FloatField("Size:", m_Config.Size);
+        }
 
         m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel", m_Config.UseRgbChannel);
 

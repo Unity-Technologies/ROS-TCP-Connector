@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PointCloudVisualizerSettings", menuName = "MessageVisualizations/Sensor/PointCloud", order = 1)]
-public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg>
+public class PointCloudVisualizerSettings : VisualizerSettingsGeneric<PointCloudMsg>
 {
     PointCloud2VisualizerSettings.ColorMode m_ColorMode;
     public PointCloud2VisualizerSettings.ColorMode ColorMode { get => m_ColorMode; set => m_ColorMode = value; }
@@ -58,7 +58,7 @@ public class PointCloudVisualizerSettings : BaseVisualizerSettings<PointCloudMsg
         };
     }
 
-    public override void Draw(BasicDrawing drawing, PointCloudMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloudMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         PointCloudDrawing pointCloud = drawing.AddPointCloud();

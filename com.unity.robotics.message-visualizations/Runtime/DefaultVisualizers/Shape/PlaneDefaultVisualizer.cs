@@ -9,18 +9,18 @@ public class PlaneDefaultVisualizer : DrawingVisualizer<PlaneMsg>
     [SerializeField]
     Color m_Color;
 
-    public override void Draw(BasicDrawing drawing, PlaneMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PlaneMsg message, MessageMetadata meta)
     {
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 
-    public static void Draw<C>(PlaneMsg message, BasicDrawing drawing, Color color, GameObject center = null, float size = 10.0f)
+    public static void Draw<C>(PlaneMsg message, Drawing3d drawing, Color color, GameObject center = null, float size = 10.0f)
         where C : ICoordinateSpace, new()
     {
         Draw<C>(message, drawing, color, (center != null) ? center.transform.position : Vector3.zero, size);
     }
 
-    public static void Draw<C>(PlaneMsg message, BasicDrawing drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(PlaneMsg message, Drawing3d drawing, Color color, Vector3 origin, float size = 10.0f) where C : ICoordinateSpace, new()
     {
         Vector3 normal = new Vector3<C>((float)message.coef[0], (float)message.coef[1], (float)message.coef[2]).toUnity;
         float d = (float)message.coef[3];

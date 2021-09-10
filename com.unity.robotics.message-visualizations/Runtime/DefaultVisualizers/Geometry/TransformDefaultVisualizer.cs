@@ -17,13 +17,13 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         string m_Label;
 
-        public override void Draw(BasicDrawing drawing, TransformMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, TransformMsg message, MessageMetadata meta)
         {
             Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
             drawing.DrawLabel(SelectLabel(m_Label, meta), message.translation.From<FLU>(), SelectColor(m_Color, meta), m_Size);
         }
 
-        public static void Draw<C>(TransformMsg transform, BasicDrawing drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
+        public static void Draw<C>(TransformMsg transform, Drawing3d drawing, float size = 0.01f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
         {
             QuaternionDefaultVisualizer.Draw<C>(transform.rotation, drawing, transform.translation.From<C>(), size, drawUnityAxes);
         }
