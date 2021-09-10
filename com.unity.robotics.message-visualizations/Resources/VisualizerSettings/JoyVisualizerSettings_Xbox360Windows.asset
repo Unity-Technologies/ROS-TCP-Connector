@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e64381bafaf07f41b8194aec986fe7e, type: 3}
+  m_Name: JoyVisualizerSettings_Xbox360Windows
+  m_EditorClassIdentifier: 
+  m_TFTrackingSettings:
+    type: 1
+    tfTopic: /tf
+  m_Button_South: 12
+  m_Button_East: 13
+  m_Button_West: 14
+  m_Button_North: 15
+  m_Button_Back: 0
+  m_Button_Start: 19
+  m_Button_Power: 20
+  m_DPad_Up: 22
+  m_DPad_Down: 23
+  m_DPad_Left: 24
+  m_DPad_Right: 25
+  m_DPad_XAxis: 0
+  m_DPad_YAxis: 0
+  m_LStick_X: 1
+  m_LStick_Y: 2
+  m_LStick_Click: 0
+  m_LShoulder: 16
+  m_LTrigger: 6
+  m_RStick_X: 3
+  m_RStick_Y: 4
+  m_RStick_Click: 0
+  m_RShoulder: 17
+  m_RTrigger: 5
