@@ -12,13 +12,13 @@ public class RangeDefaultVisualizer : DrawingVisualizer<RangeMsg>
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, RangeMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, RangeMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 
-    public static void Draw<C>(RangeMsg message, BasicDrawing drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
+    public static void Draw<C>(RangeMsg message, Drawing3d drawing, Color color, float size = 0.1f, bool drawUnityAxes = false)
         where C : ICoordinateSpace, new()
     {
         var asin = Mathf.Asin(message.field_of_view);

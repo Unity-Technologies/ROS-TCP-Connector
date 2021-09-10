@@ -14,13 +14,13 @@ public class OdometryDefaultVisualizer : DrawingVisualizer<OdometryMsg>
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
-    public override void Draw(BasicDrawing drawing, OdometryMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, OdometryMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 
-    public static void Draw<C>(OdometryMsg message, BasicDrawing drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(OdometryMsg message, Drawing3d drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
     {
         PoseDefaultVisualizer.Draw<C>(message.pose.pose, drawing);
         TwistDefaultVisualizer.Draw<C>(message.twist.twist, drawing, color, message.pose.pose.position.From<C>(), lengthScale, sphereRadius, thickness);

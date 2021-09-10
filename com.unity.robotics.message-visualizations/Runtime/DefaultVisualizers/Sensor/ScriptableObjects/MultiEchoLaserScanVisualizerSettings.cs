@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MultiEchoLaserScanVisualizerSettings", menuName = "Robotics/Sensor Visualizers/MultiEchoLaserScan", order = 1)]
-public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<MultiEchoLaserScanMsg>
+public class MultiEchoLaserScanVisualizerSettings : VisualizerSettingsGeneric<MultiEchoLaserScanMsg>
 {
     [SerializeField]
     bool m_UseIntensitySize;
@@ -17,7 +17,7 @@ public class MultiEchoLaserScanVisualizerSettings : BaseVisualizerSettings<Multi
     float[] m_SizeRange = { 0, 100 };
     public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
 
-    public override void Draw(BasicDrawing drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
     {
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         MultiEchoLaserScanDefaultVisualizer.Draw<FLU>(message, drawing, this);

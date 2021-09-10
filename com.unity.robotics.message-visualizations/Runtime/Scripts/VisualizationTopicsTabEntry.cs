@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -12,228 +13,346 @@ namespace Unity.Robotics.MessageVisualizers
     public class VisualizationTopicsTabEntry
     {
         RosTopicState m_TopicState;
+        public RosTopicState TopicState => m_TopicState;
         public string Topic => m_TopicState.Topic;
         public string RosMessageName => m_TopicState.RosMessageName;
 
-        string m_CachedRosMessageName;
-        IVisualFactory m_VisualizerCached;
-        bool m_NoVisualizerAvailable;
-        bool m_DidSubscribe;
-
-        IVisual m_Visual;
-        public IVisual Visual => m_Visual;
-        HudWindow m_VisualWindow;
-        bool m_IsVisualizingUI;
-        public bool IsVisualizingUI => m_IsVisualizingUI;
-        bool m_IsVisualizingDrawing;
-        public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
-        float m_LastVisualFrameTime = -1;
         // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
         VisualizationTopicsTabEntry m_ServiceResponseTopic;
+        Texture2D m_Background;
+        GUIStyle m_LineStyle;
+        GUIStyle m_HoverStyle;
+        bool m_IsServiceResponse;
+
+        List<VisualRow> m_VisualRows = new List<VisualRow>();
+
+        public class VisualRow
+        {
+            VisualizationTopicsTabEntry m_Entry;
+
+            bool m_IsVisualizingUI;
+            public bool IsVisualizingUI => m_IsVisualizingUI;
+
+            bool m_IsVisualizingDrawing;
+            public bool IsVisualizingDrawing => m_IsVisualizingDrawing;
+
+            string m_CachedRosMessageName;
+
+            IVisualFactory m_VisualFactory;
+            bool m_NoVisualFactoryAvailable;
+
+            IVisual m_Visual;
+            public IVisual Visual => m_Visual;
+            HudWindow m_VisualWindow;
+            bool m_IsHovering;
+
+            [Serializable]
+            public class SaveState
+            {
+                public string VisualizerID;
+                public Rect Rect;
+                public bool HasRect;
+                public bool ShowWindow;
+                public bool ShowDrawing;
+            }
+
+            public SaveState CreateSaveState()
+            {
+                return new SaveState()
+                {
+                    Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
+                    HasRect = m_VisualWindow != null,
+                    VisualizerID = m_VisualFactory.ID,
+                    ShowWindow = m_IsVisualizingUI,
+                    ShowDrawing = m_IsVisualizingDrawing,
+                };
+            }
+
+            public VisualRow(VisualizationTopicsTabEntry entry, IVisualFactory visualizer)
+            {
+                m_Entry = entry;
+                m_VisualFactory = visualizer;
+                m_CachedRosMessageName = m_Entry.RosMessageName;
+            }
+
+            public VisualRow(VisualizationTopicsTabEntry entry, SaveState save = null)
+            {
+                m_Entry = entry;
+                if (save != null)
+                {
+                    if (save.VisualizerID != null)
+                    {
+                        m_VisualFactory = VisualFactoryRegistry.GetAllVisualFactories(m_Entry.Topic, m_Entry.RosMessageName).FirstOrDefault(v => v.ID == save.VisualizerID);
+                        m_CachedRosMessageName = m_Entry.RosMessageName;
+                    }
+
+                    if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
+                    {
+                        m_VisualWindow = new HudWindow(entry.Topic, save.Rect);
+                    }
+                    else if (save.ShowWindow)
+                    {
+                        m_VisualWindow = new HudWindow(entry.Topic);
+                    }
+
+                    if (m_VisualWindow != null)
+                    {
+                        HudPanel.AddWindow(m_VisualWindow);
+                    }
+
+                    SetVisualizing(save.ShowWindow, save.ShowDrawing);
+                }
+            }
+
+            public IVisualFactory GetVisualFactory()
+            {
+                if (m_CachedRosMessageName != m_Entry.RosMessageName)
+                {
+                    // if the topic has changed, discard our cached data
+                    m_VisualFactory = null;
+                    m_NoVisualFactoryAvailable = false;
+                }
+
+                if (m_VisualFactory == null && !m_NoVisualFactoryAvailable)
+                {
+                    SetVisualFactory(VisualFactoryRegistry.GetVisualFactory(m_Entry.Topic, m_Entry.RosMessageName));
+                }
+                return m_VisualFactory;
+            }
+
+            public void SetVisualFactory(IVisualFactory visualFactory)
+            {
+                if (m_Visual != null)
+                    m_Visual.SetDrawingEnabled(false);
+                m_Visual = null;
+
+                m_VisualFactory = visualFactory;
+                m_CachedRosMessageName = m_Entry.RosMessageName;
+                if (m_VisualFactory == null)
+                    m_NoVisualFactoryAvailable = true;
+
+                SetVisualizing(m_IsVisualizingUI, m_IsVisualizingDrawing);
+            }
+
+            public bool CanShowWindow => GetVisualFactory() != null;
+            public bool CanShowDrawing => GetVisualFactory() != null && m_VisualFactory.CanShowDrawing;
+
+            public void DrawGUILine()
+            {
+                bool showWindow = IsVisualizingUI;
+                bool showDrawing = IsVisualizingDrawing;
+
+                bool canShowWindow = CanShowWindow;
+                bool canShowDrawing = CanShowDrawing;
+
+                var hasWindow = showWindow;
+                var hasDrawing = showDrawing;
+
+                if (m_Entry.m_LineStyle == null)
+                    m_Entry.InitLineStyle();
+
+                GUILayout.BeginHorizontal(m_IsHovering ? m_Entry.m_HoverStyle : m_Entry.m_LineStyle);
+                if (hasWindow || canShowWindow)
+                    showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
+                else
+                    GUILayout.Label("", GUILayout.Width(15));
+
+                if (hasDrawing || canShowDrawing)
+                    showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
+                else
+                    GUILayout.Label("", GUILayout.Width(15));
+
+                var baseColor = GUI.color;
+                GUI.color = canShowWindow ? baseColor : Color.grey;
+
+                GUILayout.Space(40);
+                Rect space = GUILayoutUtility.GetLastRect();
+                ROSConnection.DrawConnectionArrows(false,
+                    space.x + 5, space.y,
+                    Time.realtimeSinceStartup - m_Entry.TopicState.LastMessageReceivedRealtime,
+                    Time.realtimeSinceStartup - m_Entry.TopicState.LastMessageSentRealtime,
+                    m_Entry.TopicState.IsPublisher,
+                    m_Entry.TopicState.SentSubscriberRegistration,
+                    m_Entry.m_TopicState.Connection.HasConnectionError);
+
+                string topicName = m_Entry.Topic;
+                if (m_Entry.m_IsServiceResponse)
+                    topicName += " (response)";
+
+                if (GUILayout.Button(topicName, m_Entry.m_LineStyle, GUILayout.Width(240)))
+                {
+                    if (!canShowWindow)
+                    {
+                        Debug.LogError($"No message class registered for type {m_Entry.RosMessageName}");
+                    }
+                    else if (!canShowDrawing)
+                    {
+                        showWindow = !showWindow;
+                    }
+                    else
+                    {
+                        var toggleOn = !showWindow || !showDrawing;
+                        showWindow = toggleOn;
+                        showDrawing = toggleOn;
+                    }
+                }
+
+                GUI.color = baseColor;
+                GUILayout.EndHorizontal();
+
+                Rect horizontalRect = GUILayoutUtility.GetLastRect();
+
+#if UNITY_EDITOR
+                Rect buttonRect = new Rect(horizontalRect.xMax - 20, horizontalRect.center.y - 10, 20, 20);
+                if (GUI.Button(buttonRect, "\u2630"))
+                    m_Entry.ShowOptionsMenu(buttonRect);
+#endif
+
+                if (m_IsHovering)
+                {
+                    string labelText = m_Entry.RosMessageName;
+                    Vector2 labelSize = GUI.skin.box.CalcSize(new GUIContent(labelText));
+
+                    GUI.Box(new Rect(horizontalRect.xMax - labelSize.x, horizontalRect.yMax - 10, labelSize.x, horizontalRect.height), labelText);
+                }
+
+                if (Event.current.type == EventType.Repaint)
+                    m_IsHovering = horizontalRect.Contains(Event.current.mousePosition);
+
+                if (showDrawing != m_IsVisualizingDrawing || showWindow != m_IsVisualizingUI)
+                {
+                    SetVisualizing(showWindow, showDrawing);
+                }
+            }
+
+            public void SetVisualizing(bool ui, bool drawing)
+            {
+                if (m_VisualWindow != null)
+                {
+                    m_VisualWindow.SetActive(ui);
+                }
+                else if (ui)
+                {
+                    m_VisualWindow = new HudWindow(m_Entry.Topic);
+                    HudPanel.AddWindow(m_VisualWindow);
+                }
+
+                if ((ui || drawing) && m_Visual == null)
+                {
+                    m_Visual = GetVisualFactory().GetOrCreateVisual(m_Entry.Topic);
+                }
+
+                if (m_Visual != null)
+                {
+                    m_Visual.SetDrawingEnabled(drawing);
+
+                    if (m_VisualWindow != null)
+                    {
+                        m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
+                    }
+                }
+
+                m_IsVisualizingUI = ui;
+                m_IsVisualizingDrawing = drawing;
+            }
+        }
 
         [Serializable]
         public class SaveState
         {
-            public Rect Rect;
-            public bool HasRect;
             public string Topic;
             public string RosMessageName;
-            public bool ShowWindow;
-            public bool ShowDrawing;
+            public List<VisualRow.SaveState> Rows;
         }
 
-        public VisualizationTopicsTabEntry(RosTopicState baseState)
+        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background, bool isResponse = false)
         {
             m_TopicState = baseState;
+            m_Background = background;
+            m_VisualRows.Add(new VisualRow(this));
+            m_IsServiceResponse = isResponse;
+
             if (baseState.ServiceResponseTopic != null)
             {
-                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic);
+                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background, true);
             }
         }
 
-        internal VisualizationTopicsTabEntry(SaveState save, RosTopicState topicState)
+        internal VisualizationTopicsTabEntry(SaveState save, RosTopicState topicState, Texture2D background)
         {
             m_TopicState = topicState;
-            if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
+            m_Background = background;
+            foreach (VisualRow.SaveState rowSave in save.Rows)
             {
-                m_VisualWindow = new HudWindow(save.Topic, save.Rect);
+                m_VisualRows.Add(new VisualRow(this, save: rowSave));
             }
-            else if (save.ShowWindow)
-            {
-                m_VisualWindow = new HudWindow(save.Topic);
-            }
+        }
 
-            if (m_VisualWindow != null)
-            {
-                m_VisualWindow.SetOnGUI(DefaultWindowContents);
-                HudPanel.AddWindow(m_VisualWindow);
-            }
+        void InitLineStyle()
+        {
+            m_LineStyle = new GUIStyle(GUI.skin.label);
+            m_LineStyle.hover.textColor = Color.white;
 
-            SetVisualizing(save.ShowWindow, save.ShowDrawing);
+            m_HoverStyle = new GUIStyle(GUI.skin.label);
+            m_HoverStyle.hover.textColor = Color.white;
+            m_HoverStyle.hover.background = m_Background;
+            m_HoverStyle.normal.background = m_Background;
         }
 
         public SaveState CreateSaveState()
         {
-            if (!m_IsVisualizingUI && !m_IsVisualizingDrawing)
+            if (!m_VisualRows.Any(v => v.IsVisualizingUI || v.IsVisualizingDrawing))
+            {
                 return null;
+            }
 
             return new SaveState
             {
-                Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
-                HasRect = m_VisualWindow != null,
                 Topic = m_TopicState.Topic,
                 RosMessageName = m_TopicState.RosMessageName,
-                ShowWindow = m_IsVisualizingUI,
-                ShowDrawing = m_IsVisualizingDrawing,
+                Rows = m_VisualRows.Select(v => v.CreateSaveState()).ToList()
             };
         }
 
-        public void OnMessageSent(Message message)
+        public void DrawGUI()
         {
-            if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
+            foreach (VisualRow row in m_VisualRows)
             {
-                UpdateVisual(message);
+                row.DrawGUILine();
+            }
+
+            if (m_ServiceResponseTopic != null)
+            {
+                m_ServiceResponseTopic.DrawGUI();
             }
         }
 
-        public void OnMessageReceived(Message message)
+#if UNITY_EDITOR
+        void ShowOptionsMenu(Rect position)
         {
-            if (Time.time > m_LastVisualFrameTime && (m_IsVisualizingUI || m_IsVisualizingDrawing))
+            UnityEditor.GenericMenu menu = new UnityEditor.GenericMenu();
+            foreach(IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
             {
-                UpdateVisual(message);
-            }
-        }
-
-        public IVisualFactory GetVisualizer()
-        {
-            if (m_CachedRosMessageName != RosMessageName)
-            {
-                // if the topic has changed, discard our cached data
-                m_VisualizerCached = null;
-                m_NoVisualizerAvailable = false;
-            }
-            if (m_VisualizerCached == null && !m_NoVisualizerAvailable)
-            {
-                m_VisualizerCached = VisualFactoryRegistry.GetVisualizer(m_TopicState.Topic, m_TopicState.RosMessageName);
-                m_CachedRosMessageName = RosMessageName;
-                if (m_VisualizerCached == null)
-                    m_NoVisualizerAvailable = true;
-            }
-            return m_VisualizerCached;
-        }
-
-        void UpdateVisual(Message message)
-        {
-            MessageMetadata meta = new MessageMetadata(m_TopicState.Topic, Time.time, DateTime.Now);
-
-            if (m_Visual == null)
-            {
-                m_Visual = MessageVisualizationUtils.GetVisual(m_TopicState.Topic, m_TopicState.RosMessageName, m_TopicState.Subtopic);
-            }
-            m_Visual.AddMessage(message, meta);
-            m_LastVisualFrameTime = Time.time;
-
-            if (m_IsVisualizingDrawing)
-                m_Visual.CreateDrawing();
-
-            if (m_VisualWindow != null)
-                m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
-        }
-
-        public void DrawGUILine()
-        {
-            bool showWindow = IsVisualizingUI;
-            bool showDrawing = IsVisualizingDrawing;
-
-            IVisualFactory visualizer = GetVisualizer();
-            bool canShowWindow = visualizer != null;
-            bool canShowDrawing = visualizer != null ? visualizer.CanShowDrawing : false;
-
-            var hasWindow = showWindow;
-            var hasDrawing = showDrawing;
-
-            GUILayout.BeginHorizontal();
-            if (hasWindow || canShowWindow)
-                showWindow = GUILayout.Toggle(showWindow, "", GUILayout.Width(15));
-            else
-                GUILayout.Label("", GUILayout.Width(15));
-
-            if (hasDrawing || canShowDrawing)
-                showDrawing = GUILayout.Toggle(showDrawing, "", GUILayout.Width(15));
-            else
-                GUILayout.Label("", GUILayout.Width(15));
-
-            var baseColor = GUI.color;
-            GUI.color = canShowWindow ? baseColor : Color.grey;
-            if (GUILayout.Button(new GUIContent(m_TopicState.Topic, m_TopicState.RosMessageName), GUI.skin.label, GUILayout.Width(240)))
-            {
-                if (!canShowWindow)
-                {
-                    Debug.LogError($"No message class registered for type {m_TopicState.RosMessageName}");
-                }
-                else if (!canShowDrawing)
-                {
-                    showWindow = !showWindow;
-                }
+                bool isSelected = m_VisualRows.Any(r => r.GetVisualFactory() == factory);
+                if(isSelected)
+                    menu.AddItem(new GUIContent(factory.Name), isSelected, () => Deselect(factory));
                 else
-                {
-                    var toggleOn = !showWindow || !showDrawing;
-                    showWindow = toggleOn;
-                    showDrawing = toggleOn;
-                }
+                    menu.AddItem(new GUIContent(factory.Name), isSelected, () => Select(factory));
             }
-
-            GUI.color = baseColor;
-            GUILayout.EndHorizontal();
-
-            if (showDrawing != m_IsVisualizingDrawing || showWindow != m_IsVisualizingUI)
-            {
-                SetVisualizing(showWindow, showDrawing);
-            }
-
-            if (m_TopicState.ServiceResponseTopic != null)
-            {
-                m_ServiceResponseTopic.DrawGUILine();
-            }
+            menu.DropDown(position);
         }
 
-        void DefaultWindowContents()
+        //TODO: turn on/off multiple visualizations
+        void Select(IVisualFactory factory)
         {
-            GUILayout.Label("Waiting for message...");
+            m_VisualRows[0].SetVisualFactory(factory);
         }
 
-        public void SetVisualizing(bool ui, bool drawing)
+        void Deselect(IVisualFactory factory)
         {
-            if (m_VisualWindow != null)
-            {
-                m_VisualWindow.SetActive(ui);
-            }
-            else if (ui)
-            {
-                m_VisualWindow = new HudWindow(Topic);
-                m_VisualWindow.SetOnGUI(DefaultWindowContents);
-                HudPanel.AddWindow(m_VisualWindow);
-            }
-
-            if (m_Visual != null)
-            {
-                m_Visual.DeleteDrawing();
-
-                if (drawing)
-                    m_Visual.CreateDrawing();
-
-                if (m_VisualWindow != null)
-                    m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
-            }
-
-            if ((ui || drawing) && !m_DidSubscribe)
-            {
-                m_TopicState.AddSubscriber(OnMessageReceived);
-                m_DidSubscribe = true;
-            }
-
-            m_IsVisualizingUI = ui;
-            m_IsVisualizingDrawing = drawing;
+            UnityEngine.Object factoryObject = (UnityEngine.Object)factory;
+            UnityEditor.Selection.activeObject = factoryObject;
         }
+#endif
     }
 }

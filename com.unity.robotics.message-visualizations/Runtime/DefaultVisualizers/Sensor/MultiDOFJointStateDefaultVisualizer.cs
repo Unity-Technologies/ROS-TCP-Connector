@@ -1,35 +1,43 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.MessageVisualizers;
 using UnityEngine;
+#if URDF_IMPORTER
+using Unity.Robotics.UrdfImporter;
+#endif
 
 public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJointStateMsg>
 {
+#if URDF_IMPORTER
     [SerializeField]
     UrdfRobot m_UrdfRobot;
+    RobotVisualization m_RobotData;
+#endif
     [SerializeField]
     Color m_Color;
-    [SerializeField]
-    RobotVisualization m_RobotData;
     [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
 
     public override void Start()
     {
         base.Start();
+#if URDF_IMPORTER
         if (m_UrdfRobot != null)
             m_RobotData = new RobotVisualization(m_UrdfRobot);
+#endif
     }
 
-    public override void Draw(BasicDrawing drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
     {
+#if URDF_IMPORTER
         drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
         m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
+#endif
     }
 
     public override Action CreateGUI(MultiDOFJointStateMsg message, MessageMetadata meta)
     {
+#if URDF_IMPORTER
         var tr = message.transforms.Length > 0;
         var tw = message.twist.Length > 0;
         var wr = message.wrench.Length > 0;
@@ -45,5 +53,12 @@ public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJoi
                 if (wr) message.wrench[i].GUI();
             }
         };
+#else
+        return () =>
+        {
+            GUILayout.Label("To use the default visualizer for MultiDOFJointState, please add urdf-importer to your project.");
+            GUILayout.Label("https://github.com/Unity-Technologies/URDF-Importer");
+        };
+#endif
     }
 }

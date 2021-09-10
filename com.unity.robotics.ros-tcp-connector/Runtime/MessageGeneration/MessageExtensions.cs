@@ -556,7 +556,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return tex;
         }
 
-        public static Texture2D ToTexture2D(this ImageMsg message, bool debayer, bool convertBGR = true, bool flipY = true)
+        public static Texture2D ToTexture2D(this ImageMsg message, bool debayer = false, bool convertBGR = true, bool flipY = true)
         {
             Texture2D tex;
             byte[] data;

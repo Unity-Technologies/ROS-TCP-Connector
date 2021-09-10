@@ -14,7 +14,7 @@ namespace Unity.Robotics.MessageVisualizers
         [SerializeField]
         Color m_Color;
 
-        public override void Draw(BasicDrawing drawing, WrenchMsg message, MessageMetadata meta)
+        public override void Draw(Drawing3d drawing, WrenchMsg message, MessageMetadata meta)
         {
             Draw<FLU>(message, drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
@@ -24,7 +24,7 @@ namespace Unity.Robotics.MessageVisualizers
             message.GUI();
         };
 
-        public static void Draw<C>(WrenchMsg message, BasicDrawing drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+        public static void Draw<C>(WrenchMsg message, Drawing3d drawing, Color color, Vector3 origin, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
         {
             drawing.DrawArrow(origin, origin + message.force.From<C>() * lengthScale, color, thickness);
             MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.torque.From<C>(), origin, color, sphereRadius, thickness);

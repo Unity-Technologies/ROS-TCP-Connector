@@ -13,7 +13,7 @@ public class PoseWithCovarianceDefaultVisualizer : DrawingVisualizer<PoseWithCov
     bool m_DrawUnityAxes;
     bool m_ViewCovariance;
 
-    public override void Draw(BasicDrawing drawing, PoseWithCovarianceMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PoseWithCovarianceMsg message, MessageMetadata meta)
     {
         PoseDefaultVisualizer.Draw<FLU>(message.pose, drawing, m_Size, m_DrawUnityAxes);
     }

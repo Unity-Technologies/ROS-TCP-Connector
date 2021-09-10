@@ -48,9 +48,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_LengthCorrection += 4;
             int preambleLength = Length;
 
-            byte[] prebytes = GetBytes();
             SerializeMessage(message);
-            byte[] postbytes = GetBytes();
 
             // fill in the gap, now that we know the length
             m_ListOfSerializations[lengthIndex] = BitConverter.GetBytes(Length - preambleLength);
