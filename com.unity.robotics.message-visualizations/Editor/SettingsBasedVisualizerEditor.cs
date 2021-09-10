@@ -18,9 +18,18 @@ public abstract class SettingsBasedVisualizerEditor<TMessageType, TVisualizerSet
         visualizer.Topic = EditorGUILayout.TextField("Topic", visualizer.Topic);
 
         m_Config = visualizer.Settings;
-        GUI.changed = false;
         m_Config = (TVisualizerSettings)EditorGUILayout.ObjectField("Visualizer settings", m_Config, typeof(TVisualizerSettings), false);
         visualizer.Settings = m_Config;
+
+        if (GUI.changed)
+        {
+            EditorUtility.SetDirty(target);
+            if (visualizer.gameObject.scene != null)
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(visualizer.gameObject.scene);
+            }
+            GUI.changed = false;
+        }
 
         EditorGUI.indentLevel++;
         OnInspectorGUIForSettings(visualizer);
