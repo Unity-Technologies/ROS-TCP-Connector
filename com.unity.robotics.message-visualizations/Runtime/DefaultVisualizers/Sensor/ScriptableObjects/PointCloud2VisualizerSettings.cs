@@ -17,7 +17,6 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
         CombinedRGB,
     }
 
-    [SerializeField]
     ColorMode m_ColorModeSetting;
     public ColorMode ColorModeSetting { get => m_ColorModeSetting; set => m_ColorModeSetting = value; }
     public string[] Channels { get => m_Channels; set => m_Channels = value; }
