@@ -7,7 +7,7 @@ namespace Unity.Robotics.MessageVisualizers
     public interface IVisual
     {
         void SetDrawingEnabled(bool enabled);
-        void CreateDrawing();
+        void Redraw();
         void OnGUI();
     }
 }

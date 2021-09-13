@@ -320,7 +320,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_IsDrawingEnabled = enabled;
             }
 
-            public void CreateDrawing()
+            public void Redraw()
             {
                 SetDrawingEnabled(true);
             }
