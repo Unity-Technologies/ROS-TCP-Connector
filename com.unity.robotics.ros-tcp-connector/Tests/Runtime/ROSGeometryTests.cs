@@ -3,18 +3,17 @@ using NUnit.Framework;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using Assert = UnityEngine.Assertions.Assert;
-using Compass = Unity.Robotics.ROSTCPConnector.ROSGeometry.Compass;
 
 namespace Tests.Runtime
 {
     public class RosGeometryTests
     {
-        Compass m_Compass;
+        GeometryCompass m_Compass;
 
         [SetUp]
         public void SetUp()
         {
-            m_Compass = new GameObject().AddComponent<Compass>();
+            m_Compass = new GameObject().AddComponent<GeometryCompass>();
         }
 
         [Test]

@@ -11,7 +11,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         West = 3,
     }
 
-    public class Compass : MonoBehaviour
+    public class GeometryCompass : MonoBehaviour
     {
         [SerializeField]
         CardinalDirection m_UnityZAxisDirection;
