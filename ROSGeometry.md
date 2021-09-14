@@ -101,7 +101,7 @@ And again, the same goes for converting a Quaternion message into a Unity Quater
 
 # A note about geographical coordinates
 
-The geographical coordinate systems NED and ENU are more complicated: besides the obvious "north" direction, they also provide a convention for "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could even establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotation.
+The geographical coordinate systems NED and ENU are more complicated than the rest: besides the obvious "north" direction, they also provide a convention for which direction is "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotation.
 
 To correctly convert a *world* rotation to or from NED or ENU coordinates, you should place the `Compass` component in your scene, and in its settings, choose what compass direction you want the Unity z-axis to correspond to. Then use the Compass's conversion functions such as `Compass.ToENU(Quaternion)`.
 
