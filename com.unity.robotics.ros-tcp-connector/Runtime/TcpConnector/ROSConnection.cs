@@ -290,7 +290,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public RosPublisher RegisterPublisher<T>(string rosTopicName,
             int? queue_size = null, bool? latch = null) where T : Message
         {
-            RosTopicState topicState = GetOrCreateTopic(rosTopicName, MessageRegistry.GetRosMessageName<T>());
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), queue_size, latch);
+        }
+
+        public RosPublisher RegisterPublisher(string rosTopicName, string rosMessageName,
+            int? queue_size = null, bool? latch = null)
+        {
+            RosTopicState topicState = GetOrCreateTopic(rosTopicName, rosMessageName);
             if (topicState.Publisher != null)
             {
                 Debug.LogWarning($"Publisher for topic {rosTopicName} registered twice!");
