@@ -49,8 +49,6 @@ These are fully-fledged Vector3 and Quaternion classes, so if you want, you can 
 
 These are the types returned by the `To<FLU>()` calls above. Vector3<C> also has implicit conversions to MPoint, MPoint32, and MVector3, which is how this one call can be used to convert to all three data types.
 
-In conversions between RUF and geographical coordinate systems, such as NED and ENU, the north direction is equivalent to the z-axis (forward) in RUF by default and the rotation conversions is only for local coordinates without considering the global cardinal directions (north, east, south, and west). Thus, the identity orientation of `To<ENU>` is facing north instead of east. To convert the global geographic coordinate, you can use the `Campass` component, set the cardinal direction of the z-axis in Unity, and transform the coordinate between RUF and ENU or NED, such as using `compass.ToENU(Vector3)`.
-
 # Converting between frames:
 
 If, for example, you need to convert an object's position into the FLU coordinate frame, you might explicitly create a Vector3<FLU> like this:
@@ -100,3 +98,11 @@ Or, if you need to work with it in the FLU coordinate space for now, you can wri
 (Note, the As function does NOT do any coordinate conversion. It simply assumes the point is in the FLU coordinate frame already, and transfers it into an appropriate container.)
 
 And again, the same goes for converting a Quaternion message into a Unity Quaternion or `Quaternion<C>`.
+
+# A note about geographical coordinates
+
+The geographical coordinate systems NED and ENU are more complicated: besides the obvious "north" direction, they also provide a convention for "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could even establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotation.
+
+To correctly convert a *world* rotation to or from NED or ENU coordinates, you should place the `Compass` component in your scene, and in its settings, choose what compass direction you want the Unity z-axis to correspond to. Then use the Compass's conversion functions such as `Compass.ToENU(Quaternion)`.
+
+If you have a *local* rotation represented in NED or ENU space, convert it using the standard ROSGeometry functions `To<NED>()` and `From<NED>()`, and so on. Note this conversion is only appropriate for local rotations, because it does not respect the northward direction, but only what direction is forward. In other words, these functions preserve identity quaternions as identity, and treat ENU as equvalent to FLU (east = forward, north = left, up = up), whereas NED is equivalent to FRD (north = forward, east = right, down = down).
