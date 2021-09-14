@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
@@ -74,54 +73,15 @@ namespace Tests.Runtime
                 yield return new TestCaseData(CardinalDirection.North,
                     new Vector3(1, 2, 3), new Vector3<ENU>(1, 3, 2),
                     Quaternion.identity, new Quaternion<ENU>(0, 0, -Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.North,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(1, 3, 2),
-                    Quaternion.Euler(0, 90, 0), new Quaternion<ENU>(0, 0, 0, -1));
-                yield return new TestCaseData(CardinalDirection.North,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(1, 3, 2),
-                    Quaternion.Euler(0, 180, 0), new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.North,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(1, 3, 2),
-                    Quaternion.Euler(0, 270, 0), new Quaternion<ENU>(0, 0, 1, 0));
-
                 yield return new TestCaseData(CardinalDirection.East,
                     new Vector3(1, 2, 3), new Vector3<ENU>(3, -1, 2),
                     Quaternion.identity, new Quaternion<ENU>(0, 0, 0, -1));
-                yield return new TestCaseData(CardinalDirection.East,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(3, -1, 2),
-                    Quaternion.Euler(0, 90, 0), new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.East,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(3, -1, 2),
-                    Quaternion.Euler(0, 180, 0), new Quaternion<ENU>(0, 0, 1, 0));
-                yield return new TestCaseData(CardinalDirection.East,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(3, -1, 2),
-                    Quaternion.Euler(0, 270, 0), new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
-
                 yield return new TestCaseData(CardinalDirection.South,
                     new Vector3(1, 2, 3), new Vector3<ENU>(-1, -3, 2),
                     Quaternion.identity, new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.South,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-1, -3, 2),
-                    Quaternion.Euler(0, 90, 0), new Quaternion<ENU>(0, 0, 1, 0));
-                yield return new TestCaseData(CardinalDirection.South,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-1, -3, 2),
-                    Quaternion.Euler(0, 180, 0), new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.South,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-1, -3, 2),
-                    Quaternion.Euler(0, 270, 0), new Quaternion<ENU>(0, 0, 0, 1));
-
                 yield return new TestCaseData(CardinalDirection.West,
                     new Vector3(1, 2, 3), new Vector3<ENU>(-3, 1, 2),
                     Quaternion.identity, new Quaternion<ENU>(0, 0, 1, 0));
-                yield return new TestCaseData(CardinalDirection.West,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-3, 1, 2),
-                    Quaternion.Euler(0, 90, 0), new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
-                yield return new TestCaseData(CardinalDirection.West,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-3, 1, 2),
-                    Quaternion.Euler(0, 180, 0), new Quaternion<ENU>(0, 0, 0, 1));
-                yield return new TestCaseData(CardinalDirection.West,
-                    new Vector3(1, 2, 3), new Vector3<ENU>(-3, 1, 2),
-                    Quaternion.Euler(0, 270, 0), new Quaternion<ENU>(0, 0, -Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
             }
         }
 

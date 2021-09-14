@@ -40,20 +40,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public Quaternion<ENU> ToENU(Quaternion q)
         {
-            var r = q * Quaternion.Euler(0, 90 * ((int)m_UnityZAxisDirection - 1), 0);
-            switch (m_UnityZAxisDirection)
-            {
-                case CardinalDirection.North:
-                    return new Quaternion<ENU>(r.x, r.z, r.y, -r.w);
-                case CardinalDirection.East:
-                    return new Quaternion<ENU>(r.z, -r.x, r.y, -r.w);
-                case CardinalDirection.South:
-                    return new Quaternion<ENU>(-r.x, -r.z, r.y, -r.w);
-                case CardinalDirection.West:
-                    return new Quaternion<ENU>(-r.z, r.x, r.y, -r.w);
-                default:
-                    throw new NotSupportedException();
-            }
+            var r = Quaternion.Euler(0, 90 * ((int)m_UnityZAxisDirection - 1), 0) * q;
+            return new Quaternion<ENU>(r.x, r.z, r.y, -r.w);
         }
 
         public Vector3 FromENU(Vector3<ENU> v)
@@ -76,19 +64,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion FromENU(Quaternion<ENU> q)
         {
             var inverseRotationOffset = Quaternion.Euler(0, -90 * ((int)m_UnityZAxisDirection - 1), 0);
-            switch (m_UnityZAxisDirection)
-            {
-                case CardinalDirection.North:
-                    return new Quaternion(q.x, q.z, q.y, -q.w) * inverseRotationOffset;
-                case CardinalDirection.East:
-                    return new Quaternion(-q.y, q.z, q.x, -q.w) * inverseRotationOffset;
-                case CardinalDirection.South:
-                    return new Quaternion(-q.x, q.z, -q.y, -q.w) * inverseRotationOffset;
-                case CardinalDirection.West:
-                    return new Quaternion(q.y, q.z, -q.x, -q.w) * inverseRotationOffset;
-                default:
-                    throw new NotSupportedException();
-            }
+            return new Quaternion(q.x, q.z, q.y, -q.w) * inverseRotationOffset;
         }
 
         public Vector3<NED> ToNED(Vector3 v)
@@ -110,20 +86,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public Quaternion<NED> ToNED(Quaternion q)
         {
-            var r = q * Quaternion.Euler(0, 90 * (int)m_UnityZAxisDirection, 0);
-            switch (m_UnityZAxisDirection)
-            {
-                case CardinalDirection.North:
-                    return new Quaternion<NED>(r.z, r.x, -r.y, -r.w);
-                case CardinalDirection.East:
-                    return new Quaternion<NED>(-r.x, r.z, -r.y, -r.w);
-                case CardinalDirection.South:
-                    return new Quaternion<NED>(-r.z, -r.x, -r.y, -r.w);
-                case CardinalDirection.West:
-                    return new Quaternion<NED>(r.x, -r.z, -r.y, -r.w);
-                default:
-                    throw new NotSupportedException();
-            }
+            var r = Quaternion.Euler(0, 90 * (int)m_UnityZAxisDirection, 0) * q;
+            return new Quaternion<NED>(r.z, r.x, -r.y, -r.w);
         }
 
         public Vector3 FromNED(Vector3<NED> v)
@@ -146,19 +110,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion FromNED(Quaternion<NED> q)
         {
             var inverseRotationOffset = Quaternion.Euler(0, -90 * (int)m_UnityZAxisDirection, 0);
-            switch (m_UnityZAxisDirection)
-            {
-                case CardinalDirection.North:
-                    return new Quaternion(q.y, -q.z, q.x, -q.w) * inverseRotationOffset;
-                case CardinalDirection.East:
-                    return new Quaternion(-q.x, -q.z, q.y, -q.w) * inverseRotationOffset;
-                case CardinalDirection.South:
-                    return new Quaternion(-q.y, -q.z, -q.x, -q.w) * inverseRotationOffset;
-                case CardinalDirection.West:
-                    return new Quaternion(q.x, -q.z, -q.y, -q.w) * inverseRotationOffset;
-                default:
-                    throw new NotSupportedException();
-            }
+            return new Quaternion(q.y, -q.z, q.x, -q.w) * inverseRotationOffset;
         }
     }
 }
