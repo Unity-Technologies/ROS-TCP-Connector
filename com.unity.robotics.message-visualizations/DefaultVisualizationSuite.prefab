@@ -452,7 +452,7 @@ Transform:
   - {fileID: 8625932825378670584}
   - {fileID: 8632442061405313714}
   - {fileID: 9093984623055348717}
-  - {fileID: 2742884835330475003}
+  - {fileID: 8896375004983712179}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -911,8 +911,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Topic: 
-  m_Settings: {fileID: 11400000, guid: 39362f79ba2ad754a889a171562c7eea, type: 2}
   m_ID: 0-0
+  m_Settings: {fileID: 11400000, guid: 39362f79ba2ad754a889a171562c7eea, type: 2}
 --- !u!114 &4257832478134861953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1933,7 +1933,7 @@ MonoBehaviour:
   m_TFTrackingSettings:
     type: 1
     tfTopic: /tf
---- !u!1001 &1914626938635344595
+--- !u!1001 &5185039384706728091
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -1942,7 +1942,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 863246206611208022, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_Name
-      value: BasicDrawingManager
+      value: Drawing3dManager
       objectReference: {fileID: 0}
     - target: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
       propertyPath: m_RootOrder
@@ -1990,8 +1990,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
---- !u!4 &2742884835330475003 stripped
+--- !u!4 &8896375004983712179 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4360241143132002600, guid: 57cef4e772232da4b92e8f8931f3cc75, type: 3}
-  m_PrefabInstance: {fileID: 1914626938635344595}
+  m_PrefabInstance: {fileID: 5185039384706728091}
   m_PrefabAsset: {fileID: 0}
