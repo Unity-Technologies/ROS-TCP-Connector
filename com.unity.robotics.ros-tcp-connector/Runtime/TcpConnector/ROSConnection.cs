@@ -875,12 +875,12 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         [Obsolete("Use Publish instead of Send", false)]
-        public void Send<T>(string rosTopicName, T message) where T : Message
+        public void Send(string rosTopicName, Message message)
         {
             Publish(rosTopicName, message);
         }
 
-        public void Publish<T>(string rosTopicName, T message) where T : Message
+        public void Publish(string rosTopicName, Message message)
         {
             if (rosTopicName.StartsWith("__"))
             {
@@ -891,7 +891,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 RosTopicState rosTopic = GetTopic(rosTopicName);
                 if (rosTopic == null || !rosTopic.IsPublisher)
                 {
-                    throw new Exception($"No registered publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()}!");
+                    throw new Exception($"No registered publisher on topic {rosTopicName} for type {message.RosMessageName}!");
                 }
 
                 m_LastMessageSentRealtime = Time.realtimeSinceStartup;
