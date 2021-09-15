@@ -585,8 +585,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Topic: 
   m_ID: 0-0
-  m_Thickness: 0
+  m_Thickness: 0.01
   m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Offset: {x: 0, y: 0, z: 0}
   m_TFTrackingSettings:
     type: 1
     tfTopic: /tf
