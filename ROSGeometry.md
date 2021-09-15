@@ -2,12 +2,56 @@
 
 In Unity, the X axis points right, Y up, and Z forward. ROS, on the other hand, supports various coordinate frames: in the most commonly-used one, X points forward, Y left, and Z up. In ROS terminology, this frame is called "FLU" (forward, left, up), whereas the Unity coordinate frame would be "RUF" (right, up, forward).
 
-The ROSGeometry namespace contains code to make it easier to work with these various coordinate frames - letting you be explicit about what coordinates a given value is in at compile time, and managing the conversions for you. It does this with two generic structs, `Vector3<C>` and `Quaternion<C>`. The type parameter C indicates the coordinate frame you're working in - either FLU, or RUF, or perhaps a more exotic frame such as NED (north, east, down) or ENU (east, north, up), commonly used in aviation.
+The ROSGeometry namespace contains code to make it easier to work with these various coordinate frames - letting you be explicit about what coordinates a given value is in at compile time, and managing the conversions for you.
 
+Here's the using declaration for adding ROSGeometry to your namespace:
+
+    using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+
+# Ros Message conversions:
+
+The main ROS position messages (geometry_msgs/Point, geometry_msgs/Point32 and geometry_msgs/Vector3) can be converted to and from Unity Vector3s like this:
+
+	PointMsg ToRosExample(Vector3 position)
+	{
+		return position.To<FLU>();
+	}
+
+	Vector3 ToUnityExample(PointMsg message)
+	{
+		return message.From<FLU>();
+	}
+
+Similarly, the geometry_msgs/Quaternion message can be converted to and from a Unity Quaternion.
+
+	QuaternionMsg myRosQuaternion = myGameObject.transform.rotation.To<FLU>();
+	Quaternion myUnityQuaternion = myRosQuaternion.From<FLU>();
+
+Hence, writing 3d data into a message can often be as simple as writing:
+
+	ImuMsg msg = new ImuMsg()
+	{
+		linear_acceleration = acceleration.To<FLU>();
+		orientation = rigidbody.transform.rotation.To<FLU>();
+		angular_velocity = rigidbody.angularVelocity.To<FLU>();
+	}
+	ros.Send("imu", msg);
+
+Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So creating a geometry_msgs/Transform message typically looks like this:
+
+    TransformMsg msg = myGameObject.transform.To<FLU>());
+
+# Internal details
+
+Some more detail about what's going on here: The core of the ROSGeometry package is the two generic structs, `Vector3<C>` and `Quaternion<C>`. The type parameter C here indicates the coordinate frame you're working in - either FLU, or RUF, or perhaps one of the more exotic frames such as NED (north, east, down) or ENU (east, north, up), used in aviation. In conversions between RUF and geographical coordinate systems, such as NED and ENU, the east direction is equivalent to the z-axis (forward) in RUF.
+
+These are fully-fledged Vector3 and Quaternion classes, so if you want, you can work with them directly to perform geometric operations in an arbitrary coordinate space. (Note, it's a compile time error to add a Vector3<FLU> to a Vector3<RUF>.)
+
+These are the types returned by the `To<FLU>()` calls above. Vector3<C> also has implicit conversions to MPoint, MPoint32, and MVector3, which is how this one call can be used to convert to all three data types.
 
 # Converting between frames:
 
-For example, if you need to convert an object's position into the FLU coordinate frame, you might write:
+If, for example, you need to convert an object's position into the FLU coordinate frame, you might explicitly create a Vector3<FLU> like this:
 
     Vector3<FLU> rosPos = obj.transform.position.To<FLU>();
 
@@ -20,7 +64,7 @@ To convert back, just access the "toUnity" property on the vector.
 
     Vector3 unityPos = rosPos.toUnity;
 
-And the same functions apply for converting Quaternions.
+The same functions and properties apply for converting Quaternions.
 
 # Ros Message conversions:
 
@@ -40,17 +84,17 @@ Unity's standard Transform class also has a `To<C>()` extension method that retu
 
 # Converting incoming messages
 
-You can also convert Points, Point32s and Vector3s back into Unity coordinates. To convert a Point in coordinate space C directly into a Unity Vector3, you can write `From<C>`. For example:
+You can also convert Points, Point32s and Vector3s back into Unity coordinates. If you know that a Point is in coordinate space C, you can convert it into a Unity Vector3 in the unity coordinate space by writing `From<C>`. For example:
 
     void SubscriberCallback(Point p)
 	{
 	  transform.position = p.From<FLU>();
 	}
 
-Or, if you need to work with them in the FLU coordinate space for now, you can write:
+Or, if you need to work with it in the FLU coordinate space for now, you can write:
 
     Vector3<FLU> rosPos = p.As<FLU>();
 
-(Note that this does NOT do any coordinate conversion. It simply assumes the point is in the FLU coordinate frame already, and transfers it into an appropriate container.)
+(Note, the As function does NOT do any coordinate conversion. It simply assumes the point is in the FLU coordinate frame already, and transfers it into an appropriate container.)
 
 And again, the same goes for converting a Quaternion message into a Unity Quaternion or `Quaternion<C>`.
