@@ -50,7 +50,7 @@ namespace Unity.Robotics.MessageVisualizers
             // settings have changed - update the visualization
             foreach (IVisual visual in AllVisuals)
             {
-                visual.CreateDrawing();
+                visual.Redraw();
             }
         }
     }

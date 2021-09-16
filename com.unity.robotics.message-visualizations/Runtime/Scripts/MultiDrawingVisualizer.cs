@@ -74,7 +74,7 @@ namespace Unity.Robotics.MessageVisualizers
 
                 if (m_IsDrawingEnabled && Time.time > m_LastDrawingFrameTime)
                 {
-                    CreateDrawing();
+                    Redraw();
                 }
 
                 m_LastDrawingFrameTime = Time.time;
@@ -111,7 +111,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_BasicDrawing = null;
             }
 
-            public void CreateDrawing()
+            public void Redraw()
             {
                 if (m_BasicDrawing == null)
                 {

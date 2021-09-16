@@ -28,7 +28,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual void Draw(DrawingVisual drawing, T message, MessageMetadata meta)
         {
-            Draw(drawing.BasicDrawing, message, meta);
+            Draw(drawing.Drawing, message, meta);
         }
 
         public virtual void Draw(Drawing3d drawing, T message, MessageMetadata meta) { }
@@ -43,8 +43,8 @@ namespace Unity.Robotics.MessageVisualizers
             public T message { get; private set; }
             public MessageMetadata meta { get; private set; }
 
-            Drawing3d m_BasicDrawing;
-            public Drawing3d BasicDrawing => m_BasicDrawing;
+            Drawing3d m_Drawing;
+            public Drawing3d Drawing => m_Drawing;
             Action m_GUIAction;
             DrawingVisualizer<T> m_Factory;
             string m_Topic;
@@ -73,7 +73,7 @@ namespace Unity.Robotics.MessageVisualizers
                 // If messages are coming in faster than 1 per frame, we only update the drawing once per frame
                 if (m_IsDrawingEnabled && Time.time > m_LastDrawingFrameTime)
                 {
-                    CreateDrawing();
+                    Redraw();
                 }
 
                 m_LastDrawingFrameTime = Time.time;
@@ -84,14 +84,14 @@ namespace Unity.Robotics.MessageVisualizers
                 if (m_IsDrawingEnabled == enabled)
                     return;
 
-                if (!enabled && m_BasicDrawing != null)
+                if (!enabled && m_Drawing != null)
                 {
-                    m_BasicDrawing.Clear();
+                    m_Drawing.Clear();
                 }
                 m_IsDrawingEnabled = enabled;
             }
 
-            public bool hasDrawing => m_BasicDrawing != null;
+            public bool hasDrawing => m_Drawing != null;
 
             public void OnGUI()
             {
@@ -110,23 +110,23 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void DeleteDrawing()
             {
-                if (m_BasicDrawing != null)
+                if (m_Drawing != null)
                 {
-                    m_BasicDrawing.Destroy();
+                    m_Drawing.Destroy();
                 }
 
-                m_BasicDrawing = null;
+                m_Drawing = null;
             }
 
-            public void CreateDrawing()
+            public void Redraw()
             {
-                if (m_BasicDrawing == null)
+                if (m_Drawing == null)
                 {
-                    m_BasicDrawing = Drawing3dManager.CreateDrawing();
+                    m_Drawing = Drawing3dManager.CreateDrawing();
                 }
                 else
                 {
-                    m_BasicDrawing.Clear();
+                    m_Drawing.Clear();
                 }
 
                 m_Factory.Draw(this, message, meta);

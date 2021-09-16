@@ -119,7 +119,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
             m_TextureIsDirty = true;
 
             if (m_IsDrawingEnabled && Time.time > m_LastDrawingFrameTime)
-                CreateDrawing();
+                Redraw();
 
             m_LastDrawingFrameTime = Time.time;
         }
@@ -137,7 +137,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
             texture.Apply();
         }*/
 
-        public void CreateDrawing()
+        public void Redraw()
         {
             if (m_Mesh == null)
             {

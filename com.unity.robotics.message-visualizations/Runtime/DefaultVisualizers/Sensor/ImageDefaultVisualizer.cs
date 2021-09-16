@@ -121,6 +121,6 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
         }
 
         public void SetDrawingEnabled(bool enabled) { }
-        public void CreateDrawing() { }
+        public void Redraw() { }
     }
 }
