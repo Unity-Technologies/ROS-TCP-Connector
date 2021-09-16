@@ -10,8 +10,10 @@ public class MultiEchoLaserScanVisualizerSettings : VisualizerSettingsGeneric<Mu
     [SerializeField]
     bool m_UseIntensitySize;
     public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
+    [HideInInspector, SerializeField]
     float m_PointRadius = 0.05f;
     public float PointRadius { get => m_PointRadius; set => m_PointRadius = value; }
+    [HideInInspector, SerializeField]
     float[] m_SizeRange = { 0, 100 };
     public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
 

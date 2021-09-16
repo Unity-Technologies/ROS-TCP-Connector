@@ -10,8 +10,10 @@ public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMs
     [SerializeField]
     bool m_UseIntensitySize;
     public bool UseIntensitySize { get => m_UseIntensitySize; set => m_UseIntensitySize = value; }
+    [HideInInspector, SerializeField]
     float m_PointRadius = 0.05f;
     public float PointRadius { get => m_PointRadius; set => m_PointRadius = value; }
+    [HideInInspector, SerializeField]
     float m_MaxIntensity = 100.0f;
     public float MaxIntensity { get => m_MaxIntensity; set => m_MaxIntensity = value; }
 
