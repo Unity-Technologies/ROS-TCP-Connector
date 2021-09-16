@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4360241143132002600}
   - component: {fileID: 8942715124792280059}
   m_Layer: 0
-  m_Name: BasicDrawingManager
+  m_Name: Drawing3dManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

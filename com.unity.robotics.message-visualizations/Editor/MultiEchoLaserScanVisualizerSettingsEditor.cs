@@ -32,14 +32,14 @@ public class MultiEchoLaserScanEditor : SettingsBasedVisualizerEditor<MultiEchoL
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        m_Config.UseIntensitySize = EditorGUILayout.ToggleLeft("Use intensity size?", m_Config.UseIntensitySize);
 
         if (m_Config.UseIntensitySize)
         {
-            MinMaxText("size", ref m_SizeMinVal, ref m_SizeMin, ref m_SizeMaxVal, ref m_SizeMax);
-            var configSizeRange = m_Config.SizeRange;
-            CreateMinMaxSlider(ref configSizeRange, m_SizeMinVal, m_SizeMaxVal);
-            m_Config.SizeRange = configSizeRange;
+            CreateMinMaxEditor("Size channel min", "Max", m_Config.SizeRange);
+        }
+        else
+        {
+            m_Config.PointRadius = float.Parse(EditorGUILayout.TextField("Point Radius", m_Config.PointRadius.ToString()));
         }
     }
 }
