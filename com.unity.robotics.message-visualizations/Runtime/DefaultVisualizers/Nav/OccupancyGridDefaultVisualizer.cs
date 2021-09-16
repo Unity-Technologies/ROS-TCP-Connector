@@ -10,12 +10,14 @@ using UnityEngine;
 
 public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg>
 {
-    [SerializeField]
-    protected string m_OccupancyGridTopic;
-    public string OccupancyGridTopic { get => m_OccupancyGridTopic; set => m_OccupancyGridTopic = value; }
+    // [SerializeField]
+    // protected string m_OccupancyGridTopic;
+    // public string OccupancyGridTopic { get => m_OccupancyGridTopic; set => m_OccupancyGridTopic = value; }
 
     //[SerializeField]
     //string m_OccupancyGridUpdateTopic;
+    [SerializeField]
+    Color m_Color = Color.white;
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
@@ -24,6 +26,8 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
     public override bool CanShowDrawing => true;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
+    static readonly int k_Color0 = Shader.PropertyToID("_Color0");
+
     //Dictionary<string, OccupancyGridUpdateVisual> m_UpdateVisuals = new Dictionary<string, OccupancyGridUpdateVisual>();
 
     public override IVisual GetOrCreateVisual(string topic)
@@ -60,28 +64,28 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         //}
         //else
         {
-            baseVisual = new OccupancyGridVisual(topic, this);
+            baseVisual = new OccupancyGridVisual(topic, m_Color, this);
             m_BaseVisuals.Add(topic, baseVisual);
             return baseVisual;
         }
     }
 
-    public override void Start()
-    {
-        if (string.IsNullOrEmpty(m_OccupancyGridTopic))
-        {
-            VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridMsg>(this, Priority);
-            //VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridUpdateMsg>(this, Priority);
-        }
-        else
-        {
-            VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridTopic, this, Priority);
-            //if (!string.IsNullOrEmpty(m_OccupancyGridUpdateTopic))
-            //{
-            //    VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridUpdateTopic, this, Priority);
-            //}
-        }
-    }
+    // public override void Start()
+    // {
+    //     if (string.IsNullOrEmpty(m_OccupancyGridTopic))
+    //     {
+    //         VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridMsg>(this, Priority);
+    //         //VisualFactoryRegistry.RegisterTypeVisualizer<OccupancyGridUpdateMsg>(this, Priority);
+    //     }
+    //     else
+    //     {
+    //         VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridTopic, this, Priority);
+    //         //if (!string.IsNullOrEmpty(m_OccupancyGridUpdateTopic))
+    //         //{
+    //         //    VisualFactoryRegistry.RegisterTopicVisualizer(m_OccupancyGridUpdateTopic, this, Priority);
+    //         //}
+    //     }
+    // }
 
     protected override IVisual CreateVisual(string topic) => throw new NotImplementedException();
 
@@ -90,6 +94,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         string m_Topic;
         Mesh m_Mesh;
         Material m_Material;
+        Color m_Color;
         Texture2D m_Texture;
         bool m_TextureIsDirty = true;
         bool m_IsDrawingEnabled;
@@ -102,9 +107,10 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         public uint Width => m_Message.info.width;
         public uint Height => m_Message.info.height;
 
-        public OccupancyGridVisual(string topic, OccupancyGridDefaultVisualizer settings)
+        public OccupancyGridVisual(string topic, Color color, OccupancyGridDefaultVisualizer settings)
         {
             m_Topic = topic;
+            m_Color = color;
             m_Settings = settings;
 
             ROSConnection.GetOrCreateInstance().Subscribe<OccupancyGridMsg>(m_Topic, AddMessage);
@@ -153,6 +159,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
                 m_Material = new Material(Shader.Find("Unlit/OccupancyGrid"));
             }
             m_Material.mainTexture = GetTexture();
+            m_Material.SetColor(k_Color0, m_Color);
 
             var origin = m_Message.info.origin.position.From<FLU>();
             var rotation = m_Message.info.origin.orientation.From<FLU>();
