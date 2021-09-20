@@ -339,17 +339,17 @@ namespace Unity.Robotics.MessageVisualizers
             menu.DropDown(position);
         }
 
-        public static Action<IVisualFactory, string, string> s_OpenVisualizationWindow;
+        static Action<IVisualFactory, string, string> s_OpenWindowCallback;
 
-        public static void SetEditorWindowCallback(Action<IVisualFactory, string, string> callback)
+        public static void SetOpenWindowCallback(Action<IVisualFactory, string, string> callback)
         {
-            s_OpenVisualizationWindow = callback;
+            s_OpenWindowCallback = callback;
         }
 
         void OnSelect(IVisualFactory factory)
         {
-            if (s_OpenVisualizationWindow != null)
-                s_OpenVisualizationWindow(factory, Topic, RosMessageName);
+            if (s_OpenWindowCallback != null)
+                s_OpenWindowCallback(factory, Topic, RosMessageName);
         }
 #endif
     }

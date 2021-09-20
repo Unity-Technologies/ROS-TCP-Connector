@@ -87,10 +87,10 @@ namespace Unity.Robotics.MessageVisualizers
         [InitializeOnLoadMethod]
         static void Initialize()
         {
-            VisualizationTopicsTabEntry.s_OpenVisualizationWindow = CreateWindow;
+            VisualizationTopicsTabEntry.SetOpenWindowCallback(OpenWindow);
         }
 
-        static void CreateWindow(IVisualFactory visualizer, string topic, string rosMessageName)
+        static void OpenWindow(IVisualFactory visualizer, string topic, string rosMessageName)
         {
             VisualizationEditorWindow window = new VisualizationEditorWindow(visualizer, topic, rosMessageName);
             window.Show();
