@@ -9,7 +9,7 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        m_Config.UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel?", m_Config.UseSizeChannel);
+        m_Config.UseSizeChannel = EditorGUILayout.ToggleLeft("Use size channel", m_Config.UseSizeChannel);
 
         if (m_Config.UseSizeChannel)
         {
@@ -23,7 +23,7 @@ public class PointCloudVisualizerEditor : SettingsBasedVisualizerEditor<PointClo
             m_Config.Size = EditorGUILayout.FloatField("Size:", m_Config.Size);
         }
 
-        m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel?", m_Config.UseRgbChannel);
+        m_Config.UseRgbChannel = EditorGUILayout.ToggleLeft("Use color channel", m_Config.UseRgbChannel);
 
         if (m_Config.UseRgbChannel)
         {
