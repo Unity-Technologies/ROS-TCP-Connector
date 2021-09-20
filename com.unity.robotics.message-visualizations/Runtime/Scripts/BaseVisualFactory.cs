@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Robotics.MessageVisualizers;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 #endif
-        public virtual string Name => (string.IsNullOrEmpty(m_Topic) ? "" : $"({m_Topic}) ") + GetType().ToString();
+        public virtual string Name => (string.IsNullOrEmpty(m_Topic) ? "" : $"({m_Topic}) ") + GetType().ToString().Split('.').Last();
 
         public int Priority { get; set; }
         public abstract bool CanShowDrawing { get; }

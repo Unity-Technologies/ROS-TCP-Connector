@@ -334,7 +334,7 @@ namespace Unity.Robotics.MessageVisualizers
             foreach(IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
             {
                 bool isSelected = m_VisualRows.Any(r => r.GetVisualFactory() == factory);
-                menu.AddItem(new GUIContent(factory.Name), isSelected, () => OnSelect(factory));
+                menu.AddItem(new GUIContent(isSelected? factory.Name+" (main)": factory.Name), false, () => OnSelect(factory));
             }
             menu.DropDown(position);
         }
