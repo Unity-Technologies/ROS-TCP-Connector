@@ -49,6 +49,7 @@ namespace Unity.Robotics.MessageVisualizers
             DrawingVisualizer<T> m_Factory;
             string m_Topic;
             bool m_IsDrawingEnabled;
+            public bool IsDrawingEnabled => m_IsDrawingEnabled;
             float m_LastDrawingFrameTime = -1;
 
             public DrawingVisual(string topic, DrawingVisualizer<T> factory)

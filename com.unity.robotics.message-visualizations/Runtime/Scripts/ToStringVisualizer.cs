@@ -57,6 +57,8 @@ namespace Unity.Robotics.MessageVisualizers
                 string text = message.ToString();
                 GUILayout.Label(text);
             }
+
+            public bool IsDrawingEnabled => false;
             public void SetDrawingEnabled(bool enabled) { }
             public void Redraw() { }
         }

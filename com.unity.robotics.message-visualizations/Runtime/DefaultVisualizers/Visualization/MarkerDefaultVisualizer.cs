@@ -34,6 +34,7 @@ namespace Unity.Robotics.MessageVisualizers
             Dictionary<string, Dictionary<int, Drawing3d>> m_DrawingNamespaces = new Dictionary<string, Dictionary<int, Drawing3d>>();
             HashSet<string> m_HiddenNamespaces = new HashSet<string>();
             bool m_IsDrawingEnabled;
+            public bool IsDrawingEnabled => m_IsDrawingEnabled;
 
             public MarkersVisual(string topic)
             {

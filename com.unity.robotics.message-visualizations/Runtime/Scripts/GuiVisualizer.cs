@@ -67,8 +67,8 @@ namespace Unity.Robotics.MessageVisualizers
                 m_GUIAction();
             }
 
+            public bool IsDrawingEnabled => false;
             public void SetDrawingEnabled(bool enabled) { }
-
             public void Redraw() { }
         }
     }
