@@ -25,7 +25,8 @@ public class PrefabVisualizerExample : BaseVisualFactory<PoseMsg>
         GameObject m_Prefab;
         GameObject m_PrefabInstance;
         PoseMsg m_LastMessage;
-        bool m_DrawingEnabled;
+        bool m_IsDrawingEnabled;
+        public bool IsDrawingEnabled => m_IsDrawingEnabled;
 
         public PrefabVisual(string topic, GameObject prefab)
         {
@@ -38,13 +39,13 @@ public class PrefabVisualizerExample : BaseVisualFactory<PoseMsg>
         {
             m_LastMessage = message;
 
-            if (m_DrawingEnabled)
+            if (m_IsDrawingEnabled)
                 Redraw();
         }
 
         public void SetDrawingEnabled(bool enabled)
         {
-            m_DrawingEnabled = enabled;
+            m_IsDrawingEnabled = enabled;
 
             if (enabled)
                 Redraw();

@@ -44,6 +44,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         Texture2D m_Texture;
         bool m_TextureIsDirty = true;
         bool m_IsDrawingEnabled;
+        public bool IsDrawingEnabled => m_IsDrawingEnabled;
         float m_LastDrawingFrameTime = -1;
 
         Drawing3d m_BasicDrawing;

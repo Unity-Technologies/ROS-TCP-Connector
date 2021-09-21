@@ -120,6 +120,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             return m_Texture2D;
         }
 
+        public bool IsDrawingEnabled => false;
         public void SetDrawingEnabled(bool enabled) { }
         public void Redraw() { }
     }

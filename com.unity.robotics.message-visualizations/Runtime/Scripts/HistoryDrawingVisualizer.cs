@@ -54,6 +54,7 @@ namespace Unity.Robotics.MessageVisualizers
             HistoryDrawingVisualizer<T> m_Factory;
             int m_HistoryLength;
             bool m_IsDrawingEnabled;
+            public bool IsDrawingEnabled => m_IsDrawingEnabled;
             float m_LastDrawingFrameTime = -1;
 
             public HistoryDrawingVisual(string topic, HistoryDrawingVisualizer<T> factory, int historyLength)

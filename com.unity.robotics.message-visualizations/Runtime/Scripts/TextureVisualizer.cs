@@ -91,8 +91,8 @@ namespace Unity.Robotics.MessageVisualizers
                 return m_Texture2D;
             }
 
+            public bool IsDrawingEnabled => false;
             public void SetDrawingEnabled(bool enabled) { }
-
             public void Redraw() { }
         }
     }

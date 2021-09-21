@@ -334,24 +334,22 @@ namespace Unity.Robotics.MessageVisualizers
             foreach(IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
             {
                 bool isSelected = m_VisualRows.Any(r => r.GetVisualFactory() == factory);
-                if(isSelected)
-                    menu.AddItem(new GUIContent(factory.Name), isSelected, () => Deselect(factory));
-                else
-                    menu.AddItem(new GUIContent(factory.Name), isSelected, () => Select(factory));
+                menu.AddItem(new GUIContent(isSelected? factory.Name+" (main)": factory.Name), false, () => OnSelect(factory));
             }
             menu.DropDown(position);
         }
 
-        //TODO: turn on/off multiple visualizations
-        void Select(IVisualFactory factory)
+        static Action<IVisualFactory, string, string> s_OpenWindowCallback;
+
+        public static void SetOpenWindowCallback(Action<IVisualFactory, string, string> callback)
         {
-            m_VisualRows[0].SetVisualFactory(factory);
+            s_OpenWindowCallback = callback;
         }
 
-        void Deselect(IVisualFactory factory)
+        void OnSelect(IVisualFactory factory)
         {
-            UnityEngine.Object factoryObject = (UnityEngine.Object)factory;
-            UnityEditor.Selection.activeObject = factoryObject;
+            if (s_OpenWindowCallback != null)
+                s_OpenWindowCallback(factory, Topic, RosMessageName);
         }
 #endif
     }
