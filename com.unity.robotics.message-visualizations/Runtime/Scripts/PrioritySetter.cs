@@ -16,7 +16,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         private void Awake()
         {
-            foreach (IPriority p in GetComponents<IPriority>())
+            foreach (IPriority p in GetComponentsInChildren<IPriority>())
                 p.Priority = m_Priority;
         }
     }
