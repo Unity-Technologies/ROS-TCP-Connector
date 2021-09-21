@@ -16,13 +16,13 @@ namespace Unity.Robotics.MessageVisualizers
         string m_FactoryID;
         IVisual m_Visual;
         Vector2 m_ScrollPos;
+
         public VisualizationEditorWindow(IVisualFactory factory, string topic, string rosMessageName)
         {
             m_VisualFactory = factory;
             m_Topic = topic;
             m_RosMessageName = rosMessageName;
-            m_VisualFactory = factory;
-            m_FactoryID = factory.ID;
+            SetFactory(factory);
             EditorApplication.playModeStateChanged += OnPlayModeState;
             titleContent = new GUIContent(m_Topic);
         }
@@ -36,6 +36,13 @@ namespace Unity.Robotics.MessageVisualizers
             }
         }
 
+        public void SetFactory(IVisualFactory factory)
+        {
+            m_VisualFactory = factory;
+            m_FactoryID = factory.ID;
+            m_Visual = null;
+        }
+
         private void OnGUI()
         {
             if (!EditorApplication.isPlaying)
@@ -46,7 +53,21 @@ namespace Unity.Robotics.MessageVisualizers
 
             if (m_Visual == null && EditorApplication.isPlaying)
             {
-                if (m_FactoryID != null && m_VisualFactory == null)
+                if (m_FactoryID == null)
+                {
+                    GUIContent buttonContent = new GUIContent("Select Visualizer");
+                    Rect selectBtnRect = GUILayoutUtility.GetRect(buttonContent, EditorStyles.toolbarDropDown, GUILayout.ExpandWidth(false));
+                    if (EditorGUI.DropdownButton(selectBtnRect, buttonContent, FocusType.Keyboard))
+                    {
+                        GenericMenu menu = new GenericMenu();
+                        foreach (IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(m_Topic, m_RosMessageName))
+                        {
+                            menu.AddItem(new GUIContent(factory.Name), false, () => SetFactory(factory));
+                        }
+                        menu.DropDown(selectBtnRect);
+                    }
+                }
+                else if (m_VisualFactory == null)
                 {
                     foreach (IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(m_Topic, m_RosMessageName))
                     {
