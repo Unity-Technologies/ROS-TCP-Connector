@@ -67,7 +67,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 GUILayout.BeginHorizontal(GUI.skin.box);
                 EditorGUI.BeginDisabledGroup(m_VisualFactory == null || !m_VisualFactory.CanShowDrawing);
-                bool drawingEnable = EditorGUILayout.Toggle("Show 3d drawings", m_Visual.IsDrawingEnabled);
+                bool drawingEnable = EditorGUILayout.ToggleLeft("Show 3d drawings", m_Visual.IsDrawingEnabled);
                 EditorGUI.EndDisabledGroup();
                 if (GUILayout.Button("Select in Editor"))
                 {
