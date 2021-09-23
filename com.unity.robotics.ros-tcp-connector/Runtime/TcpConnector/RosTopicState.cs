@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ namespace Unity.Robotics.ROSTCPConnector
         ROSConnection.InternalAPI m_ConnectionInternal;
         Func<MessageDeserializer, Message> m_Deserializer;
         Func<Message, Message> m_ServiceImplementation;
+        private Func<Message, Task<Message>> m_ServiceImplementationAsync;
         RosTopicState m_ServiceResponseTopic;
         public RosTopicState ServiceResponseTopic => m_ServiceResponseTopic;
 
@@ -97,21 +99,36 @@ namespace Unity.Robotics.ROSTCPConnector
             m_SubscriberCallbacks.ForEach(item => item(message));
         }
 
-        public Message HandleUnityServiceRequest(byte[] data)
+        public async void HandleUnityServiceRequest(byte[] data, int serviceId)
         {
             if (m_ServiceImplementation == null)
             {
                 Debug.LogError($"Unity service '{m_Topic}' has not been implemented!");
-                return null;
+                return;
             }
 
             // deserialize the request message
             Message requestMessage = Deserialize(data);
 
             // run the actual service
-            Message response = m_ServiceImplementation(requestMessage);
+            Message response;
+
+            if (m_ServiceImplementationAsync != null)
+            {
+                response = await m_ServiceImplementationAsync(requestMessage);
+            }
+            else
+            {
+                response = m_ServiceImplementation(requestMessage);
+            }
+
             m_ServiceResponseTopic.OnMessageSent(response);
-            return response;
+
+
+
+            // send the response message back
+            m_ConnectionInternal.SendUnityServiceResponse(serviceId);
+            m_Publisher.PublishInternal(response);
         }
 
         Message Deserialize(byte[] data)
@@ -149,6 +166,14 @@ namespace Unity.Robotics.ROSTCPConnector
         public void ImplementService(Func<Message, Message> implementation)
         {
             m_ServiceImplementation = implementation;
+            m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
+            m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
+        }
+
+        public void ImplementService(Func<Message, Task<Message>> implementation)
+        {
+            CreatePublisher();
+            m_ServiceImplementationAsync = implementation;
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
             m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
         }

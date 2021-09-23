@@ -369,6 +369,12 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, stream);
             }
+
+            public void SendUnityServiceResponse(int serviceId, NetworkStream stream = null)
+            {
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceId }, stream);
+            }
+
         }
 
         static ROSConnection _instance;
@@ -587,11 +593,9 @@ namespace Unity.Robotics.ROSTCPConnector
                                 Debug.LogError($"Unity service {serviceTopic} has not been implemented!");
                                 return;
                             }
-                            Message responseMessage = topicState.HandleUnityServiceRequest(requestBytes);
+                            topicState.HandleUnityServiceRequest(requestBytes, serviceCommand.srv_id);
 
-                            // send the response message back
-                            SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceCommand.srv_id });
-                            Publish(serviceTopic, responseMessage);
+
                         };
                     }
                     break;
