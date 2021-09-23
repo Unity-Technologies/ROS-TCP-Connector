@@ -12,7 +12,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 {
     static readonly int k_Color0 = Shader.PropertyToID("_Color0");
     static readonly int k_Color100 = Shader.PropertyToID("_Color100");
-    static readonly int k_UnknownColor = Shader.PropertyToID("_UnknownColor");
+    static readonly int k_ColorUnknown = Shader.PropertyToID("_ColorUnknown");
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
@@ -66,7 +66,6 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         {
             m_Topic = topic;
             m_Settings = settings;
-            m_Material = new Material(m_Settings.m_Material);
 
             ROSConnection.GetOrCreateInstance().Subscribe<OccupancyGridMsg>(m_Topic, AddMessage);
         }
@@ -98,12 +97,12 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 
             if (m_Material == null)
             {
-                m_Material = new Material(Shader.Find("Unlit/OccupancyGrid"));
+                m_Material = (m_Settings.m_Material != null) ? new Material(m_Settings.m_Material) : new Material(Shader.Find("Unlit/OccupancyGrid"));
             }
             m_Material.mainTexture = GetTexture();
             m_Material.SetColor(k_Color0, m_Settings.m_Unoccupied);
             m_Material.SetColor(k_Color100, m_Settings.m_Occupied);
-            m_Material.SetColor(k_UnknownColor, m_Settings.m_Unknown);
+            m_Material.SetColor(k_ColorUnknown, m_Settings.m_Unknown);
 
             var origin = m_Message.info.origin.position.From<FLU>();
             var rotation = m_Message.info.origin.orientation.From<FLU>();

@@ -156,6 +156,9 @@ namespace Unity.Robotics.MessageVisualizers
             SetDirty();
         }
 
+        static int[] simpleRingIndices = new int[4] { 3, 2, 1, 0 };
+        static int[] pathCornerRingIndices = new int[4] { 0, 3, 2, -2 };
+
         public void DrawPath(IEnumerable<Vector3> path, Color32 color, float thickness = 0.1f)
         {
             IEnumerator<Vector3> enumerator = path.GetEnumerator();
@@ -169,59 +172,102 @@ namespace Unity.Robotics.MessageVisualizers
                 DrawPoint(pointA, color, thickness);
                 return;
             }
+
             Vector3 pointB = enumerator.Current;
-            Vector3 oldSideVector = Vector3.Cross(Vector3.up, (pointB - pointA)).normalized * thickness;
+            Vector3 lineABDirection = (pointB - pointA).normalized;
+            Vector3 oldOutVector = Vector3.Cross(Vector3.up, lineABDirection).normalized * thickness;
+            Vector3 oldSideVector = Vector3.Cross(oldOutVector, lineABDirection).normalized * thickness;
             int oldVertexIndex = m_Vertices.Count;
-            m_Vertices.Add(pointA - oldSideVector);
+            m_Vertices.Add(pointA + oldOutVector); // 0
             m_Colors32.Add(color);
-            m_Vertices.Add(pointA + oldSideVector);
+            m_Vertices.Add(pointA - oldSideVector); // 1
             m_Colors32.Add(color);
+            m_Vertices.Add(pointA - oldOutVector); // 2
+            m_Colors32.Add(color);
+            m_Vertices.Add(pointA + oldSideVector); // 3
+            m_Colors32.Add(color);
+            AddQuad(oldVertexIndex, 3, 2, 1, 0);
 
             while (enumerator.MoveNext())
             {
                 Vector3 pointC = enumerator.Current;
-
                 // create new vertices around pointB.
-                Vector3 newSideVector = Vector3.Cross(Vector3.up, (pointC - pointB)).normalized * thickness;
-                m_Vertices.Add(pointB - oldSideVector); //2
-                m_Colors32.Add(color);
-                m_Vertices.Add(pointB + oldSideVector); //3
-                m_Colors32.Add(color);
-                AddQuad(oldVertexIndex, 0, 2, 3, 1);
+                Vector3 lineBCDirection = (pointC - pointB).normalized;
+                Vector3 sideVector = Vector3.Cross(lineABDirection, lineBCDirection).normalized * thickness;
+                Vector3 abOutVector = Vector3.Cross(lineABDirection, sideVector).normalized * thickness;
+                Vector3 bcOutVector = Vector3.Cross(lineBCDirection, sideVector).normalized * thickness;
+                Vector3 midOutVector = (abOutVector + bcOutVector).normalized * thickness;
+                Vector3 inVector = -midOutVector; // TO DO: make this smarter
 
-                if (Vector3.Dot(pointB - pointA, newSideVector) > 0)
+                // we draw each corner with 6 vertices: the two perpendiculars, the inside, the outside, 
+                // and two extra outside points perpendicular to line AB and line BC respectively.
+                // We set newVertexIndex in the middle of this set of vertices, because next time around this will become the oldVertexIndex
+                // and we want to treat it the same as the initial four vertices we created above
+                m_Vertices.Add(pointB + abOutVector); // -2
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB + midOutVector); // -1
+                m_Colors32.Add(color);
+                int newVertexIndex = m_Vertices.Count;
+                m_Vertices.Add(pointB + sideVector); // 0
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB + bcOutVector); // 1
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB - sideVector); // 2
+                m_Colors32.Add(color);
+                m_Vertices.Add(pointB + inVector); // 3
+                m_Colors32.Add(color);
+                AddTriangles(newVertexIndex, -2, -1, 0, -2, 2, -1, -1, 2, 1, -1, 1, 0);
+
+                // to avoid having too much twist in the connecting polygons, figure out axis is closest to the old side vector  
+                float sideDot = Vector3.Dot(oldSideVector, sideVector);
+                float outDot = Vector3.Dot(oldSideVector, abOutVector);
+
+                int alignmentIndex;
+                if (Mathf.Abs(sideDot) > Mathf.Abs(outDot))
                 {
-                    // left turn
-                    m_Vertices.Add(pointB + (oldSideVector + newSideVector).normalized * thickness); //4
-                    m_Colors32.Add(color);
-                    AddQuad(oldVertexIndex, 2, 6, 4, 3);
+                    alignmentIndex = sideDot > 0 ? 0 : 2;
                 }
                 else
                 {
-                    // right turn
-                    m_Vertices.Add(pointB - (oldSideVector + newSideVector).normalized * thickness); //4
-                    m_Colors32.Add(color);
-                    AddQuad(oldVertexIndex, 2, 4, 5, 3);
+                    alignmentIndex = outDot > 0 ? 1 : 3;
                 }
-
-                int nextVertexIndex = m_Vertices.Count;
-                m_Vertices.Add(pointB - newSideVector); //5
-                m_Colors32.Add(color);
-                m_Vertices.Add(pointB + newSideVector); //6
-                m_Colors32.Add(color);
+                ConnectPathRings(oldVertexIndex, newVertexIndex, simpleRingIndices, pathCornerRingIndices, alignmentIndex);
 
                 pointA = pointB;
                 pointB = pointC;
-                oldVertexIndex = nextVertexIndex;
-                oldSideVector = newSideVector;
+                lineABDirection = lineBCDirection;
+                oldVertexIndex = newVertexIndex;
+                oldSideVector = sideVector;
+                oldOutVector = bcOutVector;
             }
 
-            m_Vertices.Add(pointB - oldSideVector);
+            // for the last point, we make another ring
+            int finalVertexIndex = m_Vertices.Count;
+            m_Vertices.Add(pointB + oldOutVector); // 0
             m_Colors32.Add(color);
-            m_Vertices.Add(pointB + oldSideVector);
+            m_Vertices.Add(pointB - oldSideVector); // 1
             m_Colors32.Add(color);
-            AddQuad(oldVertexIndex, 0, 2, 3, 1);
+            m_Vertices.Add(pointB - oldOutVector); // 2
+            m_Colors32.Add(color);
+            m_Vertices.Add(pointB + oldSideVector); // 3
+            m_Colors32.Add(color);
+            AddQuad(finalVertexIndex, 0, 1, 2, 3);
+            ConnectPathRings(oldVertexIndex, finalVertexIndex, simpleRingIndices, simpleRingIndices, 0);
             SetDirty();
+        }
+
+        void ConnectPathRings(int fromIndex, int toIndex, int[] fromOffsets, int[] toOffsets, int alignment)
+        {
+            // connect this line
+            for (int Idx = 0; Idx < fromOffsets.Length; ++Idx)
+            {
+                AddQuad(
+                    fromIndex + fromOffsets[((alignment + Idx) % 4)],
+                    toIndex + toOffsets[Idx],
+                    toIndex + toOffsets[(Idx + 1) % 4],
+                    fromIndex + fromOffsets[((alignment + Idx + 1) % 4)]
+                );
+            }
         }
 
         public void DrawPoint(Vector3 point, Color32 color, float radius = 0.1f)
