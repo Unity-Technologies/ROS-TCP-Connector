@@ -11,12 +11,21 @@ using UnityEngine;
 public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg>
 {
     static readonly int k_Color0 = Shader.PropertyToID("_Color0");
-    [SerializeField]
-    Color m_Color = Color.white;
+    static readonly int k_Color100 = Shader.PropertyToID("_Color100");
+    static readonly int k_ColorUnknown = Shader.PropertyToID("_ColorUnknown");
     [SerializeField]
     Vector3 m_Offset = Vector3.zero;
     [SerializeField]
+    Material m_Material;
+    [SerializeField]
     TFTrackingSettings m_TFTrackingSettings;
+    [Header("Cell Colors")]
+    [SerializeField]
+    Color m_Unoccupied = Color.white;
+    [SerializeField]
+    Color m_Occupied = Color.black;
+    [SerializeField]
+    Color m_Unknown = Color.clear;
 
     Dictionary<string, OccupancyGridVisual> m_BaseVisuals = new Dictionary<string, OccupancyGridVisual>();
 
@@ -28,7 +37,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         if (m_BaseVisuals.TryGetValue(topic, out baseVisual))
             return baseVisual;
 
-        baseVisual = new OccupancyGridVisual(topic, m_Color, this);
+        baseVisual = new OccupancyGridVisual(topic, this);
         m_BaseVisuals.Add(topic, baseVisual);
         return baseVisual;
     }
@@ -40,7 +49,6 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         string m_Topic;
         Mesh m_Mesh;
         Material m_Material;
-        Color m_Color;
         Texture2D m_Texture;
         bool m_TextureIsDirty = true;
         bool m_IsDrawingEnabled;
@@ -54,10 +62,9 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         public uint Width => m_Message.info.width;
         public uint Height => m_Message.info.height;
 
-        public OccupancyGridVisual(string topic, Color color, OccupancyGridDefaultVisualizer settings)
+        public OccupancyGridVisual(string topic, OccupancyGridDefaultVisualizer settings)
         {
             m_Topic = topic;
-            m_Color = color;
             m_Settings = settings;
 
             ROSConnection.GetOrCreateInstance().Subscribe<OccupancyGridMsg>(m_Topic, AddMessage);
@@ -90,10 +97,12 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 
             if (m_Material == null)
             {
-                m_Material = new Material(Shader.Find("Unlit/OccupancyGrid"));
+                m_Material = (m_Settings.m_Material != null) ? new Material(m_Settings.m_Material) : new Material(Shader.Find("Unlit/OccupancyGrid"));
             }
             m_Material.mainTexture = GetTexture();
-            m_Material.SetColor(k_Color0, m_Color);
+            m_Material.SetColor(k_Color0, m_Settings.m_Unoccupied);
+            m_Material.SetColor(k_Color100, m_Settings.m_Occupied);
+            m_Material.SetColor(k_ColorUnknown, m_Settings.m_Unknown);
 
             var origin = m_Message.info.origin.position.From<FLU>();
             var rotation = m_Message.info.origin.orientation.From<FLU>();

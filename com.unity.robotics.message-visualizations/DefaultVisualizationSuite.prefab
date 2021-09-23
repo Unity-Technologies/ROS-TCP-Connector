@@ -1660,6 +1660,7 @@ MonoBehaviour:
   m_ID: 0-0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Offset: {x: 0, y: 0, z: 0}
+  m_Material: {fileID: 2100000, guid: 8e30ea50d6b692349a46d177ded15435, type: 2}
   m_TFTrackingSettings:
     type: 1
     tfTopic: /tf

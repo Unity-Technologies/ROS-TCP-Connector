@@ -1,11 +1,11 @@
 # Unity Visualization Widget
 
 To install the Visualization Widget in an existing Unity robotics project, open Window/Package Manager click the plus button and select "Add package from Git URL".
-Paste in the following text:
-    "https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualization-widget"
+Paste in the following text, then click Install:
+    "https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.message-visualizations"
 
-Now, to get started with visualizations, navigate to Packages/com.unity.robotics.visualization-widget in your Project window, and drag the DefaultVisualizationSuite prefab into your Unity scene.
-Now, when you press play, in your ROSConnection HUD you should find three new tabs: Topics, Transforms and Layout.
+Now, to get started with visualizations, navigate to Packages/com.unity.robotics.message-visualizations in your Project window, and drag the DefaultVisualizationSuite prefab into your Unity scene.
+When you press play, in your ROSConnection HUD you should find three new tabs: Topics, Transforms and Layout.
 
 ![](images~/VisualizationsHUD.PNG)
 
