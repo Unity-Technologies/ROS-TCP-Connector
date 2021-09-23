@@ -26,7 +26,7 @@ Visit the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies
 
     ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
 
-3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.message-visualizations`.
+3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
 
     > Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
 
@@ -85,7 +85,7 @@ The 3D visualizations offer customizations such as `label` and `color` fields, w
 
 ### Joy Messages
 
-This package contains preconfigured button maps for the Xbox 360 wired and wireless controllers for Windows and Linux mappings, provided as ScriptableObjects in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory.
+This package contains preconfigured button maps for the Xbox 360 wired and wireless controllers for Windows and Linux mappings, provided as ScriptableObjects in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory.
 
 You can create your own custom mapping for the Joy Default Visualizer by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers > Joy`. Once the file is made, you can click into the asset and manually assign the button or axis index appropriate for your custom controller.
 
@@ -95,7 +95,7 @@ Once the mapping is done, in your Joy Default Visualizer component (e.g. `Defaul
 
 Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these message visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [TEMP link] [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
 
-The standard settings are provided in ScriptableObjects. Default settings are provided in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.message-visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory, and can be created by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers`. After being created, this configuration can be dragged and dropped into the component's Inspector field `Visualizer settings,` or selected by clicking on the small circle to the right of the field.
+The standard settings are provided in ScriptableObjects. Default settings are provided in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory, and can be created by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers`. After being created, this configuration can be dragged and dropped into the component's Inspector field `Visualizer settings,` or selected by clicking on the small circle to the right of the field.
 
 ![](../images~/pcl2.png)
 
