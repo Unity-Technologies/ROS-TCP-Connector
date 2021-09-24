@@ -644,14 +644,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return newTex;
         }
 
-        public static CompressedImageMsg CompressedImageMsg_JPG(this Texture2D tex)
+        public static CompressedImageMsg ToCompressedImageMsg_JPG(this Texture2D tex, HeaderMsg header)
         {
-            return new CompressedImageMsg(new HeaderMsg(), "jpeg", tex.EncodeToJPG());
+            return new CompressedImageMsg(header, "jpeg", tex.EncodeToJPG());
         }
 
-        public static CompressedImageMsg CompressedImageMsg_PNG(this Texture2D tex)
+        public static CompressedImageMsg ToCompressedImageMsg_PNG(this Texture2D tex, HeaderMsg header)
         {
-            return new CompressedImageMsg(new HeaderMsg(), "png", tex.EncodeToPNG());
+            return new CompressedImageMsg(header, "png", tex.EncodeToPNG());
         }
 
         /// <summary>
@@ -694,6 +694,57 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
             overlay.Apply();
             return overlay;
+        }
+
+        public static ImageMsg ToImageMsg(this Texture2D tex, HeaderMsg header)
+        {
+            byte[] data = null;
+            string encoding = "rgba8";
+            switch (tex.format)
+            {
+                case TextureFormat.RGB24:
+                    data = new byte[tex.width * tex.height * 3];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgb8";
+                    ReverseInBlocks(data, tex.width * 3, tex.height);
+                    break;
+                case TextureFormat.RGBA32:
+                    data = new byte[tex.width * tex.height * 4];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "rgba8";
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    break;
+                case TextureFormat.R8:
+                    data = new byte[tex.width * tex.height];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "8UC1";
+                    ReverseInBlocks(data, tex.width, tex.height);
+                    break;
+                case TextureFormat.R16:
+                    data = new byte[tex.width * tex.height * 2];
+                    tex.GetPixelData<byte>(0).CopyTo(data);
+                    encoding = "16UC1";
+                    ReverseInBlocks(data, tex.width * 2, tex.height);
+                    break;
+                default:
+                    Color32[] pixels = tex.GetPixels32();
+                    data = new byte[pixels.Length * 4];
+                    // although this is painfully slow, it does work... Surely there's a better way
+                    int writeIdx = 0;
+                    for (int Idx = 0; Idx < pixels.Length; ++Idx)
+                    {
+                        Color32 p = pixels[Idx];
+                        data[writeIdx] = p.r;
+                        data[writeIdx + 1] = p.g;
+                        data[writeIdx + 2] = p.b;
+                        data[writeIdx + 3] = p.a;
+                        writeIdx += 4;
+                    }
+                    ReverseInBlocks(data, tex.width * 4, tex.height);
+                    encoding = "rgba8";
+                    break;
+            }
+            return new ImageMsg(header, height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: 4, data: data);
         }
 
         public static string ToLatLongString(this NavSatFixMsg message)

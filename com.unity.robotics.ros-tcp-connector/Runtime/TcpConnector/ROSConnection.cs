@@ -290,7 +290,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public RosPublisher RegisterPublisher<T>(string rosTopicName,
             int? queue_size = null, bool? latch = null) where T : Message
         {
-            RosTopicState topicState = GetOrCreateTopic(rosTopicName, MessageRegistry.GetRosMessageName<T>());
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), queue_size, latch);
+        }
+
+        public RosPublisher RegisterPublisher(string rosTopicName, string rosMessageName,
+            int? queue_size = null, bool? latch = null)
+        {
+            RosTopicState topicState = GetOrCreateTopic(rosTopicName, rosMessageName);
             if (topicState.Publisher != null)
             {
                 Debug.LogWarning($"Publisher for topic {rosTopicName} registered twice!");
@@ -869,12 +875,12 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         [Obsolete("Use Publish instead of Send", false)]
-        public void Send<T>(string rosTopicName, T message) where T : Message
+        public void Send(string rosTopicName, Message message)
         {
             Publish(rosTopicName, message);
         }
 
-        public void Publish<T>(string rosTopicName, T message) where T : Message
+        public void Publish(string rosTopicName, Message message)
         {
             if (rosTopicName.StartsWith("__"))
             {
@@ -885,7 +891,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 RosTopicState rosTopic = GetTopic(rosTopicName);
                 if (rosTopic == null || !rosTopic.IsPublisher)
                 {
-                    throw new Exception($"No registered publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()}!");
+                    throw new Exception($"No registered publisher on topic {rosTopicName} for type {message.RosMessageName}!");
                 }
 
                 m_LastMessageSentRealtime = Time.realtimeSinceStartup;
