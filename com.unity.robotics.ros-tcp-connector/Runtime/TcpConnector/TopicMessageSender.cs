@@ -1,23 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class RosPublisher : OutgoingMessageSender
+    public class TopicMessageSender : OutgoingMessageSender
     {
         public string RosMessageName { get; private set; }
 
         public string TopicName { get; private set; }
 
         public int QueueSize { get; private set; }
-
-        public bool IsLatchEnabled { get; private set; }
-
-        public bool DidRegisterPublisher { get; private set; }
 
         //Messages waiting to be sent queue.
         LinkedList<Message> m_OutgoingMessages = new LinkedList<Message>();
@@ -34,7 +31,7 @@ namespace Unity.Robotics.ROSTCPConnector
         //Optional, used if you want to pool messages and reuse them when they are no longer in use.
         Queue<Message> m_InactiveMessagePool = new Queue<Message>();
 
-        public RosPublisher(string topicName, string rosMessageName, int queueSize, bool isLatchEnabled)
+        public TopicMessageSender(string topicName, string rosMessageName, int queueSize)
         {
             if (queueSize < 1)
             {
@@ -44,10 +41,9 @@ namespace Unity.Robotics.ROSTCPConnector
             TopicName = topicName;
             RosMessageName = rosMessageName;
             QueueSize = queueSize;
-            IsLatchEnabled = isLatchEnabled;
         }
 
-        internal void PublishInternal(Message message)
+        internal void Queue(Message message)
         {
             lock (m_OutgoingMessages)
             {
@@ -64,17 +60,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 //Add a new valid message to the end.
                 m_OutgoingMessages.AddLast(message);
             }
-        }
-
-        public void OnConnectionEstablished(Stream stream)
-        {
-            //Register the publisher with the ROS Endpoint, and re-send the last message if Latched.
-            RegisterPublisherIfApplicable(stream);
-        }
-
-        public void OnConnectionLost()
-        {
-            DidRegisterPublisher = false;
         }
 
         SendToState GetMessageToSend(out Message messageToSend)
@@ -122,8 +107,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void SendMessageWithStream(MessageSerializer messageSerializer, Stream stream, Message message)
         {
-            RegisterPublisherIfApplicable(stream, messageSerializer);
-
             //Clear the serializer
             messageSerializer.Clear();
             //Prepare the data to send.
@@ -133,49 +116,30 @@ namespace Unity.Robotics.ROSTCPConnector
             messageSerializer.SendTo(stream);
         }
 
-        public void RegisterPublisherIfApplicable(Stream stream, MessageSerializer messageSerializer = null)
+        public void PrepareLatchMessage()
         {
-            if (DidRegisterPublisher)
-            {
-                return;
-            }
-
-            //Register the publisher before sending anything.
-            SysCommandPublisherRegistration publisherRegistration = new SysCommandPublisherRegistration(this);
-            publisherRegistration.SendTo(stream, messageSerializer);
-
-            DidRegisterPublisher = true;
-
-            if (IsLatchEnabled && m_LastMessageSent != null)
+            if (m_LastMessageSent != null && !m_OutgoingMessages.Any())
             {
                 //This topic is latching, so to mimic that functionality,
-                //here the last sent message is sent again with the new connection.
-                SendMessageWithStream(messageSerializer, stream, m_LastMessageSent);
+                // the last sent message is sent again with the new connection.
+                m_OutgoingMessages.AddFirst(m_LastMessageSent);
             }
         }
 
         internal override SendToState SendInternal(MessageSerializer messageSerializer, Stream stream)
         {
-            RegisterPublisherIfApplicable(stream, messageSerializer);
             SendToState sendToState = GetMessageToSend(out Message toSend);
             if (sendToState == SendToState.Normal)
             {
                 SendMessageWithStream(messageSerializer, stream, toSend);
 
                 //Recycle the message (if applicable).
-                if (IsLatchEnabled)
+                if (m_LastMessageSent != null && m_LastMessageSent != toSend)
                 {
-                    if (m_LastMessageSent != null && m_LastMessageSent != toSend)
-                    {
-                        TryRecycleMessage(m_LastMessageSent);
-                    }
+                    TryRecycleMessage(m_LastMessageSent);
+                }
 
-                    m_LastMessageSent = toSend;
-                }
-                else
-                {
-                    TryRecycleMessage(toSend);
-                }
+                m_LastMessageSent = toSend;
             }
 
             return sendToState;
