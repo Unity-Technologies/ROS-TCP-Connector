@@ -11,6 +11,7 @@ namespace RosMessageTypes.Tf2
     public class TFMessageMsg : Message
     {
         public const string k_RosMessageName = "tf2_msgs/TFMessage";
+        public override string RosMessageName => k_RosMessageName;
 
         public Geometry.TransformStampedMsg[] transforms;
 

@@ -183,7 +183,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
             string rosMessageName = MessageRegistry.GetRosMessageName<T>();
-            AddSubscriberInternal(topic, rosMessageName, (Message msg) => { callback((T)msg); });
+            AddSubscriberInternal(topic, rosMessageName, (Message msg) =>
+            {
+                if (msg.RosMessageName != rosMessageName)
+                    Debug.LogError($"Subscriber to '{topic}' expected '{rosMessageName}' but received '{msg.RosMessageName}'!?");
+                else
+                    callback((T)msg);
+            });
         }
 
         public void Unsubscribe(string topic)
