@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEditor;
 using UnityEngine;

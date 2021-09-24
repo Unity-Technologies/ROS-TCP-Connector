@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.BuiltinInterfaces;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using UnityEngine;
 
 public class TimeDefaultVisualizer : GuiVisualizer<TimeMsg>

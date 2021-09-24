@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using UnityEngine;
 
 public class TemperatureDefaultVisualizer : GuiVisualizer<TemperatureMsg>

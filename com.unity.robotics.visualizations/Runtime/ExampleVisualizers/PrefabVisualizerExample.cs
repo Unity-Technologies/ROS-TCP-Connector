@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using RosMessageTypes.Geometry;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector;
 
 // A simple visualizer that places a (user configured) prefab to show the position and

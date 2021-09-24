@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using UnityEngine;
 #if URDF_IMPORTER
 using Unity.Robotics.UrdfImporter;

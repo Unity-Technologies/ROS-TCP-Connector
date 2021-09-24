@@ -1,7 +1,7 @@
 {
   "name": "com.unity.robotics.visualizations",
   "version": "0.1.0-preview",
-  "displayName": "Robotics Visualizations Package",
+  "displayName": "Robotics Visualization",
   "description": "Components for displaying specific ROS messages",
   "unity": "2020.2",
   "unityRelease": "0b9",

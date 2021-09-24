@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public enum TFTrackingType
     {
@@ -199,7 +199,7 @@ namespace Unity.Robotics.MessageVisualizers
                 Vector3 midOutVector = (abOutVector + bcOutVector).normalized * thickness;
                 Vector3 inVector = -midOutVector; // TO DO: make this smarter
 
-                // we draw each corner with 6 vertices: the two perpendiculars, the inside, the outside, 
+                // we draw each corner with 6 vertices: the two perpendiculars, the inside, the outside,
                 // and two extra outside points perpendicular to line AB and line BC respectively.
                 // We set newVertexIndex in the middle of this set of vertices, because next time around this will become the oldVertexIndex
                 // and we want to treat it the same as the initial four vertices we created above
@@ -218,7 +218,7 @@ namespace Unity.Robotics.MessageVisualizers
                 m_Colors32.Add(color);
                 AddTriangles(newVertexIndex, -2, -1, 0, -2, 2, -1, -1, 2, 1, -1, 1, 0);
 
-                // to avoid having too much twist in the connecting polygons, figure out axis is closest to the old side vector  
+                // to avoid having too much twist in the connecting polygons, figure out axis is closest to the old side vector
                 float sideDot = Vector3.Dot(oldSideVector, sideVector);
                 float outDot = Vector3.Dot(oldSideVector, abOutVector);
 

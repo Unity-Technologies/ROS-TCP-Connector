@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class VisualizationTopicsTab : MonoBehaviour, IHudTab
     {
@@ -33,7 +33,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public void Start()
         {
-            m_FillTexture = MessageVisualizationUtils.MakeTexture(16, 16, new Color(0.125f, 0.19f, 0.25f));
+            m_FillTexture = VisualizationUtils.MakeTexture(16, 16, new Color(0.125f, 0.19f, 0.25f));
 
             m_Connection = ROSConnection.GetOrCreateInstance();
             HudPanel.RegisterTab(this, (int)HudTabOrdering.Topics);

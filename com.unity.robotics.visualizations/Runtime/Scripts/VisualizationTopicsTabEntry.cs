@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     // Represents a single line in the VisualizationTopicsTab
     // and saves and loads the options for that line, plus the associated hud windows etc.

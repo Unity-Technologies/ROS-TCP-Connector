@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -56,7 +56,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
 
         public virtual void AddMessage(Message message)
         {
-            if (!MessageVisualizationUtils.AssertMessageType<ImageMsg>(message, m_Topic))
+            if (!VisualizationUtils.AssertMessageType<ImageMsg>(message, m_Topic))
                 return;
 
             this.message = (ImageMsg)message;

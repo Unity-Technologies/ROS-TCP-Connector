@@ -15,9 +15,9 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
-    public static class MessageVisualizationUtils
+    public static class VisualizationUtils
     {
         public static Color SelectColor(Color userColor, MessageMetadata meta)
         {

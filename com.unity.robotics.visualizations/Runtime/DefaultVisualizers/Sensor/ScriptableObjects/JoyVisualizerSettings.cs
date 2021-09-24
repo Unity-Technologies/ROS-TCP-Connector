@@ -2,7 +2,7 @@ using RosMessageTypes.Sensor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "JoyVisualizerSettings", menuName = "Robotics/Sensor Visualizers/Joy", order = 1)]

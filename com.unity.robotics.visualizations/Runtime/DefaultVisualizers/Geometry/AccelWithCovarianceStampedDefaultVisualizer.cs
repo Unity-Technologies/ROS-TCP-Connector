@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Geometry;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -28,7 +28,7 @@ public class AccelWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Acc
         {
             message.header.GUI();
             message.accel.accel.GUI();
-            MessageVisualizationUtils.GUIGrid(message.accel.covariance, 6, ref m_ViewCovariance);
+            VisualizationUtils.GUIGrid(message.accel.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

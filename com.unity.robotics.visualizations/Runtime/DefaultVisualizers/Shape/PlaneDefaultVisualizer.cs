@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Shape;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 

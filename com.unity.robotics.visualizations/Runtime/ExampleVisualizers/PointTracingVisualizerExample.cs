@@ -6,7 +6,7 @@ using System.Linq;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class PointTracingVisualizerExample : HistoryDrawingVisualizer<PointMsg>
     {
@@ -24,8 +24,8 @@ namespace Unity.Robotics.MessageVisualizers
             string label = "";
 
             MessageMetadata meta = messages.FirstOrDefault().Item2;
-            color = MessageVisualizationUtils.SelectColor(m_Color, meta);
-            label = MessageVisualizationUtils.SelectLabel(m_Label, meta);
+            color = VisualizationUtils.SelectColor(m_Color, meta);
+            label = VisualizationUtils.SelectLabel(m_Label, meta);
             drawing.DrawPath(messages.Select(tuple => tuple.Item1.From<FLU>()), color, m_Thickness);
             drawing.DrawLabel(label, prevPoint, color);
         }

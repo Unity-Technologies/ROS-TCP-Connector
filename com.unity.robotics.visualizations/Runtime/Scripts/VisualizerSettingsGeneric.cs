@@ -2,7 +2,7 @@ using System;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class VisualizerSettingsGeneric<T> : ScriptableObject
         where T : Message

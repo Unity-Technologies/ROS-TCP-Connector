@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public abstract class HistoryDrawingVisualizer<T> : BaseVisualFactory<T>
         where T : Message
@@ -41,7 +41,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
-            return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
+            return VisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
         public class HistoryDrawingVisual : IVisual
@@ -68,7 +68,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void AddMessage(Message message)
             {
-                if (!MessageVisualizationUtils.AssertMessageType<T>(message, m_Topic))
+                if (!VisualizationUtils.AssertMessageType<T>(message, m_Topic))
                     return;
 
                 m_History.Enqueue(new Tuple<T, MessageMetadata>(

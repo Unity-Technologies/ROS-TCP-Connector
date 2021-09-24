@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 //using RosMessageTypes.Map;
 using RosMessageTypes.Nav;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
@@ -72,7 +72,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 
         public void AddMessage(Message message)
         {
-            if (!MessageVisualizationUtils.AssertMessageType<OccupancyGridMsg>(message, m_Topic))
+            if (!VisualizationUtils.AssertMessageType<OccupancyGridMsg>(message, m_Topic))
                 return;
 
             m_Message = (OccupancyGridMsg)message;

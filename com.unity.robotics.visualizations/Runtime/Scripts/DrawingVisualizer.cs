@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public abstract class DrawingVisualizer<T> : BaseVisualFactory<T>
         where T : Message
@@ -18,12 +18,12 @@ namespace Unity.Robotics.MessageVisualizers
 
         public Color SelectColor(Color userColor, MessageMetadata meta)
         {
-            return MessageVisualizationUtils.SelectColor(userColor, meta);
+            return VisualizationUtils.SelectColor(userColor, meta);
         }
 
         public string SelectLabel(string userLabel, MessageMetadata meta)
         {
-            return MessageVisualizationUtils.SelectLabel(userLabel, meta);
+            return VisualizationUtils.SelectLabel(userLabel, meta);
         }
 
         public virtual void Draw(DrawingVisual drawing, T message, MessageMetadata meta)
@@ -35,7 +35,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual Action CreateGUI(T message, MessageMetadata meta)
         {
-            return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
+            return VisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
         public class DrawingVisual : IVisual
@@ -64,7 +64,7 @@ namespace Unity.Robotics.MessageVisualizers
             {
                 MessageMetadata meta = new MessageMetadata(m_Topic, Time.time, DateTime.Now);
 
-                if (!MessageVisualizationUtils.AssertMessageType<T>(message, m_Topic))
+                if (!VisualizationUtils.AssertMessageType<T>(message, m_Topic))
                     return;
 
                 this.message = (T)message;

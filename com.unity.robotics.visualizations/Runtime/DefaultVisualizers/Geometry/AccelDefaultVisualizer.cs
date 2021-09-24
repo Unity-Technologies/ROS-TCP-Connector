@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Geometry;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -22,7 +22,7 @@ public class AccelDefaultVisualizer : DrawingVisualizer<AccelMsg>
     {
         Vector3 originPos = (origin == null) ? Vector3.zero : origin.transform.position;
         drawing.DrawArrow(originPos, originPos + message.linear.From<C>() * lengthScale, color, thickness);
-        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
+        VisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular.From<C>(), originPos, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(AccelMsg message, MessageMetadata meta)

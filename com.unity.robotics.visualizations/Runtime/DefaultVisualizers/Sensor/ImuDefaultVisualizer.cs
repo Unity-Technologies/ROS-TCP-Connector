@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -30,7 +30,7 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
     {
         QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing);
         drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
-        MessageVisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
+        VisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
     }
 
     public override Action CreateGUI(ImuMsg message, MessageMetadata meta)
@@ -41,9 +41,9 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
             message.orientation.GUI("Orientation");
             message.angular_velocity.GUI("Angular velocity");
             message.linear_acceleration.GUI("Linear acceleration");
-            MessageVisualizationUtils.GUIGrid(message.orientation_covariance, 3, "Orientation covariance", ref m_ViewOrientation);
-            MessageVisualizationUtils.GUIGrid(message.angular_velocity_covariance, 3, "Angular velocity covariance", ref m_ViewAngular);
-            MessageVisualizationUtils.GUIGrid(message.linear_acceleration_covariance, 3, "Linear acceleration covariance", ref m_ViewAccel);
+            VisualizationUtils.GUIGrid(message.orientation_covariance, 3, "Orientation covariance", ref m_ViewOrientation);
+            VisualizationUtils.GUIGrid(message.angular_velocity_covariance, 3, "Angular velocity covariance", ref m_ViewAngular);
+            VisualizationUtils.GUIGrid(message.linear_acceleration_covariance, 3, "Linear acceleration covariance", ref m_ViewAccel);
         };
     }
 }
