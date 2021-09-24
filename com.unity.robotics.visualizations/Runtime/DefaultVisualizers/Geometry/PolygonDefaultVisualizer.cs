@@ -3,7 +3,7 @@ using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class PolygonDefaultVisualizer : DrawingVisualizer<PolygonMsg>
     {

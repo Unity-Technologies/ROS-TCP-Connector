@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Nav;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -21,7 +21,7 @@ public class GridCellsDefaultVisualizer : DrawingVisualizer<GridCellsMsg>
     public static void Draw<C>(GridCellsMsg message, Drawing3d drawing, Color color, float radius = 0.01f)
         where C : ICoordinateSpace, new()
     {
-        MessageVisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);
+        VisualizationUtils.DrawPointCloud<C>(message.cells, drawing, color, radius);
     }
 
     public override Action CreateGUI(GridCellsMsg message, MessageMetadata meta) => () =>

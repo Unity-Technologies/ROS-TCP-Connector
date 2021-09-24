@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 using UnityEditor;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class VisualizationLayoutTab : IHudTab
     {

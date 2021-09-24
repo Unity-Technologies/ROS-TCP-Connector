@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -29,7 +29,7 @@ public class MagneticFieldDefaultVisualizer : DrawingVisualizer<MagneticFieldMsg
         {
             message.header.GUI();
             message.magnetic_field.GUI("Magnetic field (Tesla)");
-            MessageVisualizationUtils.GUIGrid(message.magnetic_field_covariance, 3, "Covariance", ref m_ViewCovariance);
+            VisualizationUtils.GUIGrid(message.magnetic_field_covariance, 3, "Covariance", ref m_ViewCovariance);
         };
     }
 }

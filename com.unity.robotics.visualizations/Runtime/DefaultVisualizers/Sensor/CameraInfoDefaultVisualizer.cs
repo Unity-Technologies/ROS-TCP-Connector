@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Sensor;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -19,7 +19,7 @@ public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
         if (!message.roi.do_rectify)
             return null;
 
-        ITextureVisual imageVisual = MessageVisualizationUtils.GetVisual(ImageTopic) as ITextureVisual;
+        ITextureVisual imageVisual = VisualizationUtils.GetVisual(ImageTopic) as ITextureVisual;
         if (imageVisual == null)
             return null;
 
@@ -33,9 +33,9 @@ public class CameraInfoDefaultVisualizer : TextureVisualizer<CameraInfoMsg>
             message.header.GUI();
             GUILayout.Label($"Height x Width: {message.height}x{message.width}\nDistortion model: {message.distortion_model}");
             GUILayout.Label($"Distortion parameters: {string.Join(", ", message.d)}");
-            MessageVisualizationUtils.GUIGrid(message.k, 3, "K", ref m_ViewK);
-            MessageVisualizationUtils.GUIGrid(message.r, 3, "R", ref m_ViewR);
-            MessageVisualizationUtils.GUIGrid(message.p, 3, "P", ref m_ViewP);
+            VisualizationUtils.GUIGrid(message.k, 3, "K", ref m_ViewK);
+            VisualizationUtils.GUIGrid(message.r, 3, "R", ref m_ViewR);
+            VisualizationUtils.GUIGrid(message.p, 3, "P", ref m_ViewP);
             GUILayout.Label($"Binning X: {message.binning_x}\nBinning Y: {message.binning_y}");
             message.roi.GUI(tex);
         };

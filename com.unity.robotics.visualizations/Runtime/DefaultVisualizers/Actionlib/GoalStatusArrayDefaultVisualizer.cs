@@ -2,7 +2,7 @@ using System;
 using RosMessageTypes.Actionlib;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class GoalStatusArrayDefaultVisualizer : GuiVisualizer<GoalStatusArrayMsg>
     {

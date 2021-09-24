@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Geometry;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -27,7 +27,7 @@ public class PoseWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Pose
         {
             message.header.GUI();
             message.pose.pose.GUI();
-            MessageVisualizationUtils.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
+            VisualizationUtils.GUIGrid(message.pose.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

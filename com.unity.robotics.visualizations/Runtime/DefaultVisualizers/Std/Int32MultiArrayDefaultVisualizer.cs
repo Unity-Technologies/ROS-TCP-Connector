@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Std;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using UnityEngine;
 
 public class Int32MultiArrayDefaultVisualizer : GuiVisualizer<Int32MultiArrayMsg>

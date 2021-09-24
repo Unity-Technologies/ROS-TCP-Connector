@@ -1,6 +1,6 @@
 using System;
 using RosMessageTypes.Geometry;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
@@ -20,7 +20,7 @@ public class PoseDefaultVisualizer : DrawingVisualizer<PoseMsg>
     public static void Draw<C>(PoseMsg message, Drawing3d drawing, float size = 0.1f, bool drawUnityAxes = false)
         where C : ICoordinateSpace, new()
     {
-        MessageVisualizationUtils.DrawAxisVectors<C>(
+        VisualizationUtils.DrawAxisVectors<C>(
             drawing,
             new Vector3Msg(message.position.x, message.position.y, message.position.z),
             message.orientation,

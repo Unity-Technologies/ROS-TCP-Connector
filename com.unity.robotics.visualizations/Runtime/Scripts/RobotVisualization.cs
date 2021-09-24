@@ -10,7 +10,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
 using Unity.Robotics.UrdfImporter;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class RobotVisualization
     {
@@ -203,7 +203,7 @@ namespace Unity.Robotics.MessageVisualizers
         {
             for (int i = 0; i < placements.Length; i++)
             {
-                MessageVisualizationUtils.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
+                VisualizationUtils.DrawRotationArrow(drawing, placements[i].Rotation, placements[i].Position, color, (float)radii[i]);
             }
         }
 

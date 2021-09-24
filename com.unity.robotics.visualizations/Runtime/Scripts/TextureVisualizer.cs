@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public abstract class TextureVisualizer<T> : BaseVisualFactory<T>
         where T : Message
@@ -21,7 +21,7 @@ namespace Unity.Robotics.MessageVisualizers
 
         public virtual Action CreateGUI(T message, MessageMetadata meta, Texture2D tex)
         {
-            return MessageVisualizationUtils.CreateDefaultGUI(message, meta);
+            return VisualizationUtils.CreateDefaultGUI(message, meta);
         }
 
         public class TextureVisual : ITextureVisual
@@ -48,7 +48,7 @@ namespace Unity.Robotics.MessageVisualizers
 
             public void AddMessage(Message message)
             {
-                if (!MessageVisualizationUtils.AssertMessageType<T>(message, m_Topic))
+                if (!VisualizationUtils.AssertMessageType<T>(message, m_Topic))
                     return;
 
                 this.message = (T)message;

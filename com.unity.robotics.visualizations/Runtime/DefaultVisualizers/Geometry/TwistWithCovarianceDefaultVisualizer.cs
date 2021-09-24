@@ -3,7 +3,7 @@ using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class TwistWithCovarianceDefaultVisualizer : DrawingVisualizer<TwistWithCovarianceMsg>
     {
@@ -29,7 +29,7 @@ namespace Unity.Robotics.MessageVisualizers
         public override Action CreateGUI(TwistWithCovarianceMsg message, MessageMetadata meta) => () =>
         {
             message.twist.GUI();
-            MessageVisualizationUtils.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
+            VisualizationUtils.GUIGrid(message.covariance, 6, ref m_ViewCovariance);
         };
     }
 }

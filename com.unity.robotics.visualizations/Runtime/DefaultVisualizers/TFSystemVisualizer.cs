@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class TFSystemVisualizer : MonoBehaviour, IHudTab
     {
@@ -57,7 +57,7 @@ namespace Unity.Robotics.MessageVisualizers
             drawing.Clear();
             EnsureSettings(stream);
             if (m_ShowAxes[stream])
-                MessageVisualizationUtils.DrawAxisVectors<FLU>(drawing, Vector3.zero.To<FLU>(), Quaternion.identity.To<FLU>(), axesScale, false);
+                VisualizationUtils.DrawAxisVectors<FLU>(drawing, Vector3.zero.To<FLU>(), Quaternion.identity.To<FLU>(), axesScale, false);
 
             if (m_ShowLinks[stream])
                 drawing.DrawLine(Quaternion.Inverse(frame.rotation) * -frame.translation, Vector3.zero, color, lineThickness);

@@ -3,7 +3,7 @@ using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 
-namespace Unity.Robotics.MessageVisualizers
+namespace Unity.Robotics.Visualizations
 {
     public class QuaternionDefaultVisualizer : DrawingVisualizer<QuaternionMsg>
     {
@@ -29,13 +29,13 @@ namespace Unity.Robotics.MessageVisualizers
 where C : ICoordinateSpace, new()
         {
             Vector3 position = drawAtPosition != null ? drawAtPosition.transform.position : Vector3.zero;
-            MessageVisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
+            VisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
         public static void Draw<C>(QuaternionMsg message, Drawing3d drawing, Vector3 position, float size = 0.1f, bool drawUnityAxes = false)
             where C : ICoordinateSpace, new()
         {
-            MessageVisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
+            VisualizationUtils.DrawAxisVectors<C>(drawing, position.To<C>(), message, size, drawUnityAxes);
         }
 
         public override Action CreateGUI(QuaternionMsg message, MessageMetadata meta)

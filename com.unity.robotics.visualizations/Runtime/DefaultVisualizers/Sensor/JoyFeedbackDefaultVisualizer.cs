@@ -1,6 +1,6 @@
 using RosMessageTypes.Sensor;
 using System;
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 
 public class JoyFeedbackDefaultVisualizer : GuiVisualizer<JoyFeedbackMsg>
 {

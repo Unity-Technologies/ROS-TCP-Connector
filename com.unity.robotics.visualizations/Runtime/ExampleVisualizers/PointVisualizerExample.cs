@@ -1,4 +1,4 @@
-using Unity.Robotics.MessageVisualizers;
+using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using RosMessageTypes.Geometry;
@@ -14,7 +14,7 @@ public class PointVisualizerExample : DrawingVisualizer<PointMsg>
     {
         // If the user doesn't specify a color, SelectColor helpfully picks one
         // based on the message topic.
-        Color finalColor = MessageVisualizationUtils.SelectColor(m_Color, meta);
+        Color finalColor = VisualizationUtils.SelectColor(m_Color, meta);
 
         // Most of the default visualizers offer static drawing functions
         // so that your own visualizers can easily send work to them.
