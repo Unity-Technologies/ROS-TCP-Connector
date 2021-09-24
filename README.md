@@ -34,7 +34,7 @@ This Unity package provides four main features:
 - [Message Generation](MessageGeneration.md): A tool to generate C# classes for ROS message types.
 
 - Message Visualization: A suite of default configurations and APIs to visualize incoming and outgoing information from ROS.
-    - See the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/amanda/viz/default-tutorial/tutorials/message_visualization/default_viz_suite.md) for tutorials on using the Message Visualizations package for visualizing rosbag playback, visualizing custom messages, and more!
+    - See the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/amanda/viz/default-tutorial/tutorials/message_visualization/default_viz_suite.md) for tutorials on using the Visualizations Package for visualizing rosbag playback, visualizing custom messages, and more!
     - You can also view the package's [Usage Information](com.unity.robotics.visualizations/Documentation~/README.md) for more details on using the package in your own project.
 
 - [ROSGeometry](ROSGeometry.md): A set of extensions that convert geometries between Unity and other coordinate frames.

@@ -1,21 +1,23 @@
-# Message Visualizations
+# Robotics Visualization Package
 
-The message visualizations package enables Unity projects to visualize incoming and outgoing information from ROS, such as sensor data, navigation messages, markers, and more. This package provides default configurations for common message types as well as APIs to create custom visualizations.
+The Visualizations Package enables Unity projects to visualize incoming and outgoing information from ROS, such as sensor data, navigation messages, markers, and more. This package provides default configurations for common message types as well as APIs to create custom visualizations.
 
-Visit the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/amanda/viz/default-tutorial/tutorials/message_visualization/default_viz_suite.md) to get started with Message Visualizations tutorials.
+Get started with the Visualizations Package with our [Nav2-SLAM tutorial](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example)!
 
 > This package is compatible with ROS 1 and ROS 2, and Unity versions 2020.2+.
 
 **Table of Contents**
 - [Installation](#installation)
 - [Configuring a Visualization Suite](#configuring-a-visualization-suite)
+    - [Priority Setter](#priority-setter)
 - [The HUD](#the-hud)
+- [Visualization Base Classes](#visualization-base-classes)
 - [Using the Inspector](#using-the-inspector)
     - [Message Topics](#message-topics)
     - [TF Topics and Tracking](#tf-topics-and-tracking)
     - [Visualization Settings](#visualization-settings)
     - [Joy Messages](#joy-messages)
-    - [More on Point Clouds](#more-on-point-clouds)
+    - [Point Clouds](#point-clouds)
 
 ---
 
@@ -34,9 +36,17 @@ Visit the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies
 
 ## Configuring a Visualization Suite
 
-This package contains a `DefaultVisualizationSuite` prefab that provides visualizer components for many common ROS message types, organized in the hierarchy by package. These components control how messages are displayed in the Unity scene. You may also create your own visualization suite by creating a GameObject with only the desired default or custom visualizer components for your project.
+This package contains a `DefaultVisualizationSuite` prefab, located in the [root of this package](../DefaultVisualizationSuite.prefab) that provides visualizer components for many common ROS message types, organized in the hierarchy by package. These components control how messages are displayed in the Unity scene. You may also create your own visualization suite by creating a GameObject with only the desired default or custom visualizer components for your project.
+
+The package also contains an `EmptyVisualizationSuite` prefab (also located at the [root of this package](../EmptyVisualizationSuite.prefab)), which contains all necessary components to add visualizations, but none of the default visualizers so you may pick and choose which visualizers you want in the scene.
 
 The UI windows for visualizations will automatically be laid out as they are turned on, but they can also be dragged and resized. The visualizations in the scene can be customized as described in the [Inspector](#using-the-inspector) section. The topics being visualized and the window configurations are saved between sessions and can be exported and loaded via the HUD's `Layout > Export/Import layout` buttons.
+
+### Priority Setter
+
+The [Priority Setter](../Runtime/Scripts/PrioritySetter.cs) allows users to modify which visualization is preferred, in case of multiple visualizers per ROS message type. All default visualizers default to priority `-1`, and custom visualizers will default to `0`, making custom visualizers a higher priority. This means that, when toggling on visualizations in the scene, the higher priority visualizers will be turned on.
+
+To use the Priority Setter, simply add the PrioritySetter component to the GameObject that holds the visualization you want to modify, and set its `Priority` field value.
 
 ## The HUD
 
@@ -46,12 +56,18 @@ The top-left panel in the Game view provides a GUI system that offers tabs to to
 
 The default tabs on the HUD panel includes:
 
-- **Topics**: Contains a list of all ROS topics on which this current session has sent or received a message. The `UI` toggle enables a window that shows the last message sent or received on that topic. The `Viz` toggle enables an in-scene drawing that represents the last message sent or received on that topic. If no `Viz` toggle is enabled, that topic does not have a default visualizer enabled in the Unity scene.
+- **Topics**: Contains a list of all ROS topics on which this current session has sent or received a message. The `2D` toggle enables a window that shows the last message sent or received on that topic. The `3D` toggle enables an in-scene drawing that represents the last message sent or received on that topic. If no toggle is available, that topic does not have a default visualizer enabled in the Unity scene.
+  - The Topics tab also contains a search bar that allows you to search for topics.
 - **Transforms**: Contains [`tf`](http://wiki.ros.org/tf) visualization options, including displaying the axes, links, and labels for each frame.
 - **Layout**: Contains options to save and load this visualization configuration. While the visualization components are by default saved via the scene or the prefab, the window layout and visualized message list is saved as a JSON file. By default, this file is saved to a `RosHudLayout.json` file on your machine's [`Application.persistentDataPath`](https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html) and loaded on each session. In this Layout tab, you can choose to `Export` this JSON file with a custom name to a chosen location on your device, as well as `Import` a layout JSON file to begin using that saved visualization configuration.
-<!-- - **Markers**: TODO -->
 
-[TEMP link] The HUD is also designed to be customizable; you may add custom tabs or headers to the HUD. You can write a custom script similar to the [VisualizationLayoutTab](../Runtime/Scripts/VisualizationLayoutTab.cs) to extend the HUD. <!-- - TODO -->
+The HUD is also designed to be customizable; you may add custom tabs or headers to the HUD. You can write a custom script similar to the [VisualizationLayoutTab](../Runtime/Scripts/VisualizationLayoutTab.cs) to extend the HUD.
+
+> Get started with custom visualization scripts with the TEMP LINK [Nav2: Making a Custom Visualizer](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example/blob/amanda/custom-viz/readmes/custom_viz.md) tutorial!
+
+## Visualization Base Classes
+
+TODO
 
 ## Using the Inspector
 
@@ -91,7 +107,7 @@ You can create your own custom mapping for the Joy Default Visualizer by right-c
 
 Once the mapping is done, in your Joy Default Visualizer component (e.g. `DefaultVisualizationSuite/Sensor/JoyDefaultVisualizer`), assign the `Settings` field to your newly made button map.
 
-### More on Point Clouds
+### Point Clouds
 
 Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these message visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [TEMP link] [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
 
