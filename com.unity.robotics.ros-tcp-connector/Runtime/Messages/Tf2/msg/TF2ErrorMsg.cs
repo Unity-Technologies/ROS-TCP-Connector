@@ -11,6 +11,7 @@ namespace RosMessageTypes.Tf2
     public class TF2ErrorMsg : Message
     {
         public const string k_RosMessageName = "tf2_msgs/TF2Error";
+        public override string RosMessageName => k_RosMessageName;
 
         public const byte NO_ERROR = 0;
         public const byte LOOKUP_ERROR = 1;
