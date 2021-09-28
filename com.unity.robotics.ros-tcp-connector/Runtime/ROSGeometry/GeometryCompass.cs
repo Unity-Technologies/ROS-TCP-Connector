@@ -11,19 +11,17 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         West = 3,
     }
 
-    public class GeometryCompass : MonoBehaviour
+    public static class GeometryCompass
     {
-        [SerializeField]
-        CardinalDirection m_UnityZAxisDirection;
-        public CardinalDirection UnityZAxisDirection
-        {
-            get => m_UnityZAxisDirection;
-            set => m_UnityZAxisDirection = value;
-        }
+        public static CardinalDirection UnityZAxisDirection = CardinalDirection.North;
 
-        public Vector3<ENU> ToENU(Vector3 v)
+        private static Quaternion s_NinetyYaw = Quaternion.Euler(0, 90, 0);
+        private static Quaternion s_OneEightyYaw = Quaternion.Euler(0, 180, 0);
+        private static Quaternion s_NegativeNinetyYaw = Quaternion.Euler(0, -90, 0);
+
+        public static Vector3<ENU> ToENU(Vector3 v)
         {
-            switch (m_UnityZAxisDirection)
+            switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     return new Vector3<ENU>(v.x, v.z, v.y);
@@ -38,15 +36,17 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public Quaternion<ENU> ToENU(Quaternion q)
+        public static Quaternion<ENU> ToENU(Quaternion q)
         {
-            var r = Quaternion.Euler(0, 90 * ((int)m_UnityZAxisDirection - 1), 0) * q;
+            var r = Quaternion.Euler(0, 90 * ((int)UnityZAxisDirection - 1), 0) * q;
+            var p = r.To<FLU>();
+            return new Quaternion<ENU>(p.x, p.y, p.z, -p.w);
             return new Quaternion<ENU>(r.x, r.z, r.y, -r.w);
         }
 
-        public Vector3 FromENU(Vector3<ENU> v)
+        public static Vector3 FromENU(Vector3<ENU> v)
         {
-            switch (m_UnityZAxisDirection)
+            switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     return new Vector3(v.x, v.z, v.y);
@@ -61,15 +61,15 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public Quaternion FromENU(Quaternion<ENU> q)
+        public static Quaternion FromENU(Quaternion<ENU> q)
         {
-            var inverseRotationOffset = Quaternion.Euler(0, -90 * ((int)m_UnityZAxisDirection - 1), 0);
-            return new Quaternion(q.x, q.z, q.y, -q.w) * inverseRotationOffset;
+            var inverseRotationOffset = Quaternion.Euler(0, -90 * ((int)UnityZAxisDirection - 1), 0);
+            return inverseRotationOffset * new Quaternion(q.x, q.z, q.y, -q.w);
         }
 
-        public Vector3<NED> ToNED(Vector3 v)
+        public static Vector3<NED> ToNED(Vector3 v)
         {
-            switch (m_UnityZAxisDirection)
+            switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     return new Vector3<NED>(v.z, v.x, -v.y);
@@ -84,15 +84,15 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public Quaternion<NED> ToNED(Quaternion q)
+        public static Quaternion<NED> ToNED(Quaternion q)
         {
-            var r = Quaternion.Euler(0, 90 * (int)m_UnityZAxisDirection, 0) * q;
+            var r = Quaternion.Euler(0, 90 * (int)UnityZAxisDirection, 0) * q;
             return new Quaternion<NED>(r.z, r.x, -r.y, -r.w);
         }
 
-        public Vector3 FromNED(Vector3<NED> v)
+        public static Vector3 FromNED(Vector3<NED> v)
         {
-            switch (m_UnityZAxisDirection)
+            switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     return new Vector3(v.y, -v.z, v.x);
@@ -107,10 +107,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public Quaternion FromNED(Quaternion<NED> q)
+        public static Quaternion FromNED(Quaternion<NED> q)
         {
-            var inverseRotationOffset = Quaternion.Euler(0, -90 * (int)m_UnityZAxisDirection, 0);
-            return new Quaternion(q.y, -q.z, q.x, -q.w) * inverseRotationOffset;
+            var inverseRotationOffset = Quaternion.Euler(0, -90 * (int)UnityZAxisDirection, 0);
+            return inverseRotationOffset * new Quaternion(q.y, -q.z, q.x, -q.w);
         }
     }
 }
