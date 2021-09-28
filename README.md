@@ -9,7 +9,7 @@
 
 ## Introduction
 
-This repository contains two Unity packages: the ROS TCP Connector, for sending/receiving messages from ROS, and the Message Visualizations, for adding visualizations of incoming and outgoing messages in the Unity scene.
+This repository contains two Unity packages: the ROS TCP Connector, for sending/receiving messages from ROS, and the Visualizations Package, for adding visualizations of incoming and outgoing messages in the Unity scene.
 
 ## Installation
 1. Using Unity 2020.2 or later, open the Package Manager from `Window` -> `Package Manager`.
@@ -19,7 +19,7 @@ This repository contains two Unity packages: the ROS TCP Connector, for sending/
 
 3. Enter the git URL for the desired package. Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
     1. For the ROS-TCP-Connector, enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector`.
-    2. For Message Visualizations, enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
+    2. For Visualizations, enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
 4. Click `Add`.
 
 To install from a local clone of the repository, see [installing a local package](https://docs.unity3d.com/Manual/upm-ui-local.html) in the Unity manual.
@@ -33,8 +33,8 @@ This Unity package provides four main features:
 
 - [Message Generation](MessageGeneration.md): A tool to generate C# classes for ROS message types.
 
-- Message Visualization: A suite of default configurations and APIs to visualize incoming and outgoing information from ROS.
-    - See the [TEMP link] [Unity Robotics Hub](https://github.com/Unity-Technologies/Unity-Robotics-Hub/blob/amanda/viz/default-tutorial/tutorials/message_visualization/default_viz_suite.md) for tutorials on using the Visualizations Package for visualizing rosbag playback, visualizing custom messages, and more!
+- Visualizations: A suite of default configurations and APIs to visualize incoming and outgoing information from ROS.
+    - See the [Nav2 SLAM Example](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example) for tutorials on using the Visualizations Package!
     - You can also view the package's [Usage Information](com.unity.robotics.visualizations/Documentation~/README.md) for more details on using the package in your own project.
 
 - [ROSGeometry](ROSGeometry.md): A set of extensions that convert geometries between Unity and other coordinate frames.

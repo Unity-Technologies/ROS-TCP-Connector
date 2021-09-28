@@ -25,7 +25,7 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 - Added an optional pooling system for ros publishers
 - Implemented a queueing and latching system to mimic the ROS implementation in Unity
 
-Add support for message visualization using multiple TF topics
+Add support for visualization using multiple TF topics
 
 ### Changed
 - Publishing a message to an unregistered topic will show an error.

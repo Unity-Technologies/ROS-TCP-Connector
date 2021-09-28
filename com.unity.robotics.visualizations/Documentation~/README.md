@@ -109,7 +109,7 @@ Once the mapping is done, in your Joy Default Visualizer component (e.g. `Defaul
 
 ### Point Clouds
 
-Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these message visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [TEMP link] [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
+Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [TEMP link] [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
 
 The standard settings are provided in ScriptableObjects. Default settings are provided in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory, and can be created by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers`. After being created, this configuration can be dragged and dropped into the component's Inspector field `Visualizer settings,` or selected by clicking on the small circle to the right of the field.
 
