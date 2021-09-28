@@ -13,7 +13,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
     public static class GeometryCompass
     {
-        public static CardinalDirection UnityZAxisDirection = CardinalDirection.North;
+        public static CardinalDirection UnityZAxisDirection = CardinalDirection.East;
 
         private static Quaternion s_NinetyYaw = Quaternion.Euler(0, 90, 0);
         private static Quaternion s_OneEightyYaw = Quaternion.Euler(0, 180, 0);
