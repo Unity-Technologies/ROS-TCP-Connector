@@ -1,9 +1,5 @@
 using RosMessageTypes.Geometry;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Codice.Client.BaseCommands.Merge;
 using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
