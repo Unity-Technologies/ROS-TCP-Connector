@@ -39,6 +39,14 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.y, q.z, q.x, -q.w);
     }
 
+    public class FRD : ICoordinateSpace
+    {
+        public virtual Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
+        public virtual Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
+        public virtual Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
+        public virtual Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
+    }
+
     public class NED : ICoordinateSpace
     {
         public virtual Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
@@ -63,14 +71,14 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Vector3(vNed.x, vNed.y, vNed.z);
         }
 
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromNED(new Vector3<NED>(v.x, v.y, v.z));
+        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromNED(new Vector3<NEDGlobal>(v.x, v.y, v.z));
         public override Quaternion ConvertFromRUF(Quaternion q)
         {
             var qNed = GeometryCompass.ToNED(q);
             return new Quaternion(qNed.x, qNed.y, qNed.z, qNed.w);
         }
 
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromNED(new Quaternion<NED>(q.x, q.y, q.z, q.w));
+        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromNED(new Quaternion<NEDGlobal>(q.x, q.y, q.z, q.w));
     }
 
     public class ENUGlobal : ENU
@@ -80,7 +88,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             var vEnu = GeometryCompass.ToENU(v);
             return new Vector3(vEnu.x, vEnu.y, vEnu.z);
         }
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromENU(new Vector3<ENU>(v.x, v.y, v.z));
+        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromENU(new Vector3<ENUGlobal>(v.x, v.y, v.z));
 
         public override Quaternion ConvertFromRUF(Quaternion q)
         {
@@ -88,7 +96,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Quaternion(qEnu.x, qEnu.y, qEnu.z, qEnu.w);
         }
 
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromENU(new Quaternion<ENU>(q.x, q.y, q.z, q.w));
+        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromENU(new Quaternion<ENUGlobal>(q.x, q.y, q.z, q.w));
     }
 
     public enum CoordinateSpaceSelection

@@ -19,32 +19,47 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         private static Quaternion s_OneEightyYaw = Quaternion.Euler(0, 180, 0);
         private static Quaternion s_NegativeNinetyYaw = Quaternion.Euler(0, -90, 0);
 
-        public static Vector3<ENU> ToENU(Vector3 v)
+        public static Vector3<ENUGlobal> ToENU(Vector3 v)
         {
             switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3<ENU>(v.x, v.z, v.y);
+                    return new Vector3<ENUGlobal>(v.x, v.z, v.y);
                 case CardinalDirection.East:
-                    return new Vector3<ENU>(v.z, -v.x, v.y);
+                    return new Vector3<ENUGlobal>(v.z, -v.x, v.y);
                 case CardinalDirection.South:
-                    return new Vector3<ENU>(-v.x, -v.z, v.y);
+                    return new Vector3<ENUGlobal>(-v.x, -v.z, v.y);
                 case CardinalDirection.West:
-                    return new Vector3<ENU>(-v.z, v.x, v.y);
+                    return new Vector3<ENUGlobal>(-v.z, v.x, v.y);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public static Quaternion<ENU> ToENU(Quaternion q)
+        public static Quaternion<ENUGlobal> ToENU(Quaternion q)
         {
-            var r = Quaternion.Euler(0, 90 * ((int)UnityZAxisDirection - 1), 0) * q;
-            var p = r.To<FLU>();
-            return new Quaternion<ENU>(p.x, p.y, p.z, -p.w);
-            return new Quaternion<ENU>(r.x, r.z, r.y, -r.w);
+            switch (UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    q = s_NegativeNinetyYaw * q;
+                    break;
+                case CardinalDirection.East:
+                    break;
+                case CardinalDirection.South:
+                    q = s_NinetyYaw * q;
+                    break;
+                case CardinalDirection.West:
+                    q = s_OneEightyYaw * q;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            var r = q.To<FLU>();
+            return new Quaternion<ENUGlobal>(r.x, r.y, r.z, r.w);
         }
 
-        public static Vector3 FromENU(Vector3<ENU> v)
+        public static Vector3 FromENU(Vector3<ENUGlobal> v)
         {
             switch (UnityZAxisDirection)
             {
@@ -61,36 +76,65 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromENU(Quaternion<ENU> q)
+        public static Quaternion FromENU(Quaternion<ENUGlobal> q)
         {
-            var inverseRotationOffset = Quaternion.Euler(0, -90 * ((int)UnityZAxisDirection - 1), 0);
-            return inverseRotationOffset * new Quaternion(q.x, q.z, q.y, -q.w);
-        }
-
-        public static Vector3<NED> ToNED(Vector3 v)
-        {
+            var r = new Quaternion(-q.y, q.z, q.x, -q.w);
             switch (UnityZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3<NED>(v.z, v.x, -v.y);
+                    return s_NinetyYaw * r;
                 case CardinalDirection.East:
-                    return new Vector3<NED>(-v.x, v.z, -v.y);
+                    return r;
                 case CardinalDirection.South:
-                    return new Vector3<NED>(-v.z, -v.x, -v.y);
+                    return s_NegativeNinetyYaw * r;
                 case CardinalDirection.West:
-                    return new Vector3<NED>(v.x, -v.z, -v.y);
+                    return s_OneEightyYaw * r;
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public static Quaternion<NED> ToNED(Quaternion q)
+        public static Vector3<NEDGlobal> ToNED(Vector3 v)
         {
-            var r = Quaternion.Euler(0, 90 * (int)UnityZAxisDirection, 0) * q;
-            return new Quaternion<NED>(r.z, r.x, -r.y, -r.w);
+            switch (UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return new Vector3<NEDGlobal>(v.z, v.x, -v.y);
+                case CardinalDirection.East:
+                    return new Vector3<NEDGlobal>(-v.x, v.z, -v.y);
+                case CardinalDirection.South:
+                    return new Vector3<NEDGlobal>(-v.z, -v.x, -v.y);
+                case CardinalDirection.West:
+                    return new Vector3<NEDGlobal>(v.x, -v.z, -v.y);
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
-        public static Vector3 FromNED(Vector3<NED> v)
+        public static Quaternion<NEDGlobal> ToNED(Quaternion q)
+        {
+            switch (UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    break;
+                case CardinalDirection.East:
+                    q = s_NinetyYaw * q;
+                    break;
+                case CardinalDirection.South:
+                    q = s_OneEightyYaw * q;
+                    break;
+                case CardinalDirection.West:
+                    q = s_NegativeNinetyYaw * q;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            var r = q.To<FRD>();
+            return new Quaternion<NEDGlobal>(r.x, r.y, r.z, r.w);
+        }
+
+        public static Vector3 FromNED(Vector3<NEDGlobal> v)
         {
             switch (UnityZAxisDirection)
             {
@@ -107,10 +151,22 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromNED(Quaternion<NED> q)
+        public static Quaternion FromNED(Quaternion<NEDGlobal> q)
         {
-            var inverseRotationOffset = Quaternion.Euler(0, -90 * (int)UnityZAxisDirection, 0);
-            return inverseRotationOffset * new Quaternion(q.y, -q.z, q.x, -q.w);
+            var r = new Quaternion(q.y, -q.z, q.x, -q.w);
+            switch (UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return r;
+                case CardinalDirection.East:
+                    return s_NegativeNinetyYaw * r;
+                case CardinalDirection.South:
+                    return s_OneEightyYaw * r;
+                case CardinalDirection.West:
+                    return s_NinetyYaw * r;
+                default:
+                    throw new NotSupportedException();
+            }
         }
     }
 }
