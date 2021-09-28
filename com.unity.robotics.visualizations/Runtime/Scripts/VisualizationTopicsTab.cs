@@ -62,9 +62,16 @@ namespace Unity.Robotics.Visualizations
             bool showPrompt = (GUI.GetNameOfFocusedControl() != "topic_filter" && m_TopicFilter == "");
             GUI.SetNextControlName("topic_filter");
             if (showPrompt)
+            {
+                Color oldCol = GUI.color;
+                GUI.color = new Color(oldCol.r, oldCol.g, oldCol.b, 0.5f);
                 GUILayout.TextField("(Type here to filter topics)");
+                GUI.color = oldCol;
+            }
             else
+            {
                 m_TopicFilter = GUILayout.TextField(m_TopicFilter).ToLower();
+            }
 
             GUILayout.EndHorizontal();
 
