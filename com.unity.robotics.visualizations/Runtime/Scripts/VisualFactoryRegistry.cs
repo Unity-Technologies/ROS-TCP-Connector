@@ -45,53 +45,61 @@ namespace Unity.Robotics.Visualizations
         static Dictionary<string, PrioritizedList<IVisualFactory>> s_TopicVisualFactories = new Dictionary<string, PrioritizedList<IVisualFactory>>();
         static Dictionary<string, PrioritizedList<IVisualFactory>> s_TypeVisualFactories = new Dictionary<string, PrioritizedList<IVisualFactory>>();
 
-        static ToStringVisualizer s_DefaultVisualFactory = new ToStringVisualizer();
+        static Dictionary<string, PrioritizedList<IVisualFactory>> s_TopicResponseVisualFactories = new Dictionary<string, PrioritizedList<IVisualFactory>>();
+        static Dictionary<string, PrioritizedList<IVisualFactory>> s_TypeResponseVisualFactories = new Dictionary<string, PrioritizedList<IVisualFactory>>();
 
-        public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0) where MsgType : Message
+        static ToStringVisualizer s_DefaultVisualFactory = new ToStringVisualizer(MessageSubtopic.Default);
+        static ToStringVisualizer s_DefaultResponseVisualFactory = new ToStringVisualizer(MessageSubtopic.Response);
+
+        public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0, MessageSubtopic subtopic = MessageSubtopic.Default) where MsgType : Message
         {
-            RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<MsgType>(), visualFactory, priority);
+            RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<MsgType>(), visualFactory, priority, subtopic);
         }
 
-        public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0)
+        public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
+            Dictionary<string, PrioritizedList<IVisualFactory>> factoriesTable = (subtopic != MessageSubtopic.Response) ? s_TypeVisualFactories : s_TypeResponseVisualFactories;
             PrioritizedList<IVisualFactory> currentEntry;
-            if (!s_TypeVisualFactories.TryGetValue(rosMessageName, out currentEntry))
+            if (!factoriesTable.TryGetValue(rosMessageName, out currentEntry))
             {
                 currentEntry = new PrioritizedList<IVisualFactory>();
                 currentEntry.Add(s_DefaultVisualFactory, int.MinValue);
-                s_TypeVisualFactories[rosMessageName] = currentEntry;
+                factoriesTable[rosMessageName] = currentEntry;
             }
             currentEntry.Add(visualFactory, priority);
         }
 
-        public static void RegisterTopicVisualizer(string topic, IVisualFactory visualFactory, int priority = 0)
+        public static void RegisterTopicVisualizer(string topic, IVisualFactory visualFactory, int priority = 0, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             if (topic == null)
                 Debug.Log("Registered null topic!");
+            Dictionary<string, PrioritizedList<IVisualFactory>> factoriesTable = (subtopic != MessageSubtopic.Response) ? s_TopicVisualFactories : s_TopicResponseVisualFactories;
             PrioritizedList<IVisualFactory> currentEntry;
-            if (!s_TopicVisualFactories.TryGetValue(topic, out currentEntry))
+            if (!factoriesTable.TryGetValue(topic, out currentEntry))
             {
                 currentEntry = new PrioritizedList<IVisualFactory>();
-                s_TopicVisualFactories[topic] = currentEntry;
+                factoriesTable[topic] = currentEntry;
             }
             currentEntry.Add(visualFactory, priority);
         }
 
-        public static IVisualFactory GetVisualFactory(string topic, string rosMessageName = null)
+        public static IVisualFactory GetVisualFactory(string topic, string rosMessageName = null, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             PrioritizedList<IVisualFactory> result;
-            s_TopicVisualFactories.TryGetValue(topic, out result);
+            Dictionary<string, PrioritizedList<IVisualFactory>> topicsTable = (subtopic != MessageSubtopic.Response) ? s_TopicVisualFactories : s_TopicResponseVisualFactories;
+            topicsTable.TryGetValue(topic, out result);
             if (result != null)
                 return result.Best;
 
             if (rosMessageName != null)
             {
-                s_TypeVisualFactories.TryGetValue(rosMessageName, out result);
+                Dictionary<string, PrioritizedList<IVisualFactory>> typesTable = (subtopic != MessageSubtopic.Response) ? s_TypeVisualFactories : s_TypeResponseVisualFactories;
+                typesTable.TryGetValue(rosMessageName, out result);
                 if (result != null)
                     return result.Best;
 
                 if (MessageRegistry.GetDeserializeFunction(rosMessageName) != null)
-                    return s_DefaultVisualFactory;
+                    return (subtopic != MessageSubtopic.Response) ? s_DefaultVisualFactory : s_DefaultResponseVisualFactory;
             }
 
             return null;

@@ -169,7 +169,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_ServiceImplementation = implementation;
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
+            m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 
@@ -177,7 +177,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_ServiceImplementationAsync = implementation;
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, null, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
+            m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 

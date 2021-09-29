@@ -15,14 +15,15 @@ namespace Unity.Robotics.Visualizations
         RosTopicState m_TopicState;
         public RosTopicState TopicState => m_TopicState;
         public string Topic => m_TopicState.Topic;
+        public MessageSubtopic Subtopic => m_TopicState.Subtopic;
         public string RosMessageName => m_TopicState.RosMessageName;
+        public string Title => Topic + (Subtopic == MessageSubtopic.Response ? " (response)" : "");
 
         // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
         VisualizationTopicsTabEntry m_ServiceResponseTopic;
         Texture2D m_Background;
         GUIStyle m_LineStyle;
         GUIStyle m_HoverStyle;
-        bool m_IsServiceResponse;
 
         bool m_IsVisualizingUI;
         public bool IsVisualizingUI => m_IsVisualizingUI;
@@ -51,7 +52,7 @@ namespace Unity.Robotics.Visualizations
 
             if (m_VisualFactory == null && !m_NoVisualFactoryAvailable)
             {
-                SetVisualFactory(VisualFactoryRegistry.GetVisualFactory(Topic, RosMessageName));
+                SetVisualFactory(VisualFactoryRegistry.GetVisualFactory(Topic, RosMessageName, Subtopic));
             }
             return m_VisualFactory;
         }
@@ -121,11 +122,7 @@ namespace Unity.Robotics.Visualizations
                 TopicState.SentSubscriberRegistration,
                 m_TopicState.Connection.HasConnectionError);
 
-            string topicName = Topic;
-            if (m_IsServiceResponse)
-                topicName += " (response)";
-
-            if (GUILayout.Button(topicName, m_LineStyle, GUILayout.Width(240)))
+            if (GUILayout.Button(Title, m_LineStyle, GUILayout.Width(240)))
             {
                 if (!canShowWindow)
                 {
@@ -179,7 +176,7 @@ namespace Unity.Robotics.Visualizations
             }
             else if (ui)
             {
-                m_VisualWindow = new HudWindow(Topic);
+                m_VisualWindow = new HudWindow(Title);
                 HudPanel.AddWindow(m_VisualWindow);
             }
 
@@ -214,15 +211,14 @@ namespace Unity.Robotics.Visualizations
             public bool ShowDrawing;
         }
 
-        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background, bool isResponse = false)
+        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background)
         {
             m_TopicState = baseState;
             m_Background = background;
-            m_IsServiceResponse = isResponse;
 
             if (baseState.ServiceResponseTopic != null)
             {
-                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background, true);
+                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background);
             }
 
             m_CachedRosMessageName = RosMessageName;
@@ -243,11 +239,11 @@ namespace Unity.Robotics.Visualizations
 
                 if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
                 {
-                    m_VisualWindow = new HudWindow(Topic, save.Rect);
+                    m_VisualWindow = new HudWindow(Title, save.Rect);
                 }
                 else if (save.ShowWindow)
                 {
-                    m_VisualWindow = new HudWindow(Topic);
+                    m_VisualWindow = new HudWindow(Title);
                 }
 
                 if (m_VisualWindow != null)

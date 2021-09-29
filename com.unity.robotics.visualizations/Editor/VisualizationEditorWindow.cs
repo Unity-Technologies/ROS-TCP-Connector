@@ -90,11 +90,13 @@ namespace Unity.Robotics.Visualizations
                 EditorGUI.BeginDisabledGroup(m_VisualFactory == null || !m_VisualFactory.CanShowDrawing);
                 bool drawingEnable = EditorGUILayout.ToggleLeft("Show 3d drawings", m_Visual.IsDrawingEnabled);
                 EditorGUI.EndDisabledGroup();
+                EditorGUI.BeginDisabledGroup(!(m_VisualFactory is Object));
                 if (GUILayout.Button("Select in Editor"))
                 {
                     Object factoryObject = (Object)m_VisualFactory;
                     Selection.activeObject = factoryObject;
                 }
+                EditorGUI.EndDisabledGroup();
                 GUILayout.EndHorizontal();
                 if (m_Visual.IsDrawingEnabled != drawingEnable)
                     m_Visual.SetDrawingEnabled(drawingEnable);
