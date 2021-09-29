@@ -153,7 +153,7 @@ namespace Unity.Robotics.ROSTCPConnector
         }
         public static Rect GetDefaultWindowRect()
         {
-            return new Rect(300, 0, 300, 200);
+            return new Rect(450, 0, 300, 200);
         }
 
         public Rect GetFreeWindowRect()
