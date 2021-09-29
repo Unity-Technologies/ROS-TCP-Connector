@@ -3,6 +3,7 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEditor.Callbacks;
 
 namespace Unity.Robotics.ROSTCPConnector.Editor
@@ -131,6 +132,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
+
+            // ROS Geometry Compass Settings
+            EditorGUILayout.Space();
+            GeometryCompass.UnityZAxisDirection =
+                (CardinalDirection)EditorGUILayout.EnumPopup("Geometry Compass", GeometryCompass.UnityZAxisDirection);
         }
     }
 }
