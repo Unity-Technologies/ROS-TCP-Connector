@@ -43,13 +43,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public virtual Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
     }
 
-    public class NED : ICoordinateSpace
-    {
-        public virtual Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
-        public virtual Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
-        public virtual Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
-        public virtual Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
-    }
+    public class NED : FRD { }
 
     public class ENU : ICoordinateSpace
     {
@@ -99,6 +93,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     {
         RUF,
         FLU,
+        FRD,
         NED,
         ENU,
         NEDGlobal,
@@ -177,6 +172,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<RUF>();
                 case CoordinateSpaceSelection.FLU:
                     return self.From<FLU>();
+                case CoordinateSpaceSelection.FRD:
+                    return self.From<FRD>();
                 case CoordinateSpaceSelection.ENU:
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
@@ -199,6 +196,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<RUF>();
                 case CoordinateSpaceSelection.FLU:
                     return self.From<FLU>();
+                case CoordinateSpaceSelection.FRD:
+                    return self.From<FRD>();
                 case CoordinateSpaceSelection.ENU:
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
@@ -221,6 +220,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<RUF>();
                 case CoordinateSpaceSelection.FLU:
                     return self.From<FLU>();
+                case CoordinateSpaceSelection.FRD:
+                    return self.From<FRD>();
                 case CoordinateSpaceSelection.ENU:
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
@@ -243,6 +244,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<RUF>();
                 case CoordinateSpaceSelection.FLU:
                     return self.From<FLU>();
+                case CoordinateSpaceSelection.FRD:
+                    return self.From<FRD>();
                 case CoordinateSpaceSelection.ENU:
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
