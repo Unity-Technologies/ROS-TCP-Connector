@@ -117,6 +117,9 @@ public class TFSystem
 
     public static TFSystem GetOrCreateInstance()
     {
+        if (instance != null)
+            return instance;
+
         ROSConnection ros = ROSConnection.GetOrCreateInstance();
         instance = new TFSystem();
         foreach (string s in ros.TFTopics)
