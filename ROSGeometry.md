@@ -43,7 +43,7 @@ Unity's standard Transform class also has a `To<C>()` extension method that retu
 
 # Internal details
 
-Some more detail about what's going on here: The core of the ROSGeometry package is the two generic structs, `Vector3<C>` and `Quaternion<C>`. The type parameter C here indicates the coordinate frame you're working in - either FLU, or RUF, or perhaps one of the more exotic frames such as NED (north, east, down) or ENU (east, north, up), used in aviation. In conversions between RUF and geographical coordinate systems, such as NED and ENU, the east direction is equivalent to the z-axis (forward) in RUF.
+Some more detail about what's going on here: The core of the ROSGeometry package is the two generic structs, `Vector3<C>` and `Quaternion<C>`. The type parameter C here indicates the coordinate frame you're working in - either FLU, or RUF, or perhaps one of the more exotic frames such as NED (north, east, down) or ENU (east, north, up), used in aviation.
 
 These are fully-fledged Vector3 and Quaternion classes, so if you want, you can work with them directly to perform geometric operations in an arbitrary coordinate space. (Note, it's a compile time error to add a Vector3<FLU> to a Vector3<RUF>.)
 

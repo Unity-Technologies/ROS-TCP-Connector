@@ -59,8 +59,6 @@ Add badges to main README
 
 ### Changed
 
-Update the transformation of coordinate spaces using Unity's coordinate as right, up, forward (RUF) and south, up, east (SUE).
-
 ### Deprecated
 
 ### Removed
