@@ -40,8 +40,8 @@ namespace Unity.Robotics.Visualizations
 
         public class DrawingVisual : IVisual
         {
-            public T message { get; private set; }
-            public MessageMetadata meta { get; private set; }
+            T m_Message;
+            MessageMetadata m_Meta;
 
             Drawing3d m_Drawing;
             public Drawing3d Drawing => m_Drawing;
@@ -67,8 +67,8 @@ namespace Unity.Robotics.Visualizations
                 if (!VisualizationUtils.AssertMessageType<T>(message, m_Topic))
                     return;
 
-                this.message = (T)message;
-                this.meta = meta;
+                m_Message = (T)message;
+                m_Meta = meta;
                 m_GUIAction = null;
 
                 // If messages are coming in faster than 1 per frame, we only update the drawing once per frame
@@ -85,18 +85,24 @@ namespace Unity.Robotics.Visualizations
                 if (m_IsDrawingEnabled == enabled)
                     return;
 
+                m_IsDrawingEnabled = enabled;
+
                 if (!enabled && m_Drawing != null)
                 {
                     m_Drawing.Clear();
                 }
-                m_IsDrawingEnabled = enabled;
+
+                if (enabled && m_Message != null)
+                {
+                    Redraw();
+                }
             }
 
             public bool hasDrawing => m_Drawing != null;
 
             public void OnGUI()
             {
-                if (message == null)
+                if (m_Message == null)
                 {
                     GUILayout.Label("Waiting for message...");
                     return;
@@ -104,7 +110,7 @@ namespace Unity.Robotics.Visualizations
 
                 if (m_GUIAction == null)
                 {
-                    m_GUIAction = m_Factory.CreateGUI(message, meta);
+                    m_GUIAction = m_Factory.CreateGUI(m_Message, m_Meta);
                 }
                 m_GUIAction();
             }
@@ -130,7 +136,7 @@ namespace Unity.Robotics.Visualizations
                     m_Drawing.Clear();
                 }
 
-                m_Factory.Draw(this, message, meta);
+                m_Factory.Draw(this, m_Message, m_Meta);
             }
         }
     }

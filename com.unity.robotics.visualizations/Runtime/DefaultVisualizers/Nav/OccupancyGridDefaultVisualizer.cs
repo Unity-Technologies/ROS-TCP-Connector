@@ -55,7 +55,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
         public bool IsDrawingEnabled => m_IsDrawingEnabled;
         float m_LastDrawingFrameTime = -1;
 
-        Drawing3d m_BasicDrawing;
+        Drawing3d m_Drawing;
         OccupancyGridDefaultVisualizer m_Settings;
         OccupancyGridMsg m_Message;
 
@@ -109,30 +109,30 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
             rotation.eulerAngles += new Vector3(0, -90, 0); // TODO: Account for differing texture origin
             var scale = m_Message.info.resolution;
 
-            if (m_BasicDrawing == null)
+            if (m_Drawing == null)
             {
-                m_BasicDrawing = Drawing3dManager.CreateDrawing();
+                m_Drawing = Drawing3dManager.CreateDrawing();
             }
             else
             {
-                m_BasicDrawing.Clear();
+                m_Drawing.Clear();
             }
 
-            m_BasicDrawing.SetTFTrackingSettings(m_Settings.m_TFTrackingSettings, m_Message.header);
+            m_Drawing.SetTFTrackingSettings(m_Settings.m_TFTrackingSettings, m_Message.header);
             // offset the mesh by half a grid square, because the message's position defines the CENTER of grid square 0,0
             Vector3 drawOrigin = origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f) + m_Settings.m_Offset;
-            m_BasicDrawing.DrawMesh(m_Mesh, drawOrigin, rotation,
+            m_Drawing.DrawMesh(m_Mesh, drawOrigin, rotation,
                 new Vector3(m_Message.info.width * scale, 1, m_Message.info.height * scale), m_Material);
         }
 
         public void DeleteDrawing()
         {
-            if (m_BasicDrawing != null)
+            if (m_Drawing != null)
             {
-                m_BasicDrawing.Destroy();
+                m_Drawing.Destroy();
             }
 
-            m_BasicDrawing = null;
+            m_Drawing = null;
         }
 
         public Texture2D GetTexture()
@@ -171,7 +171,20 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
 
         public void SetDrawingEnabled(bool enabled)
         {
+            if (m_IsDrawingEnabled == enabled)
+                return;
+
             m_IsDrawingEnabled = enabled;
+
+            if (!enabled && m_Drawing != null)
+            {
+                m_Drawing.Clear();
+            }
+
+            if (enabled && m_Message != null)
+            {
+                Redraw();
+            }
         }
     }
 }

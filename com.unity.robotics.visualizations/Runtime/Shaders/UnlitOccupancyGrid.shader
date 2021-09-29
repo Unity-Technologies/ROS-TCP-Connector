@@ -16,6 +16,8 @@
 
         Pass
         {
+            Offset -1, -1
+
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag

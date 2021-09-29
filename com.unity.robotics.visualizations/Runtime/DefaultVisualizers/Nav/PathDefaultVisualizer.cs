@@ -9,7 +9,7 @@ using UnityEngine;
 public class PathDefaultVisualizer : DrawingVisualizer<PathMsg>
 {
     [SerializeField]
-    float m_Thickness;
+    float m_Thickness = 0.1f;
     [SerializeField]
     Color m_Color;
     [SerializeField]
