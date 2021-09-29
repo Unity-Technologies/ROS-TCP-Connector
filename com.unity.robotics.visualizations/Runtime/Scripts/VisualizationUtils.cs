@@ -86,7 +86,7 @@ namespace Unity.Robotics.Visualizations
             if (topicState == null)
                 return null;
 
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, topicState.RosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, topicState.RosMessageName, subtopic);
             if (factory == null)
                 return null;
 
@@ -95,7 +95,7 @@ namespace Unity.Robotics.Visualizations
 
         public static IVisual GetVisual(string topic, string rosMessageName, MessageSubtopic subtopic)
         {
-            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, rosMessageName);
+            IVisualFactory factory = VisualFactoryRegistry.GetVisualFactory(topic, rosMessageName, subtopic);
             if (factory == null)
                 return null;
 

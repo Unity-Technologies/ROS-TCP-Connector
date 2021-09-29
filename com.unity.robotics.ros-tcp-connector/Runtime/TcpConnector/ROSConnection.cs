@@ -149,10 +149,6 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Topics.Add(topic, newTopic);
             }
-            foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
-            {
-                callback(newTopic);
-            }
             return newTopic;
         }
 
@@ -177,7 +173,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 return state;
             }
 
-            return AddTopic(topic, rosMessageName);
+            RosTopicState result = AddTopic(topic, rosMessageName);
+            foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
+            {
+                callback(result);
+            }
+            return result;
         }
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
@@ -225,6 +226,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             info.AddSubscriber(callback);
+
+            foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
+            {
+                topicCallback(info);
+            }
         }
 
         // Implement a service in Unity
@@ -241,6 +247,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
             info.ImplementService((Message msg) => callback((TRequest)msg), resolvedQueueSize);
+
+            foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
+            {
+                topicCallback(info);
+            }
         }
 
         // Send a request to a ros service

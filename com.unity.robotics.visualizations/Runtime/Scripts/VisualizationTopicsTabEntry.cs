@@ -15,14 +15,15 @@ namespace Unity.Robotics.Visualizations
         RosTopicState m_TopicState;
         public RosTopicState TopicState => m_TopicState;
         public string Topic => m_TopicState.Topic;
+        public MessageSubtopic Subtopic => m_TopicState.Subtopic;
         public string RosMessageName => m_TopicState.RosMessageName;
+        public string Title => Topic + (Subtopic == MessageSubtopic.Response ? " (response)" : "");
 
         // a service topic is represented by two lines, one for the request and one for the response. m_ServiceResponseTopic is the response.
         VisualizationTopicsTabEntry m_ServiceResponseTopic;
         Texture2D m_Background;
         GUIStyle m_LineStyle;
         GUIStyle m_HoverStyle;
-        bool m_IsServiceResponse;
 
         List<VisualRow> m_VisualRows = new List<VisualRow>();
 
@@ -88,11 +89,11 @@ namespace Unity.Robotics.Visualizations
 
                     if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
                     {
-                        m_VisualWindow = new HudWindow(entry.Topic, save.Rect);
+                        m_VisualWindow = new HudWindow(entry.Title, save.Rect);
                     }
                     else if (save.ShowWindow)
                     {
-                        m_VisualWindow = new HudWindow(entry.Topic);
+                        m_VisualWindow = new HudWindow(entry.Title);
                     }
 
                     if (m_VisualWindow != null)
@@ -115,7 +116,7 @@ namespace Unity.Robotics.Visualizations
 
                 if (m_VisualFactory == null && !m_NoVisualFactoryAvailable)
                 {
-                    SetVisualFactory(VisualFactoryRegistry.GetVisualFactory(m_Entry.Topic, m_Entry.RosMessageName));
+                    SetVisualFactory(VisualFactoryRegistry.GetVisualFactory(m_Entry.Topic, m_Entry.RosMessageName, m_Entry.Subtopic));
                 }
                 return m_VisualFactory;
             }
@@ -175,11 +176,7 @@ namespace Unity.Robotics.Visualizations
                     m_Entry.TopicState.SentSubscriberRegistration,
                     m_Entry.m_TopicState.Connection.HasConnectionError);
 
-                string topicName = m_Entry.Topic;
-                if (m_Entry.m_IsServiceResponse)
-                    topicName += " (response)";
-
-                if (GUILayout.Button(topicName, m_Entry.m_LineStyle, GUILayout.Width(240)))
+                if (GUILayout.Button(m_Entry.Title, m_Entry.m_LineStyle, GUILayout.Width(240)))
                 {
                     if (!canShowWindow)
                     {
@@ -265,16 +262,15 @@ namespace Unity.Robotics.Visualizations
             public List<VisualRow.SaveState> Rows;
         }
 
-        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background, bool isResponse = false)
+        public VisualizationTopicsTabEntry(RosTopicState baseState, Texture2D background)
         {
             m_TopicState = baseState;
             m_Background = background;
             m_VisualRows.Add(new VisualRow(this));
-            m_IsServiceResponse = isResponse;
 
             if (baseState.ServiceResponseTopic != null)
             {
-                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background, true);
+                m_ServiceResponseTopic = new VisualizationTopicsTabEntry(baseState.ServiceResponseTopic, background);
             }
         }
 

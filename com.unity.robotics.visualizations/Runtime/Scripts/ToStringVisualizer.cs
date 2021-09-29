@@ -11,6 +11,12 @@ namespace Unity.Robotics.Visualizations
     {
         public string Name => "ToString";
         public string ID => "ToString";
+        MessageSubtopic m_Subtopic;
+
+        public ToStringVisualizer(MessageSubtopic subtopic)
+        {
+            m_Subtopic = subtopic;
+        }
 
         Dictionary<string, IVisual> m_Visuals = new Dictionary<string, IVisual>();
 
@@ -20,7 +26,7 @@ namespace Unity.Robotics.Visualizations
             if (m_Visuals.TryGetValue(topic, out visual))
                 return visual;
 
-            visual = new ToStringVisual(topic);
+            visual = new ToStringVisual(topic, m_Subtopic);
             m_Visuals.Add(topic, visual);
             return visual;
         }
@@ -34,10 +40,12 @@ namespace Unity.Robotics.Visualizations
         {
             public Message message { get; private set; }
 
-            public ToStringVisual(string topic)
+            public ToStringVisual(string topic, MessageSubtopic subtopic)
             {
                 ROSConnection ros = ROSConnection.GetOrCreateInstance();
                 RosTopicState state = ros.GetTopic(topic);
+                if (subtopic == MessageSubtopic.Response)
+                    state = state.ServiceResponseTopic;
                 state.AddSubscriber(AddMessage);
             }
 
