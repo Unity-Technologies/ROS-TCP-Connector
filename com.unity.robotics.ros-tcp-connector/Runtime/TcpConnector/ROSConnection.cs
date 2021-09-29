@@ -509,7 +509,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 topics = AllTopics.ToArray();
             }
 
-            foreach (RosTopicState topicInfo in AllTopics)
+            foreach (RosTopicState topicInfo in topics)
             {
                 //For all publishers, notify that they need to re-register.
                 topicInfo.OnConnectionLost();
@@ -625,6 +625,7 @@ namespace Unity.Robotics.ROSTCPConnector
                                 Debug.LogError($"Unity service {serviceTopic} has not been implemented!");
                                 return;
                             }
+
                             topicState.HandleUnityServiceRequest(requestBytes, serviceCommand.srv_id);
                         };
                     }
