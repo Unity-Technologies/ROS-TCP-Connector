@@ -87,27 +87,11 @@ namespace Unity.Robotics.ROSTCPConnector
         public string[] types;
     }
 
-    public class SysCommandPublisherRegistration : SysCommand
+    public struct SysCommand_PublisherRegistration
     {
-        [SerializeField] public string topic;
-        [SerializeField] public string message_name;
-        [SerializeField] public int queue_size;
-        [SerializeField] public bool latch;
-
-        public SysCommandPublisherRegistration(RosPublisher rosPublisher) : this(
-            rosPublisher.TopicName, rosPublisher.RosMessageName, rosPublisher.QueueSize, rosPublisher.IsLatchEnabled)
-        {
-        }
-
-        public SysCommandPublisherRegistration(string topic, string messageName, int queueSize, bool latch)
-        {
-            this.topic = topic;
-            message_name = messageName;
-            queue_size = queueSize;
-            this.latch = latch;
-        }
-
-        public override string Command => k_SysCommand_Publish;
+        public string topic;
+        public string message_name;
+        public int queue_size;
+        public bool latch;
     }
-
 }
