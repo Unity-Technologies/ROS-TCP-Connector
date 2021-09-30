@@ -20,16 +20,29 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             {
                 if (s_Instance == null)
                 {
-                    var prefab = Resources.Load<GameObject>(PrefabName);
-                    if (prefab == null)
+                    var instances = GameObject.FindObjectsOfType<GeometryCompass>();
+                    if (instances.Length > 1)
                     {
-                        Debug.LogWarning("No settings for GeometryCompass.instance! " +
-                                         "Open \"ROS Settings\" from the Robotics menu to configure it.");
-                        s_Instance = new GameObject("GeometryCompass").AddComponent<GeometryCompass>();
+                        Debug.LogError("Found multiple GeometryCompass instances in the scene! Make sure there " +
+                                       "is only a single instance in the scene");
+                    }
+                    else if (instances.Length == 1)
+                    {
+                        s_Instance = instances[0];
                     }
                     else
                     {
-                        s_Instance = Instantiate(prefab).GetComponent<GeometryCompass>();
+                        var prefab = Resources.Load<GameObject>(PrefabName);
+                        if (prefab == null)
+                        {
+                            Debug.LogWarning("No settings for GeometryCompass.instance! " +
+                                             "Open \"ROS Settings\" from the Robotics menu to configure it.");
+                            s_Instance = new GameObject("GeometryCompass").AddComponent<GeometryCompass>();
+                        }
+                        else
+                        {
+                            s_Instance = Instantiate(prefab).GetComponent<GeometryCompass>();
+                        }
                     }
                 }
                 return s_Instance;
