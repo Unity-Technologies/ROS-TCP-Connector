@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## Unreleased
 
+### Upgrade Notes
+
+### Known Issues
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+
+## [0.6.0-preview] - 2021-09-30
+
 Add the [Close Stale Issues](https://github.com/marketplace/actions/close-stale-issues) action
 
 ### Upgrade Notes
@@ -28,6 +45,7 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
+- Registering a service now requires both the request and response message type.
 
 ### Deprecated
 
