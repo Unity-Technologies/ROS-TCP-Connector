@@ -1,6 +1,6 @@
 {
   "name": "com.unity.robotics.ros-tcp-connector",
-  "version": "0.5.0-preview",
+  "version": "0.6.0-preview",
   "displayName": "ROS TCP Connector",
   "description": "Bridge components and message generation allowing Unity to communicate with ROS and ROS2 services",
   "unity": "2020.2",
