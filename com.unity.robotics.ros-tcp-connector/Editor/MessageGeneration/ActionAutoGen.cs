@@ -21,6 +21,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
     public class ActionAutoGen
     {
         private static readonly string[] types = { "Goal", "Result", "Feedback" };
+        private static readonly MessageSubtopic[] subtopics = { MessageSubtopic.Goal, MessageSubtopic.Result, MessageSubtopic.Feedback };
 
         public static string[] GetActionClassPaths(string inFilePath, string outPath)
         {
@@ -76,7 +77,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 string className = inFileName + types[i] + MsgAutoGenUtilities.ActionClassSuffix;
 
                 // Parse and generate goal, result, feedback messages
-                MessageParser parser = new MessageParser(tokens, outPath, rosPackageName, "action", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues, className);
+                MessageParser parser = new MessageParser(
+                    tokens,
+                    outPath,
+                    rosPackageName,
+                    "action",
+                    MsgAutoGenUtilities.builtInTypesMapping,
+                    MsgAutoGenUtilities.builtInTypesDefaultInitialValues,
+                    className,
+                    subtopic: subtopics[i]
+                );
                 parser.Parse();
                 warnings.AddRange(parser.GetWarnings());
 

@@ -25,11 +25,11 @@ namespace Unity.Robotics.ROSTCPConnector
      */
     public class SysCommandSender : OutgoingMessageSender
     {
-        private List<byte[]> m_ListOfSerializations;
+        List<byte[]> m_ListOfSerializations;
 
-        public SysCommandSender(List<byte[]> m_ListOfSerializations)
+        public SysCommandSender(List<byte[]> listOfSerializations)
         {
-            this.m_ListOfSerializations = m_ListOfSerializations;
+            m_ListOfSerializations = listOfSerializations;
         }
 
         public override SendToState SendInternal(MessageSerializer m_MessageSerializer, Stream stream)

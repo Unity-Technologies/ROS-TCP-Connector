@@ -71,6 +71,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             int writeIndex = 0;
             foreach (byte[] statement in m_ListOfSerializations)
             {
+                if (statement == null)
+                    continue;
                 statement.CopyTo(serializedMessage, writeIndex);
                 writeIndex += statement.Length;
             }

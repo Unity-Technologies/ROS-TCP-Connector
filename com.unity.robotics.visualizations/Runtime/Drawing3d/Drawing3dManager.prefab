@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &863246206611208022
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4360241143132002600}
+  - component: {fileID: 8942715124792280059}
+  m_Layer: 0
+  m_Name: Drawing3dManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4360241143132002600
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863246206611208022}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8942715124792280059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863246206611208022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b11ef521a4b61a46bb4f858ab62c6d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UnlitVertexColorMaterial: {fileID: 2100000, guid: 8acbae034b3d2ca42bbca7e21e3f964f, type: 2}
+  m_UnlitColorMaterial: {fileID: 2100000, guid: 51187810e7114ee4687016c7fa476970, type: 2}
+  m_UnlitColorAlphaMaterial: {fileID: 2100000, guid: b5ff7d4831357f1438fa8c8adb0cd5dc, type: 2}
+  m_UnlitPointCloudMaterial: {fileID: 2100000, guid: 0a328b723b7201142986276d292502c4, type: 2}
