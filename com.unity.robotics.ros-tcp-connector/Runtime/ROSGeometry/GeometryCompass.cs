@@ -11,15 +11,40 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         West = 3,
     }
 
-    public static class GeometryCompass
+    public class GeometryCompass : MonoBehaviour
     {
-        public static CardinalDirection UnityZAxisDirection = CardinalDirection.East;
+        static GeometryCompass s_Instance;
+        public static GeometryCompass Instance
+        {
+            get
+            {
+                if (s_Instance == null)
+                {
+                    var prefab = Resources.Load<GameObject>(PrefabName);
+                    if (prefab == null)
+                    {
+                        Debug.LogWarning("No settings for GeometryCompass.instance! " +
+                                         "Open \"ROS Settings\" from the Robotics menu to configure it.");
+                        s_Instance = new GameObject("GeometryCompass").AddComponent<GeometryCompass>();
+                    }
+                    else
+                    {
+                        s_Instance = Instantiate(prefab).GetComponent<GeometryCompass>();
+                    }
+                }
+                return s_Instance;
+            }
+        }
+
+        public CardinalDirection UnityZAxisDirection = CardinalDirection.East;
+
+        public const string PrefabName = "CompassGeometryPrefab";
 
         private static Quaternion s_NinetyYaw = Quaternion.Euler(0, 90, 0);
         private static Quaternion s_OneEightyYaw = Quaternion.Euler(0, 180, 0);
         private static Quaternion s_NegativeNinetyYaw = Quaternion.Euler(0, -90, 0);
 
-        public static Vector3<ENUGlobal> ToENU(Vector3 v)
+        public Vector3<ENUGlobal> ToENU(Vector3 v)
         {
             switch (UnityZAxisDirection)
             {
@@ -36,7 +61,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion<ENUGlobal> ToENU(Quaternion q)
+        public Quaternion<ENUGlobal> ToENU(Quaternion q)
         {
             switch (UnityZAxisDirection)
             {
@@ -59,7 +84,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Quaternion<ENUGlobal>(r.x, r.y, r.z, r.w);
         }
 
-        public static Vector3 FromENU(Vector3<ENUGlobal> v)
+        public Vector3 FromENU(Vector3<ENUGlobal> v)
         {
             switch (UnityZAxisDirection)
             {
@@ -76,7 +101,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromENU(Quaternion<ENUGlobal> q)
+        public Quaternion FromENU(Quaternion<ENUGlobal> q)
         {
             var r = new Quaternion(-q.y, q.z, q.x, -q.w);
             switch (UnityZAxisDirection)
@@ -94,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Vector3<NEDGlobal> ToNED(Vector3 v)
+        public Vector3<NEDGlobal> ToNED(Vector3 v)
         {
             switch (UnityZAxisDirection)
             {
@@ -111,7 +136,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion<NEDGlobal> ToNED(Quaternion q)
+        public Quaternion<NEDGlobal> ToNED(Quaternion q)
         {
             switch (UnityZAxisDirection)
             {
@@ -134,7 +159,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Quaternion<NEDGlobal>(r.x, r.y, r.z, r.w);
         }
 
-        public static Vector3 FromNED(Vector3<NEDGlobal> v)
+        public Vector3 FromNED(Vector3<NEDGlobal> v)
         {
             switch (UnityZAxisDirection)
             {
@@ -151,7 +176,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromNED(Quaternion<NEDGlobal> q)
+        public Quaternion FromNED(Quaternion<NEDGlobal> q)
         {
             var r = new Quaternion(q.y, -q.z, q.x, -q.w);
             switch (UnityZAxisDirection)

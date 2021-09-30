@@ -57,36 +57,36 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     {
         public override Vector3 ConvertFromRUF(Vector3 v)
         {
-            var vNed = GeometryCompass.ToNED(v);
+            var vNed = GeometryCompass.Instance.ToNED(v);
             return new Vector3(vNed.x, vNed.y, vNed.z);
         }
 
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromNED(new Vector3<NEDGlobal>(v.x, v.y, v.z));
+        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.Instance.FromNED(new Vector3<NEDGlobal>(v.x, v.y, v.z));
         public override Quaternion ConvertFromRUF(Quaternion q)
         {
-            var qNed = GeometryCompass.ToNED(q);
+            var qNed = GeometryCompass.Instance.ToNED(q);
             return new Quaternion(qNed.x, qNed.y, qNed.z, qNed.w);
         }
 
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromNED(new Quaternion<NEDGlobal>(q.x, q.y, q.z, q.w));
+        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.Instance.FromNED(new Quaternion<NEDGlobal>(q.x, q.y, q.z, q.w));
     }
 
     public class ENUGlobal : ENU
     {
         public override Vector3 ConvertFromRUF(Vector3 v)
         {
-            var vEnu = GeometryCompass.ToENU(v);
+            var vEnu = GeometryCompass.Instance.ToENU(v);
             return new Vector3(vEnu.x, vEnu.y, vEnu.z);
         }
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromENU(new Vector3<ENUGlobal>(v.x, v.y, v.z));
+        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.Instance.FromENU(new Vector3<ENUGlobal>(v.x, v.y, v.z));
 
         public override Quaternion ConvertFromRUF(Quaternion q)
         {
-            var qEnu = GeometryCompass.ToENU(q);
+            var qEnu = GeometryCompass.Instance.ToENU(q);
             return new Quaternion(qEnu.x, qEnu.y, qEnu.z, qEnu.w);
         }
 
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromENU(new Quaternion<ENUGlobal>(q.x, q.y, q.z, q.w));
+        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.Instance.FromENU(new Quaternion<ENUGlobal>(q.x, q.y, q.z, q.w));
     }
 
     public enum CoordinateSpaceSelection

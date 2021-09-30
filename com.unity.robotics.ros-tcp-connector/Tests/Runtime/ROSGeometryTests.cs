@@ -38,7 +38,7 @@ namespace Tests.Runtime
             Vector3 unityPosition, Vector3<ENUGlobal> enuPosition,
             Quaternion unityRotation, Quaternion<ENUGlobal> enuRotation)
         {
-            GeometryCompass.UnityZAxisDirection = direction;
+            GeometryCompass.Instance.UnityZAxisDirection = direction;
             Assert.AreEqual(enuPosition, unityPosition.To<ENUGlobal>());
             Assert.AreEqual(unityPosition, enuPosition.toUnity);
             AssertApproximatelyEqual(enuRotation, unityRotation.To<ENUGlobal>());
@@ -50,7 +50,7 @@ namespace Tests.Runtime
             Vector3 unityPosition, Vector3<NEDGlobal> nedPosition,
             Quaternion unityRotation, Quaternion<NEDGlobal> nedRotation)
         {
-            GeometryCompass.UnityZAxisDirection = direction;
+            GeometryCompass.Instance.UnityZAxisDirection = direction;
             Assert.AreEqual(nedPosition, unityPosition.To<NEDGlobal>());
             Assert.AreEqual(unityPosition, nedPosition.toUnity);
             AssertApproximatelyEqual(nedRotation, unityRotation.To<NEDGlobal>());

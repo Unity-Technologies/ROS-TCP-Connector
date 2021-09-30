@@ -21,6 +21,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         ROSConnection prefab;
+        GeometryCompass geometryCompassPrefab;
 
         public enum RosProtocol
         {
@@ -128,15 +129,24 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
                 prefab.SleepTimeSeconds);
 
+            // ROS Geometry Compass Settings
+            EditorGUILayout.Space();
+            var geometryCompass = Resources.Load<GameObject>(GeometryCompass.PrefabName);
+            if (geometryCompass == null)
+            {
+                var sceneObject = new GameObject("GeometryCompass");
+                sceneObject.AddComponent<GeometryCompass>();
+                geometryCompass = PrefabUtility.SaveAsPrefabAsset(sceneObject, $"Assets/Resources/{GeometryCompass.PrefabName}.prefab");
+                DestroyImmediate(sceneObject);
+            }
+            geometryCompassPrefab = geometryCompass.GetComponent<GeometryCompass>();
+            geometryCompassPrefab.UnityZAxisDirection = (CardinalDirection)EditorGUILayout.EnumPopup("Geometry Compass", geometryCompassPrefab.UnityZAxisDirection);
+
             if (GUI.changed)
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
+                PrefabUtility.SavePrefabAsset(geometryCompassPrefab.gameObject);
             }
-
-            // ROS Geometry Compass Settings
-            EditorGUILayout.Space();
-            GeometryCompass.UnityZAxisDirection =
-                (CardinalDirection)EditorGUILayout.EnumPopup("Geometry Compass", GeometryCompass.UnityZAxisDirection);
         }
     }
 }
