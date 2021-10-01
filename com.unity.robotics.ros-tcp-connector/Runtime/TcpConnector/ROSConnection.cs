@@ -234,8 +234,9 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         // Implement a service in Unity
-        public void ImplementService<TRequest>(string topic, Func<TRequest, Message> callback, int? queueSize = null)
+        public void ImplementService<TRequest, TResponse>(string topic, Func<TRequest, TResponse> callback, int? queueSize = null)
             where TRequest : Message
+            where TResponse : Message
         {
             string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<TRequest>();
 
@@ -246,7 +247,29 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
-            info.ImplementService((Message msg) => callback((TRequest)msg), resolvedQueueSize);
+            info.ImplementService(callback, resolvedQueueSize);
+
+            foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
+            {
+                topicCallback(info);
+            }
+        }
+
+        // Implement a service in Unity
+        public void ImplementService<TRequest, TResponse>(string topic, Func<TRequest, Task<TResponse>> callback, int? queueSize = null)
+            where TRequest : Message
+            where TResponse : Message
+        {
+            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<TRequest>();
+
+            RosTopicState info;
+            if (!m_Topics.TryGetValue(topic, out info))
+            {
+                info = AddTopic(topic, rosMessageName);
+            }
+
+            int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
+            info.ImplementService(callback, resolvedQueueSize);
 
             foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
             {

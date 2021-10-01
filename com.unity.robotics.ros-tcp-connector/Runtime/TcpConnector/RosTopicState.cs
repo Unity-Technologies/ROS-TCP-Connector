@@ -165,17 +165,28 @@ namespace Unity.Robotics.ROSTCPConnector
             SentSubscriberRegistration = false;
         }
 
-        public void ImplementService(Func<Message, Message> implementation, int queueSize)
+        public void ImplementService<TRequest, TResponse>(Func<TRequest, TResponse> implementation, int queueSize)
+            where TRequest : Message
+            where TResponse : Message
         {
-            m_ServiceImplementation = implementation;
+            m_ServiceImplementation = (Message msg) =>
+            {
+                return implementation((TRequest)msg);
+            };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
             m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 
-        public void ImplementService(Func<Message, Task<Message>> implementation, int queueSize)
+        public void ImplementService<TRequest, TResponse>(Func<TRequest, Task<TResponse>> implementation, int queueSize)
+            where TRequest : Message
+            where TResponse : Message
         {
-            m_ServiceImplementationAsync = implementation;
+            m_ServiceImplementationAsync = async (Message msg) =>
+            {
+                TResponse response = await implementation((TRequest)msg);
+                return response;
+            };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
             m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
