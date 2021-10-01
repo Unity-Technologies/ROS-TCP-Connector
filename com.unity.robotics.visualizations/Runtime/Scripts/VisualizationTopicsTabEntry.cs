@@ -204,7 +204,6 @@ namespace Unity.Robotics.Visualizations
         {
             public string Topic;
             public string RosMessageName;
-            public string VisualizerID;
             public Rect Rect;
             public bool HasRect;
             public bool ShowWindow;
@@ -231,12 +230,6 @@ namespace Unity.Robotics.Visualizations
 
             if (save != null)
             {
-                if (save.VisualizerID != null)
-                {
-                    m_VisualFactory = VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName).FirstOrDefault(v => v.ID == save.VisualizerID);
-                    m_CachedRosMessageName = RosMessageName;
-                }
-
                 if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
                 {
                     m_VisualWindow = new HudWindow(Title, save.Rect);
@@ -279,7 +272,6 @@ namespace Unity.Robotics.Visualizations
                 RosMessageName = m_TopicState.RosMessageName,
                 Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
                 HasRect = m_VisualWindow != null,
-                VisualizerID = m_VisualFactory.ID,
                 ShowWindow = m_IsVisualizingUI,
                 ShowDrawing = m_IsVisualizingDrawing,
             };
