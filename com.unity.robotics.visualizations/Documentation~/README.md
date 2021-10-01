@@ -67,10 +67,6 @@ The HUD is also designed to be customizable; you may add custom tabs or headers 
 
 > Get started with custom visualization scripts with the TEMP LINK [Nav2: Making a Custom Visualizer](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example/blob/amanda/custom-viz/readmes/custom_viz.md) tutorial!
 
-## Visualization Base Classes
-
-TODO
-
 ## Using the Inspector
 
 The visualizers for each message type are implemented as Unity MonoBehaviours that are added as components to a GameObject in the scene. This is provided via the `DefaultVisualizationSuite` prefab, or in any custom visualization suite. In the `DefaultVisualizationSuite`, each individual default visualizer can be found by expanding the GameObject in the hierarchy and selecting the GameObject corresponding to the message type's package, e.g. `Geometry` for geometry_msgs.
