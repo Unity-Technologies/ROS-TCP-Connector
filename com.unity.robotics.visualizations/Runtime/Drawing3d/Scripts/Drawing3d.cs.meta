@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 54795ada29ad01147a2c983c42cb08cb
+dev:com.unity.robotics.ros-tcp-connector/Runtime/MessageGeneration/PregeneratedMessages/Actionlib/msg/MGoalStatus.cs.meta
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

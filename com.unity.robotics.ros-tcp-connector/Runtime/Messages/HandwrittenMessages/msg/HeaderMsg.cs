@@ -17,7 +17,7 @@ namespace RosMessageTypes.Std
         //  in a particular coordinate frame.
 
 #if !ROS2
-        //  sequence ID: consecutively increasing ID 
+        //  sequence ID: consecutively increasing ID
         public uint seq;
 #endif
 
@@ -81,10 +81,10 @@ namespace RosMessageTypes.Std
 
         public override string ToString()
         {
-            return "MHeader: " +
+            return "Header: " +
 #if !ROS2
             "\nseq: " + seq.ToString() +
-#endif          
+#endif
             "\nstamp: " + stamp.ToString() +
             "\nframe_id: " + frame_id.ToString();
         }

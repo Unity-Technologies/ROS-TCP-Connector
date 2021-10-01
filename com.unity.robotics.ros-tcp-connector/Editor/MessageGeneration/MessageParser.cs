@@ -48,10 +48,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         private HashSet<string> defaultValues = new HashSet<string>();
 
         private string body = "";
+        MessageSubtopic subtopic;
 
         private List<string> warnings = new List<string>();
 
-        public MessageParser(List<MessageToken> tokens, string outPath, string rosPackageName, string type, Dictionary<string, string> builtInTypeMapping, Dictionary<string, string> builtInTypesDefaultInitialValues, string className = "", string rosMsgName = "")
+        public MessageParser(List<MessageToken> tokens, string outPath, string rosPackageName, string type, Dictionary<string, string> builtInTypeMapping, Dictionary<string, string> builtInTypesDefaultInitialValues, string className = "", string rosMsgName = "", MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             this.tokens = tokens;
 
@@ -60,6 +61,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             this.rosPackageName = rosPackageName;
             this.rosPackageNamespace = MsgAutoGenUtilities.ResolvePackageName(rosPackageName);
+
+            this.subtopic = subtopic;
 
             if (className.Equals(""))
             {
@@ -151,6 +154,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Write ToString override
                 writer.Write(GenerateToString());
 
+                string subtopicParameter = subtopic == MessageSubtopic.Default ? "" : $", MessageSubtopic.{subtopic}";
+
                 writer.Write(
                     "\n" +
                     "#if UNITY_EDITOR\n" +
@@ -160,7 +165,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     "#endif\n" +
                     TWO_TABS + "public static void Register()\n" +
                     TWO_TABS + "{\n" +
-                    THREE_TABS + "MessageRegistry.Register(k_RosMessageName, Deserialize);\n" +
+                    THREE_TABS + $"MessageRegistry.Register(k_RosMessageName, Deserialize{subtopicParameter});\n" +
                     TWO_TABS + "}\n"
                 );
 
@@ -546,7 +551,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     case "float":
                         if (float.TryParse(val, out float j))
                         {
-                            ret += val;
+                            ret += val + "f";
                         }
                         else
                         {

@@ -60,6 +60,12 @@ namespace RosMessageTypes.BuiltinInterfaces
             deserializer.Read(out this.nanosec);
         }
 
+        public override void SerializeTo(MessageSerializer serializer)
+        {
+            serializer.Write(this.sec);
+            serializer.Write(this.nanosec);
+        }
+
         public override string ToString()
         {
             return "Duration: " +

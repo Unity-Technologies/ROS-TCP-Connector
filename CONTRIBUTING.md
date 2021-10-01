@@ -30,7 +30,19 @@ does the following:
 - Has corresponding changes to documentation, unit tests and sample environments (if
   applicable)
 - Contains a summary of the tests performed to validate your changes
+- Updates the [Changelog](com.unity.robotics.ros-tcp-connector/CHANGELOG.md) and describes changes in the Unreleased section
 - Links to issue numbers that the PR resolves (if any)
+
+## Workflow
+
+This project is provided as a package to be imported into a Unity project. In order to avoid common issues regarding version control and unmanaged files, the suggested workflow for contributing to the package is as follows:
+
+1. Clone this repository to a known location on your local machine (e.g. Documents).
+2. Git checkout the `dev` branch to ensure you have the latest staged changes.
+3. In a development Unity project (e.g. a new project created from the Unity Hub of the minimum Unity [version](README.md) or above), open the `Window > Package Manager`.
+4. Click the `+` in the top-left of the Package Manager window and select `Add package from disk...`.
+5. Navigate to the cloned repository, and select the `com.unity.<package>/package.json` file. Click `Open`.
+6. The local version of the package is now added to your Unity project! Changes made to your cloned directory will update in your Unity project.
 
 <!-- ## Continuous Integration (CI)
 
@@ -41,13 +53,10 @@ We run continuous integration on all PRs; all tests must be passing before the P
 All Python code should follow the [PEP 8 style guidelines](https://pep8.org/).
 
 All C# code should follow the [Microsoft C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
-Additionally, the [Unity Coding package](https://docs.unity3d.com/Packages/com.unity.coding@0.1/manual/index.html)
-can be used to format, encode, and lint your code according to the standard Unity
-development conventions. Be aware that these Unity conventions will supersede the
-Microsoft C# Coding Conventions where applicable.
+(Code may be reformatted to Unity coding standards where applicable.)
 
-Please note that even if the code you are changing does not adhere to these guidelines,
-we expect your submissions to follow these conventions.
+Please note that even if the code you are changing does not follow these conventions,
+we expect your submissions to do so.
 
 ## Contributor License Agreements
 
