@@ -85,7 +85,7 @@ The **Topic** field can be specifically assigned to customize visualizations for
 
 ### TF Topics and Tracking
 
-There are three options, found via the TF Tracking Settings, for how to visualize messages with stamped headers with respect to the TF tree.
+There are three options, found via the `TF Tracking Settings`, for how to visualize messages with stamped headers with respect to the TF tree.
 
 **Tracking Type - Track Latest:** This setting reads the `frame_id` from the message header, queries the transform tree for the *latest* transform from that parent link, and draws the visualization with respect to that transform. With this setting, the drawing object will appear as a child GameObject of the GameObject corresponding to the proper `frame_id`. The drawing will have a zeroed local position and rotation, and the frame GameObject will be transformed based on the latest transform information.
 
