@@ -1,4 +1,4 @@
-# Robotics Visualization Package
+# Robotics Visualizations Package
 
 The Visualizations Package enables Unity projects to visualize incoming and outgoing information from ROS, such as sensor data, navigation messages, markers, and more. This package provides default configurations for common message types as well as APIs to create custom visualizations.
 
@@ -83,15 +83,17 @@ The **Topic** field can be specifically assigned to customize visualizations for
 
 ### TF Topics and Tracking
 
-For messages with stamped headers, there is an option to customize the coordinate frame tracking per visualization. This is provided in the applicable default visualizers via the `TF Tracking Settings`, which contains options for a topic string and a type.
+There are three options, found via the TF Tracking Settings, for how to visualize messages with stamped headers with respect to the TF tree.
 
-**TF Topic:** It is important to render 3D visualizations in the proper coordinate frame. By default, the `TF Topic` is assigned to `/tf`, but this can be replaced with a different or namespaced TF topic.
+**Tracking Type - Track Latest:** This setting reads the `frame_id` from the message header, queries the transform tree for the *latest* transform from that parent link, and draws the visualization with respect to that transform. With this setting, the drawing object will appear as a child GameObject of the GameObject corresponding to the proper `frame_id`. The drawing will have a zeroed local position and rotation, and the frame GameObject will be transformed based on the latest transform information.
 
-**Tracking Type - Exact:** This setting adds the visualization drawing as a child of the `BasicDrawingManager`. The drawing's transform will be modified directly by looking back in time and using the *exact* transform corresponding to the header's timestamp.
+**Tracing Type - Exact:** This setting reads the `frame_id` from the message header, queries the transform tree for the transform corresponding to the exact timestamp in the header, and draws the visualization with respect to that transform. With this setting, the the drawing object will appear as a child of the `BasicDrawingManager`. Its Transform will remain zero throughout the simulation, while its parent object’s Transform will show the value of the transform queried as described.
 
-**Tracking Type - Track Latest:** This setting places the visualization drawing as a child GameObject corresponding to the proper `frame_id`. The drawing will have a zeroed local position and rotation, and the *frame* GameObject will be transformed based on the *latest* transform information.
+**Tracking Type - None:** This setting ignores the message header and draws messages with respect to the Unity's origin by setting the local position of the drawing to `Vector3.zero` and the local rotation to be `Quaternion.identity`. With this setting, the drawing object will appear in the `BasicDrawingManager`, and you’ll see that its Transform (Position and Rotation) remain zero throughout the simulation.
 
-**Tracking Type - None:** This setting will set the local position of the drawing to `Vector3.zero` and the local rotation to be `Quaternion.identity`.
+Additionally, it is important to track 3D visualizations in the proper coordinate frames.
+
+**TF Topic:** By default, the `TF Topic` is assigned to `/tf`, but this can be replaced with a different or namespaced TF topic.
 
 ### Visualization Settings
 
