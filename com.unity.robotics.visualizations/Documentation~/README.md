@@ -28,11 +28,11 @@ Get started with the Visualizations Package with our [Nav2-SLAM tutorial](https:
 
     ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
 
-3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
+3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations` and click `Add`.
 
     > Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
 
-4. Click `Add`.
+3. The Visualizations package requires the corresponding version of the Ros TCP Connector package. If you haven't already installed it, click the + button again, as before, and enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector#v0.6.0` and click `Add`.
 
 ## Configuring a Visualization Suite
 
