@@ -139,21 +139,12 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             if (GUI.changed)
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
-                PrefabUtility.SavePrefabAsset(geometryCompassPrefab.gameObject);
             }
 
             // ROS Geometry Compass Settings
             EditorGUILayout.Space();
-            var geometryCompass = Resources.Load<GameObject>(GeometryCompass.PrefabName);
-            if (geometryCompass == null)
-            {
-                var sceneObject = new GameObject("GeometryCompass");
-                sceneObject.AddComponent<GeometryCompass>();
-                geometryCompass = PrefabUtility.SaveAsPrefabAsset(sceneObject, $"Assets/Resources/{GeometryCompass.PrefabName}.prefab");
-                DestroyImmediate(sceneObject);
-            }
-            geometryCompassPrefab = geometryCompass.GetComponent<GeometryCompass>();
-            geometryCompassPrefab.UnityZAxisDirection = (CardinalDirection)EditorGUILayout.EnumPopup("Geometry Compass", geometryCompassPrefab.UnityZAxisDirection);
+            EditorGUILayout.LabelField("Compass settings", EditorStyles.boldLabel);
+            GeometryCompass.UnityZAxisDirection = (CardinalDirection)EditorGUILayout.EnumPopup("Unity Z Axis Direction", GeometryCompass.UnityZAxisDirection);
         }
 
         void OnInspectorUpdate() { Repaint(); }
