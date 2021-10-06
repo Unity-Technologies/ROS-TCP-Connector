@@ -35,58 +35,168 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.y, q.z, q.x, -q.w);
     }
 
+    public class ENULocal : FLU { }
+
     public class FRD : ICoordinateSpace
     {
-        public virtual Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
-        public virtual Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
-        public virtual Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
-        public virtual Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
+        public Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.z, v.x, -v.y);
+        public Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
+        public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
+        public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
     }
 
-    public class NED : FRD { }
+    public class NEDLocal : FRD { }
+
+    public class NED : ICoordinateSpace
+    {
+        public Vector3 ConvertFromRUF(Vector3 v)
+        {
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return new Vector3(v.z, v.x, -v.y);
+                case CardinalDirection.East:
+                    return new Vector3(-v.x, v.z, -v.y);
+                case CardinalDirection.South:
+                    return new Vector3(-v.z, -v.x, -v.y);
+                case CardinalDirection.West:
+                    return new Vector3(v.x, -v.z, -v.y);
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public Vector3 ConvertToRUF(Vector3 v)
+        {
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return new Vector3(v.y, -v.z, v.x);
+                case CardinalDirection.East:
+                    return new Vector3(-v.x, -v.z, v.y);
+                case CardinalDirection.South:
+                    return new Vector3(-v.y, -v.z, -v.x);
+                case CardinalDirection.West:
+                    return new Vector3(v.x, -v.z, -v.y);
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public Quaternion ConvertFromRUF(Quaternion q)
+        {
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    break;
+                case CardinalDirection.East:
+                    q = GeometryCompass.k_NinetyYaw * q;
+                    break;
+                case CardinalDirection.South:
+                    q = GeometryCompass.k_OneEightyYaw * q;
+                    break;
+                case CardinalDirection.West:
+                    q = GeometryCompass.k_NegativeNinetyYaw * q;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return new Quaternion(q.z, q.x, -q.y, -q.w);
+        }
+
+        public Quaternion ConvertToRUF(Quaternion q)
+        {
+            var r = new Quaternion(q.y, -q.z, q.x, -q.w);
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return r;
+                case CardinalDirection.East:
+                    return GeometryCompass.k_NegativeNinetyYaw * r;
+                case CardinalDirection.South:
+                    return GeometryCompass.k_OneEightyYaw * r;
+                case CardinalDirection.West:
+                    return GeometryCompass.k_NinetyYaw * r;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+    }
 
     public class ENU : ICoordinateSpace
     {
-        public virtual Vector3 ConvertFromRUF(Vector3 v) => new Vector3(v.x, v.z, v.y);
-        public virtual Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.x, v.z, v.y);
-        public virtual Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.x, q.z, q.y, -q.w);
-        public virtual Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.x, q.z, q.y, -q.w);
-    }
-
-    public class NEDGlobal : NED
-    {
-        public override Vector3 ConvertFromRUF(Vector3 v)
+        public Vector3 ConvertFromRUF(Vector3 v)
         {
-            var vNed = GeometryCompass.ToNED(v);
-            return new Vector3(vNed.x, vNed.y, vNed.z);
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return new Vector3(v.x, v.z, v.y);
+                case CardinalDirection.East:
+                    return new Vector3(v.z, -v.x, v.y);
+                case CardinalDirection.South:
+                    return new Vector3(-v.x, -v.z, v.y);
+                case CardinalDirection.West:
+                    return new Vector3(-v.z, v.x, v.y);
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+        public Vector3 ConvertToRUF(Vector3 v)
+        {
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return new Vector3(v.x, v.z, v.y);
+                case CardinalDirection.East:
+                    return new Vector3(-v.y, v.z, v.x);
+                case CardinalDirection.South:
+                    return new Vector3(-v.x, v.z, -v.y);
+                case CardinalDirection.West:
+                    return new Vector3(v.y, v.z, -v.x);
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromNED(new Vector3<NEDGlobal>(v.x, v.y, v.z));
-        public override Quaternion ConvertFromRUF(Quaternion q)
+        public Quaternion ConvertFromRUF(Quaternion q)
         {
-            var qNed = GeometryCompass.ToNED(q);
-            return new Quaternion(qNed.x, qNed.y, qNed.z, qNed.w);
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    q = GeometryCompass.k_NegativeNinetyYaw * q;
+                    break;
+                case CardinalDirection.East:
+                    break;
+                case CardinalDirection.South:
+                    q = GeometryCompass.k_NinetyYaw * q;
+                    break;
+                case CardinalDirection.West:
+                    q = GeometryCompass.k_OneEightyYaw * q;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return new Quaternion(q.z, -q.x, q.y, -q.w);
         }
 
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromNED(new Quaternion<NEDGlobal>(q.x, q.y, q.z, q.w));
-    }
-
-    public class ENUGlobal : ENU
-    {
-        public override Vector3 ConvertFromRUF(Vector3 v)
+        public Quaternion ConvertToRUF(Quaternion q)
         {
-            var vEnu = GeometryCompass.ToENU(v);
-            return new Vector3(vEnu.x, vEnu.y, vEnu.z);
+            q = new Quaternion(-q.y, q.z, q.x, -q.w);
+            switch (GeometryCompass.UnityZAxisDirection)
+            {
+                case CardinalDirection.North:
+                    return GeometryCompass.k_NinetyYaw * q;
+                case CardinalDirection.East:
+                    return q;
+                case CardinalDirection.South:
+                    return GeometryCompass.k_NegativeNinetyYaw * q;
+                case CardinalDirection.West:
+                    return GeometryCompass.k_OneEightyYaw * q;
+                default:
+                    throw new NotSupportedException();
+            }
         }
-        public override Vector3 ConvertToRUF(Vector3 v) => GeometryCompass.FromENU(new Vector3<ENUGlobal>(v.x, v.y, v.z));
-
-        public override Quaternion ConvertFromRUF(Quaternion q)
-        {
-            var qEnu = GeometryCompass.ToENU(q);
-            return new Quaternion(qEnu.x, qEnu.y, qEnu.z, qEnu.w);
-        }
-
-        public override Quaternion ConvertToRUF(Quaternion q) => GeometryCompass.FromENU(new Quaternion<ENUGlobal>(q.x, q.y, q.z, q.w));
     }
 
     public enum CoordinateSpaceSelection
@@ -96,8 +206,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         FRD,
         NED,
         ENU,
-        NEDGlobal,
-        ENUGlobal,
+        NEDLocal,
+        ENULocal,
     }
 
     public static class CoordinateSpaceExtensions
@@ -178,10 +288,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
                     return self.From<NED>();
-                case CoordinateSpaceSelection.ENUGlobal:
-                    return self.From<ENUGlobal>();
-                case CoordinateSpaceSelection.NEDGlobal:
-                    return self.From<NEDGlobal>();
+                case CoordinateSpaceSelection.ENULocal:
+                    return self.From<ENULocal>();
+                case CoordinateSpaceSelection.NEDLocal:
+                    return self.From<NEDLocal>();
                 default:
                     Debug.LogError("Invalid coordinate space " + selection);
                     return self.From<RUF>();
@@ -202,10 +312,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
                     return self.From<NED>();
-                case CoordinateSpaceSelection.ENUGlobal:
-                    return self.From<ENUGlobal>();
-                case CoordinateSpaceSelection.NEDGlobal:
-                    return self.From<NEDGlobal>();
+                case CoordinateSpaceSelection.ENULocal:
+                    return self.From<ENULocal>();
+                case CoordinateSpaceSelection.NEDLocal:
+                    return self.From<NEDLocal>();
                 default:
                     Debug.LogError("Invalid coordinate space " + selection);
                     return self.From<RUF>();
@@ -226,10 +336,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
                     return self.From<NED>();
-                case CoordinateSpaceSelection.ENUGlobal:
-                    return self.From<ENUGlobal>();
-                case CoordinateSpaceSelection.NEDGlobal:
-                    return self.From<NEDGlobal>();
+                case CoordinateSpaceSelection.ENULocal:
+                    return self.From<ENULocal>();
+                case CoordinateSpaceSelection.NEDLocal:
+                    return self.From<NEDLocal>();
                 default:
                     Debug.LogError("Invalid coordinate space " + selection);
                     return self.From<RUF>();
@@ -250,10 +360,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                     return self.From<ENU>();
                 case CoordinateSpaceSelection.NED:
                     return self.From<NED>();
-                case CoordinateSpaceSelection.ENUGlobal:
-                    return self.From<ENUGlobal>();
-                case CoordinateSpaceSelection.NEDGlobal:
-                    return self.From<NEDGlobal>();
+                case CoordinateSpaceSelection.ENULocal:
+                    return self.From<ENULocal>();
+                case CoordinateSpaceSelection.NEDLocal:
+                    return self.From<NEDLocal>();
                 default:
                     Debug.LogError("Invalid coordinate space " + selection);
                     return self.From<RUF>();
