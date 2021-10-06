@@ -31,6 +31,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             {
                 s_Instance = ScriptableObject.CreateInstance<GeometryCompass>();
                 s_Instance.m_ZAxisDirection = CardinalDirection.North;
+                if(!UnityEditor.AssetDatabase.IsValidFolder("Assets/Resources"))
+                    UnityEditor.AssetDatabase.CreateFolder("Assets", "Resources");
                 UnityEditor.AssetDatabase.CreateAsset(s_Instance, assetPath);
                 UnityEditor.AssetDatabase.SaveAssets();
             }
