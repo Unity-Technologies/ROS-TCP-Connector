@@ -15,6 +15,8 @@ namespace Unity.Robotics.Visualizations
         protected string m_Topic;
         public string Topic { get => m_Topic; set => m_Topic = value; }
 
+        public virtual MessageSubtopic Subtopic => MessageSubtopic.Default;
+
         [SerializeField]
         [HideInInspector]
         string m_ID;
@@ -64,11 +66,11 @@ namespace Unity.Robotics.Visualizations
         {
             if (m_Topic == "")
             {
-                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority);
+                VisualFactoryRegistry.RegisterTypeVisualizer<T>(this, Priority, Subtopic);
             }
             else
             {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
+                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority, Subtopic);
             }
         }
     }
