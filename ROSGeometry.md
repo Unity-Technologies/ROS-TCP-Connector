@@ -99,10 +99,10 @@ Or, if you need to work with it in the FLU coordinate space for now, you can wri
 
 And again, the same goes for converting a Quaternion message into a Unity Quaternion or `Quaternion<C>`.
 
-# A note about geographical coordinates
+# Geographical Coordinates
 
-The geographical coordinate systems NED and ENU are more complicated than the rest: besides the obvious "north" direction, they also provide a convention for which direction is "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotation.
-
-To correctly convert a *world* rotation to or from NED or ENU coordinates, you should place the `GeometryCompass` component in your scene, and in its settings, choose what compass direction you want the Unity z-axis to correspond to. Then use the GeometryCompass's conversion functions such as `GeometryCompass.ToENU(Quaternion)`.
+The geographical coordinate systems NED and ENU are more complicated than the rest: besides the obvious "north" direction, they also provide a convention for which direction is "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotations.
 
 If you have a *local* rotation represented in NED or ENU space, convert it using the standard ROSGeometry functions `To<NED>()` and `From<NED>()`, and so on. Note this conversion is only appropriate for local rotations, because it does not respect the northward direction, but only what direction is forward. In other words, these functions preserve identity quaternions as identity, and treat ENU as equvalent to FLU (east = forward, north = left, up = up), whereas NED is equivalent to FRD (north = forward, east = right, down = down).
+
+To correctly convert a *world* rotation to or from NED or ENU coordinates, you would use the NEDGlobal or ENUGlobal coordinate space - for example, `To<NEDGlobal>()` or `From<ENUGlobal>()`. This will apply the correct rotation to By default, the unity Z axis points "north", but you can configure this in the ROS Settings window. and you'll find a dropdown to select what compass direction the Unity Z Axis represents - the default is North. Now,

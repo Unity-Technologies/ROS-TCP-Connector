@@ -66,24 +66,24 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         static Quaternion s_OneEightyYaw = Quaternion.Euler(0, 180, 0);
         static Quaternion s_NegativeNinetyYaw = Quaternion.Euler(0, -90, 0);
 
-        public static Vector3<ENUGlobal> ToENU(Vector3 v)
+        public static Vector3<ENU> ToENU(Vector3 v)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3<ENUGlobal>(v.x, v.z, v.y);
+                    return new Vector3<ENU>(v.x, v.z, v.y);
                 case CardinalDirection.East:
-                    return new Vector3<ENUGlobal>(v.z, -v.x, v.y);
+                    return new Vector3<ENU>(v.z, -v.x, v.y);
                 case CardinalDirection.South:
-                    return new Vector3<ENUGlobal>(-v.x, -v.z, v.y);
+                    return new Vector3<ENU>(-v.x, -v.z, v.y);
                 case CardinalDirection.West:
-                    return new Vector3<ENUGlobal>(-v.z, v.x, v.y);
+                    return new Vector3<ENU>(-v.z, v.x, v.y);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public static Quaternion<ENUGlobal> ToENU(Quaternion q)
+        public static Quaternion<ENU> ToENU(Quaternion q)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
@@ -103,10 +103,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
 
             var r = q.To<FLU>();
-            return new Quaternion<ENUGlobal>(r.x, r.y, r.z, r.w);
+            return new Quaternion<ENU>(r.x, r.y, r.z, r.w);
         }
 
-        public static Vector3 FromENU(Vector3<ENUGlobal> v)
+        public static Vector3 FromENU(Vector3<ENU> v)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
@@ -123,7 +123,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromENU(Quaternion<ENUGlobal> q)
+        public static Quaternion FromENU(Quaternion<ENU> q)
         {
             var r = new Quaternion(-q.y, q.z, q.x, -q.w);
             switch (GetOrCreateSettings().m_ZAxisDirection)
@@ -141,24 +141,24 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Vector3<NEDGlobal> ToNED(Vector3 v)
+        public static Vector3<NED> ToNED(Vector3 v)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
                 case CardinalDirection.North:
-                    return new Vector3<NEDGlobal>(v.z, v.x, -v.y);
+                    return new Vector3<NED>(v.z, v.x, -v.y);
                 case CardinalDirection.East:
-                    return new Vector3<NEDGlobal>(-v.x, v.z, -v.y);
+                    return new Vector3<NED>(-v.x, v.z, -v.y);
                 case CardinalDirection.South:
-                    return new Vector3<NEDGlobal>(-v.z, -v.x, -v.y);
+                    return new Vector3<NED>(-v.z, -v.x, -v.y);
                 case CardinalDirection.West:
-                    return new Vector3<NEDGlobal>(v.x, -v.z, -v.y);
+                    return new Vector3<NED>(v.x, -v.z, -v.y);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public static Quaternion<NEDGlobal> ToNED(Quaternion q)
+        public static Quaternion<NED> ToNED(Quaternion q)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
@@ -178,10 +178,10 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
 
             var r = q.To<FRD>();
-            return new Quaternion<NEDGlobal>(r.x, r.y, r.z, r.w);
+            return new Quaternion<NED>(r.x, r.y, r.z, r.w);
         }
 
-        public static Vector3 FromNED(Vector3<NEDGlobal> v)
+        public static Vector3 FromNED(Vector3<NED> v)
         {
             switch (GetOrCreateSettings().m_ZAxisDirection)
             {
@@ -198,7 +198,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             }
         }
 
-        public static Quaternion FromNED(Quaternion<NEDGlobal> q)
+        public static Quaternion FromNED(Quaternion<NED> q)
         {
             var r = new Quaternion(q.y, -q.z, q.x, -q.w);
             switch (GetOrCreateSettings().m_ZAxisDirection)

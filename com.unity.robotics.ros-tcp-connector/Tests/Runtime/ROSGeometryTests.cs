@@ -35,25 +35,25 @@ namespace Tests.Runtime
 
         [Test, TestCaseSource(nameof(EnuTestCases))]
         public void CompassENU_Success(CardinalDirection direction,
-            Vector3 unityPosition, Vector3<ENUGlobal> enuPosition,
-            Quaternion unityRotation, Quaternion<ENUGlobal> enuRotation)
+            Vector3 unityPosition, Vector3<ENU> enuPosition,
+            Quaternion unityRotation, Quaternion<ENU> enuRotation)
         {
             GeometryCompass.UnityZAxisDirection = direction;
-            Assert.AreEqual(enuPosition, unityPosition.To<ENUGlobal>());
+            Assert.AreEqual(enuPosition, unityPosition.To<ENU>());
             Assert.AreEqual(unityPosition, enuPosition.toUnity);
-            AssertApproximatelyEqual(enuRotation, unityRotation.To<ENUGlobal>());
+            AssertApproximatelyEqual(enuRotation, unityRotation.To<ENU>());
             AssertApproximatelyEqual(unityRotation, enuRotation.toUnity);
         }
 
         [Test, TestCaseSource(nameof(NedTestCases))]
         public void CompassNED_Success(CardinalDirection direction,
-            Vector3 unityPosition, Vector3<NEDGlobal> nedPosition,
-            Quaternion unityRotation, Quaternion<NEDGlobal> nedRotation)
+            Vector3 unityPosition, Vector3<NED> nedPosition,
+            Quaternion unityRotation, Quaternion<NED> nedRotation)
         {
             GeometryCompass.UnityZAxisDirection = direction;
-            Assert.AreEqual(nedPosition, unityPosition.To<NEDGlobal>());
+            Assert.AreEqual(nedPosition, unityPosition.To<NED>());
             Assert.AreEqual(unityPosition, nedPosition.toUnity);
-            AssertApproximatelyEqual(nedRotation, unityRotation.To<NEDGlobal>());
+            AssertApproximatelyEqual(nedRotation, unityRotation.To<NED>());
             AssertApproximatelyEqual(unityRotation, nedRotation.toUnity);
         }
 
@@ -62,17 +62,17 @@ namespace Tests.Runtime
             get
             {
                 yield return new TestCaseData(CardinalDirection.North,
-                    new Vector3(1, 2, 3), new Vector3<ENUGlobal>(1, 3, 2),
-                    Quaternion.identity, new Quaternion<ENUGlobal>(0, 0, -Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
+                    new Vector3(1, 2, 3), new Vector3<ENU>(1, 3, 2),
+                    Quaternion.identity, new Quaternion<ENU>(0, 0, -Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
                 yield return new TestCaseData(CardinalDirection.East,
-                    new Vector3(1, 2, 3), new Vector3<ENUGlobal>(3, -1, 2),
-                    Quaternion.identity, new Quaternion<ENUGlobal>(0, 0, 0, -1));
+                    new Vector3(1, 2, 3), new Vector3<ENU>(3, -1, 2),
+                    Quaternion.identity, new Quaternion<ENU>(0, 0, 0, -1));
                 yield return new TestCaseData(CardinalDirection.South,
-                    new Vector3(1, 2, 3), new Vector3<ENUGlobal>(-1, -3, 2),
-                    Quaternion.identity, new Quaternion<ENUGlobal>(0, 0, Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
+                    new Vector3(1, 2, 3), new Vector3<ENU>(-1, -3, 2),
+                    Quaternion.identity, new Quaternion<ENU>(0, 0, Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
                 yield return new TestCaseData(CardinalDirection.West,
-                    new Vector3(1, 2, 3), new Vector3<ENUGlobal>(-3, 1, 2),
-                    Quaternion.identity, new Quaternion<ENUGlobal>(0, 0, 1, 0));
+                    new Vector3(1, 2, 3), new Vector3<ENU>(-3, 1, 2),
+                    Quaternion.identity, new Quaternion<ENU>(0, 0, 1, 0));
             }
         }
 
@@ -81,17 +81,17 @@ namespace Tests.Runtime
             get
             {
                 yield return new TestCaseData(CardinalDirection.North,
-                    new Vector3(1, 2, 3), new Vector3<NEDGlobal>(3, 1, -2),
-                    Quaternion.identity, new Quaternion<NEDGlobal>(0, 0, 0, -1));
+                    new Vector3(1, 2, 3), new Vector3<NED>(3, 1, -2),
+                    Quaternion.identity, new Quaternion<NED>(0, 0, 0, -1));
                 yield return new TestCaseData(CardinalDirection.East,
-                    new Vector3(1, 2, 3), new Vector3<NEDGlobal>(-1, 3, -2),
-                    Quaternion.identity, new Quaternion<NEDGlobal>(0, 0, -Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
+                    new Vector3(1, 2, 3), new Vector3<NED>(-1, 3, -2),
+                    Quaternion.identity, new Quaternion<NED>(0, 0, -Mathf.Sqrt(2) / 2, -Mathf.Sqrt(2) / 2));
                 yield return new TestCaseData(CardinalDirection.South,
-                    new Vector3(1, 2, 3), new Vector3<NEDGlobal>(-3, -1, -2),
-                    Quaternion.identity, new Quaternion<NEDGlobal>(0, 0, -1, 0));
+                    new Vector3(1, 2, 3), new Vector3<NED>(-3, -1, -2),
+                    Quaternion.identity, new Quaternion<NED>(0, 0, -1, 0));
                 yield return new TestCaseData(CardinalDirection.West,
-                    new Vector3(1, 2, 3), new Vector3<NEDGlobal>(1, -3, -2),
-                    Quaternion.identity, new Quaternion<NEDGlobal>(0, 0, -Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
+                    new Vector3(1, 2, 3), new Vector3<NED>(1, -3, -2),
+                    Quaternion.identity, new Quaternion<NED>(0, 0, -Mathf.Sqrt(2) / 2, Mathf.Sqrt(2) / 2));
             }
         }
 
