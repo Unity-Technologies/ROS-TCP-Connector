@@ -25,20 +25,21 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
 
-        bool m_IsRosService;
-        public bool IsRosService => m_IsRosService;
-
         ROSConnection m_Connection;
         public ROSConnection Connection => m_Connection;
         ROSConnection.InternalAPI m_ConnectionInternal;
         Func<MessageDeserializer, Message> m_Deserializer;
 
         Func<Message, Message> m_ServiceImplementation;
-        private Func<Message, Task<Message>> m_ServiceImplementationAsync;
+        Func<Message, Task<Message>> m_ServiceImplementationAsync;
+
         RosTopicState m_ServiceResponseTopic;
         public RosTopicState ServiceResponseTopic => m_ServiceResponseTopic;
 
+        bool m_IsRosService;
+        public bool IsRosService => m_IsRosService;
         public bool IsUnityService => m_ServiceImplementation != null || m_ServiceImplementationAsync != null;
+        public bool IsService => m_ServiceResponseTopic != null || m_Subtopic == MessageSubtopic.Response;
 
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
@@ -146,11 +147,6 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Deserializer(m_ConnectionInternal.Deserializer);
         }
 
-        public void AddSubscriberCallbackOnly(Action<Message> callback)
-        {
-            m_SubscriberCallbacks.Add(callback);
-        }
-
         public void AddSubscriber(Action<Message> callback)
         {
             m_SubscriberCallbacks.Add(callback);
@@ -160,7 +156,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterSubscriber(NetworkStream stream = null)
         {
-            if (m_Connection.HasConnectionThread && !SentSubscriberRegistration)
+            if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
                 SentSubscriberRegistration = true;

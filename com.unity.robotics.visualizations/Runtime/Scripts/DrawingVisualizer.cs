@@ -13,7 +13,7 @@ namespace Unity.Robotics.Visualizations
 
         protected override IVisual CreateVisual(string topic)
         {
-            return new DrawingVisual(topic, this, Subtopic);
+            return new DrawingVisual(topic, this);
         }
 
         public Color SelectColor(Color userColor, MessageMetadata meta)
@@ -52,22 +52,12 @@ namespace Unity.Robotics.Visualizations
             public bool IsDrawingEnabled => m_IsDrawingEnabled;
             float m_LastDrawingFrameTime = -1;
 
-            public DrawingVisual(string topic, DrawingVisualizer<T> factory, MessageSubtopic subtopic)
+            public DrawingVisual(string topic, DrawingVisualizer<T> factory)
             {
                 m_Topic = topic;
                 m_Factory = factory;
 
-                ROSConnection ros = ROSConnection.GetOrCreateInstance();
-                RosTopicState state = ros.GetTopic(topic);
-                if (subtopic == MessageSubtopic.Response && state != null)
-                {
-                    if (state.ServiceResponseTopic == null)
-                        Debug.Log("Failed to subscribe to " + topic + " response!");
-                    else
-                        state.ServiceResponseTopic.AddSubscriberCallbackOnly(AddMessage);
-                }
-                else
-                    state.AddSubscriber(AddMessage);
+                ListenForMessages(topic, AddMessage);
             }
 
             public virtual void AddMessage(Message message)
