@@ -1,4 +1,4 @@
-# Robotics Visualizations Package
+# Unity Robotics Visualizations Package
 
 The Visualizations Package enables Unity projects to visualize incoming and outgoing information from ROS, such as sensor data, navigation messages, markers, and more. This package provides default configurations for common message types as well as APIs to create custom visualizations.
 
@@ -28,11 +28,11 @@ Get started with the Visualizations Package with our [Nav2-SLAM tutorial](https:
 
     ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
 
-3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
+3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations` and click `Add`.
 
     > Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
 
-4. Click `Add`.
+4. The Visualizations package requires the corresponding version of the ROS TCP Connector package. If you haven't already installed it, click the + button again, enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector` and click `Add`.
 
 ## Configuring a Visualization Suite
 

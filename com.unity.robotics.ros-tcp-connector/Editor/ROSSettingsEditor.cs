@@ -3,6 +3,7 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEditor.Callbacks;
 
 namespace Unity.Robotics.ROSTCPConnector.Editor
@@ -20,6 +21,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         Unity.Robotics.ROSTCPConnector.ROSConnection prefab;
+        GeometryCompass geometryCompassPrefab;
 
         public enum RosProtocol
         {
@@ -138,6 +140,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
+
+            // ROS Geometry Compass Settings
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Compass settings", EditorStyles.boldLabel);
+            GeometryCompass.UnityZAxisDirection = (CardinalDirection)EditorGUILayout.EnumPopup("Unity Z Axis Direction", GeometryCompass.UnityZAxisDirection);
         }
 
         void OnInspectorUpdate() { Repaint(); }

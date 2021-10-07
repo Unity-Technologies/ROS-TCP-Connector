@@ -17,7 +17,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public float y { get => internalVector.y; set => internalVector.y = value; }
         public float z { get => internalVector.z; set => internalVector.z = value; }
 
-        static C coordinateSpace = new C();
+        static C s_CoordinateSpace = new C();
 
         public Vector3(float x, float y, float z)
         {
@@ -26,19 +26,19 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public Vector3(Vector3 vec_ruf)
         {
-            internalVector = coordinateSpace.ConvertFromRUF(vec_ruf);
+            internalVector = s_CoordinateSpace.ConvertFromRUF(vec_ruf);
         }
 
-        public Vector3 toUnity => coordinateSpace.ConvertToRUF(internalVector);
+        public Vector3 toUnity => s_CoordinateSpace.ConvertToRUF(internalVector);
 
         public static explicit operator Vector3<C>(Vector3 vec)
         {
-            return MakeInternal(coordinateSpace.ConvertFromRUF(vec));
+            return MakeInternal(s_CoordinateSpace.ConvertFromRUF(vec));
         }
 
         public static explicit operator Vector3(Vector3<C> vec)
         {
-            return coordinateSpace.ConvertToRUF(vec.internalVector);
+            return s_CoordinateSpace.ConvertToRUF(vec.internalVector);
         }
 
         public Vector3<C2> To<C2>() where C2 : ICoordinateSpace, new()
