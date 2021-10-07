@@ -49,6 +49,8 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
 
   - Unity service implementations can be async
 
+  - Added geographical world coordinate transformation by a Compass component
+
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
 - Registering a service now requires both the request and response message type.
