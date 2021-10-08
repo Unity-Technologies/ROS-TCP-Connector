@@ -62,7 +62,7 @@ namespace Unity.Robotics.ROSTCPConnector
         internal HudPanel m_HudPanel = null;
         public HudPanel HUDPanel => m_HudPanel;
 
-        class OutgoingMessageQueue
+        public class OutgoingMessageQueue
         {
             ConcurrentQueue<OutgoingMessageSender> m_OutgoingMessageQueue;
             public readonly ManualResetEvent NewMessageReadyToSendEvent;
@@ -88,11 +88,18 @@ namespace Unity.Robotics.ROSTCPConnector
         OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
 
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
-        CancellationTokenSource m_ConnectionThreadCancellation;
-        public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
-        static bool m_HasConnectionError = false;
-        public bool HasConnectionError => m_HasConnectionError;
+        private ConnectionThreadData connectionThreadData = null;
+        public bool HasConnectionThread => connectionThreadData != null;
+
+        public bool HasConnectionError => connectionThreadData != null
+            ? connectionThreadData.HasError
+            : false;
+
+        public ConnectionThreadState ConnectionState => connectionThreadData != null
+            ? connectionThreadData.ConnectionState
+            : ConnectionThreadState.NotConnected;
+
 
         // only the main thread can access Time.*, so make a copy here
         public static float s_RealTimeSinceStartup = 0.0f;
@@ -499,9 +506,7 @@ namespace Unity.Robotics.ROSTCPConnector
             if (!IPFormatIsCorrect(RosIPAddress))
                 Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
 
-            m_ConnectionThreadCancellation = new CancellationTokenSource();
-
-            Task.Run(() => ConnectionThread(
+            connectionThreadData = new ConnectionThreadData(
                 RosIPAddress,
                 RosPort,
                 m_NetworkTimeoutSeconds,
@@ -511,8 +516,9 @@ namespace Unity.Robotics.ROSTCPConnector
                 OnConnectionLostCallback,
                 m_OutgoingMessageQueue,
                 m_IncomingMessages,
-                m_ConnectionThreadCancellation.Token
-            ));
+                new CancellationTokenSource()
+            );
+            Task.Run(() => ConnectionThread(connectionThreadData));
         }
 
         // NB this callback is not running on the main thread, be cautious about modifying data here
@@ -547,10 +553,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Disconnect()
         {
-            m_ConnectionThreadCancellation?.Cancel();
+            connectionThreadData?.ConnectionThreadCancellation?.Cancel();
             //The thread may be waiting on a ManualResetEvent, if so, this will wake it so it can exit immediately.
             m_OutgoingMessageQueue?.NewMessageReadyToSendEvent?.Set();
-            m_ConnectionThreadCancellation = null;
+            connectionThreadData = null;
         }
 
         void OnValidate()
@@ -719,68 +725,125 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ConnectionThread(
-            string rosIPAddress,
-            int rosPort,
-            float networkTimeoutSeconds,
-            float keepaliveTime,
-            int sleepMilliseconds,
-            Action<NetworkStream> OnConnectionStartedCallback,
-            Action DeregisterAll,
-            OutgoingMessageQueue outgoingQueue,
-            ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
-            CancellationToken token)
+        public enum ConnectionThreadState
         {
-            //Debug.Log("ConnectionThread begins");
-            int nextReaderIdx = 101;
+            NotConnected,
+            AttemptingToConnect,
+            WaitingForReadThread,
+            Connected
+        }
+
+        public class ConnectionThreadData
+        {
+            public string RosIPAddress { get; }
+            public int RosPort { get; }
+            public float NetworkTimeoutSeconds { get; }
+            public float KeepaliveTime { get; }
+            public int SleepMilliseconds { get; }
+            public Action<NetworkStream> OnConnectionStartedCallback { get; }
+            public Action DeregisterAll { get; }
+            public OutgoingMessageQueue OutgoingQueue { get; }
+            public ConcurrentQueue<Tuple<string, byte[]>> IncomingQueue { get; }
+
+            public CancellationTokenSource ConnectionThreadCancellation { get; }
+
+            public int ReaderIdx { get; private set; }
+
+            public void IncrementReaderIdx()
+            {
+                ReaderIdx++;
+            }
+
+            public int ConnectionAttemptCount;
+
+            public int QueueFullWarningCount;
+
+            public NetworkStream NetworkStream;
+            public CancellationToken Token => ConnectionThreadCancellation.Token;
+
+            public ConnectionThreadState ConnectionState { get; set; }
+
+            public Exception Error { get; set; }
+
+            public bool HasError => Error != null;
+
+            public ConnectionThreadData(string rosIPAddress, int rosPort, float networkTimeoutSeconds, float keepaliveTime, int sleepMilliseconds, Action<NetworkStream> onConnectionStartedCallback, Action deregisterAll, OutgoingMessageQueue outgoingQueue, ConcurrentQueue<Tuple<string, byte[]>> incomingQueue, CancellationTokenSource cancellationTokenSource)
+            {
+                RosIPAddress = rosIPAddress;
+                RosPort = rosPort;
+                NetworkTimeoutSeconds = networkTimeoutSeconds;
+                KeepaliveTime = keepaliveTime;
+                SleepMilliseconds = sleepMilliseconds;
+                OnConnectionStartedCallback = onConnectionStartedCallback;
+                DeregisterAll = deregisterAll;
+                OutgoingQueue = outgoingQueue;
+                IncomingQueue = incomingQueue;
+                ConnectionThreadCancellation = cancellationTokenSource;
+                ConnectionState = ConnectionThreadState.NotConnected;
+                Error = null;
+                ConnectionAttemptCount = 0;
+                QueueFullWarningCount = 0;
+                ReaderIdx = 100;
+            }
+        }
+
+        static async Task ConnectionThread(ConnectionThreadData connectionInfo)
+        {
             int nextReconnectionDelay = 1000;
             MessageSerializer messageSerializer = new MessageSerializer();
 
-            while (!token.IsCancellationRequested)
+            while (!connectionInfo.Token.IsCancellationRequested)
             {
                 TcpClient client = null;
                 CancellationTokenSource readerCancellation = null;
 
                 try
                 {
-                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
+                    connectionInfo.ConnectionState = ConnectionThreadState.AttemptingToConnect;
+                    connectionInfo.ConnectionAttemptCount ++;
 
                     client = new TcpClient();
-                    client.Connect(rosIPAddress, rosPort);
+                    client.Connect(connectionInfo.RosIPAddress, connectionInfo.RosPort);
 
-                    NetworkStream networkStream = client.GetStream();
-                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
+                    connectionInfo.NetworkStream = client.GetStream();
+                    connectionInfo.NetworkStream.ReadTimeout = (int)(connectionInfo.NetworkTimeoutSeconds * 1000);
 
-                    SendKeepalive(networkStream);
-                    OnConnectionStartedCallback(networkStream);
+                    connectionInfo.ConnectionAttemptCount = 0;
+                    connectionInfo.ConnectionState = ConnectionThreadState.WaitingForReadThread;
+                    connectionInfo.Error = null;
+
+                    SendKeepalive(connectionInfo.NetworkStream);
+                    connectionInfo.OnConnectionStartedCallback.Invoke(connectionInfo.NetworkStream);
 
                     readerCancellation = new CancellationTokenSource();
-                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
-                    nextReaderIdx++;
+                    connectionInfo.IncrementReaderIdx();
+                    _ = Task.Run(() => ReaderThread(connectionInfo, readerCancellation.Token));
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
                     float waitingSinceRealTime = s_RealTimeSinceStartup;
                     while (true)
                     {
-                        bool messageReadyEventWasSet = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
-                        token.ThrowIfCancellationRequested();
+                        bool messageReadyEventWasSet = connectionInfo.OutgoingQueue.NewMessageReadyToSendEvent.WaitOne(connectionInfo.SleepMilliseconds);
+                        connectionInfo.Token.ThrowIfCancellationRequested();
 
                         if (messageReadyEventWasSet)
                         {
-                            outgoingQueue.NewMessageReadyToSendEvent.Reset();
+                            connectionInfo.OutgoingQueue.NewMessageReadyToSendEvent.Reset();
                         }
                         else
                         {
-                            if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
+                            if (s_RealTimeSinceStartup > waitingSinceRealTime + connectionInfo.KeepaliveTime)
                             {
-                                SendKeepalive(networkStream);
+                                SendKeepalive(connectionInfo.NetworkStream);
                                 waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
                         }
 
-                        while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
+                        bool queueFullWarningFlagged = false;
+                        int previousQueueFullWarningCount = connectionInfo.QueueFullWarningCount;
+                        while (connectionInfo.OutgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
                         {
-                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
+                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, connectionInfo.NetworkStream);
                             switch (sendToState)
                             {
                                 case OutgoingMessageSender.SendToState.Normal:
@@ -789,18 +852,29 @@ namespace Unity.Robotics.ROSTCPConnector
                                 case OutgoingMessageSender.SendToState.QueueFullWarning:
                                     //Unable to send messages to ROS as fast as we're generating them.
                                     //This could be caused by a TCP connection that is too slow.
-                                    Debug.LogWarning($"Queue full! Messages are getting dropped! " +
-                                                     "Try check your connection speed is fast enough to handle the traffic.");
+                                    connectionInfo.QueueFullWarningCount++;
+                                    queueFullWarningFlagged = true;
                                     break;
                                 case OutgoingMessageSender.SendToState.NoMessageToSendError:
-                                    //This indicates
+                                    //This indicates an error has occurred
+                                    connectionInfo.Error = new Exception("Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
                                     Debug.LogError(
                                         "Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
                                     break;
                             }
 
-                            token.ThrowIfCancellationRequested();
+                            connectionInfo.Token.ThrowIfCancellationRequested();
                             waitingSinceRealTime = s_RealTimeSinceStartup;
+                        }
+
+                        if (queueFullWarningFlagged)
+                        {
+                            //Designed to reduce log spamming.
+                            //TODO: It might be worth indicating which topics are having messages dropped so the user has a better idea what needs addressing.
+                            int newMessagesDropped =
+                                connectionInfo.QueueFullWarningCount - previousQueueFullWarningCount;
+                            Debug.LogWarning($"Queue full! {newMessagesDropped} messages were dropped! " +
+                                             "Try check your connection speed is fast enough to handle the traffic.");
                         }
                     }
                 }
@@ -809,9 +883,9 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
-                    Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                    Debug.Log($"Connection to {connectionInfo.RosIPAddress}:{connectionInfo.RosPort} failed - " + e);
                     await Task.Delay(nextReconnectionDelay);
+                    connectionInfo.Error = e;
                 }
                 finally
                 {
@@ -822,33 +896,36 @@ namespace Unity.Robotics.ROSTCPConnector
                         client.Close();
 
                     // clear the message queue
-                    ClearMessageQueue(outgoingQueue);
-                    DeregisterAll();
+                    ClearMessageQueue(connectionInfo.OutgoingQueue);
+                    connectionInfo.DeregisterAll();
                 }
                 await Task.Yield();
             }
+            connectionInfo.ConnectionState = ConnectionThreadState.NotConnected;
         }
 
-        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
+        static async Task ReaderThread(ConnectionThreadData connectionInfo, CancellationToken readerCancellationToken)
         {
-            while (!token.IsCancellationRequested)
+            while (!readerCancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
+                    Tuple<string, byte[]> content = await ReadMessageContents(connectionInfo.NetworkStream, connectionInfo.SleepMilliseconds, readerCancellationToken);
                     // Debug.Log($"Message {content.Item1} received");
-                    ROSConnection.m_HasConnectionError = false;
+                    connectionInfo.ConnectionState = ConnectionThreadState.Connected;
+                    connectionInfo.Error = null;
 
                     if (content.Item1 != "") // ignore keepalive messages
-                        queue.Enqueue(content);
+                        connectionInfo.IncomingQueue.Enqueue(content);
                 }
                 catch (OperationCanceledException)
                 {
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
-                    Debug.Log("Reader " + readerIdx + " exception! " + e);
+                    connectionInfo.Error = e;
+                    Debug.Log("Reader " + connectionInfo.ReaderIdx + " exception! " + e);
+                    connectionInfo.ConnectionState = ConnectionThreadState.WaitingForReadThread;
                 }
             }
         }
@@ -1015,30 +1092,82 @@ namespace Unity.Robotics.ROSTCPConnector
             GUILayout.Space(30);
             GUILayout.Label($"{protocolName} IP: ", labelStyle, GUILayout.Width(100));
 
-            if (!HasConnectionThread)
-            {
-                // if you've never run a build on this machine before, initialize the playerpref settings to the ones from the RosConnection
-                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_IP))
-                    SetIPPref(RosIPAddress);
-                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_TCP_PORT))
-                    SetPortPref(RosPort);
 
-                // NB, here the user is editing the PlayerPrefs values, not the ones in the RosConnection.
-                // (So that the hud remembers what IP you used last time you ran this build.)
-                // The RosConnection receives the edited values when you click Connect.
-                SetIPPref(GUILayout.TextField(RosIPAddressPref));
-                SetPortPref(Convert.ToInt32(GUILayout.TextField(RosPortPref.ToString())));
+            switch (ConnectionState)
+            {
+                case ConnectionThreadState.NotConnected:
+                    // if you've never run a build on this machine before, initialize the playerpref settings to the ones from the RosConnection
+                    if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_IP))
+                        SetIPPref(RosIPAddress);
+                    if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_TCP_PORT))
+                        SetPortPref(RosPort);
+
+                    // NB, here the user is editing the PlayerPrefs values, not the ones in the RosConnection.
+                    // (So that the hud remembers what IP you used last time you ran this build.)
+                    // The RosConnection receives the edited values when you click Connect.
+                    SetIPPref(GUILayout.TextField(RosIPAddressPref));
+                    SetPortPref(Convert.ToInt32(GUILayout.TextField(RosPortPref.ToString())));
+                    break;
+                default:
+                    GUILayout.Label($"{connectionThreadData.RosIPAddress}:{connectionThreadData.RosPort}", contentStyle);
+                    break;
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+
+            switch (ConnectionState)
+            {
+                case ConnectionThreadState.NotConnected:
+                    GUILayout.Label($"Not Connected", contentStyle);
+                    if (GUILayout.Button("Connect"))
+                        Connect(RosIPAddressPref, RosPortPref);
+                    break;
+                case ConnectionThreadState.AttemptingToConnect:
+                    GUILayout.Label($"Attempting to connect ({connectionThreadData.ConnectionAttemptCount})", contentStyle);
+                    if (GUILayout.Button("Cancel"))
+                        Disconnect();
+                    break;
+                case ConnectionThreadState.WaitingForReadThread:
+                    GUILayout.Label($"Waiting for read thread response", contentStyle);
+                    if (GUILayout.Button("Cancel"))
+                        Disconnect();
+                    break;
+                case ConnectionThreadState.Connected:
+                    GUILayout.Label($"Connected", contentStyle);
+                    if (GUILayout.Button("Disconnect"))
+                        Disconnect();
+                    break;
+            }
+
+            GUILayout.EndHorizontal();
+
+
+            if (HasConnectionError)
+            {
+                GUILayout.BeginHorizontal();
+                GUIStyle contentErrorStyle = new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    padding = new RectOffset(10, 0, 0, 5),
+                    normal = { textColor = Color.red },
+                    fixedWidth = 300
+                };
+
+                if (connectionThreadData.Error != null)
+                {
+                    GUILayout.Label($"{connectionThreadData.Error.Message}", contentErrorStyle);
+                }
+                else
+                {
+                    //Shouldn't reach this point in the code, but if it does, stop null reference exceptions.
+                    GUILayout.Label($"Unknown error!", contentErrorStyle);
+                }
 
                 GUILayout.EndHorizontal();
-                GUILayout.Label("(Not connected)");
-                if (GUILayout.Button("Connect"))
-                    Connect(RosIPAddressPref, RosPortPref);
             }
-            else
-            {
-                GUILayout.Label($"{RosIPAddress}:{RosPort}", contentStyle);
-                GUILayout.EndHorizontal();
-            }
+
         }
 
         static GUIStyle s_ConnectionArrowStyle;
