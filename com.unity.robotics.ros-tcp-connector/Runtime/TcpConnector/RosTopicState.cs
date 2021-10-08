@@ -20,7 +20,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public string RosMessageName => m_RosMessageName;
 
         TopicMessageSender m_MessageSender;
-        public TopicMessageSender MessageSender;
+        public TopicMessageSender MessageSender => m_MessageSender;
         public bool IsPublisher { get; private set; }
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
