@@ -90,6 +90,9 @@ namespace Unity.Robotics.ROSTCPConnector
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
 
         private ConnectionThreadData connectionThreadData = null;
+
+        public ConnectionThreadData CurrentConnectionThreadData => connectionThreadData;
+
         public bool HasConnectionThread => connectionThreadData != null;
 
         public bool HasConnectionError => connectionThreadData != null
