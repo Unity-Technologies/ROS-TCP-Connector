@@ -7,6 +7,7 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public abstract class SysCommand
     {
+        public const string k_SysCommand_Handshake = "__handshake";
         public const string k_SysCommand_Log = "__log";
         public const string k_SysCommand_Warning = "__warn";
         public const string k_SysCommand_Error = "__error";
@@ -65,6 +66,12 @@ namespace Unity.Robotics.ROSTCPConnector
     {
         public string topic;
         public string message_name;
+    }
+
+    public struct SysCommand_Handshake
+    {
+        public string version;
+        public string meta;
     }
 
     public struct SysCommand_Log

@@ -15,6 +15,9 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
+        public const string k_Version = "v0.7.0";
+        public const string k_CompatibleVersionPrefix = "v0.7.";
+
         // Variables required for ROS communication
         [SerializeField]
         [FormerlySerializedAs("hostName")]
@@ -615,6 +618,15 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             switch (topic)
             {
+                case SysCommand.k_SysCommand_Handshake:
+                    {
+                        var handshakeCommand = JsonUtility.FromJson<SysCommand_Handshake>(json);
+                        if (!handshakeCommand.version.StartsWith(k_CompatibleVersionPrefix))
+                        {
+                            Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: {handshakeCommand.version}. Required: {k_Version}");
+                        }
+                    }
+                    break;
                 case SysCommand.k_SysCommand_Log:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
@@ -825,12 +837,23 @@ namespace Unity.Robotics.ROSTCPConnector
 
         static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
+            // First message should be the handshake
+            Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
+            if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
+            {
+                ROSConnection.m_HasConnectionError = false;
+                queue.Enqueue(handshakeContent);
+            }
+            else
+            {
+                Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: 0.6.0 or older. Expected: {k_Version}.");
+            }
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    // Debug.Log($"Message {content.Item1} received");
                     ROSConnection.m_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
