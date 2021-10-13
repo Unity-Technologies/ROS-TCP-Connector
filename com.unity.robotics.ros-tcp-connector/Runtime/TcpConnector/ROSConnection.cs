@@ -621,9 +621,13 @@ namespace Unity.Robotics.ROSTCPConnector
                 case SysCommand.k_SysCommand_Handshake:
                     {
                         var handshakeCommand = JsonUtility.FromJson<SysCommand_Handshake>(json);
-                        if (!handshakeCommand.version.StartsWith(k_CompatibleVersionPrefix))
+                        if (handshakeCommand.version == null)
                         {
-                            Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: {handshakeCommand.version}. Required: {k_Version}");
+                            Debug.LogError($"Invalid ROS-TCP-Endpoint version string!? Required version: {k_Version}");
+                        }
+                        else if (!handshakeCommand.version.StartsWith(k_CompatibleVersionPrefix))
+                        {
+                            Debug.LogError($"Incompatible ROS-TCP-Endpoint version detected: {handshakeCommand.version}. Required: {k_Version}");
                         }
                     }
                     break;
