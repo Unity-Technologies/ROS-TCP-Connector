@@ -221,7 +221,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 if (m_InactiveMessagePool.Count > 0)
                 {
-                    result = (T) m_InactiveMessagePool.Dequeue();
+                    result = (T)m_InactiveMessagePool.Dequeue();
                 }
             }
 
