@@ -15,8 +15,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
     {
         public const string k_CompassSettingsAsset = "GeometryCompassSettings.asset";
 
-        [SerializeField]
-        CardinalDirection m_ZAxisDirection;
+        [SerializeField] CardinalDirection m_ZAxisDirection;
 
         static GeometryCompass s_Instance;
 
@@ -31,7 +30,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             {
                 s_Instance = ScriptableObject.CreateInstance<GeometryCompass>();
                 s_Instance.m_ZAxisDirection = CardinalDirection.North;
-                if(!UnityEditor.AssetDatabase.IsValidFolder("Assets/Resources"))
+                if (!UnityEditor.AssetDatabase.IsValidFolder("Assets/Resources"))
                     UnityEditor.AssetDatabase.CreateFolder("Assets", "Resources");
                 UnityEditor.AssetDatabase.CreateAsset(s_Instance, assetPath);
                 UnityEditor.AssetDatabase.SaveAssets();
@@ -67,11 +66,13 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public static readonly Quaternion k_NinetyYaw = Quaternion.Euler(0, 90, 0);
         public static readonly Quaternion k_OneEightyYaw = Quaternion.Euler(0, 180, 0);
         public static readonly Quaternion k_NegativeNinetyYaw = Quaternion.Euler(0, -90, 0);
+    }
 
-        public static Vector3 GetWorldXZDirection(CardinalDirection desiredDirection)
+    public static class GeometryCompassExtensions
+    {
+        public static Vector3 ToWorldDirection(this CardinalDirection desiredDirection)
         {
-
-            switch (UnityZAxisDirection)
+            switch (GeometryCompass.UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     switch (desiredDirection)
@@ -130,13 +131,13 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                             throw new Exception($"Unsupported CardinalDirection: {desiredDirection}");
                     }
                 default:
-                    throw new Exception($"Unsupported CardinalDirection: {UnityZAxisDirection}");
+                    throw new Exception($"Unsupported CardinalDirection: {GeometryCompass.UnityZAxisDirection}");
             }
         }
 
-        public static float GetUnityYawDegrees(CardinalDirection desiredDirection)
+        public static float ToUnityYawDegrees(this CardinalDirection desiredDirection)
         {
-            switch (UnityZAxisDirection)
+            switch (GeometryCompass.UnityZAxisDirection)
             {
                 case CardinalDirection.North:
                     switch (desiredDirection)
@@ -195,9 +196,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                             throw new Exception($"Unsupported CardinalDirection: {desiredDirection}");
                     }
                 default:
-                    throw new Exception($"Unsupported CardinalDirection: {UnityZAxisDirection}");
+                    throw new Exception($"Unsupported CardinalDirection: {GeometryCompass.UnityZAxisDirection}");
             }
         }
-
     }
 }
