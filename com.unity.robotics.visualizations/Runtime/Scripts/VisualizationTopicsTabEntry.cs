@@ -170,6 +170,9 @@ namespace Unity.Robotics.Visualizations
 
         public void SetVisualizing(bool ui, bool drawing)
         {
+            m_IsVisualizingUI = ui;
+            m_IsVisualizingDrawing = drawing;
+
             if (m_VisualWindow != null)
             {
                 m_VisualWindow.SetActive(ui);
@@ -194,18 +197,17 @@ namespace Unity.Robotics.Visualizations
                     m_VisualWindow.SetOnGUI(m_Visual.OnGUI);
                 }
             }
-
-            m_IsVisualizingUI = ui;
-            m_IsVisualizingDrawing = drawing;
         }
 
         [Serializable]
         public class SaveState
         {
             public string Topic;
+            public MessageSubtopic Subtopic;
             public string RosMessageName;
             public Rect Rect;
             public bool HasRect;
+            public bool IsService;
             public bool ShowWindow;
             public bool ShowDrawing;
         }
@@ -223,29 +225,30 @@ namespace Unity.Robotics.Visualizations
             m_CachedRosMessageName = RosMessageName;
         }
 
-        internal VisualizationTopicsTabEntry(SaveState save, RosTopicState topicState, Texture2D background)
+        public void LoadSaveState(SaveState save)
         {
-            m_TopicState = topicState;
-            m_Background = background;
-
-            if (save != null)
+            if (m_TopicState.ServiceResponseTopic != null && save.Subtopic == MessageSubtopic.Response)
             {
-                if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
-                {
-                    m_VisualWindow = new HudWindow(Title, save.Rect);
-                }
-                else if (save.ShowWindow)
-                {
-                    m_VisualWindow = new HudWindow(Title);
-                }
-
-                if (m_VisualWindow != null)
-                {
-                    HudPanel.AddWindow(m_VisualWindow);
-                }
-
-                SetVisualizing(save.ShowWindow, save.ShowDrawing);
+                // this save actually applies to the response topic
+                m_ServiceResponseTopic.LoadSaveState(save);
+                return;
             }
+
+            if (save.HasRect && save.Rect.width > 0 && save.Rect.height > 0)
+            {
+                m_VisualWindow = new HudWindow(Title, save.Rect);
+            }
+            else if (save.ShowWindow)
+            {
+                m_VisualWindow = new HudWindow(Title);
+            }
+
+            if (m_VisualWindow != null)
+            {
+                HudPanel.AddWindow(m_VisualWindow);
+            }
+
+            SetVisualizing(save.ShowWindow, save.ShowDrawing);
         }
 
         void InitLineStyle()
@@ -259,22 +262,27 @@ namespace Unity.Robotics.Visualizations
             m_HoverStyle.normal.background = m_Background;
         }
 
-        public SaveState CreateSaveState()
+        public void AddSaveStates(List<VisualizationTopicsTabEntry.SaveState> results)
         {
-            if (!IsVisualizingUI && !IsVisualizingDrawing)
+            if (IsVisualizingUI || IsVisualizingDrawing)
             {
-                return null;
+                results.Add(new SaveState
+                {
+                    Topic = m_TopicState.Topic,
+                    Subtopic = m_TopicState.Subtopic,
+                    RosMessageName = m_TopicState.RosMessageName,
+                    Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
+                    HasRect = m_VisualWindow != null,
+                    IsService = m_TopicState.ServiceResponseTopic != null || m_TopicState.Subtopic == MessageSubtopic.Response,
+                    ShowWindow = m_IsVisualizingUI,
+                    ShowDrawing = m_IsVisualizingDrawing,
+                });
             }
 
-            return new SaveState
+            if (m_ServiceResponseTopic != null)
             {
-                Topic = m_TopicState.Topic,
-                RosMessageName = m_TopicState.RosMessageName,
-                Rect = m_VisualWindow != null ? m_VisualWindow.WindowRect : new Rect(0, 0, 0, 0),
-                HasRect = m_VisualWindow != null,
-                ShowWindow = m_IsVisualizingUI,
-                ShowDrawing = m_IsVisualizingDrawing,
-            };
+                m_ServiceResponseTopic.AddSaveStates(results);
+            }
         }
 
 #if UNITY_EDITOR
