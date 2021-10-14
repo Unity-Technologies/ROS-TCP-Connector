@@ -213,7 +213,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
         }
 
-        public Message GetMessageFromPool() => m_MessageSender.GetMessageFromPool();
+        public T GetMessageFromPool<T>() where T : Message => m_MessageSender.GetMessageFromPool<T>();
 
         void CreateMessageSender(int queueSize)
         {

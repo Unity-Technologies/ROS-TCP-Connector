@@ -960,7 +960,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState topicState = GetTopic(rosTopicName);
             if (topicState != null)
             {
-                return (T)topicState.GetMessageFromPool();
+                return topicState.GetMessageFromPool<T>();
             }
             throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }

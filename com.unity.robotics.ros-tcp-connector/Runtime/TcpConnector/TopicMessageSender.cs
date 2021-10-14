@@ -213,21 +213,21 @@ namespace Unity.Robotics.ROSTCPConnector
         /**
          * @return a message of type T full of garbage data, be sure to update it accordingly.
          */
-        public Message GetMessageFromPool()
+        public T GetMessageFromPool<T>() where T : Message
         {
-            Message result = null;
+            T result = null;
             SetMessagePoolEnabled(true);
             lock (m_InactiveMessagePool)
             {
                 if (m_InactiveMessagePool.Count > 0)
                 {
-                    result = m_InactiveMessagePool.Dequeue();
+                    result = (T) m_InactiveMessagePool.Dequeue();
                 }
             }
 
             if (result == null)
             {
-                result = Activator.CreateInstance<Message>();
+                result = Activator.CreateInstance<T>();
             }
 
             return result;
