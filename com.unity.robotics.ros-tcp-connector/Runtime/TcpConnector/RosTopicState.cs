@@ -25,20 +25,21 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
 
-        bool m_IsRosService;
-        public bool IsRosService => m_IsRosService;
-
         ROSConnection m_Connection;
         public ROSConnection Connection => m_Connection;
         ROSConnection.InternalAPI m_ConnectionInternal;
         Func<MessageDeserializer, Message> m_Deserializer;
 
         Func<Message, Message> m_ServiceImplementation;
-        private Func<Message, Task<Message>> m_ServiceImplementationAsync;
+        Func<Message, Task<Message>> m_ServiceImplementationAsync;
+
         RosTopicState m_ServiceResponseTopic;
         public RosTopicState ServiceResponseTopic => m_ServiceResponseTopic;
 
+        bool m_IsRosService;
+        public bool IsRosService => m_IsRosService;
         public bool IsUnityService => m_ServiceImplementation != null || m_ServiceImplementationAsync != null;
+        public bool IsService => m_ServiceResponseTopic != null || m_Subtopic == MessageSubtopic.Response;
 
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
@@ -49,13 +50,17 @@ namespace Unity.Robotics.ROSTCPConnector
         public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
         public float LastMessageSentRealtime => m_LastMessageSentRealtime;
 
-        internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, MessageSubtopic subtopic = MessageSubtopic.Default)
+        internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, bool isService, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             m_Topic = topic;
             m_Subtopic = subtopic;
             m_RosMessageName = rosMessageName;
             m_Connection = connection;
             m_ConnectionInternal = connectionInternal;
+            if (isService && subtopic == MessageSubtopic.Default)
+            {
+                m_ServiceResponseTopic = new RosTopicState(topic, rosMessageName, m_Connection, m_ConnectionInternal, isService, MessageSubtopic.Response);
+            }
         }
 
         internal void ChangeRosMessageName(string rosMessageName)
@@ -151,7 +156,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterSubscriber(NetworkStream stream = null)
         {
-            if (m_Connection.HasConnectionThread && !SentSubscriberRegistration)
+            if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
                 SentSubscriberRegistration = true;
@@ -174,7 +179,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 return implementation((TRequest)msg);
             };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 
@@ -188,7 +192,6 @@ namespace Unity.Robotics.ROSTCPConnector
                 return response;
             };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, m_RosMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 
@@ -224,7 +227,6 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             m_IsRosService = true;
             m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName);
-            m_ServiceResponseTopic = new RosTopicState(m_Topic, responseMessageName, m_Connection, m_ConnectionInternal, MessageSubtopic.Response);
             CreateMessageSender(queueSize);
         }
 
@@ -233,6 +235,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionInternal.SendServiceRequest(serviceId);
             m_MessageSender.Queue(requestMessage);
             m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
+            OnMessageSent(requestMessage);
         }
 
         internal void OnConnectionEstablished(NetworkStream stream)

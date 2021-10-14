@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Robotics.ROSTCPConnector;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 namespace Unity.Robotics.Visualizations
@@ -193,9 +194,7 @@ namespace Unity.Robotics.Visualizations
                 {
                     if (rule == null)
                         continue;
-                    var save = rule.CreateSaveState();
-                    if (save != null)
-                        topicRuleSaves.Add(save);
+                    rule.AddSaveStates(topicRuleSaves);
                 }
 
                 Rules = topicRuleSaves.ToArray();
@@ -240,9 +239,15 @@ namespace Unity.Robotics.Visualizations
         {
             foreach (var savedRule in saveState.Rules)
             {
-                RosTopicState topicState = m_Connection.GetOrCreateTopic(savedRule.Topic, savedRule.RosMessageName);
-                VisualizationTopicsTabEntry vis = new VisualizationTopicsTabEntry(savedRule, topicState, m_FillTexture);
-                m_Topics.Add(savedRule.Topic, vis);
+                RosTopicState topicState = m_Connection.GetOrCreateTopic(savedRule.Topic, savedRule.RosMessageName, savedRule.IsService);
+                VisualizationTopicsTabEntry vis;
+                if (!m_Topics.TryGetValue(savedRule.Topic, out vis))
+                {
+                    vis = new VisualizationTopicsTabEntry(topicState, m_FillTexture);
+                    m_Topics.Add(savedRule.Topic, vis);
+                }
+
+                vis.LoadSaveState(savedRule);
             }
         }
 

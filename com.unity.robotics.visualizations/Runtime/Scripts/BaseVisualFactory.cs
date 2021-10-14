@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.Robotics.Visualizations;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
-
+using Unity.Robotics.ROSTCPConnector;
 
 namespace Unity.Robotics.Visualizations
 {
@@ -68,8 +68,23 @@ namespace Unity.Robotics.Visualizations
             }
             else
             {
-                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority);
+                VisualFactoryRegistry.RegisterTopicVisualizer(m_Topic, this, Priority, MessageRegistry.GetSubtopic<T>());
             }
+        }
+
+        public static void ListenForMessages(string topic, System.Action<Message> callback)
+        {
+            RosTopicState state = ROSConnection.GetOrCreateInstance().GetTopic(topic);
+            MessageSubtopic subtopic = MessageRegistry.GetSubtopic<T>();
+            if (subtopic == MessageSubtopic.Response && state != null)
+            {
+                if (state.ServiceResponseTopic == null)
+                    Debug.Log("Failed to subscribe to " + topic + " response!");
+                else
+                    state.ServiceResponseTopic.AddSubscriber(callback);
+            }
+            else
+                state.AddSubscriber(callback);
         }
     }
 }
