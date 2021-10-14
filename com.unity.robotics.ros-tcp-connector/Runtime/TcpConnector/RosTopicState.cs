@@ -91,7 +91,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnMessageSent(Message message)
         {
-            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
             if (m_RosMessageName == null)
             {
                 ChangeRosMessageName(message.RosMessageName);
@@ -207,7 +207,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Publish(Message message)
         {
-            m_LastMessageSentRealtime = Time.realtimeSinceStartup;
+            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
             OnMessageSent(message);
             m_MessageSender.Queue(message);
             m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
