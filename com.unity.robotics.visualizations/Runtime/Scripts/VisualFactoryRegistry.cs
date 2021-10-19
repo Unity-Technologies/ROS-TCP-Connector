@@ -51,9 +51,9 @@ namespace Unity.Robotics.Visualizations
         static ToStringVisualizer s_DefaultVisualFactory = new ToStringVisualizer(MessageSubtopic.Default);
         static ToStringVisualizer s_DefaultResponseVisualFactory = new ToStringVisualizer(MessageSubtopic.Response);
 
-        public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0, MessageSubtopic subtopic = MessageSubtopic.Default) where MsgType : Message
+        public static void RegisterTypeVisualizer<MsgType>(IVisualFactory visualFactory, int priority = 0) where MsgType : Message
         {
-            RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<MsgType>(), visualFactory, priority, subtopic);
+            RegisterTypeVisualizer(MessageRegistry.GetRosMessageName<MsgType>(), visualFactory, priority, MessageRegistry.GetSubtopic<MsgType>());
         }
 
         public static void RegisterTypeVisualizer(string rosMessageName, IVisualFactory visualFactory, int priority = 0, MessageSubtopic subtopic = MessageSubtopic.Default)
