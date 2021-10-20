@@ -961,16 +961,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public T GetFromPool<T>(string rosTopicName) where T : Message
-        {
-            RosTopicState topicState = GetTopic(rosTopicName);
-            if (topicState != null)
-            {
-                return (T)topicState.GetMessageFromPool();
-            }
-            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
-        }
-
         void InitializeHUD()
         {
             if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
