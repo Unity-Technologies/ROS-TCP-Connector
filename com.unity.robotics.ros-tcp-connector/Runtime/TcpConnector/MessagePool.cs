@@ -11,12 +11,12 @@ namespace Unity.Robotics.ROSTCPConnector
         void AddMessage(Message messageToRecycle);
     }
 
-    public class MessagePool<T> : IMessagePool where T : Message
+    public class MessagePool<T> : IMessagePool where T : Message, new()
     {
         ConcurrentQueue<T> m_Contents;
         int m_MaxSize;
 
-        public MessagePool(int maxSize)
+        public MessagePool(int maxSize = 10)
         {
             m_MaxSize = maxSize;
             m_Contents = new ConcurrentQueue<T>();
@@ -44,13 +44,13 @@ namespace Unity.Robotics.ROSTCPConnector
         /**
          * @return a message of type T full of garbage data, be sure to update it accordingly.
          */
-        public T GetMessage()
+        public T GetOrCreateMessage()
         {
             T result;
 
             if (!m_Contents.TryDequeue(out result))
             {
-                result = System.Activator.CreateInstance<T>();
+                result = new T();
             }
 
             return result;
