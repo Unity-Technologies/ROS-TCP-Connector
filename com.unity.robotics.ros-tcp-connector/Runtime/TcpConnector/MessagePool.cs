@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
@@ -12,13 +13,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
     public class MessagePool<T> : IMessagePool where T : Message
     {
-        Queue<T> m_Contents;
+        ConcurrentQueue<T> m_Contents;
         int m_MaxSize;
 
         public MessagePool(int maxSize)
         {
             m_MaxSize = maxSize;
-            m_Contents = new Queue<T>(maxSize);
+            m_Contents = new ConcurrentQueue<T>();
         }
 
         public void AddMessage(T messageToRecycle)
@@ -45,18 +46,9 @@ namespace Unity.Robotics.ROSTCPConnector
          */
         public T GetMessage()
         {
-            T result = null;
+            T result;
 
-            // when Unity migrates to .NET 5 this should become TryDequeue
-            lock (m_Contents)
-            {
-                if (m_Contents.Count > 0)
-                {
-                    result = m_Contents.Dequeue();
-                }
-            }
-
-            if (result == null)
+            if (!m_Contents.TryDequeue(out result))
             {
                 result = System.Activator.CreateInstance<T>();
             }
