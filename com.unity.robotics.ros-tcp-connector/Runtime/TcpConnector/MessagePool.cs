@@ -41,9 +41,10 @@ namespace Unity.Robotics.ROSTCPConnector
             AddMessage((T)message);
         }
 
-        /**
-         * @return a message of type T full of garbage data, be sure to update it accordingly.
-         */
+        /// <summary>
+        /// Get a message from the pool, or create one if necessary.
+        /// </summary>
+        /// <returns>A new or recycled message of type T, which may contain garbage data. Be sure to fill it in.</returns>
         public T GetOrCreateMessage()
         {
             T result;
