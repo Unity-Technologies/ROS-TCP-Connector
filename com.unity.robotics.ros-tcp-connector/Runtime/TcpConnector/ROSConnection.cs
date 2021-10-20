@@ -439,6 +439,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
             {
+                // Prefer to use the ROSConnection in the scene, if any
+                _instance = FindObjectOfType<ROSConnection>();
+                if (_instance != null)
+                    return _instance;
+
                 GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefab == null)
                 {
