@@ -447,7 +447,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string wrapperName = inFileName + "_FeedbackMessage";
 
             string in_filePath = Path.Combine(this.outPath, wrapperName + ".msg");
-            
+
 
             using (StreamWriter writer = new StreamWriter(in_filePath, false))
             {
@@ -459,7 +459,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 writer.Close();
             }
             var msg_outPath = rootPath;
-            MessageAutoGen.GenerateSingleMessage(in_filePath, msg_outPath, rosPackageName:$"{rosPackageName}/action",subFolder: "action");
+            MessageAutoGen.GenerateSingleMessage(in_filePath, msg_outPath, rosPackageName: $"{rosPackageName}/action", subFolder: "action");
             File.Delete(in_filePath);
         }
 
@@ -512,7 +512,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     "# The goal was canceled after an external request from an action client.\n" +
                     "int8 STATUS_CANCELED = 5\n\n" +
                     "# The goal was terminated by the action server without an external request.\n" +
-                    "int8 STATUS_ABORTED = 6\n\n" 
+                    "int8 STATUS_ABORTED = 6\n\n"
                     );
                 writer.Write("int8 status\n");
                 writer.Write(rosPackageName + "/" + inFileName + "Result result\n");
