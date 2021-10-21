@@ -75,7 +75,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return Path.Combine(outFolder, "msg", className + ".cs");
         }
 
-        public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
+        public static List<string> GenerateSingleMessage(string inPath, string outPath, string rosPackageName = "", bool verbose = false, string subFolder = "msg")
         {
             // If no ROS package name is provided, extract from path
             if (rosPackageName == "")
@@ -109,7 +109,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     throw new MessageParserException("Unexpected number of sections. Simple message should have 1 section.");
                 }
 
-                MessageParser parser = new MessageParser(listOfTokens[0], outPath, rosPackageName, "msg", MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues);
+                MessageParser parser = new MessageParser(listOfTokens[0], outPath, rosPackageName, subFolder, MsgAutoGenUtilities.builtInTypesMapping, MsgAutoGenUtilities.builtInTypesDefaultInitialValues);
                 parser.Parse();
                 return parser.GetWarnings();
             }
