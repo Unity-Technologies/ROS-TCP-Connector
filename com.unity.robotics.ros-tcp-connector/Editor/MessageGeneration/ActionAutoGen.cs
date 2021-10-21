@@ -20,7 +20,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public class ActionAutoGen
     {
+
         private static readonly string[] types = { "Goal", "Result", "Feedback" };
+
         private static readonly MessageSubtopic[] subtopics = { MessageSubtopic.Goal, MessageSubtopic.Result, MessageSubtopic.Feedback };
 
         public static string[] GetActionClassPaths(string inFilePath, string outPath)
@@ -29,7 +31,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             string outFolder = MessageAutoGen.GetMessageOutFolder(outPath, rosPackageName);
             string extension = Path.GetExtension(inFilePath);
             string className = MsgAutoGenUtilities.CapitalizeFirstLetter(Path.GetFileNameWithoutExtension(inFilePath)) + MsgAutoGenUtilities.ActionClassSuffix;
-
             string[] result = new string[types.Length];
             for (int Idx = 0; Idx < types.Length; ++Idx)
             {
@@ -74,8 +75,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 List<MessageToken> tokens = listsOfTokens[i];
 
                 // Action is made up of goal, result, feedback
+#if ROS2
+                string className = inFileName + types[i] + MsgAutoGenUtilities.MessageClassSuffix;
+#else
                 string className = inFileName + types[i] + MsgAutoGenUtilities.ActionClassSuffix;
-
+#endif
                 // Parse and generate goal, result, feedback messages
                 MessageParser parser = new MessageParser(
                     tokens,
@@ -89,13 +93,20 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 );
                 parser.Parse();
                 warnings.AddRange(parser.GetWarnings());
-
+#if !ROS2
                 // Generate action section wrapper messages
                 actionWrapper.WrapActionSections(types[i]);
+#endif
             }
 
             // Generate action wrapper
+#if ROS2
+            actionWrapper.GenerateActionFeedbackMsg();
+            actionWrapper.GenerateSendGoalService();
+            actionWrapper.GenerateGetResultService();
+#else          
             actionWrapper.WrapAction();
+#endif
 
             return warnings;
         }
@@ -170,6 +181,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         private readonly string rosPackageName;
 
         private readonly string outPath;
+        private readonly string rootPath;
 
         private Dictionary<string, string> symbolTable;
 
@@ -178,6 +190,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             this.inPath = inPath;
             this.inFileName = Path.GetFileNameWithoutExtension(inPath);
             this.rosPackageName = rosPackageName;
+            this.rootPath = Directory.GetParent(outPath).ToString();
             this.outPath = Path.Combine(outPath, "action");
         }
 
@@ -429,6 +442,87 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
         }
 
+        public void GenerateActionFeedbackMsg()
+        {
+            string wrapperName = inFileName + "_FeedbackMessage";
+
+            string in_filePath = Path.Combine(this.outPath, wrapperName + ".msg");
+            
+
+            using (StreamWriter writer = new StreamWriter(in_filePath, false))
+            {
+                writer.Write("# Goal ID\n");
+                writer.Write("unique_identifier_msgs/UUID goal_id\n\n");
+                writer.Write("# Feedback\n");
+                writer.Write(rosPackageName + "/" + inFileName + "Feedback feedback\n");
+                writer.Flush();
+                writer.Close();
+            }
+            var msg_outPath = rootPath;
+            MessageAutoGen.GenerateSingleMessage(in_filePath, msg_outPath, rosPackageName:$"{rosPackageName}/action",subFolder: "action");
+            File.Delete(in_filePath);
+        }
+
+        public void GenerateSendGoalService()
+        {
+            string wrapperName = inFileName + "_SendGoal";
+
+            string in_filePath = Path.Combine(this.outPath, wrapperName + ".srv");
+
+
+            using (StreamWriter writer = new StreamWriter(in_filePath, false))
+            {
+                writer.Write("# Goal ID\n");
+                writer.Write("unique_identifier_msgs/UUID goal_id\n\n");
+                writer.Write("# Goal\n");
+                writer.Write(rosPackageName + "/" + inFileName + "Goal goal\n");
+                writer.Write("---\n");
+                writer.Write("bool accepted\n");
+                writer.Write("builtin_interfaces/Time stamp\n");
+                writer.Flush();
+                writer.Close();
+            }
+            var msg_outPath = rootPath;
+            ServiceAutoGen.GenerateSingleService(in_filePath, msg_outPath, rosPackageName: $"{rosPackageName}/action", subFolder: "action");
+            File.Delete(in_filePath);
+        }
+        public void GenerateGetResultService()
+        {
+            string wrapperName = inFileName + "_GetResult";
+
+            string in_filePath = Path.Combine(this.outPath, wrapperName + ".srv");
+
+
+            using (StreamWriter writer = new StreamWriter(in_filePath, false))
+            {
+                writer.Write("# Goal ID\n");
+                writer.Write("unique_identifier_msgs/UUID goal_id\n\n");
+                writer.Write("---\n");
+                writer.Write("# The goal has been accepted and is awaiting execution.\n" +
+                    "int8 STATUS_UNKNOWN   = 0\n" +
+                    "# The goal has been accepted and is awaiting execution.\n" +
+                    "int8 STATUS_ACCEPTED = 1\n\n" +
+                    "# The goal is currently being executed by the action server.\n" +
+                    "int8 STATUS_EXECUTING = 2\n\n" +
+                    "# The client has requested that the goal be canceled and the action server has\n" +
+                    "# accepted the cancel request.\n" +
+                    "int8 STATUS_CANCELING = 3\n\n" +
+                    "# The goal was achieved successfully by the action server.\n" +
+                    "int8 STATUS_SUCCEEDED = 4\n\n" +
+                    "# The goal was canceled after an external request from an action client.\n" +
+                    "int8 STATUS_CANCELED = 5\n\n" +
+                    "# The goal was terminated by the action server without an external request.\n" +
+                    "int8 STATUS_ABORTED = 6\n\n" 
+                    );
+                writer.Write("int8 status\n");
+                writer.Write(rosPackageName + "/" + inFileName + "Result result\n");
+                writer.Flush();
+                writer.Close();
+            }
+            var msg_outPath = rootPath;
+            ServiceAutoGen.GenerateSingleService(in_filePath, msg_outPath, rosPackageName: $"{rosPackageName}/action", subFolder: "action");
+            File.Delete(in_filePath);
+        }
     }
 }
 
