@@ -36,7 +36,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return result;
         }
 
-        public static List<string> GenerateSingleService(string inPath, string outPath, string rosPackageName = "", bool verbose = false)
+        public static List<string> GenerateSingleService(string inPath, string outPath, string rosPackageName = "", bool verbose = false, string subFolder = "srv")
         {
             // If no ROS package name is provided, extract from path
             if (rosPackageName.Equals(""))
@@ -76,7 +76,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     tokens,
                     outPath,
                     rosPackageName,
-                    "srv",
+                    subFolder,
                     MsgAutoGenUtilities.builtInTypesMapping,
                     MsgAutoGenUtilities.builtInTypesDefaultInitialValues,
                     className,
