@@ -439,6 +439,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
             {
+                // Prefer to use the ROSConnection in the scene, if any
+                _instance = FindObjectOfType<ROSConnection>();
+                if (_instance != null)
+                    return _instance;
+
                 GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefab == null)
                 {
@@ -954,16 +959,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 rosTopic.Publish(message);
             }
-        }
-
-        public T GetFromPool<T>(string rosTopicName) where T : Message
-        {
-            RosTopicState topicState = GetTopic(rosTopicName);
-            if (topicState != null)
-            {
-                return (T)topicState.GetMessageFromPool();
-            }
-            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }
 
         void InitializeHUD()

@@ -41,8 +41,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // If no ROS package name is provided, extract from path
             if (rosPackageName.Equals(""))
             {
-                string[] hierarchy = inPath.Split(new char[] { '/', '\\' });
-                rosPackageName = hierarchy[hierarchy.Length - 3];
+                rosPackageName = MessageAutoGen.GetRosPackageName(inPath);
             }
 
             outPath = Path.Combine(outPath, MsgAutoGenUtilities.ResolvePackageName(rosPackageName));
