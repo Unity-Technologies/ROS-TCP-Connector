@@ -129,6 +129,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static string ResolvePackageName(string s)
         {
+            s = s.Replace('-', '_');
             if (s.Contains("_msgs") || s.Contains("_srvs") || s.Contains("_actions"))
             {
                 return PascalCase(s.Substring(0, s.LastIndexOf('_')));

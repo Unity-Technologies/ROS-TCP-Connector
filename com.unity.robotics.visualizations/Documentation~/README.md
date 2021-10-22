@@ -1,4 +1,4 @@
-# Robotics Visualization Package
+# Unity Robotics Visualizations Package
 
 The Visualizations Package enables Unity projects to visualize incoming and outgoing information from ROS, such as sensor data, navigation messages, markers, and more. This package provides default configurations for common message types as well as APIs to create custom visualizations.
 
@@ -28,11 +28,11 @@ Get started with the Visualizations Package with our [Nav2-SLAM tutorial](https:
 
     ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
 
-3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations`.
+3. Enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.visualizations` and click `Add`.
 
     > Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
 
-4. Click `Add`.
+4. The Visualizations package requires the corresponding version of the ROS TCP Connector package. If you haven't already installed it, click the + button again, enter `https://github.com/Unity-Technologies/ROS-TCP-Connector.git?path=/com.unity.robotics.ros-tcp-connector` and click `Add`.
 
 ## Configuring a Visualization Suite
 
@@ -57,17 +57,15 @@ The top-left panel in the Game view provides a GUI system that offers tabs to to
 The default tabs on the HUD panel includes:
 
 - **Topics**: Contains a list of all ROS topics on which this current session has sent or received a message. The `2D` toggle enables a window that shows the last message sent or received on that topic. The `3D` toggle enables an in-scene drawing that represents the last message sent or received on that topic. If no toggle is available, that topic does not have a default visualizer enabled in the Unity scene.
+  - Topics that appear *white* are of a ROS message type that has a visualizer component in the scene, i.e. a `DefaultVisualizer` component or a custom visualizer script attached to a GameObject in the scene. This can include a 2D window, a 3D drawing, or both. In the example screenshot above, this is `/scan`, or `cmd_vel`.
+  - Topics that appear *grey* are of a ROS message type that does *not* currently have a visualizer component in the scene. In the example screenshot above, this is `/backup/_action/feedback`, or `/backup/_action/status`.
   - The Topics tab also contains a search bar that allows you to search for topics.
 - **Transforms**: Contains [`tf`](http://wiki.ros.org/tf) visualization options, including displaying the axes, links, and labels for each frame.
 - **Layout**: Contains options to save and load this visualization configuration. While the visualization components are by default saved via the scene or the prefab, the window layout and visualized message list is saved as a JSON file. By default, this file is saved to a `RosHudLayout.json` file on your machine's [`Application.persistentDataPath`](https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html) and loaded on each session. In this Layout tab, you can choose to `Export` this JSON file with a custom name to a chosen location on your device, as well as `Import` a layout JSON file to begin using that saved visualization configuration.
 
 The HUD is also designed to be customizable; you may add custom tabs or headers to the HUD. You can write a custom script similar to the [VisualizationLayoutTab](../Runtime/Scripts/VisualizationLayoutTab.cs) to extend the HUD.
 
-> Get started with custom visualization scripts with the TEMP LINK [Nav2: Making a Custom Visualizer](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example/blob/amanda/custom-viz/readmes/custom_viz.md) tutorial!
-
-## Visualization Base Classes
-
-TODO
+> Get started with custom visualization scripts with the [Nav2: Making a Custom Visualizer](https://github.com/Unity-Technologies/Robotics-Nav2-SLAM-Example/blob/main/readmes/custom_viz.md) tutorial!
 
 ## Using the Inspector
 
@@ -83,15 +81,17 @@ The **Topic** field can be specifically assigned to customize visualizations for
 
 ### TF Topics and Tracking
 
-For messages with stamped headers, there is an option to customize the coordinate frame tracking per visualization. This is provided in the applicable default visualizers via the `TF Tracking Settings`, which contains options for a topic string and a type.
+There are three options, found via the `TF Tracking Settings`, for how to visualize messages with stamped headers with respect to the TF tree.
 
-**TF Topic:** It is important to render 3D visualizations in the proper coordinate frame. By default, the `TF Topic` is assigned to `/tf`, but this can be replaced with a different or namespaced TF topic.
+**Tracking Type - Track Latest:** This setting reads the `frame_id` from the message header, queries the transform tree for the *latest* transform from that parent link, and draws the visualization with respect to that transform. With this setting, the drawing object will appear as a child GameObject of the GameObject corresponding to the proper `frame_id`. The drawing will have a zeroed local position and rotation, and the frame GameObject will be transformed based on the latest transform information.
 
-**Tracking Type - Exact:** This setting adds the visualization drawing as a child of the `BasicDrawingManager`. The drawing's transform will be modified directly by looking back in time and using the *exact* transform corresponding to the header's timestamp.
+**Tracing Type - Exact:** This setting reads the `frame_id` from the message header, queries the transform tree for the transform corresponding to the exact timestamp in the header, and draws the visualization with respect to that transform. With this setting, the the drawing object will appear as a child of the `BasicDrawingManager`. Its Transform will remain zero throughout the simulation, while its parent object’s Transform will show the value of the transform queried as described.
 
-**Tracking Type - Track Latest:** This setting places the visualization drawing as a child GameObject corresponding to the proper `frame_id`. The drawing will have a zeroed local position and rotation, and the *frame* GameObject will be transformed based on the *latest* transform information.
+**Tracking Type - None:** This setting ignores the message header and draws messages with respect to the Unity's origin by setting the local position of the drawing to `Vector3.zero` and the local rotation to be `Quaternion.identity`. With this setting, the drawing object will appear in the `BasicDrawingManager`, and you’ll see that its Transform (Position and Rotation) remain zero throughout the simulation.
 
-**Tracking Type - None:** This setting will set the local position of the drawing to `Vector3.zero` and the local rotation to be `Quaternion.identity`.
+Additionally, it is important to track 3D visualizations in the proper coordinate frames.
+
+**TF Topic:** By default, the `TF Topic` is assigned to `/tf`, but this can be replaced with a different or namespaced TF topic.
 
 ### Visualization Settings
 
@@ -101,7 +101,7 @@ The 3D visualizations offer customizations such as `label` and `color` fields, w
 
 ### Joy Messages
 
-This package contains preconfigured button maps for the Xbox 360 wired and wireless controllers for Windows and Linux mappings, provided as ScriptableObjects in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory.
+This package contains preconfigured button maps for the Xbox 360 wired and wireless controllers for Windows and Linux mappings, provided as ScriptableObjects in the [`Resources/VisualizerSettings`](../Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory.
 
 You can create your own custom mapping for the Joy Default Visualizer by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers > Joy`. Once the file is made, you can click into the asset and manually assign the button or axis index appropriate for your custom controller.
 
@@ -109,9 +109,9 @@ Once the mapping is done, in your Joy Default Visualizer component (e.g. `Defaul
 
 ### Point Clouds
 
-Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [TEMP link] [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
+Similar to the Visualization Settings, point cloud visualizations are highly customizable. Settings for these visualizers (PointCloud, LaserScan, etc.) will be saved during runtime. For more information on this, you can check out the [base SettingsBasedVisualizer](../Editor/SettingsBasedVisualizerEditor.cs) class, as well as read more about Unity's [ScriptableObjects](https://docs.unity3d.com/Manual/class-ScriptableObject.html).
 
-The standard settings are provided in ScriptableObjects. Default settings are provided in the [TEMP link] [`Resources/VisualizerSettings`](https://github.com/Unity-Technologies/ROS-TCP-Connector/tree/laurie/JoySettings/com.unity.robotics.visualizations/Runtime/DefaultVisualizers/Sensor/ScriptableObjects) directory, and can be created by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers`. After being created, this configuration can be dragged and dropped into the component's Inspector field `Visualizer settings,` or selected by clicking on the small circle to the right of the field.
+The standard settings are provided in ScriptableObjects. Default settings are provided in the `Resources/VisualizerSettings` directory, and can be created by right-clicking in the Project window under `Create > Robotics > Sensor Visualizers`. After being created, this configuration can be dragged and dropped into the component's Inspector field `Visualizer settings,` or selected by clicking on the small circle to the right of the field.
 
 ![](../images~/pcl2.png)
 

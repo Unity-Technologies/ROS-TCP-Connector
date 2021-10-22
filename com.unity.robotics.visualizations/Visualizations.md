@@ -1,4 +1,4 @@
-# Unity Visualization Package
+# Unity Robotics Visualizations Package
 
 To install the Visualization Package in an existing Unity robotics project, open Window/Package Manager click the plus button and select "Add package from Git URL".
 Paste in the following text, then click Install:
