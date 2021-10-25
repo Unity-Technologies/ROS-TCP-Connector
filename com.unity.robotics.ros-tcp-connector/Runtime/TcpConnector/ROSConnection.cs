@@ -589,7 +589,19 @@ namespace Unity.Robotics.ROSTCPConnector
                     // if this is null, we have received a message on a topic we've never heard of...!?
                     // all we can do is ignore it, we don't even know what type it is
                     if (topicInfo != null)
-                        topicInfo.OnMessageReceived(contents);
+                    {
+                        try
+                        {
+                            //Add a try catch so that bad logic from one received message doesn't
+                            //cause the Update method to exit without processing other received messages.
+                            topicInfo.OnMessageReceived(contents);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                        }
+
+                    }
                 }
             }
         }
