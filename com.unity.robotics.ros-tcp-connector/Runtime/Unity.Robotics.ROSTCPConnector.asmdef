@@ -3,6 +3,7 @@
     "rootNamespace": "Unity.Robotics.ROSTCPConnector",
     "references": [],
     "includePlatforms": [
+        "CloudRendering",
         "Editor",
         "LinuxStandalone64",
         "macOSStandalone",
