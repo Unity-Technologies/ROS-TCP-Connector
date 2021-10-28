@@ -803,7 +803,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 try
                 {
                     connectionInfo.ConnectionState = ConnectionThreadState.AttemptingToConnect;
-                    connectionInfo.ConnectionAttemptCount ++;
+                    connectionInfo.ConnectionAttemptCount++;
 
                     client = new TcpClient();
                     client.Connect(connectionInfo.RosIPAddress, connectionInfo.RosPort);
