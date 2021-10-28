@@ -10,6 +10,48 @@ namespace Tests.Runtime
 {
     public class MessageTests
     {
+        class TestMessage : Message
+        {
+        }
+
+        class TestResponse : Message
+        {
+        }
+
+        [Test]
+        public void MessageRegistry_CanRegister()
+        {
+            const string rosMessageName = "testmessage";
+            Func<MessageDeserializer, TestMessage> deserializer = des => new TestMessage();
+
+            MessageRegistry.Register(rosMessageName, deserializer);
+
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestMessage>());
+            Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction<TestMessage>());
+            Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction(rosMessageName));
+        }
+
+        [Test]
+        public void MessageRegistry_CanRegisterSubtopics()
+        {
+            const string rosMessageName = "testmessage";
+            Func<MessageDeserializer, TestMessage> deserializer = des => new TestMessage();
+            Func<MessageDeserializer, TestResponse> deserializer2 = des => new TestResponse();
+
+            MessageRegistry.Register(rosMessageName, deserializer, MessageSubtopic.Default);
+            MessageRegistry.Register(rosMessageName, deserializer2, MessageSubtopic.Response);
+
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestMessage>());
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestResponse>());
+            Assert.AreEqual(MessageSubtopic.Default, MessageRegistry.GetSubtopic<TestMessage>());
+            Assert.AreEqual(MessageSubtopic.Response, MessageRegistry.GetSubtopic<TestResponse>());
+            Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction<TestMessage>());
+            Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction(rosMessageName, MessageSubtopic.Default));
+            Assert.AreEqual(deserializer2, MessageRegistry.GetDeserializeFunction<TestResponse>());
+            Assert.AreEqual(deserializer2, MessageRegistry.GetDeserializeFunction(rosMessageName, MessageSubtopic.Response));
+            Assert.IsNull(MessageRegistry.GetDeserializeFunction(rosMessageName, MessageSubtopic.Goal));
+        }
+
         [Test]
         public void RoundTrip_Int32()
         {
