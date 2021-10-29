@@ -1,4 +1,6 @@
+using RosMessageTypes.BuiltinInterfaces;
 using System.Collections.Generic;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
 // Represents a transform - position and rotation.
@@ -159,6 +161,11 @@ public class TFStream
         }
     }
 
+    public TFFrame GetLocalTF(TimeMsg time)
+    {
+        return GetLocalTF(time.ToLongTime());
+    }
+
     public TFFrame GetWorldTF(long time = 0)
     {
         TFFrame parent;
@@ -168,6 +175,11 @@ public class TFStream
             parent = TFFrame.identity;
 
         return parent.Compose(GetLocalTF(time));
+    }
+
+    public TFFrame GetWorldTF(TimeMsg time)
+    {
+        return GetWorldTF(time.ToLongTime());
     }
 
     // Can we safely stop polling for updates to a transform at this time?
