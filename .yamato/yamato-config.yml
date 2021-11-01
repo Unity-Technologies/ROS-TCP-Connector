@@ -5,7 +5,7 @@ agent:
     flavor: i1.large
 variables:
     # Coverage is defined in a percentage (out of 100)
-    COVERAGE_EXPECTED: 3.0
+    COVERAGE_EXPECTED: 2.5
     PATH: /root/.local/bin:/home/bokken/bin:/home/bokken/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/sbin:/home/bokken/.npm-global/bin
 commands:
     - python3 -m pip install unity-downloader-cli --index-url https://artifactory.prd.it.unity3d.com/artifactory/api/pypi/pypi/simple --upgrade
