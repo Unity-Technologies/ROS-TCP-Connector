@@ -16,7 +16,9 @@ commands:
     - command: |
         linecoverage=$(cat test-results/Report/Summary.xml | grep Linecoverage | grep -Eo '[+-]?[0-9]+([.][0-9]+)?')
         echo "Line coverage: $linecoverage%"
-        if (( $(echo "$linecoverage < $COVERAGE_EXPECTED" | bc -l) )); then exit 1; fi
+        if (( $(echo "$linecoverage < $COVERAGE_EXPECTED" | bc -l) )) 
+        then echo "ERROR: Code coverage is under threshold of $COVERAGE_EXPECTED%" && exit 1 
+        fi
 triggers:
     cancel_old_ci: true
     expression: |
