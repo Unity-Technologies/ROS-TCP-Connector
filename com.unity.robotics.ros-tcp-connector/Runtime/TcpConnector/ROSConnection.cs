@@ -91,8 +91,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         private ConnectionThreadData connectionThreadData = null;
 
-        public ConnectionThreadData CurrentConnectionThreadData => connectionThreadData;
-
         public bool HasConnectionThread => connectionThreadData != null;
 
         public bool HasConnectionError => connectionThreadData != null
@@ -103,6 +101,19 @@ namespace Unity.Robotics.ROSTCPConnector
             ? connectionThreadData.ConnectionState
             : ConnectionThreadState.NotConnected;
 
+        public int ConnectionAttemptCount => connectionThreadData != null
+            ? connectionThreadData.ConnectionAttemptCount
+            : 0;
+
+        //The ROS IP that that Connection Thread is actively using, may be different from RosIPAddress
+        public string ActiveRosIp => connectionThreadData != null
+            ? connectionThreadData.RosIPAddress
+            : RosIPAddress;
+
+        //The ROS port that that Connection Thread is actively using, may be different from RosPort
+        public int ActiveRosPort => connectionThreadData != null
+            ? connectionThreadData.RosPort
+            : RosPort;
 
         // only the main thread can access Time.*, so make a copy here
         public static float s_RealTimeSinceStartup = 0.0f;
@@ -736,7 +747,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Connected
         }
 
-        public class ConnectionThreadData
+        private class ConnectionThreadData
         {
             public string RosIPAddress { get; }
             public int RosPort { get; }
