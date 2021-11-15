@@ -1,8 +1,12 @@
 {
     "name": "Unity.Robotics.ROSTCPConnector",
     "rootNamespace": "Unity.Robotics.ROSTCPConnector",
-    "references": [],
+    "references": [
+        "GUID:ba58c43074cf72549aa2ac5937dae44b",
+        "GUID:5db6cbfd5d0e86a46862a70f4b4067f2"
+    ],
     "includePlatforms": [
+        "CloudRendering",
         "Editor",
         "LinuxStandalone64",
         "macOSStandalone",
