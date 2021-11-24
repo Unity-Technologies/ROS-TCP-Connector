@@ -28,8 +28,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Vector3 ConvertToRUF(Vector3 v) => v;
         public Quaternion ConvertFromRUF(Quaternion q) => q;
         public Quaternion ConvertToRUF(Quaternion q) => q;
+        //No angular velocity conversion required.
         public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) => angularVelocity;
-
         public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) => angularVelocity;
     }
 
@@ -39,10 +39,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Vector3 ConvertToRUF(Vector3 v) => new Vector3(-v.y, v.z, v.x);
         public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, -q.x, q.y, -q.w);
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(-q.y, q.z, q.x, -q.w);
-        public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.z, -angularVelocity.x, -angularVelocity.y);
-        public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.y, -angularVelocity.z, -angularVelocity.x);
+        public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) => -ConvertFromRUF(angularVelocity);
+        public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) => -ConvertToRUF(angularVelocity);
     }
 
     public class ENULocal : FLU { }
@@ -53,10 +51,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Vector3 ConvertToRUF(Vector3 v) => new Vector3(v.y, -v.z, v.x);
         public Quaternion ConvertFromRUF(Quaternion q) => new Quaternion(q.z, q.x, -q.y, -q.w);
         public Quaternion ConvertToRUF(Quaternion q) => new Quaternion(q.y, -q.z, q.x, -q.w);
-        public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.z, -angularVelocity.x, angularVelocity.y);
-        public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.y, angularVelocity.z, -angularVelocity.x);
+        public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) => -ConvertFromRUF(angularVelocity);
+        public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) => -ConvertToRUF(angularVelocity);
     }
 
     public class NEDLocal : FRD { }
@@ -137,9 +133,9 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         }
         //Note: Angular Velocity is the same as FRD / NEDLocal
         public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.z, -angularVelocity.x, angularVelocity.y);
+            (new FRD()).ConvertAngularVelocityFromRUF(angularVelocity);
         public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.y, angularVelocity.z, -angularVelocity.x);
+            (new FRD()).ConvertAngularVelocityToRUF(angularVelocity);
     }
 
     public class ENU : ICoordinateSpace
@@ -218,9 +214,9 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         }
         //Note: Angular Velocity is the same as FLU / ENULocal
         public Vector3 ConvertAngularVelocityFromRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.z, -angularVelocity.x, -angularVelocity.y);
+            (new FLU()).ConvertAngularVelocityFromRUF(angularVelocity);
         public Vector3 ConvertAngularVelocityToRUF(Vector3 angularVelocity) =>
-            new Vector3(-angularVelocity.y, -angularVelocity.z, -angularVelocity.x);
+            (new FLU()).ConvertAngularVelocityToRUF(angularVelocity);
     }
 
     public enum CoordinateSpaceSelection
