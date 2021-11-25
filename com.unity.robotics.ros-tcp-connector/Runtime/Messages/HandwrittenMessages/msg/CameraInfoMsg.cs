@@ -197,10 +197,17 @@ namespace RosMessageTypes.Sensor
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.distortion_model);
+#if ROS2
             deserializer.Read(out this.d, sizeof(double), deserializer.ReadLength());
             deserializer.Read(out this.k, sizeof(double), 9);
             deserializer.Read(out this.r, sizeof(double), 9);
             deserializer.Read(out this.p, sizeof(double), 12);
+#else
+            deserializer.Read(out this.D, sizeof(double), deserializer.ReadLength());
+            deserializer.Read(out this.K, sizeof(double), 9);
+            deserializer.Read(out this.R, sizeof(double), 9);
+            deserializer.Read(out this.P, sizeof(double), 12);
+#endif
             deserializer.Read(out this.binning_x);
             deserializer.Read(out this.binning_y);
             this.roi = RegionOfInterestMsg.Deserialize(deserializer);
