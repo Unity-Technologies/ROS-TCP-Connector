@@ -30,6 +30,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         }
 
         public Vector3 toUnity => s_CoordinateSpace.ConvertToRUF(internalVector);
+        public Vector3 toUnityAngularVelocity => s_CoordinateSpace.ConvertAngularVelocityToRUF(internalVector);
 
         public static explicit operator Vector3<C>(Vector3 vec)
         {
@@ -44,6 +45,11 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
         public Vector3<C2> To<C2>() where C2 : ICoordinateSpace, new()
         {
             return (Vector3<C2>)(Vector3)this;
+        }
+
+        public static Vector3<C> FromUnityAngularVelocity(Vector3 angularVelocityRUF)
+        {
+            return new Vector3<C> { internalVector = s_CoordinateSpace.ConvertAngularVelocityFromRUF(angularVelocityRUF) };
         }
 
         // for internal use only - this function does not convert coordinate spaces correctly
