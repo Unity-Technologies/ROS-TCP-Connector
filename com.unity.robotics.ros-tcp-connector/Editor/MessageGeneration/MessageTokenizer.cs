@@ -287,7 +287,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
 
             // Otherwise, consume input until seperator, EOF or '['
-            while (reader.Peek() != ' ' && reader.Peek() != '[' && !reader.EndOfStream)
+            while (reader.Peek() != ' ' && reader.Peek() != '[' && reader.Peek() != '\t' && !reader.EndOfStream)
             {
                 if (!Char.IsLetterOrDigit((char)reader.Peek()) && !allowedSpecialCharacterForTypeIdentifier.Contains((char)reader.Peek()))
                 {
