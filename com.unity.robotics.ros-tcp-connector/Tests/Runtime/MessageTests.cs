@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using System;
 
-namespace Tests.Runtime
+namespace UnitTests
 {
     public class MessageTests
     {
@@ -19,7 +19,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void MessageRegistry_CanRegister()
+        public void RegisterAndGet_OneMessage_ReturnsMessageNameAndDeserialize()
         {
             const string rosMessageName = "testmessage";
             Func<MessageDeserializer, TestMessage> deserializer = des => new TestMessage();
@@ -32,7 +32,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void MessageRegistry_CanRegisterSubtopics()
+        public void RegisterAndGet_Subtopics_ReturnCorrectDeserializers()
         {
             const string rosMessageName = "testmessage";
             Func<MessageDeserializer, TestMessage> deserializer = des => new TestMessage();
@@ -53,7 +53,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_Int32()
+        public void SerializeDeserialize_Int32RoundTrip_ReturnsSameValue()
         {
             const int v = 1234;
             Int32Msg inMsg = new Int32Msg(v);
@@ -63,7 +63,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_MaxInt()
+        public void SerializeDeserialize_MaxInt32RoundTrip_ReturnsMaxInt()
         {
             const int v = int.MaxValue;
             Int32Msg inMsg = new Int32Msg(v);
@@ -73,7 +73,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_MinInt()
+        public void SerializeDeserialize_MinInt32RoundTrip_ReturnsMinInt()
         {
             const int v = int.MinValue;
             Int32Msg inMsg = new Int32Msg(v);
@@ -83,7 +83,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_String()
+        public void SerializeDeserialize_String_ReturnsSameString()
         {
             const string v = "hello";
             StringMsg inMsg = new StringMsg(v);
@@ -93,7 +93,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_UnicodeString()
+        public void SerializeDeserialize_UnicodeString_ReturnsSameString()
         {
             const string v = "ಠ_ಠ";
             StringMsg inMsg = new StringMsg(v);
@@ -103,7 +103,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void RoundTrip_EmptyString()
+        public void SerializeDeserialize_EmptyString_ReturnsSameString()
         {
             const string v = "";
             StringMsg inMsg = new StringMsg(v);

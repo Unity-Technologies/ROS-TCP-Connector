@@ -11,7 +11,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Tests.Runtime
+namespace UnitTests
 {
     public class TFSystemTests
     {
@@ -40,7 +40,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void TFStreamCanUpdate()
+        public void ReceiveTF_SingleMessage_ReturnsSameTranslation()
         {
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
@@ -62,7 +62,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void TFStreamCanUpdateComposite()
+        public void ReceiveTF_FrameWithParent_ReturnsSameTranslation()
         {
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
@@ -90,7 +90,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void CanBuildTFHierarchy()
+        public void GetOrCreateFrame_Hierarchy_BuildsValidHierarchy()
         {
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
@@ -108,7 +108,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void CanLookBackInTime()
+        public void ReceiveTF_MultipleMessages_InterpolatesTimes()
         {
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
@@ -141,7 +141,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void CanHandleOutOfOrderMessages()
+        public void ReceiveTF_MultipleMessagesOutOfOrder_InterpolatesTimes()
         {
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;

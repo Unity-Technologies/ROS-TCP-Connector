@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEngine;
 using Assert = UnityEngine.Assertions.Assert;
 
-namespace Tests.Runtime
+namespace UnitTests
 {
     public class RosGeometryTests
     {

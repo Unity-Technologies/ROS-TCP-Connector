@@ -4,12 +4,12 @@ using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
 using RosMessageTypes.Std;
 
-namespace Tests.Runtime
+namespace UnitTests
 {
     public class MessagePoolTests
     {
         [Test]
-        public void CanAddMessageThenGetItOnce()
+        public void AddAndGet_OneMessage_ReturnsSameMessage()
         {
             MessagePool<StringMsg> pool = new MessagePool<StringMsg>();
             const string firstMessageContents = "first message";
@@ -22,7 +22,7 @@ namespace Tests.Runtime
         }
 
         [Test]
-        public void CanAddAndGetMultipleMessages()
+        public void AddAndGet_MultipleMessages_ReturnCorrectMessage()
         {
             MessagePool<StringMsg> pool = new MessagePool<StringMsg>();
             const string firstMessageContents = "first message";
