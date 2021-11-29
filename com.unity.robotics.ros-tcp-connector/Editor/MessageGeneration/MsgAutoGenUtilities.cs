@@ -100,10 +100,17 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static bool HasHandwrittenMessage(string rosPackageName, string inFileName)
         {
-            if (!rosPackageName.Equals("std_msgs"))
-                return false;
-
-            return inFileName.Equals("Time") || inFileName.Equals("Duration") || inFileName.Equals("Header");
+            switch (inFileName)
+            {
+                case "Header":
+                case "Time":
+                case "Duration":
+                    return rosPackageName == "std_msgs";
+                case "CameraInfo":
+                    return rosPackageName == "sensor_msgs";
+                default:
+                    return false;
+            }
         }
 
         public static string CapitalizeFirstLetter(string s)
