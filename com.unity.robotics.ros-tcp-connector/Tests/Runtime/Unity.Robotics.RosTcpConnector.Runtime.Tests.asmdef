@@ -3,7 +3,9 @@
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
-        "Unity.Robotics.ROSTCPConnector"
+        "Unity.Robotics.ROSTCPConnector",
+        "Unity.Robotics.ROSTCPConnector.MessageGeneration",
+        "Unity.Robotics.ROSTCPConnector.Messages"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

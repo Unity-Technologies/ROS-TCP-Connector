@@ -46,9 +46,13 @@
 
                 float2 uv = v.uvr.xy;
                 float radius = v.uvr.z;
-                //Pack index into color.a: float2 uv = float2(round(v.color.a * 255 * 0.4), round(v.color.a * 255 % 2));
+                //If packing index into color.a: float2 uv = float2(round(v.color.a * 255 * 0.4), round(v.color.a * 255 % 2));
                 o.vertex.x += (uv.x - 0.5) * 2 * radius * _ScreenParams.y / _ScreenParams.x;
+#if UNITY_UV_STARTS_AT_TOP
                 o.vertex.y -= (uv.y - 0.5) * 2 * radius;
+#else
+                o.vertex.y += (uv.y - 0.5) * 2 * radius;
+#endif
                 o.uv = uv;
                 o.color = v.color;
                 o.color.a = 1;

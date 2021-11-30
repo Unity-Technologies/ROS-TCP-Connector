@@ -201,6 +201,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(bool[] values)
         {
+            if (values.Length == 0)
+                return;
+
             byte[] buffer = new byte[values.Length];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
             m_ListOfSerializations.Add(buffer);
@@ -209,12 +212,18 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(byte[] values)
         {
+            if (values.Length == 0)
+                return;
+
             m_ListOfSerializations.Add(values);
             m_AlignmentOffset += values.Length;
         }
 
         public void Write(sbyte[] values)
         {
+            if (values.Length == 0)
+                return;
+
             byte[] buffer = new byte[values.Length];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
             m_ListOfSerializations.Add(buffer);
@@ -223,6 +232,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(short[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(short));
             byte[] buffer = new byte[values.Length * sizeof(short)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -232,6 +244,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(ushort[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(ushort));
             byte[] buffer = new byte[values.Length * sizeof(ushort)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -241,6 +256,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(int[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(int));
             byte[] buffer = new byte[values.Length * sizeof(int)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -250,6 +268,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(uint[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(uint));
             byte[] buffer = new byte[values.Length * sizeof(uint)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -259,6 +280,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(float[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(float));
             byte[] buffer = new byte[values.Length * sizeof(float)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -268,6 +292,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(double[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(double));
             byte[] buffer = new byte[values.Length * sizeof(double)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -277,6 +304,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(long[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(long));
             byte[] buffer = new byte[values.Length * sizeof(long)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
@@ -286,6 +316,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(ulong[] values)
         {
+            if (values.Length == 0)
+                return;
+
             Align(sizeof(ulong));
             byte[] buffer = new byte[values.Length * sizeof(ulong)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);

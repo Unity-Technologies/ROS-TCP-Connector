@@ -18,12 +18,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             public static string s_RosMessageName;
             public static Func<MessageDeserializer, T> s_DeserializeFunction;
+            public static MessageSubtopic s_Subtopic;
         }
 
         public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> deserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
             RegistryEntry<T>.s_RosMessageName = rosMessageName;
             RegistryEntry<T>.s_DeserializeFunction = deserialize;
+            RegistryEntry<T>.s_Subtopic = subtopic;
             if (s_DeserializeFunctionsByName[(int)subtopic].ContainsKey(rosMessageName))
                 Debug.LogWarning($"More than one message was registered as \"{rosMessageName}\" \"{subtopic}\"");
             s_DeserializeFunctionsByName[(int)subtopic][rosMessageName] = deserialize;
@@ -44,6 +46,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static string GetRosMessageName<T>() where T : Message
         {
             return RegistryEntry<T>.s_RosMessageName;
+        }
+
+        public static MessageSubtopic GetSubtopic<T>() where T : Message
+        {
+            return RegistryEntry<T>.s_Subtopic;
         }
     }
 }

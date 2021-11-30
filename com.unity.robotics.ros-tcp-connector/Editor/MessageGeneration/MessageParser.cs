@@ -319,7 +319,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Check if identifier is a ROS message built-in type
             if (builtInTypeMapping.ContainsKey(identifier))
             {
-                throw new MessageParserException(
+                Debug.LogWarning(
                     "Invalid field identifier '" + identifier +
                     "' at " + inFilePath + ":" + lineNum +
                     ". '" + identifier + "' is a ROS message built-in type.");
