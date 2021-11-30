@@ -641,12 +641,25 @@ namespace Unity.Robotics.ROSTCPConnector
                         var handshakeCommand = JsonUtility.FromJson<SysCommand_Handshake>(json);
                         if (handshakeCommand.version == null)
                         {
-                            Debug.LogError($"Invalid ROS-TCP-Endpoint version string!? Required version: {k_Version}");
+                            Debug.LogError($"Corrupted or unreadable ROS-TCP-Endpoint version data! Expected: {k_Version}");
                         }
                         else if (!handshakeCommand.version.StartsWith(k_CompatibleVersionPrefix))
                         {
-                            Debug.LogError($"Incompatible ROS-TCP-Endpoint version detected: {handshakeCommand.version}. Required: {k_Version}");
+                            Debug.LogError($"Incompatible ROS-TCP-Endpoint version: {handshakeCommand.version}. Expected: {k_Version}");
                         }
+
+                        var handshakeMetadata = JsonUtility.FromJson<SysCommand_Handshake_Metadata>(handshakeCommand.metadata);
+#if ROS2
+                        if (handshakeMetadata.protocol != "ROS2")
+                        {
+                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS2 mode. Switch it from the Robotics/Ros Settings menu.");
+                        }
+#else
+                        if (handshakeMetadata.protocol != "ROS1")
+                        {
+                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS1 mode. Switch it from the Robotics/Ros Settings menu.");
+                        }
+#endif
                     }
                     break;
                 case SysCommand.k_SysCommand_Log:
