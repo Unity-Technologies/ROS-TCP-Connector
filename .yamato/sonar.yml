@@ -15,9 +15,9 @@ commands:
         cd TestRosTcpConnector
         for file in *.csproj; do sed -i.backup "s/^[[:blank:]]*<ReferenceOutputAssembly>false<\/ReferenceOutputAssembly>/<ReferenceOutputAssembly>true<\/ReferenceOutputAssembly>/g" $file; rm $file.backup; done
         cd ../
-    - mono ~/SonarScanner.MSBuild.exe begin /k:"ai-robotics-ros-tcp-connector" /d:sonar.host.url=$SONARQUBE_ENDPOINT_URL_STG /d:sonar.login=$SONARQUBE_TOKEN_STG /d:sonar.projectBaseDir=/Users/bokken/build/output/Unity-Technologies/ROS-TCP-Connector/com.unity.robotics.ros-tcp-connector
+    - mono ~/SonarScanner.MSBuild.exe begin /k:"ai-robotics-ros-tcp-connector" /d:sonar.host.url=$SONARQUBE_ENDPOINT_URL_PRD /d:sonar.login=$SONARQUBE_TOKEN_PRD /d:sonar.projectBaseDir=/Users/bokken/build/output/Unity-Technologies/ROS-TCP-Connector/com.unity.robotics.ros-tcp-connector
     - msbuild ./TestRosTcpConnector/TestRosTcpConnector.sln
-    - mono ~/SonarScanner.MSBuild.exe end /d:sonar.login=$SONARQUBE_TOKEN_STG
+    - mono ~/SonarScanner.MSBuild.exe end /d:sonar.login=$SONARQUBE_TOKEN_PRD
 triggers:
     cancel_old_ci: true
     expression: |
