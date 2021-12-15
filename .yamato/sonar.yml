@@ -3,20 +3,26 @@ agent:
     type: Unity::metal::macmini
     image: package-ci/mac
     flavor: m1.mac
+variables:
+    PROJECT_PATH: TestRosTcpConnector
+    SONARQUBE_PROJECT_KEY: ai-robotics-ros-tcp-connector
+    SONARQUBE_PROJECT_BASE_DIR: /Users/bokken/build/output/Unity-Technologies/ROS-TCP-Connector/com.unity.robotics.ros-tcp-connector
+    MSBUILD_SLN_PATH: ./TestRosTcpConnector/TestRosTcpConnector.sln
+    UNITY_VERSION: 2020.3.11f1
 commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm
-    - unity-downloader-cli -u 2020.3.11f1 -c Editor
+    - unity-downloader-cli -u $UNITY_VERSION -c Editor
     - brew install mono corretto
     - curl https://github.com/SonarSource/sonar-scanner-msbuild/releases/download/5.2.1.31210/sonar-scanner-msbuild-5.2.1.31210-net46.zip -o sonar-scanner-msbuild-net46.zip -L
     - unzip sonar-scanner-msbuild-net46.zip -d ~
     - chmod a+x ~/sonar-scanner-4.6.1.2450/bin/sonar-scanner
-    - .Editor/Unity.app/Contents/MacOS/Unity -projectPath ./TestRosTcpConnector -batchmode -quit -nographics -logFile - -executeMethod "UnityEditor.SyncVS.SyncSolution"
+    - .Editor/Unity.app/Contents/MacOS/Unity -projectPath $PROJECT_PATH -batchmode -quit -nographics -logFile - -executeMethod "UnityEditor.SyncVS.SyncSolution"
     - command: |
-        cd TestRosTcpConnector
+        cd $PROJECT_PATH
         for file in *.csproj; do sed -i.backup "s/^[[:blank:]]*<ReferenceOutputAssembly>false<\/ReferenceOutputAssembly>/<ReferenceOutputAssembly>true<\/ReferenceOutputAssembly>/g" $file; rm $file.backup; done
         cd ../
-    - mono ~/SonarScanner.MSBuild.exe begin /k:"ai-robotics-ros-tcp-connector" /d:sonar.host.url=$SONARQUBE_ENDPOINT_URL_PRD /d:sonar.login=$SONARQUBE_TOKEN_PRD /d:sonar.projectBaseDir=/Users/bokken/build/output/Unity-Technologies/ROS-TCP-Connector/com.unity.robotics.ros-tcp-connector
-    - msbuild ./TestRosTcpConnector/TestRosTcpConnector.sln
+    - mono ~/SonarScanner.MSBuild.exe begin /k:$SONARQUBE_PROJECT_KEY /d:sonar.host.url=$SONARQUBE_ENDPOINT_URL_PRD /d:sonar.login=$SONARQUBE_TOKEN_PRD /d:sonar.projectBaseDir=$SONARQUBE_PROJECT_BASE_DIR
+    - msbuild $MSBUILD_SLN_PATH
     - mono ~/SonarScanner.MSBuild.exe end /d:sonar.login=$SONARQUBE_TOKEN_PRD
 triggers:
     cancel_old_ci: true
