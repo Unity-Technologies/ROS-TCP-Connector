@@ -62,8 +62,7 @@ namespace Unity.Robotics.Visualizations
                 m_Topic = topic;
                 m_Factory = factory;
                 m_HistoryLength = historyLength;
-
-                ROSConnection.GetOrCreateInstance().Subscribe<T>(m_Topic, AddMessage);
+                ListenForMessages(topic, AddMessage);
             }
 
             public void AddMessage(Message message)

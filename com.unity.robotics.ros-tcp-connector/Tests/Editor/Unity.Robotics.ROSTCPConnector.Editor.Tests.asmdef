@@ -4,7 +4,8 @@
     "references": [
         "Unity.Robotics.ROSTCPConnector.Editor",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.Robotics.ROSTCPConnector"
     ],
     "includePlatforms": [
         "Editor"

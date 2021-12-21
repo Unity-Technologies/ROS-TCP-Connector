@@ -6,5 +6,6 @@
   "unity": "2020.2",
   "unityRelease": "0b9",
   "dependencies": {
+	  "nuget.moq": "1.0.0"
  }
 }

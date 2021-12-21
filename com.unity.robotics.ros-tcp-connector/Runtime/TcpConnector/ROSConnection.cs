@@ -142,9 +142,9 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        RosTopicState AddTopic(string topic, string rosMessageName)
+        RosTopicState AddTopic(string topic, string rosMessageName, bool isService = false)
         {
-            RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this));
+            RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this), isService);
             lock (m_Topics)
             {
                 m_Topics.Add(topic, newTopic);
@@ -161,7 +161,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public IEnumerable<RosTopicState> AllTopics => m_Topics.Values;
 
-        public RosTopicState GetOrCreateTopic(string topic, string rosMessageName)
+        public RosTopicState GetOrCreateTopic(string topic, string rosMessageName, bool isService = false)
         {
             RosTopicState state = GetTopic(topic);
             if (state != null)
@@ -173,7 +173,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 return state;
             }
 
-            RosTopicState result = AddTopic(topic, rosMessageName);
+            RosTopicState result = AddTopic(topic, rosMessageName, isService);
             foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
             {
                 callback(result);
@@ -243,7 +243,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
             {
-                info = AddTopic(topic, rosMessageName);
+                info = AddTopic(topic, rosMessageName, isService: true);
             }
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
@@ -265,7 +265,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
             {
-                info = AddTopic(topic, rosMessageName);
+                info = AddTopic(topic, rosMessageName, isService: true);
             }
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
@@ -306,11 +306,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ServicesWaiting.Add(srvID, pauser);
             }
 
-            RosTopicState topicState = GetOrCreateTopic(rosServiceName, serviceRequest.RosMessageName);
+            RosTopicState topicState = GetOrCreateTopic(rosServiceName, serviceRequest.RosMessageName, isService: true);
             topicState.SendServiceRequest(serviceRequest, srvID);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
 
+            topicState.OnMessageReceived(rawResponse);
             RESPONSE result = m_MessageDeserializer.DeserializeMessage<RESPONSE>(rawResponse);
             return result;
         }
@@ -356,7 +357,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterRosService(string topic, string requestMessageName, string responseMessageName, int? queueSize = null)
         {
-            RosTopicState info = GetOrCreateTopic(topic, requestMessageName);
+            RosTopicState info = GetOrCreateTopic(topic, requestMessageName, isService: true);
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
             info.RegisterRosService(responseMessageName, resolvedQueueSize);
         }
@@ -438,6 +439,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
             {
+                // Prefer to use the ROSConnection in the scene, if any
+                _instance = FindObjectOfType<ROSConnection>();
+                if (_instance != null)
+                    return _instance;
+
                 GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefab == null)
                 {
@@ -583,7 +589,19 @@ namespace Unity.Robotics.ROSTCPConnector
                     // if this is null, we have received a message on a topic we've never heard of...!?
                     // all we can do is ignore it, we don't even know what type it is
                     if (topicInfo != null)
-                        topicInfo.OnMessageReceived(contents);
+                    {
+                        try
+                        {
+                            //Add a try catch so that bad logic from one received message doesn't
+                            //cause the Update method to exit without processing other received messages.
+                            topicInfo.OnMessageReceived(contents);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                        }
+
+                    }
                 }
             }
         }
@@ -953,16 +971,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 rosTopic.Publish(message);
             }
-        }
-
-        public T GetFromPool<T>(string rosTopicName) where T : Message
-        {
-            RosTopicState topicState = GetTopic(rosTopicName);
-            if (topicState != null)
-            {
-                return (T)topicState.GetMessageFromPool();
-            }
-            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }
 
         void InitializeHUD()

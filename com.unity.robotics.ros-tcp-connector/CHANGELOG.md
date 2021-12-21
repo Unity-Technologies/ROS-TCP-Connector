@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
+Added Sonarqube scanner
+
 ### Changed
 
 ### Deprecated
@@ -48,6 +50,8 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
   - Hud becomes a generic display platform to support visualizations
 
   - Unity service implementations can be async
+
+  - Added geographical world coordinate transformation by a Compass component
 
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
