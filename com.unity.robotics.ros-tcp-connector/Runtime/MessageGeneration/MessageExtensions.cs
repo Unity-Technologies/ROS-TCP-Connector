@@ -750,7 +750,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     step = 4 * tex.width;
                     break;
             }
-            return new ImageMsg(header, height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: step, data: data);
+            return new ImageMsg(header, height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: (uint)step, data: data);
         }
 
         public static string ToLatLongString(this NavSatFixMsg message)
