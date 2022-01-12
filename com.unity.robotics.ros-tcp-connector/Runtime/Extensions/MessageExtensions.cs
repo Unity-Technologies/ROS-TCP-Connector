@@ -699,8 +699,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static ImageMsg ToImageMsg(this Texture2D tex, HeaderMsg header)
         {
             byte[] data = null;
-            string encoding = "rgba8";
-            int step = 4 * tex.width;
+            string encoding;
+            int step;
             switch (tex.format)
             {
                 case TextureFormat.RGB24:
