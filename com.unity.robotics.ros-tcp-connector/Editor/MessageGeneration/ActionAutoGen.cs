@@ -87,6 +87,8 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     className,
                     subtopic: subtopics[i]
                 );
+                // >>> TODO: Parser will add registration methods for subtypes, but should we include here?
+                //           subtypes get published to sub-topics, do we ever subscribe to them directly?
                 parser.Parse();
                 warnings.AddRange(parser.GetWarnings());
 
@@ -353,6 +355,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 writer.Write(GenerateDeserializerConstructor(wrapperName));
 
                 writer.Write(GenerateSerializationStatements(type));
+               
+                // Omit the subtype because subtype is baked into the class name
+                writer.Write(MsgAutoGenUtilities.InitializeOnLoad());
 
                 // Close class
                 writer.Write(ONE_TAB + "}\n");

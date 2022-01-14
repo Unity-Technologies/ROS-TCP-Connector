@@ -147,5 +147,19 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
             return CapitalizeFirstLetter(s);
         }
+
+        public static string InitializeOnLoad(string subtopicArgument = "")
+        {
+            return "\n" +
+                "#if UNITY_EDITOR\n" +
+                TWO_TABS + "[UnityEditor.InitializeOnLoadMethod]\n" +
+                "#else\n" +
+                TWO_TABS + "[UnityEngine.RuntimeInitializeOnLoadMethod]\n" +
+                "#endif\n" +
+                TWO_TABS + "public static void Register()\n" +
+                TWO_TABS + "{\n" +
+                THREE_TABS + $"MessageRegistry.Register(k_RosMessageName, Deserialize{subtopicArgument});\n" +
+                TWO_TABS + "}\n";
+        }
     }
 }
