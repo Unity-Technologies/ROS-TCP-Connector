@@ -154,7 +154,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Write ToString override
                 writer.Write(GenerateToString());
 
-                var subtopicParameter = 
+                var subtopicParameter =
                     subtopic == MessageSubtopic.Default ? "" : $", MessageSubtopic.{subtopic}";
 
                 writer.Write(InitializeOnLoad(subtopicParameter));
