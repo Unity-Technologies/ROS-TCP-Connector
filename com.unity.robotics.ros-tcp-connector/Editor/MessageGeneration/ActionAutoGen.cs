@@ -354,6 +354,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
                 writer.Write(GenerateSerializationStatements(type));
 
+                // Omit the subtype because subtype is baked into the class name
+                writer.Write(MsgAutoGenUtilities.InitializeOnLoad());
+
                 // Close class
                 writer.Write(ONE_TAB + "}\n");
                 // Close namespace
