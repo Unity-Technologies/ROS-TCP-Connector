@@ -12,9 +12,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
+Enabled Android and IOS builds
+
 Added Sonarqube scanner
 
+Added more tests
+
+Add support for cloud rendering
+
+Added MessagePool<T> to enable message reuse and reduce garbage collection
+
+Can configure what direction is "north" for NED and ENU coordinates
+
 ### Changed
+
+CameraInfo.msg field names are different in ROS2
+
+Bug fix - cope with tab character in a .msg file
+
+Bug fix - no padding when serializing an empty array
+
+Can publish messages from threads other than main
+
+Visualizations work with ROS services
 
 ### Deprecated
 
