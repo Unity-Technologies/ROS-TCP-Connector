@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
+Enabled Android and IOS builds
+
 Added Sonarqube scanner
 
 Added more tests
