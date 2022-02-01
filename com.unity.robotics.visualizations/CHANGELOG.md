@@ -22,7 +22,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Fixed
 
 
-## [0.2.0-preview] - 2022-02-01
+## [0.7.0-preview] - 2022-02-01
+
+### Upgrade Notes
+
+Making the package version consistent with the ROS-TCP-Connector release tag to avoid confusion.
 
 ### Added
 
