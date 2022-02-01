@@ -1,11 +1,12 @@
 {
   "name": "com.unity.robotics.ros-tcp-connector",
-  "version": "0.6.0-preview",
+  "version": "0.7.0-preview",
   "displayName": "ROS TCP Connector",
   "description": "Bridge components and message generation allowing Unity to communicate with ROS and ROS2 services",
   "unity": "2020.2",
   "unityRelease": "0b9",
-  "dependencies": {
-	  "nuget.moq": "1.0.0"
- }
+  "dependencies": 
+  {
+    "nuget.moq": "1.0.0"
+  }
 }
