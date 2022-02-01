@@ -50,8 +50,6 @@ Bug fix - no padding when serializing an empty array
 
 Can publish messages from threads other than main
 
-Visualizations work with ROS services
-
 
 ## [0.6.0-preview] - 2021-09-30
 
