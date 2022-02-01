@@ -4,11 +4,25 @@ All notable changes to this repository will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
 ## Unreleased
 
 ### Upgrade Notes
 
 ### Known Issues
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+
+## [0.7.0-preview] - 2022-02-01
 
 ### Added
 
@@ -35,14 +49,6 @@ Bug fix - cope with tab character in a .msg file
 Bug fix - no padding when serializing an empty array
 
 Can publish messages from threads other than main
-
-Visualizations work with ROS services
-
-### Deprecated
-
-### Removed
-
-### Fixed
 
 
 ## [0.6.0-preview] - 2021-09-30
