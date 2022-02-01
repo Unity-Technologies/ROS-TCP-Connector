@@ -5,8 +5,5 @@
   "description": "Bridge components and message generation allowing Unity to communicate with ROS and ROS2 services",
   "unity": "2020.2",
   "unityRelease": "0b9",
-  "dependencies": 
-  {
-    "nuget.moq": "1.0.0"
-  }
+  "dependencies": {}
 }
