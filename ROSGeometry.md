@@ -98,3 +98,13 @@ Or, if you need to work with it in the FLU coordinate space for now, you can wri
 (Note, the As function does NOT do any coordinate conversion. It simply assumes the point is in the FLU coordinate frame already, and transfers it into an appropriate container.)
 
 And again, the same goes for converting a Quaternion message into a Unity Quaternion or `Quaternion<C>`.
+
+# Geographical Coordinates
+
+The geographical coordinate systems NED and ENU are more complicated than the rest: besides the obvious "north" direction, they also provide a convention for which direction is "forward", which is not even consistent between them - In NED, forward (i.e. yaw 0) is north, whereas in ENU forward is east. Because of this inconsistency, there's no universal convention that we could establish for which direction is north in Unity. Instead, we're forced to make a distinction between local and world rotations.
+
+To correctly convert a *world* position or rotation to or from NED or ENU coordinates, you should use the standard NED or ENU coordinate space - for example, `To<NED>()`. This conversion will respect what direction you have set as North. By default, the Unity Z axis points north, but this is a configuration option that you can change in the Robotics/ROS Settings menu.
+
+If you have a *local* rotation represented in NED or ENU coordinates, you should convert it using the coordinate space NEDLocal or ENULocal: for example, `To<NEDLocal>()`. These conversions are not appropriate for handling world rotations, because they don't respect the north direction, only what direction is forward (i.e. the Unity Z axis). In other words, with NEDLocal and ENULocal, an identity quaternion is still identity. This is not necessarily true for NED or ENU. NEDLocal is a synonym for the FRD coordinate space (north = forward, east = right, down = down) and ENULocal is a synonym for the FLU coordinate space (east = forward, north = left, up = up).
+
+If you only care about NED coordinates, you can avoid having to deal with this distinction by setting the Z axis direction to North (the default) - this will make the NED coordinate space equal to NEDLocal. Similarly, if you only care about ENU coordinates, setting the Z axis direction to East will make ENU equal to ENULocal.

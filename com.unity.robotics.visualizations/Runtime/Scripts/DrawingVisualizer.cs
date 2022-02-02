@@ -57,7 +57,7 @@ namespace Unity.Robotics.Visualizations
                 m_Topic = topic;
                 m_Factory = factory;
 
-                ROSConnection.GetOrCreateInstance().Subscribe<T>(topic, AddMessage);
+                ListenForMessages(topic, AddMessage);
             }
 
             public virtual void AddMessage(Message message)

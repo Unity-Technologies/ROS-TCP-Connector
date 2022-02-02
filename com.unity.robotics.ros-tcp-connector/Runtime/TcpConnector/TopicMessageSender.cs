@@ -29,7 +29,8 @@ namespace Unity.Robotics.ROSTCPConnector
         Message m_LastMessageSent = null;
 
         //Optional, used if you want to pool messages and reuse them when they are no longer in use.
-        Queue<Message> m_InactiveMessagePool = new Queue<Message>();
+        IMessagePool m_MessagePool;
+        public bool MessagePoolEnabled => m_MessagePool != null;
 
         public TopicMessageSender(string topicName, string rosMessageName, int queueSize)
         {
@@ -163,76 +164,16 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void TryRecycleMessage(Message toRecycle)
         {
-            if (!MessagePoolEnabled)
+            if (m_MessagePool != null)
             {
-                return;
+                //Add the message back to the pool.
+                m_MessagePool.AddMessage(toRecycle);
             }
-
-            //Add the message back to the pool.
-            AddMessageToPool(toRecycle);
         }
 
-        #region Message Pooling
-
-        //Whether you want to pool messages for reuse (Used to reduce GC calls).
-        volatile bool m_MessagePoolEnabled;
-
-        public bool MessagePoolEnabled => m_MessagePoolEnabled;
-
-        public void SetMessagePoolEnabled(bool enabled)
+        public void SetMessagePool(IMessagePool messagePool)
         {
-            if (m_MessagePoolEnabled == enabled)
-                return;
-
-            m_MessagePoolEnabled = enabled;
-            if (!m_MessagePoolEnabled)
-            {
-                lock (m_InactiveMessagePool)
-                {
-                    m_InactiveMessagePool.Clear();
-                }
-            }
+            m_MessagePool = messagePool;
         }
-
-        public void AddMessageToPool(Message messageToRecycle)
-        {
-            Debug.Assert(MessagePoolEnabled,
-                "Adding a message to a message pool that is not enabled, please set MessagePoolEnabled to true.");
-
-            lock (m_InactiveMessagePool)
-            {
-                if (MessagePoolEnabled && m_InactiveMessagePool.Count < (QueueSize + 5))
-                {
-                    //Make sure we're only pooling a reasonable amount.
-                    //We shouldn't need any more than the queue size plus a little.
-                    m_InactiveMessagePool.Enqueue(messageToRecycle);
-                }
-            }
-        }
-
-        /**
-         * @return a message of type T full of garbage data, be sure to update it accordingly.
-         */
-        public Message GetMessageFromPool()
-        {
-            Message result = null;
-            SetMessagePoolEnabled(true);
-            lock (m_InactiveMessagePool)
-            {
-                if (m_InactiveMessagePool.Count > 0)
-                {
-                    result = m_InactiveMessagePool.Dequeue();
-                }
-            }
-
-            if (result == null)
-            {
-                result = Activator.CreateInstance<Message>();
-            }
-
-            return result;
-        }
-
-        #endregion
     }
 }

@@ -3,6 +3,7 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 using UnityEditor.Callbacks;
 
 namespace Unity.Robotics.ROSTCPConnector.Editor
@@ -20,6 +21,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         GameObject prefabObj;
         Unity.Robotics.ROSTCPConnector.ROSConnection prefab;
+        GeometryCompass geometryCompassPrefab;
 
         public enum RosProtocol
         {
@@ -129,6 +131,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
                 prefab.SleepTimeSeconds);
 
+            EditorGUILayout.Space();
+
+            prefab.listenForTFMessages = EditorGUILayout.Toggle("Listen for TF Messages", prefab.listenForTFMessages);
+
             // TODO: make the settings input update the prefab
             // EditorGUILayout.Space();
             // if (!editor) { editor = UnityEditor.Editor.CreateEditor(this); }
@@ -138,6 +144,11 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             {
                 PrefabUtility.SavePrefabAsset(prefab.gameObject);
             }
+
+            // ROS Geometry Compass Settings
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Compass settings", EditorStyles.boldLabel);
+            GeometryCompass.UnityZAxisDirection = (CardinalDirection)EditorGUILayout.EnumPopup("Unity Z Axis Direction", GeometryCompass.UnityZAxisDirection);
         }
 
         void OnInspectorUpdate() { Repaint(); }

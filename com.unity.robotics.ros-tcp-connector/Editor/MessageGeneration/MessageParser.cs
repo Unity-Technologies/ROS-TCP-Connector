@@ -154,20 +154,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 // Write ToString override
                 writer.Write(GenerateToString());
 
-                string subtopicParameter = subtopic == MessageSubtopic.Default ? "" : $", MessageSubtopic.{subtopic}";
+                var subtopicParameter =
+                    subtopic == MessageSubtopic.Default ? "" : $", MessageSubtopic.{subtopic}";
 
-                writer.Write(
-                    "\n" +
-                    "#if UNITY_EDITOR\n" +
-                    TWO_TABS + "[UnityEditor.InitializeOnLoadMethod]\n" +
-                    "#else\n" +
-                    TWO_TABS + "[UnityEngine.RuntimeInitializeOnLoadMethod]\n" +
-                    "#endif\n" +
-                    TWO_TABS + "public static void Register()\n" +
-                    TWO_TABS + "{\n" +
-                    THREE_TABS + $"MessageRegistry.Register(k_RosMessageName, Deserialize{subtopicParameter});\n" +
-                    TWO_TABS + "}\n"
-                );
+                writer.Write(InitializeOnLoad(subtopicParameter));
 
                 // Close class
                 writer.Write(MsgAutoGenUtilities.ONE_TAB + "}\n");
@@ -319,7 +309,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             // Check if identifier is a ROS message built-in type
             if (builtInTypeMapping.ContainsKey(identifier))
             {
-                throw new MessageParserException(
+                Debug.LogWarning(
                     "Invalid field identifier '" + identifier +
                     "' at " + inFilePath + ":" + lineNum +
                     ". '" + identifier + "' is a ROS message built-in type.");

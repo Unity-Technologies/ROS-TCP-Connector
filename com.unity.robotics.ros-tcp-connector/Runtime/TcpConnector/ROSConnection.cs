@@ -15,6 +15,9 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
+        public const string k_Version = "v0.7.0";
+        public const string k_CompatibleVersionPrefix = "v0.7.";
+
         // Variables required for ROS communication
         [SerializeField]
         [FormerlySerializedAs("hostName")]
@@ -142,9 +145,9 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        RosTopicState AddTopic(string topic, string rosMessageName)
+        RosTopicState AddTopic(string topic, string rosMessageName, bool isService = false)
         {
-            RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this));
+            RosTopicState newTopic = new RosTopicState(topic, rosMessageName, this, new InternalAPI(this), isService);
             lock (m_Topics)
             {
                 m_Topics.Add(topic, newTopic);
@@ -161,7 +164,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public IEnumerable<RosTopicState> AllTopics => m_Topics.Values;
 
-        public RosTopicState GetOrCreateTopic(string topic, string rosMessageName)
+        public RosTopicState GetOrCreateTopic(string topic, string rosMessageName, bool isService = false)
         {
             RosTopicState state = GetTopic(topic);
             if (state != null)
@@ -173,7 +176,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 return state;
             }
 
-            RosTopicState result = AddTopic(topic, rosMessageName);
+            RosTopicState result = AddTopic(topic, rosMessageName, isService);
             foreach (Action<RosTopicState> callback in m_NewTopicCallbacks)
             {
                 callback(result);
@@ -243,7 +246,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
             {
-                info = AddTopic(topic, rosMessageName);
+                info = AddTopic(topic, rosMessageName, isService: true);
             }
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
@@ -265,7 +268,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
             {
-                info = AddTopic(topic, rosMessageName);
+                info = AddTopic(topic, rosMessageName, isService: true);
             }
 
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
@@ -306,11 +309,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_ServicesWaiting.Add(srvID, pauser);
             }
 
-            RosTopicState topicState = GetOrCreateTopic(rosServiceName, serviceRequest.RosMessageName);
+            RosTopicState topicState = GetOrCreateTopic(rosServiceName, serviceRequest.RosMessageName, isService: true);
             topicState.SendServiceRequest(serviceRequest, srvID);
 
             byte[] rawResponse = (byte[])await pauser.PauseUntilResumed();
 
+            topicState.OnMessageReceived(rawResponse);
             RESPONSE result = m_MessageDeserializer.DeserializeMessage<RESPONSE>(rawResponse);
             return result;
         }
@@ -356,7 +360,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterRosService(string topic, string requestMessageName, string responseMessageName, int? queueSize = null)
         {
-            RosTopicState info = GetOrCreateTopic(topic, requestMessageName);
+            RosTopicState info = GetOrCreateTopic(topic, requestMessageName, isService: true);
             int resolvedQueueSize = queueSize.GetValueOrDefault(k_DefaultPublisherQueueSize);
             info.RegisterRosService(responseMessageName, resolvedQueueSize);
         }
@@ -438,6 +442,11 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
             {
+                // Prefer to use the ROSConnection in the scene, if any
+                _instance = FindObjectOfType<ROSConnection>();
+                if (_instance != null)
+                    return _instance;
+
                 GameObject prefab = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefab == null)
                 {
@@ -583,7 +592,19 @@ namespace Unity.Robotics.ROSTCPConnector
                     // if this is null, we have received a message on a topic we've never heard of...!?
                     // all we can do is ignore it, we don't even know what type it is
                     if (topicInfo != null)
-                        topicInfo.OnMessageReceived(contents);
+                    {
+                        try
+                        {
+                            //Add a try catch so that bad logic from one received message doesn't
+                            //cause the Update method to exit without processing other received messages.
+                            topicInfo.OnMessageReceived(contents);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                        }
+
+                    }
                 }
             }
         }
@@ -615,6 +636,32 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             switch (topic)
             {
+                case SysCommand.k_SysCommand_Handshake:
+                    {
+                        var handshakeCommand = JsonUtility.FromJson<SysCommand_Handshake>(json);
+                        if (handshakeCommand.version == null)
+                        {
+                            Debug.LogError($"Corrupted or unreadable ROS-TCP-Endpoint version data! Expected: {k_Version}");
+                        }
+                        else if (!handshakeCommand.version.StartsWith(k_CompatibleVersionPrefix))
+                        {
+                            Debug.LogError($"Incompatible ROS-TCP-Endpoint version: {handshakeCommand.version}. Expected: {k_Version}");
+                        }
+
+                        var handshakeMetadata = JsonUtility.FromJson<SysCommand_Handshake_Metadata>(handshakeCommand.metadata);
+#if ROS2
+                        if (handshakeMetadata.protocol != "ROS2")
+                        {
+                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS2 mode. Switch it from the Robotics/Ros Settings menu.");
+                        }
+#else
+                        if (handshakeMetadata.protocol != "ROS1")
+                        {
+                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS1 mode. Switch it from the Robotics/Ros Settings menu.");
+                        }
+#endif
+                    }
+                    break;
                 case SysCommand.k_SysCommand_Log:
                     {
                         var logCommand = JsonUtility.FromJson<SysCommand_Log>(json);
@@ -825,12 +872,23 @@ namespace Unity.Robotics.ROSTCPConnector
 
         static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
+            // First message should be the handshake
+            Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
+            if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
+            {
+                ROSConnection.m_HasConnectionError = false;
+                queue.Enqueue(handshakeContent);
+            }
+            else
+            {
+                Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: 0.6.0 or older. Expected: {k_Version}.");
+            }
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    // Debug.Log($"Message {content.Item1} received");
                     ROSConnection.m_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
@@ -953,16 +1011,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 rosTopic.Publish(message);
             }
-        }
-
-        public T GetFromPool<T>(string rosTopicName) where T : Message
-        {
-            RosTopicState topicState = GetTopic(rosTopicName);
-            if (topicState != null)
-            {
-                return (T)topicState.GetMessageFromPool();
-            }
-            throw new Exception($"No publisher on topic {rosTopicName} of type {MessageRegistry.GetRosMessageName<T>()} to get pooled messages from!");
         }
 
         void InitializeHUD()

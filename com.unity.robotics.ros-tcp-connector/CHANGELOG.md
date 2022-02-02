@@ -4,6 +4,7 @@ All notable changes to this repository will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
 ## Unreleased
 
 ### Upgrade Notes
@@ -19,6 +20,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Removed
 
 ### Fixed
+
+
+## [0.7.0-preview] - 2022-02-01
+
+### Added
+
+Added "Listen for TF Messages" to Settings
+
+Enabled Android and IOS builds
+
+Added Sonarqube scanner
+
+Added more tests
+
+Add support for cloud rendering
+
+Added MessagePool<T> to enable message reuse and reduce garbage collection
+
+Can configure what direction is "north" for NED and ENU coordinates
+
+### Changed
+
+CameraInfo.msg field names are different in ROS2
+
+Bug fix - cope with tab character in a .msg file
+
+Bug fix - no padding when serializing an empty array
+
+Can publish messages from threads other than main
 
 
 ## [0.6.0-preview] - 2021-09-30
@@ -48,6 +78,8 @@ Upgrade the TestRosTcpConnector project to use Unity LTS version 2020.3.11f1
   - Hud becomes a generic display platform to support visualizations
 
   - Unity service implementations can be async
+
+  - Added geographical world coordinate transformation by a Compass component
 
 ### Changed
 - Publishing a message to an unregistered topic will show an error.
