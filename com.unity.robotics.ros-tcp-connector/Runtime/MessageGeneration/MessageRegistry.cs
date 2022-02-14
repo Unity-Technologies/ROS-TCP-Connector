@@ -45,6 +45,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static string GetRosMessageName<T>() where T : Message
         {
+            if (string.IsNullOrEmpty(RegistryEntry<T>.s_RosMessageName))
+            {
+                Debug.LogError($"Can't find MessageRegistry entry for {typeof(T)}! If Register<T> is called before " +
+                               $"Start(), please specify ROS message name, or move initialization to Start().");
+            }
             return RegistryEntry<T>.s_RosMessageName;
         }
 
