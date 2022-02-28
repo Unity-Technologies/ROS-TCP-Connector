@@ -33,6 +33,10 @@ public class ImageGradientVisualizer : BaseVisualFactory<ImageMsg>
         Texture2D m_Texture2D;
         Material m_GradientMaterial;
 
+        static int GradientPropertyId = Shader.PropertyToID("_Gradient");
+        static int GradientScalePropertyId = Shader.PropertyToID("_GradientScale");
+        static int FlipYPropertyId = Shader.PropertyToID("_flipY");
+
         public ImageGradientVisual(string topic, ImageGradientVisualizer factory)
         {
             m_Topic = topic;
@@ -65,9 +69,9 @@ public class ImageGradientVisualizer : BaseVisualFactory<ImageMsg>
             GUILayout.Label($"{message.width}x{message.height}, encoding: {message.encoding}");
             if (message.data.Length > 0)
             {
-                m_GradientMaterial.SetTexture("_Gradient", m_Factory.m_Gradient);
-                m_GradientMaterial.SetFloat("_GradientScale", 1.0f / m_Factory.m_GradientScale);
-                m_GradientMaterial.SetFloat("_flipY", m_Factory.m_FlipY ? 1.0f : 0.0f);
+                m_GradientMaterial.SetTexture(GradientPropertyId, m_Factory.m_Gradient);
+                m_GradientMaterial.SetFloat(GradientScalePropertyId, 1.0f / m_Factory.m_GradientScale);
+                m_GradientMaterial.SetFloat(FlipYPropertyId, m_Factory.m_FlipY ? 1.0f : 0.0f);
                 GetTexture().GUITexture(m_GradientMaterial);
             }
         }
