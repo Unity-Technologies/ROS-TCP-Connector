@@ -38,7 +38,6 @@ public class ImageGradientVisualizer : BaseVisualFactory<ImageMsg>
             m_Topic = topic;
             m_Factory = factory;
             m_GradientMaterial = new Material(Shader.Find("Unlit/ImageGradient"));
-            m_GradientMaterial.SetTexture("_Gradient", m_Factory.m_Gradient);
 
             ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(m_Topic, AddMessage);
         }
@@ -66,6 +65,7 @@ public class ImageGradientVisualizer : BaseVisualFactory<ImageMsg>
             GUILayout.Label($"{message.width}x{message.height}, encoding: {message.encoding}");
             if (message.data.Length > 0)
             {
+                m_GradientMaterial.SetTexture("_Gradient", m_Factory.m_Gradient);
                 m_GradientMaterial.SetFloat("_GradientScale", 1.0f / m_Factory.m_GradientScale);
                 m_GradientMaterial.SetFloat("_flipY", m_Factory.m_FlipY ? 1.0f : 0.0f);
                 GetTexture().GUITexture(m_GradientMaterial);
