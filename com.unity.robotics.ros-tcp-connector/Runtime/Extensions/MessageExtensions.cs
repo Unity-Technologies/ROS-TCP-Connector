@@ -147,7 +147,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
+        public static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
         {
             // Number of channels in this encoding
             int channels = image.GetNumChannels();
@@ -511,12 +511,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "32SC2":
                 case "32SC3":
                 case "32SC4":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32_SInt
                     throw new NotImplementedException("32 bit integer texture formats are not supported");
                 case "32FC1":
                     return TextureFormat.RFloat;
                 case "32FC2":
                     return TextureFormat.RGFloat;
                 case "32FC3":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32G32B32_SFloat
                     throw new NotImplementedException("32FC3 texture format is not supported");
                 case "32FC4":
                     return TextureFormat.RGBAFloat;
