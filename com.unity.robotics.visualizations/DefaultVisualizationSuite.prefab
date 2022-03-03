@@ -181,7 +181,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Topic: 
   m_ID: 0-0
+  m_FlipVertical: 1
   m_Debayer: 1
+  m_SingleChannelToGradient: {fileID: 2800000, guid: bf13c0be511290748b5dcb0d777c3b5b, type: 3}
+  m_GradientScale: 1
 --- !u!1 &282174558860478410
 GameObject:
   m_ObjectHideFlags: 0

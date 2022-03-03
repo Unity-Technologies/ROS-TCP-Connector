@@ -4,7 +4,7 @@ Shader "Unlit/ImageGradient"
     {
         _MainTex("Texture", 2D) = "white" {}
         _Gradient("Gradient", 2D) = "white" {}
-        _GradientScale("GradientScale", 2D) = "white" {}
+        _BrightnessMultiplier("BrightnessMultiplier", Float) = 1
 		[Toggle] _flipY("Flip Y", Float) = 1
     }
 	
@@ -29,7 +29,7 @@ Shader "Unlit/ImageGradient"
             float4 _MainTex_ST;
             sampler2D _Gradient;
             float4 _Gradient_ST;
-            float _GradientScale;
+            float _BrightnessMultiplier;
             float _flipY;
 
             struct appdata
@@ -56,8 +56,8 @@ Shader "Unlit/ImageGradient"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float scalar = tex2D(_MainTex, i.uv).r;
-                fixed4 color = tex2D(_Gradient, float2(scalar*_GradientScale, 0));
+                float scalar = tex2D(_MainTex, i.uv).r * _BrightnessMultiplier;
+                fixed4 color = tex2D(_Gradient, float2(scalar, 0));
                 //color.b = 1;
                 return color;
             }
