@@ -95,6 +95,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
         static bool m_HasConnectionError = false;
+        static bool m_HasOutputConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
 
         // only the main thread can access Time.*, so make a copy here
@@ -799,6 +800,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
                     nextReaderIdx++;
 
+                    if (m_HasOutputConnectionError)
+                    {
+                        Debug.Log($"ROS Connection to {rosIPAddress}:{rosPort} succeeded!");
+                        m_HasOutputConnectionError = false;
+                    }
+
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
                     float waitingSinceRealTime = s_RealTimeSinceStartup;
                     while (true)
@@ -851,7 +858,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 catch (Exception e)
                 {
                     ROSConnection.m_HasConnectionError = true;
-                    Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                    if (!m_HasOutputConnectionError)
+                    {
+                        Debug.LogError($"ROS Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                        m_HasOutputConnectionError = true;
+                    }
                     await Task.Delay(nextReconnectionDelay);
                 }
                 finally
