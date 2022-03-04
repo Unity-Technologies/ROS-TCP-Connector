@@ -94,9 +94,9 @@ namespace Unity.Robotics.ROSTCPConnector
         CancellationTokenSource m_ConnectionThreadCancellation;
         public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
-        static bool m_HasConnectionError = false;
-        static bool m_HasOutputConnectionError = false;
-        public bool HasConnectionError => m_HasConnectionError;
+        static bool s_HasConnectionError = false;
+        static bool s_DidShowConnectionError = false;
+        public bool HasConnectionError => s_HasConnectionError;
 
         // only the main thread can access Time.*, so make a copy here
         public static float s_RealTimeSinceStartup = 0.0f;
@@ -785,7 +785,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 try
                 {
-                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
+                    ROSConnection.s_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
 
                     client = new TcpClient();
                     client.Connect(rosIPAddress, rosPort);
@@ -799,12 +799,6 @@ namespace Unity.Robotics.ROSTCPConnector
                     readerCancellation = new CancellationTokenSource();
                     _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
                     nextReaderIdx++;
-
-                    if (m_HasOutputConnectionError)
-                    {
-                        Debug.Log($"ROS Connection to {rosIPAddress}:{rosPort} succeeded!");
-                        m_HasOutputConnectionError = false;
-                    }
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
                     float waitingSinceRealTime = s_RealTimeSinceStartup;
@@ -857,11 +851,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
-                    if (!m_HasOutputConnectionError)
+                    ROSConnection.s_HasConnectionError = true;
+                    if (!s_DidShowConnectionError)
                     {
                         Debug.LogError($"ROS Connection to {rosIPAddress}:{rosPort} failed - " + e);
-                        m_HasOutputConnectionError = true;
+                        s_DidShowConnectionError = true;
                     }
                     await Task.Delay(nextReconnectionDelay);
                 }
@@ -887,7 +881,13 @@ namespace Unity.Robotics.ROSTCPConnector
             Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
             if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
             {
-                ROSConnection.m_HasConnectionError = false;
+                ROSConnection.s_HasConnectionError = false;
+                if (s_DidShowConnectionError)
+                {
+                    Debug.Log($"ROS reconnected OK");
+                    s_DidShowConnectionError = false;
+                }
+
                 queue.Enqueue(handshakeContent);
             }
             else
@@ -900,7 +900,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    ROSConnection.m_HasConnectionError = false;
+                    ROSConnection.s_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
                         queue.Enqueue(content);
@@ -910,7 +910,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
+                    ROSConnection.s_HasConnectionError = true;
                     Debug.Log("Reader " + readerIdx + " exception! " + e);
                 }
             }
