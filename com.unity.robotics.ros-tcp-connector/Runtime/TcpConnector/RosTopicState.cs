@@ -147,18 +147,18 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Deserializer(m_ConnectionInternal.Deserializer);
         }
 
-        public void AddSubscriber(Action<Message> callback)
+        public void AddSubscriber(Action<Message> callback, QoSSettings qos = null)
         {
             m_SubscriberCallbacks.Add(callback);
 
-            RegisterSubscriber();
+            RegisterSubscriber(qos);
         }
 
-        void RegisterSubscriber(NetworkStream stream = null)
+        void RegisterSubscriber(QoSSettings qos = null, NetworkStream stream = null)
         {
             if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendSubscriberRegistrationQoS(m_Topic, m_RosMessageName, qos, stream);
                 SentSubscriberRegistration = true;
             }
         }
@@ -206,6 +206,18 @@ namespace Unity.Robotics.ROSTCPConnector
             IsPublisherLatched = latch;
             m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, queueSize, latch);
             CreateMessageSender(queueSize);
+        }
+
+        public void RegisterPublisher(QoSSettings qos)
+        {
+            if (IsPublisher)
+            {
+                Debug.LogWarning($"Publisher for topic {m_Topic} registered twice!");
+                return;
+            }
+            IsPublisher = true;
+            m_ConnectionInternal.SendPublisherRegistrationQoS(m_Topic, m_RosMessageName, qos);
+            CreateMessageSender(qos.depth);
         }
 
         public void Publish(Message message)

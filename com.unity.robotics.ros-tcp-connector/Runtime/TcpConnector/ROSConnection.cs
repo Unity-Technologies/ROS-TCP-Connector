@@ -185,7 +185,7 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        public void Subscribe<T>(string topic, Action<T> callback) where T : Message
+        public void Subscribe<T>(string topic, Action<T> callback, QoSSettings qos = null) where T : Message
         {
             string rosMessageName = MessageRegistry.GetRosMessageName<T>();
             AddSubscriberInternal(topic, rosMessageName, (Message msg) =>
@@ -198,7 +198,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     Debug.LogError($"Subscriber to '{topic}' expected '{rosMessageName}' but received '{msg.RosMessageName}'!?");
                 }
-            });
+            }, qos);
         }
 
         public void Unsubscribe(string topic)
@@ -209,7 +209,7 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         // Version for when the message type is unknown at compile time
-        public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback)
+        public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback, QoSSettings qos = null)
         {
             var constructor = MessageRegistry.GetDeserializeFunction(rosMessageName);
             if (constructor == null)
@@ -218,10 +218,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 return;
             }
 
-            AddSubscriberInternal(topic, rosMessageName, callback);
+            AddSubscriberInternal(topic, rosMessageName, callback, qos);
         }
 
-        void AddSubscriberInternal(string topic, string rosMessageName, Action<Message> callback)
+        void AddSubscriberInternal(string topic, string rosMessageName, Action<Message> callback, QoSSettings qos)
         {
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
@@ -229,7 +229,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 info = AddTopic(topic, rosMessageName);
             }
 
-            info.AddSubscriber(callback);
+            info.AddSubscriber(callback, qos);
 
             foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
             {
@@ -354,6 +354,13 @@ namespace Unity.Robotics.ROSTCPConnector
             return topicState;
         }
 
+        public RosTopicState RegisterPublisher(string rosTopicName, string rosMessageName, QoSSettings qos)
+        {
+            RosTopicState topicState = GetOrCreateTopic(rosTopicName, rosMessageName);
+            topicState.RegisterPublisher(qos);
+            return topicState;
+        }
+
         public void RegisterRosService<TRequest, TResponse>(string topic) where TRequest : Message where TResponse : Message
         {
             RegisterRosService(topic, MessageRegistry.GetRosMessageName<TRequest>(), MessageRegistry.GetRosMessageName<TResponse>());
@@ -379,9 +386,29 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public MessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
-            public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
+            public void SendSubscriberRegistration(string topic, string rosMessageName, QoSSettings qos = null, NetworkStream stream = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+                if (qos != null)
+                {
+                    m_Self.SendSysCommand(
+                        SysCommand.k_SysCommand_SubscribeQoS,
+                        new SysCommand_SubscriberRegistrationQoS
+                        {
+                            topic = topic,
+                            message_name = rosMessageName,
+                            qos = JsonUtility.ToJson(qos)
+                        },
+                        stream
+                    );
+                }
+                else
+                {
+                    m_Self.SendSysCommand(
+                        SysCommand.k_SysCommand_Subscribe,
+                        new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName },
+                        stream
+                    );
+                }
             }
 
             public void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
@@ -421,8 +448,22 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public void SendPublisherRegistration(string topic, string message_name, int queueSize, bool latch, NetworkStream stream = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Publish,
+                m_Self.SendSysCommand(
+                    SysCommand.k_SysCommand_Publish,
                     new SysCommand_PublisherRegistration { topic = topic, message_name = message_name, queue_size = queueSize, latch = latch }
+                );
+            }
+
+            public void SendPublisherRegistrationQoS(string topic, string message_name, QoSSettings qos, NetworkStream stream = null)
+            {
+                m_Self.SendSysCommand(
+                    SysCommand.k_SysCommand_PublishQoS,
+                    new SysCommand_PublisherRegistrationQoS
+                    {
+                        topic = topic,
+                        message_name = message_name,
+                        qos = JsonUtility.ToJson(qos)
+                    }
                 );
             }
 

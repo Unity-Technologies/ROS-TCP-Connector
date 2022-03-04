@@ -14,7 +14,9 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string k_SysCommand_ServiceRequest = "__request";
         public const string k_SysCommand_ServiceResponse = "__response";
         public const string k_SysCommand_Subscribe = "__subscribe";
+        public const string k_SysCommand_SubscribeQoS = "__subscribe_qos";
         public const string k_SysCommand_Publish = "__publish";
+        public const string k_SysCommand_PublishQoS = "__publish_qos";
         public const string k_SysCommand_RosService = "__ros_service";
         public const string k_SysCommand_UnityService = "__unity_service";
         public const string k_SysCommand_TopicList = "__topic_list";
@@ -111,4 +113,19 @@ namespace Unity.Robotics.ROSTCPConnector
         public int queue_size;
         public bool latch;
     }
+
+    public struct SysCommand_PublisherRegistrationQoS
+    {
+        public string topic;
+        public string message_name;
+        public string qos;
+    }
+
+    public struct SysCommand_SubscriberRegistrationQoS
+    {
+        public string topic;
+        public string message_name;
+        public string qos;
+    }
+
 }
