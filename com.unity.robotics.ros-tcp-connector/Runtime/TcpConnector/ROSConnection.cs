@@ -343,6 +343,11 @@ namespace Unity.Robotics.ROSTCPConnector
             return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), queue_size, latch);
         }
 
+        public RosTopicState RegisterPublisher<T>(string rosTopicName, QoSSettings qos) where T : Message
+        {
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), qos);
+        }
+
         public RosTopicState RegisterPublisher(string rosTopicName, string rosMessageName,
             int? queueSize = null, bool? latch = null)
         {

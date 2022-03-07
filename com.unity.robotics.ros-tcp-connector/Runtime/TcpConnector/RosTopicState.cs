@@ -44,6 +44,7 @@ namespace Unity.Robotics.ROSTCPConnector
         List<Action<Message>> m_SubscriberCallbacks = new List<Action<Message>>();
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         public bool SentSubscriberRegistration { get; private set; }
+        QoSSettings m_SubscriberQoS;
 
         float m_LastMessageReceivedRealtime;
         float m_LastMessageSentRealtime;
@@ -156,9 +157,10 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterSubscriber(QoSSettings qos = null, NetworkStream stream = null)
         {
+            m_SubscriberQoS = qos; // remember this in case we need to reconnect
             if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
-                m_ConnectionInternal.SendSubscriberRegistrationQoS(m_Topic, m_RosMessageName, qos, stream);
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, qos, stream);
                 SentSubscriberRegistration = true;
             }
         }
@@ -257,7 +259,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (m_SubscriberCallbacks.Count > 0 && !SentSubscriberRegistration)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, m_SubscriberQoS, stream);
                 SentSubscriberRegistration = true;
             }
 

@@ -38,13 +38,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
     public class QoSSettings
     {
-        public float deadline;
-        public int depth;
-        public QoSDurabilityPolicy durability;
-        public QoSHistoryPolicy history;
-        public float lifespan;
-        public QoSLivelinessPolicy liveliness;
-        public float lifeliness_lease_duration;
-        public QoSReliability reliability;
+        public float deadline = -1;
+        public int depth = 10;
+        public QoSDurabilityPolicy durability = QoSDurabilityPolicy.Volatile;
+        public QoSHistoryPolicy history = QoSHistoryPolicy.KeepLast;
+        public float lifespan = -1;
+        public QoSLivelinessPolicy liveliness = QoSLivelinessPolicy.Default;
+        public float liveliness_lease_duration = -1;
+        public QoSReliability reliability = QoSReliability.Reliable;
     }
 }
