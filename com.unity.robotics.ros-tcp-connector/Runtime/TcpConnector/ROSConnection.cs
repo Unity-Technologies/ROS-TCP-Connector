@@ -1052,12 +1052,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 0, 5),
                 normal = { textColor = Color.white },
-                fixedWidth = 300
             };
 
 
             // ROS IP Setup
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Width(300));
             DrawConnectionArrows(
                 true,
                 0,
@@ -1100,6 +1099,13 @@ namespace Unity.Robotics.ROSTCPConnector
             else
             {
                 GUILayout.Label($"{RosIPAddress}:{RosPort}", contentStyle);
+
+                if (HasConnectionError)
+                {
+                    if (GUI.Button(new Rect(250, 2, 50, 22), "Set IP"))
+                        Disconnect();
+                }
+
                 GUILayout.EndHorizontal();
             }
         }
