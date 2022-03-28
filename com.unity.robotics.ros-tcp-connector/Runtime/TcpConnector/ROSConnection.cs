@@ -1102,7 +1102,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 if (HasConnectionError)
                 {
-                    if (GUILayout.Button("Disconnect", GUILayout.Height(25)))
+                    if (GUI.Button(new Rect(250, 2, 50, 22), "Set IP"))
                         Disconnect();
                 }
 
