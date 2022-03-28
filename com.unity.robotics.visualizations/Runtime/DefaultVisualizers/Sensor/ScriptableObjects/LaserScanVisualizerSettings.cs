@@ -41,6 +41,8 @@ public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMs
         for (int i = 0; i < message.ranges.Length; i++)
         {
             Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
+            if (float.IsNaN(point.x) || float.IsNaN(point.y) || float.IsNaN(point.z))
+                continue;
 
             Color32 c = Color.white;
             switch (mode)
