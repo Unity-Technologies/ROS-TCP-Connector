@@ -58,7 +58,6 @@ Shader "Unlit/ImageGradient"
             {
                 float scalar = tex2D(_MainTex, i.uv).r * _BrightnessMultiplier;
                 fixed4 color = tex2D(_Gradient, float2(scalar, 0));
-                //color.b = 1;
                 return color;
             }
 			
