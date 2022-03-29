@@ -9,9 +9,17 @@ using UnityEngine;
 public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
 {
     [SerializeField]
+    [Tooltip("Pixels in a Unity texture are upside down relative to the ones in a ROS image")]
+    bool m_FlipVertical = true;
+    [SerializeField]
+    [Tooltip("Convert bayer encoded images into RGB color?")]
     bool m_Debayer = true;
     [SerializeField]
-    bool m_ShowSingleChannelAsGray = true;
+    [Tooltip("If set, single channel images are mapped onto this gradient. (If not set, they are displayed as red.)")]
+    Texture2D m_SingleChannelToGradient;
+    [SerializeField]
+    [Tooltip("Scale image pixel values by this amount. (For use when visualizing depth and HDR images.)")]
+    float m_BrightnessMultiplier = 1.0f;
 
     public override bool CanShowDrawing => false;
 
@@ -28,6 +36,8 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
         int m_Width;
         int m_Height;
         string m_Encoding;
+        bool m_MessageIsBayerEncoded;
+        bool m_MessageIsSingleChannel;
         bool m_Debayer;
 
         ImageDefaultVisualizer m_Factory;
@@ -43,6 +53,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
         bool m_CheapTexture2DIsDirty;
         string m_CheapTexture2DEncoding;
         Material m_CheapTextureMaterial;
+        Material m_ImageGradientMaterial;
 
         List<Action<Texture2D>> m_OnChangeCallbacks = new List<Action<Texture2D>>();
 
@@ -57,6 +68,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             m_Factory = factory;
             m_Debayer = m_Factory.m_Debayer;
             m_CheapTextureMaterial = new Material(Shader.Find("Unlit/ImageMsg"));
+            m_ImageGradientMaterial = new Material(Shader.Find("Unlit/ImageGradient"));
 
             ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(m_Topic, AddMessage);
         }
@@ -72,6 +84,8 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             m_Width = (int)this.message.width;
             m_Height = (int)this.message.height;
             m_Encoding = this.message.encoding;
+            m_MessageIsBayerEncoded = m_Encoding.StartsWith("bayer");
+            m_MessageIsSingleChannel = this.message.GetNumChannels() == 1;
             //m_CheapTextureMaterial.SetFloat("_gray", this.message.GetNumChannels() == 1 ? 1.0f : 0.0f);
 
             // if anyone wants to know about the texture, notify them
@@ -86,7 +100,9 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
         public ImageMsg message { get; private set; }
 
         static int ConvertBGRPropertyID = Shader.PropertyToID("_convertBGR");
-        static int GrayPropertyID = Shader.PropertyToID("_gray");
+        static int GradientPropertyId = Shader.PropertyToID("_Gradient");
+        static int BrightnessMultiplierPropertyId = Shader.PropertyToID("_BrightnessMultiplier");
+        static int FlipYPropertyId = Shader.PropertyToID("_flipY");
 
         public void OnGUI()
         {
@@ -103,15 +119,13 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
                 return;
             }
 
-            bool isBayerImage = m_Encoding.StartsWith("bayer");
-
             GUILayout.BeginHorizontal();
             GUILayout.Label($"{m_Height}x{m_Width}, encoding: {m_Encoding}");
-            if (isBayerImage)
+            if (m_MessageIsBayerEncoded)
                 m_Debayer = GUILayout.Toggle(m_Debayer, "Debayer");
             GUILayout.EndHorizontal();
 
-            if (m_Texture2D != null || (m_Debayer && isBayerImage))
+            if (m_Texture2D != null || (m_Debayer && m_MessageIsBayerEncoded))
             {
                 // if we already generated the "real" texture, just use that
                 GetTexture().GUITexture();
@@ -120,10 +134,20 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             {
                 TextureRefresh(ref m_CheapTexture2D, ref m_CheapTexture2DEncoding, ref m_CheapTexture2DIsDirty, doConversion: false);
 
-                m_CheapTextureMaterial.SetFloat(ConvertBGRPropertyID, message.EncodingRequiresBGRConversion() ? 1.0f : 0.0f);
-                bool gray = (m_Factory.m_ShowSingleChannelAsGray && message.GetNumChannels() == 1);
-                m_CheapTextureMaterial.SetFloat(GrayPropertyID, gray ? 1.0f : 0.0f);
-                m_CheapTexture2D.GUITexture(m_CheapTextureMaterial);
+                if (m_Factory.m_SingleChannelToGradient != null && m_MessageIsSingleChannel)
+                {
+                    m_ImageGradientMaterial.SetTexture(GradientPropertyId, m_Factory.m_SingleChannelToGradient);
+                    m_ImageGradientMaterial.SetFloat(BrightnessMultiplierPropertyId, m_Factory.m_BrightnessMultiplier);
+                    m_ImageGradientMaterial.SetFloat(FlipYPropertyId, m_Factory.m_FlipVertical ? 1.0f : 0.0f);
+                    m_CheapTexture2D.GUITexture(m_ImageGradientMaterial);
+                }
+                else
+                {
+                    m_CheapTextureMaterial.SetFloat(ConvertBGRPropertyID, message.EncodingRequiresBGRConversion() ? 1.0f : 0.0f);
+                    m_CheapTextureMaterial.SetFloat(BrightnessMultiplierPropertyId, m_Factory.m_BrightnessMultiplier);
+                    m_CheapTextureMaterial.SetFloat(FlipYPropertyId, m_Factory.m_FlipVertical ? 1.0f : 0.0f);
+                    m_CheapTexture2D.GUITexture(m_CheapTextureMaterial);
+                }
             }
         }
 
@@ -142,7 +166,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
                     Destroy(texture);
 
                 if (doConversion)
-                    texture = message.ToTexture2D(debayer: m_Debayer);
+                    texture = message.ToTexture2D(debayer: m_Debayer, flipY: m_Factory.m_FlipVertical);
                 else
                     texture = message.ToTexture2D(debayer: false, convertBGR: false, flipY: false);
 
