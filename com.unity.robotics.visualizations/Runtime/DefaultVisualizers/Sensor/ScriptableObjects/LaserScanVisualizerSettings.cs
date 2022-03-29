@@ -40,28 +40,32 @@ public class LaserScanVisualizerSettings : VisualizerSettingsGeneric<LaserScanMs
             mode = ColorModeType.Distance;
         for (int i = 0; i < message.ranges.Length; i++)
         {
-            Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * message.ranges[i];
-
-            Color32 c = Color.white;
-            switch (mode)
+            float range = message.ranges[i];
+            if (!float.IsNaN(range) && !float.IsInfinity(range))
             {
-                case ColorModeType.Distance:
-                    c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, message.ranges[i]), 1, 1);
-                    break;
-                case ColorModeType.Intensity:
-                    c = new Color(1, message.intensities[i] / m_MaxIntensity, 0, 1);
-                    break;
-                case ColorModeType.Angle:
-                    c = Color.HSVToRGB((1 + angle / (Mathf.PI * 2)) % 1, 1, 1);
-                    break;
-            }
+                Vector3 point = Quaternion.Euler(0, Mathf.Rad2Deg * angle, 0) * Vector3.forward * range;
 
-            float radius = m_PointRadius;
-            if (m_UseIntensitySize && message.intensities.Length > 0)
-            {
-                radius = Mathf.InverseLerp(0, m_MaxIntensity, message.intensities[i]);
+                Color32 c = Color.white;
+                switch (mode)
+                {
+                    case ColorModeType.Distance:
+                        c = Color.HSVToRGB(Mathf.InverseLerp(message.range_min, message.range_max, range), 1, 1);
+                        break;
+                    case ColorModeType.Intensity:
+                        c = new Color(1, message.intensities[i] / m_MaxIntensity, 0, 1);
+                        break;
+                    case ColorModeType.Angle:
+                        c = Color.HSVToRGB((1 + angle / (Mathf.PI * 2)) % 1, 1, 1);
+                        break;
+                }
+
+                float radius = m_PointRadius;
+                if (m_UseIntensitySize && message.intensities.Length > 0)
+                {
+                    radius = Mathf.InverseLerp(0, m_MaxIntensity, message.intensities[i]);
+                }
+                pointCloud.AddPoint(point, c, radius);
             }
-            pointCloud.AddPoint(point, c, radius);
 
             angle -= message.angle_increment;
         }
