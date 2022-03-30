@@ -562,15 +562,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             Texture2D tex;
             byte[] data;
+            bool linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             if (debayer && message.IsBayerEncoded())
             {
-                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false, linear);
                 message.DebayerConvert(flipY);
                 data = message.data;
             }
             else
             {
-                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false, linear);
                 data = EncodingConversion(message, convertBGR, flipY);
             }
 
