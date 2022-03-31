@@ -15,7 +15,7 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
-        public const string k_Version = "v0.7.0";
+        public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
 
         // Variables required for ROS communication
