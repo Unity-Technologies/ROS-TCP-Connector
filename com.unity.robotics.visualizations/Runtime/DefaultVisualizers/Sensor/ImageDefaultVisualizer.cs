@@ -177,7 +177,11 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             {
                 if (texture.width != message.width || texture.height != message.height)
                 {
+#if UNITY_2021_2_OR_NEWER
+                    texture.Reinitialize((int)message.width, (int)message.height);
+#else
                     texture.Resize((int)message.width, (int)message.height);
+#endif
                 }
 
                 byte[] convertedData = (doConversion) ? MessageExtensions.EncodingConversion(message, message.EncodingRequiresBGRConversion(), flipY: true) : message.data;
