@@ -18,7 +18,7 @@ namespace Unity.Robotics.Visualizations
 
         public override void Draw(Drawing3d drawing, PointStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
             PointDefaultVisualizer.Draw<FLU>(message.point, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 

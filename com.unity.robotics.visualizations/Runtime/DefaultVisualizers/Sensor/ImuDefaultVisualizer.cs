@@ -27,7 +27,7 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
 
     public override void Draw(Drawing3d drawing, ImuMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness, m_SizeOfAxes, m_DrawUnityAxes);
     }
 

@@ -19,7 +19,7 @@ public class PathDefaultVisualizer : DrawingVisualizer<PathMsg>
 
     public override void Draw(Drawing3d drawing, PathMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_Thickness, m_Offset);
     }
 
