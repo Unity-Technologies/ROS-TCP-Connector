@@ -16,7 +16,7 @@ public class PoseStampedDefaultVisualizer : DrawingVisualizer<PoseStampedMsg>
 
     public override void Draw(Drawing3d drawing, PoseStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         PoseDefaultVisualizer.Draw<FLU>(message.pose, drawing, m_Size, m_DrawUnityAxes);
     }
 

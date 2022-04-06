@@ -60,9 +60,9 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
     public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
     bool m_UseSizeChannel = true;
 
-    public override void Draw(Drawing3d drawing, PointCloud2Msg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloud2Msg message, MessageMetadata meta, Transform visualizerTransform)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, visualizerTransform);
         var pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
 
         Channels = message.fields.Select(field => field.name).ToArray();

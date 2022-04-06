@@ -10,6 +10,7 @@ namespace Unity.Robotics.Visualizations
         None,
         Exact,
         TrackLatest,
+        RelativeToVisualizer,
     }
 
     [System.Serializable]
@@ -76,7 +77,7 @@ namespace Unity.Robotics.Visualizations
             }
         }
 
-        public void SetTFTrackingSettings(TFTrackingSettings tfTrackingType, HeaderMsg headerMsg)
+        public void SetTFTrackingSettings(TFTrackingSettings tfTrackingType, HeaderMsg headerMsg, Transform visualizerTransform)
         {
             switch (tfTrackingType.type)
             {
@@ -97,6 +98,9 @@ namespace Unity.Robotics.Visualizations
                 case TFTrackingType.None:
                     transform.localPosition = Vector3.zero;
                     transform.localRotation = Quaternion.identity;
+                    break;
+                case TFTrackingType.RelativeToVisualizer:
+                    transform.parent = visualizerTransform;
                     break;
             }
         }

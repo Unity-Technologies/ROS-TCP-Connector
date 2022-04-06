@@ -16,7 +16,7 @@ public class PoseArrayDefaultVisualizer : DrawingVisualizer<PoseArrayMsg>
 
     public override void Draw(Drawing3d drawing, PoseArrayMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         Draw<FLU>(message, drawing, m_Size, m_DrawUnityAxes);
     }
 

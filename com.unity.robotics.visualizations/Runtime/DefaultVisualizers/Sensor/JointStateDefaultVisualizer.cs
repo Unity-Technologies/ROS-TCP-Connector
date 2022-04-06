@@ -32,7 +32,7 @@ public class JointStateDefaultVisualizer : DrawingVisualizer<JointStateMsg>
     public override void Draw(Drawing3d drawing, JointStateMsg message, MessageMetadata meta)
     {
 #if URDF_IMPORTER
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         var color = SelectColor(m_Color, meta);
         m_RobotData.DrawGhost(drawing, message, color);
         if (m_ShowEffort)

@@ -16,7 +16,7 @@ public class OdometryDefaultVisualizer : DrawingVisualizer<OdometryMsg>
 
     public override void Draw(Drawing3d drawing, OdometryMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta), lengthScale, sphereRadius, thickness);
     }
 

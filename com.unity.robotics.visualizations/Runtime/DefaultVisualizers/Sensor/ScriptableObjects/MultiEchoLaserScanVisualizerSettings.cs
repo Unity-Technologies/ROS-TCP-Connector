@@ -17,9 +17,9 @@ public class MultiEchoLaserScanVisualizerSettings : VisualizerSettingsGeneric<Mu
     float[] m_SizeRange = { 0, 100 };
     public float[] SizeRange { get => m_SizeRange; set => m_SizeRange = value; }
 
-    public override void Draw(Drawing3d drawing, MultiEchoLaserScanMsg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, MultiEchoLaserScanMsg message, MessageMetadata meta, Transform visualizerTransform)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, visualizerTransform);
         MultiEchoLaserScanDefaultVisualizer.Draw<FLU>(message, drawing, this);
     }
 
