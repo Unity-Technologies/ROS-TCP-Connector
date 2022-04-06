@@ -18,7 +18,7 @@ namespace Unity.Robotics.Visualizations
 
         public override void Draw(Drawing3d drawing, Vector3StampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
             Vector3DefaultVisualizer.Draw<FLU>(message.vector, drawing, SelectColor(m_Color, meta), SelectLabel(m_Label, meta), m_Radius);
         }
 

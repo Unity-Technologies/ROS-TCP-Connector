@@ -14,7 +14,7 @@ public class RangeDefaultVisualizer : DrawingVisualizer<RangeMsg>
 
     public override void Draw(Drawing3d drawing, RangeMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         Draw<FLU>(message, drawing, SelectColor(m_Color, meta));
     }
 

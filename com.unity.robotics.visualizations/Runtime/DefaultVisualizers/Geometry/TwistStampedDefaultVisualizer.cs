@@ -18,7 +18,7 @@ namespace Unity.Robotics.Visualizations
 
         public override void Draw(Drawing3d drawing, TwistStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
             var orig = origin == null ? Vector3.zero : origin.transform.position;
             TwistDefaultVisualizer.Draw<FLU>(message.twist, drawing, SelectColor(m_Color, meta), orig, lengthScale, sphereRadius, thickness);
         }
