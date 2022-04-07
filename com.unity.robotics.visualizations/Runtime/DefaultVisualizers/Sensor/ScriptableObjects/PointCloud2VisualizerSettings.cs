@@ -137,6 +137,8 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
             var x = BitConverter.ToSingle(message.data, iPointStep + xChannelOffset);
             var y = BitConverter.ToSingle(message.data, iPointStep + yChannelOffset);
             var z = BitConverter.ToSingle(message.data, iPointStep + zChannelOffset);
+            if (float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z) || float.IsInfinity(x) || float.IsInfinity(y) || float.IsInfinity(z))
+                continue;
             Vector3<FLU> rosPoint = new Vector3<FLU>(x, y, z);
             Vector3 unityPoint = rosPoint.toUnity;
 
