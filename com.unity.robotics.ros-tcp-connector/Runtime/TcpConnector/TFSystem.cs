@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Std;
 using RosMessageTypes.Tf2;
@@ -19,10 +20,10 @@ public class TFSystem
         Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
         List<Action<TFStream>> m_Listeners = new List<Action<TFStream>>();
 
-        public TFTopicState(string tfTopic = "/tf")
+        public TFTopicState(TFSystem tfSystem, string tfTopic = "/tf")
         {
             m_TFTopic = tfTopic;
-            ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
+            tfSystem._rosConnection.Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
         }
 
         public TFStream GetOrCreateFrame(string frame_id)
@@ -120,7 +121,7 @@ public class TFSystem
         if (instance != null)
             return instance;
 
-        ROSConnection ros = ROSConnection.GetOrCreateInstance();
+        ROSConnection ros = ROSMultiConnector.GetConnectionInstance("jackal-yejin",10000);
         instance = new TFSystem();
         foreach (string s in ros.TFTopics)
         {
@@ -129,10 +130,38 @@ public class TFSystem
         return instance;
     }
 
+    public static TFSystem[] GetAllTfSystems()
+    {
+        return _tfSystemMap.Values?.ToArray();
+    }
+
+    private static Dictionary<string, TFSystem> _tfSystemMap;
+
+    private ROSConnection _rosConnection;
+    public static TFSystem GetOrCreateInstance(MonoBehaviour connection, string robotName)
+    {
+        if (_tfSystemMap == null)
+            _tfSystemMap = new Dictionary<string, TFSystem>();
+
+        //var parentName = ROSMultiConnector.GetParentName(connection.gameObject);
+        if (_tfSystemMap.ContainsKey(robotName))
+            return _tfSystemMap[robotName];
+        var tfSystem = new TFSystem();
+        ROSConnection ros = ROSMultiConnector.GetConnectionInstanceByParentName(connection, robotName:robotName);
+        tfSystem._rosConnection = ros;
+        foreach (string s in ros.TFTopics)
+        {
+            tfSystem.GetOrCreateTFTopic(s);
+        }
+        _tfSystemMap.Add(robotName, tfSystem);
+        return _tfSystemMap[robotName];
+    }
+
     public IEnumerable<string> GetTransformNames(string tfTopic = "/tf")
     {
         return GetOrCreateTFTopic(tfTopic).GetTransformNames();
     }
+
 
     public IEnumerable<TFStream> GetTransforms(string tfTopic = "/tf")
     {
@@ -186,7 +215,7 @@ public class TFSystem
         TFTopicState tfTopicState;
         if (!m_TFTopics.TryGetValue(tfTopic, out tfTopicState))
         {
-            tfTopicState = new TFTopicState(tfTopic);
+            tfTopicState = new TFTopicState(this, tfTopic);
             m_TFTopics[tfTopic] = tfTopicState;
         }
         return tfTopicState;
