@@ -204,14 +204,29 @@ namespace Unity.Robotics.Visualizations
             GUILayout.EndHorizontal();
         }
 
+        static bool s_HeadersExpanded = false;
+
         public static void GUI(this HeaderMsg message)
         {
+            Color oldColor = UnityEngine.GUI.color;
+            UnityEngine.GUI.color = new Color(0.5f, 0.85f, 0.85f);
+            if (s_HeadersExpanded)
+            {
 #if !ROS2
-            GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
+                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header\n  Seq: {message.seq}\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns");
 #else
-            GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString()}>");
+                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns");
 #endif
-
+            }
+            else
+            {
+#if !ROS2
+                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header [{message.seq} / {message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]");
+#else
+                GUILayout.Label($"Header [{message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]");
+#endif
+            }
+            UnityEngine.GUI.color = oldColor;
         }
 
         public static void GUITexture(this Texture2D tex)
