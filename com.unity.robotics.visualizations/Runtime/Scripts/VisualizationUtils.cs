@@ -210,22 +210,16 @@ namespace Unity.Robotics.Visualizations
         {
             Color oldColor = UnityEngine.GUI.color;
             UnityEngine.GUI.color = new Color(0.5f, 0.85f, 0.85f);
-            if (s_HeadersExpanded)
-            {
-#if !ROS2
-                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header\n  Seq: {message.seq}\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns");
+#if ROS2
+            string headerText = s_HeadersExpanded?
+                $"Header\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns":
+                $"Header [{message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]";
 #else
-                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns");
+            string headerText = s_HeadersExpanded ?
+                $"Header\n  Seq: {message.seq}\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns" :
+                $"Header [{message.seq} / {message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]";
 #endif
-            }
-            else
-            {
-#if !ROS2
-                s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, $"Header [{message.seq} / {message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]");
-#else
-                GUILayout.Label($"Header [{message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]");
-#endif
-            }
+            s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, headerText);
             UnityEngine.GUI.color = oldColor;
         }
 
