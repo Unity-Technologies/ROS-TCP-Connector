@@ -119,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static long ToLongTime(this TimeMsg message)
         {
-            return (long)message.sec << 32 | message.nanosec;
+            return (long)message.secs << 32 | message.nanosec;
         }
 
         public static DateTime ToDateTime(this TimeMsg message)
