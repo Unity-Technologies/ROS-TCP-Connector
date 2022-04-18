@@ -12,21 +12,45 @@ namespace RosMessageTypes.BuiltinInterfaces
         public const string k_RosMessageName = "std_msgs/Time";
         public override string RosMessageName => k_RosMessageName;
 
-        public uint sec;
-        public uint nanosec;
+        public uint secs;
+        public uint nsecs;
+
+        // for convenience when writing ROS2 agnostic code
+        public int sec { get => (int)secs; set => secs = (uint)value; }
+        public uint nanosec { get => nsecs; set => nsecs = value; }
 
         public TimeMsg()
         {
-            this.sec = 0;
-            this.nanosec = 0;
+            this.secs = 0;
+            this.nsecs = 0;
         }
 
-        public TimeMsg(uint sec, uint nanosec)
+        public TimeMsg(uint secs, uint nsecs)
         {
-            this.sec = sec;
-            this.nanosec = nanosec;
+            this.secs = secs;
+            this.nsecs = nsecs;
         }
 
+        public static TimeMsg Deserialize(MessageDeserializer deserializer) => new TimeMsg(deserializer);
+
+        TimeMsg(MessageDeserializer deserializer)
+        {
+            deserializer.Read(out this.secs);
+            deserializer.Read(out this.nsecs);
+        }
+
+        public override void SerializeTo(MessageSerializer serializer)
+        {
+            serializer.Write(this.secs);
+            serializer.Write(this.nsecs);
+        }
+
+        public override string ToString()
+        {
+            return "Time: " +
+            "\nsecs: " + secs.ToString() +
+            "\nnsecs: " + nsecs.ToString();
+        }
 #else
         public const string k_RosMessageName = "builtin_interfaces/Time";
         public override string RosMessageName => k_RosMessageName;
@@ -37,6 +61,10 @@ namespace RosMessageTypes.BuiltinInterfaces
         public int sec;
         //  The nanoseconds component, valid in the range [0, 10e9).
         public uint nanosec;
+
+        // for convenience when writing ROS2 agnostic code
+        public uint secs { get => (uint)sec; set => sec = (int)value; }
+        public uint nsecs { get => nsecs; set => nsecs = value; }
 
         public TimeMsg()
         {
@@ -49,7 +77,6 @@ namespace RosMessageTypes.BuiltinInterfaces
             this.sec = sec;
             this.nanosec = nanosec;
         }
-#endif
 
         public static TimeMsg Deserialize(MessageDeserializer deserializer) => new TimeMsg(deserializer);
 
@@ -71,6 +98,7 @@ namespace RosMessageTypes.BuiltinInterfaces
             "\nsec: " + sec.ToString() +
             "\nnanosec: " + nanosec.ToString();
         }
+#endif
 
 #if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
