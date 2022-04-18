@@ -22,6 +22,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string k_SysCommand_RemovePublisher = "__remove_publisher";
         public const string k_SysCommand_RemoveRosService = "__remove_ros_service";
         public const string k_SysCommand_RemoveUnityService = "__remove_unity_service";
+        public const string k_SysCommand_Ping = "__ping";
+        public const string k_SysCommand_PingResponse = "__ping_response";
 
         public abstract string Command
         {
@@ -102,6 +104,11 @@ namespace Unity.Robotics.ROSTCPConnector
     {
         public string[] topics;
         public string[] types;
+    }
+
+    public struct SysCommand_PingResponse
+    {
+        public int time;
     }
 
     public struct SysCommand_PublisherRegistration

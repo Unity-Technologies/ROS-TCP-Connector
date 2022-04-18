@@ -744,6 +744,12 @@ namespace Unity.Robotics.ROSTCPConnector
                         }
                     }
                     break;
+
+                case SysCommand.k_SysCommand_PingResponse:
+                    {
+                        var pingResponse = JsonUtility.FromJson<SysCommand_PingResponse>(json);
+                    }
+                    break;
             }
         }
 
@@ -969,6 +975,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 SendSysCommandImmediate(command, param, stream);
             else
                 QueueSysCommand(command, param);
+        }
+
+        public async void Ping()
+        {
+            SendSysCommand("__ping", )
         }
 
         static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
