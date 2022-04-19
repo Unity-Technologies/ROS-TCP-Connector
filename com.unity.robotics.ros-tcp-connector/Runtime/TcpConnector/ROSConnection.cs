@@ -86,7 +86,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
             }
-            
+
             public int Count => m_OutgoingMessageQueue.Count;
         }
 
@@ -829,7 +829,7 @@ namespace Unity.Robotics.ROSTCPConnector
                                 waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
                         }
-                        
+
                         while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
                         {
                             OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
@@ -841,11 +841,11 @@ namespace Unity.Robotics.ROSTCPConnector
                                 case OutgoingMessageSender.SendToState.QueueFullWarning:
                                     //Unable to send messages to ROS as fast as we're generating them.
                                     //This could be caused by a TCP connection that is too slow.
-                                    if(nextWarnTime < s_RealTimeSinceStartup)
+                                    if (nextWarnTime < s_RealTimeSinceStartup)
                                     {
-                                        Debug.LogWarning($"Queue full! Messages are getting dropped! " +
+                                        Debug.LogWarning($"Queue full! (Currently {outgoingQueue.Count}): Messages are getting dropped! " +
                                                      "Check your connection speed is fast enough to handle the traffic.");
-                                        nextWarnTime = s_RealTimeSinceStartup+1.0f;
+                                        nextWarnTime = s_RealTimeSinceStartup + 1.0f;
                                     }
                                     break;
                                 case OutgoingMessageSender.SendToState.NoMessageToSendError:
