@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public int QueueSize { get; private set; }
 
         //Messages waiting to be sent queue.
-        LinkedList<Message> m_OutgoingMessages = new LinkedList<Message>();
+        ConcurrentQueue<Message> m_OutgoingMessages = new ConcurrentQueue<Message>();
 
         //Keeps track of how many outgoing messages were removed due to queue overflow.
         //If a message is published but the queue is full, the counter is incremented, the
@@ -46,49 +47,38 @@ namespace Unity.Robotics.ROSTCPConnector
 
         internal void Queue(Message message)
         {
-            lock (m_OutgoingMessages)
+            /*if (m_OutgoingMessages.Count >= QueueSize)
             {
-                if (m_OutgoingMessages.Count >= QueueSize)
-                {
-                    //Remove outgoing messages that don't fit in the queue.
-                    //Recycle the message if applicable
-                    TryRecycleMessage(m_OutgoingMessages.First.Value);
-                    //Update the overflow counter.
-                    m_QueueOverflowUnsentCounter++;
-                    m_OutgoingMessages.RemoveFirst();
-                }
+                //Remove outgoing messages that don't fit in the queue.
+                //Recycle the message if applicable
+                TryRecycleMessage(m_OutgoingMessages.First.Value);
+                //Update the overflow counter.
+                m_QueueOverflowUnsentCounter++;
+                m_OutgoingMessages.RemoveFirst();
+            }*/
 
-                //Add a new valid message to the end.
-                m_OutgoingMessages.AddLast(message);
-            }
+            //Add a new valid message to the end.
+            m_OutgoingMessages.Enqueue(message);
         }
 
         SendToState GetMessageToSend(out Message messageToSend)
         {
-            SendToState result = SendToState.NoMessageToSendError;
-            messageToSend = null;
-            lock (m_OutgoingMessages)
+            if(!m_OutgoingMessages.TryDequeue(out messageToSend))
             {
-                if (m_QueueOverflowUnsentCounter > 0)
-                {
-                    //This means that we can't send message to ROS as fast as we're generating them.
-                    //This could potentially be bad as it means that we are dropping messages!
-                    m_QueueOverflowUnsentCounter--;
-                    messageToSend = null;
-                    result = SendToState.QueueFullWarning;
-                }
-                else if (m_OutgoingMessages.Count > 0)
-                {
-                    //Retrieve the next message and populate messageToSend.
-                    messageToSend = m_OutgoingMessages.First.Value;
-                    m_OutgoingMessages.RemoveFirst();
-                    result = SendToState.Normal;
-                }
+                return SendToState.NoMessageToSendError;
             }
-
-            return result;
+            else if(m_OutgoingMessages.Count >= QueueSize)
+            {
+                messageToSend = null;
+                return SendToState.QueueFullWarning;
+            }
+            else
+            {
+                return SendToState.Normal;
+            }
         }
 
+/*
         public bool PeekNextMessageToSend(out Message messageToSend)
         {
             bool result = false;
@@ -104,7 +94,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
 
             return result;
-        }
+        }*/
 
         void SendMessageWithStream(MessageSerializer messageSerializer, Stream stream, Message message)
         {
@@ -123,7 +113,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 //This topic is latching, so to mimic that functionality,
                 // the last sent message is sent again with the new connection.
-                m_OutgoingMessages.AddFirst(m_LastMessageSent);
+                m_OutgoingMessages.Enqueue(m_LastMessageSent);
             }
         }
 
@@ -152,7 +142,10 @@ namespace Unity.Robotics.ROSTCPConnector
             lock (m_OutgoingMessages)
             {
                 toRecycle = new List<Message>(m_OutgoingMessages);
-                m_OutgoingMessages.Clear();
+                Message unused;
+                while(m_OutgoingMessages.TryDequeue(out unused))
+                {
+                }
                 m_QueueOverflowUnsentCounter = 0;
             }
 

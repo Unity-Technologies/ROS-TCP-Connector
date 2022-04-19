@@ -86,6 +86,8 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
             }
+            
+            public int Count => m_OutgoingMessageQueue.Count;
         }
 
         OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
@@ -808,6 +810,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
                     float waitingSinceRealTime = s_RealTimeSinceStartup;
+                    float nextWarnTime = 0;
+
                     while (true)
                     {
                         bool messageReadyEventWasSet = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
@@ -825,7 +829,7 @@ namespace Unity.Robotics.ROSTCPConnector
                                 waitingSinceRealTime = s_RealTimeSinceStartup;
                             }
                         }
-
+                        
                         while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
                         {
                             OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
@@ -837,8 +841,12 @@ namespace Unity.Robotics.ROSTCPConnector
                                 case OutgoingMessageSender.SendToState.QueueFullWarning:
                                     //Unable to send messages to ROS as fast as we're generating them.
                                     //This could be caused by a TCP connection that is too slow.
-                                    Debug.LogWarning($"Queue full! Messages are getting dropped! " +
-                                                     "Try check your connection speed is fast enough to handle the traffic.");
+                                    if(nextWarnTime < s_RealTimeSinceStartup)
+                                    {
+                                        Debug.LogWarning($"Queue full! Messages are getting dropped! " +
+                                                     "Check your connection speed is fast enough to handle the traffic.");
+                                        nextWarnTime = s_RealTimeSinceStartup+1.0f;
+                                    }
                                     break;
                                 case OutgoingMessageSender.SendToState.NoMessageToSendError:
                                     //This indicates
