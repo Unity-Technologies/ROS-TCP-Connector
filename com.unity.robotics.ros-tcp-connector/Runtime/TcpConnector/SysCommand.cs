@@ -114,7 +114,6 @@ namespace Unity.Robotics.ROSTCPConnector
     public struct SysCommand_PingResponse
     {
         public string request_time;
-        public string response_time;
     }
 
     public struct SysCommand_PublisherRegistration
