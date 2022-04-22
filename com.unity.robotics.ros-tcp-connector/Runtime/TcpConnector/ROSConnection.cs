@@ -130,6 +130,7 @@ namespace Unity.Robotics.ROSTCPConnector
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
+        List<Action<TimeSpan>> m_PingCallbacks = new List<Action<TimeSpan>>();
         List<Action<RosTopicState>> m_NewTopicCallbacks = new List<Action<RosTopicState>>();
 
         Dictionary<string, RosTopicState> m_Topics = new Dictionary<string, RosTopicState>();
@@ -744,6 +745,18 @@ namespace Unity.Robotics.ROSTCPConnector
                         }
                     }
                     break;
+
+                case SysCommand.k_SysCommand_PingResponse:
+                    {
+                        var pingResponse = JsonUtility.FromJson<SysCommand_PingResponse>(json);
+                        if (m_PingCallbacks.Count > 0)
+                        {
+                            TimeSpan roundTripTime = DateTime.UtcNow - DateTime.Parse(pingResponse.request_time, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                            m_PingCallbacks.ForEach(a => a(roundTripTime));
+                            m_PingCallbacks.Clear();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -969,6 +982,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 SendSysCommandImmediate(command, param, stream);
             else
                 QueueSysCommand(command, param);
+        }
+
+        public void Ping(Action<TimeSpan> callback)
+        {
+            m_PingCallbacks.Add(callback);
+
+            string time8601 = DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+            SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
         static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
