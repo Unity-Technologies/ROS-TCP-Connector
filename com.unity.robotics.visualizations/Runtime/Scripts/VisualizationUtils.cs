@@ -216,8 +216,8 @@ namespace Unity.Robotics.Visualizations
                 $"Header [{message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]";
 #else
             string headerText = s_HeadersExpanded ?
-                $"Header\n  Seq: {message.seq}\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.sec}s {message.stamp.nanosec}ns" :
-                $"Header [{message.seq} / {message.frame_id} / {message.stamp.sec}s {message.stamp.nanosec}ns]";
+                $"Header\n  Seq: {message.seq}\n  Frame_id: {message.frame_id}\n  Time: {message.stamp.secs}s {message.stamp.nsecs}ns" :
+                $"Header [{message.seq} / {message.frame_id} / {message.stamp.secs}s {message.stamp.nsecs}ns]";
 #endif
             s_HeadersExpanded = GUILayout.Toggle(s_HeadersExpanded, headerText);
             UnityEngine.GUI.color = oldColor;
