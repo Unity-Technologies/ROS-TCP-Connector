@@ -157,9 +157,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterSubscriber(int queueSize, NetworkStream stream = null)
         {
+            m_SubscriberQueueSize = queueSize;
             if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
-                m_SubscriberQueueSize = queueSize;
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, queueSize, stream);
                 SentSubscriberRegistration = true;
             }

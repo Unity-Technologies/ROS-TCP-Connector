@@ -103,7 +103,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public static float s_RealTimeSinceStartup = 0.0f;
 
         readonly object m_ServiceRequestLock = new object();
-        bool m_SubscribeHasQueueSize = false;
 
         int m_NextSrvID = 101;
         Dictionary<int, TaskPauser> m_ServicesWaiting = new Dictionary<int, TaskPauser>();
