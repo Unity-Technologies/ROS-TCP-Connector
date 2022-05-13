@@ -59,6 +59,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public string[] TFTopics { get => m_TFTopics; set => m_TFTopics = value; }
 
         const int k_DefaultPublisherQueueSize = 10;
+        const int k_DefaultSubscriberQueueSize = 10;
         const bool k_DefaultPublisherLatch = false;
 
         // GUI window variables
@@ -102,6 +103,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public static float s_RealTimeSinceStartup = 0.0f;
 
         readonly object m_ServiceRequestLock = new object();
+        bool m_SubscribeHasQueueSize = false;
 
         int m_NextSrvID = 101;
         Dictionary<int, TaskPauser> m_ServicesWaiting = new Dictionary<int, TaskPauser>();
@@ -188,8 +190,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
+            Subscribe<T>(topic, k_DefaultSubscriberQueueSize, callback);
+        }
+
+        public void Subscribe<T>(string topic, int queueSize, Action<T> callback) where T : Message
+        {
             string rosMessageName = MessageRegistry.GetRosMessageName<T>();
-            AddSubscriberInternal(topic, rosMessageName, (Message msg) =>
+            AddSubscriberInternal(topic, rosMessageName, queueSize, (Message msg) =>
             {
                 if (msg.RosMessageName == rosMessageName)
                 {
@@ -212,6 +219,11 @@ namespace Unity.Robotics.ROSTCPConnector
         // Version for when the message type is unknown at compile time
         public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback)
         {
+            SubscribeByMessageName(topic, rosMessageName, k_DefaultSubscriberQueueSize, callback);
+        }
+
+        public void SubscribeByMessageName(string topic, string rosMessageName, int queueSize, Action<Message> callback)
+        {
             var constructor = MessageRegistry.GetDeserializeFunction(rosMessageName);
             if (constructor == null)
             {
@@ -219,10 +231,10 @@ namespace Unity.Robotics.ROSTCPConnector
                 return;
             }
 
-            AddSubscriberInternal(topic, rosMessageName, callback);
+            AddSubscriberInternal(topic, rosMessageName, queueSize, callback);
         }
 
-        void AddSubscriberInternal(string topic, string rosMessageName, Action<Message> callback)
+        void AddSubscriberInternal(string topic, string rosMessageName, int queueSize, Action<Message> callback)
         {
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
@@ -230,7 +242,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 info = AddTopic(topic, rosMessageName);
             }
 
-            info.AddSubscriber(callback);
+            info.AddSubscriber(queueSize, callback);
 
             foreach (Action<RosTopicState> topicCallback in m_NewTopicCallbacks)
             {
@@ -380,9 +392,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public MessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
-            public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
+            public void SendSubscriberRegistration(string topic, string rosMessageName, int queueSize, NetworkStream stream = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_SubscriberRegistration { topic = topic, message_name = rosMessageName, queue_size = queueSize }, stream);
             }
 
             public void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)

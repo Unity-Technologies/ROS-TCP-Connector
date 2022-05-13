@@ -45,6 +45,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         public bool SentSubscriberRegistration { get; private set; }
 
+        int m_SubscriberQueueSize;
         float m_LastMessageReceivedRealtime;
         float m_LastMessageSentRealtime;
         public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
@@ -147,18 +148,19 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Deserializer(m_ConnectionInternal.Deserializer);
         }
 
-        public void AddSubscriber(Action<Message> callback)
+        public void AddSubscriber(int queueSize, Action<Message> callback)
         {
             m_SubscriberCallbacks.Add(callback);
 
-            RegisterSubscriber();
+            RegisterSubscriber(queueSize);
         }
 
-        void RegisterSubscriber(NetworkStream stream = null)
+        void RegisterSubscriber(int queueSize, NetworkStream stream = null)
         {
             if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_SubscriberQueueSize = queueSize;
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, queueSize, stream);
                 SentSubscriberRegistration = true;
             }
         }
@@ -245,7 +247,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (m_SubscriberCallbacks.Count > 0 && !SentSubscriberRegistration)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, m_SubscriberQueueSize, stream);
                 SentSubscriberRegistration = true;
             }
 

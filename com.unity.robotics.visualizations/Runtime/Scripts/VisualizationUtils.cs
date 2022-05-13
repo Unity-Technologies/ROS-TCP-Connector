@@ -19,6 +19,8 @@ namespace Unity.Robotics.Visualizations
 {
     public static class VisualizationUtils
     {
+        public const int k_SubscriberQueueSize = 1;
+
         public static Color SelectColor(Color userColor, MessageMetadata meta)
         {
             if (userColor.r == 0 && userColor.g == 0 && userColor.b == 0)

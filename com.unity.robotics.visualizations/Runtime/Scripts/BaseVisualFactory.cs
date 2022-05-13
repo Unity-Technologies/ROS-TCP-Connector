@@ -81,10 +81,10 @@ namespace Unity.Robotics.Visualizations
                 if (state.ServiceResponseTopic == null)
                     Debug.Log("Failed to subscribe to " + topic + " response!");
                 else
-                    state.ServiceResponseTopic.AddSubscriber(callback);
+                    state.ServiceResponseTopic.AddSubscriber(VisualizationUtils.k_SubscriberQueueSize, callback);
             }
             else
-                state.AddSubscriber(callback);
+                state.AddSubscriber(VisualizationUtils.k_SubscriberQueueSize, callback);
         }
     }
 }

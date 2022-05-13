@@ -46,7 +46,7 @@ namespace Unity.Robotics.Visualizations
                 RosTopicState state = ros.GetTopic(topic);
                 if (subtopic == MessageSubtopic.Response)
                     state = state.ServiceResponseTopic;
-                state.AddSubscriber(AddMessage);
+                state.AddSubscriber(VisualizationUtils.k_SubscriberQueueSize, AddMessage);
             }
 
             public void AddMessage(Message newMessage)
