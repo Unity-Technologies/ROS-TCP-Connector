@@ -70,7 +70,7 @@ public class ImageDefaultVisualizer : BaseVisualFactory<ImageMsg>
             m_CheapTextureMaterial = new Material(Shader.Find("Unlit/ImageMsg"));
             m_ImageGradientMaterial = new Material(Shader.Find("Unlit/ImageGradient"));
 
-            ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(m_Topic, AddMessage);
+            ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(m_Topic, VisualizationUtils.k_SubscriberQueueSize, AddMessage);
         }
 
         public virtual void AddMessage(Message message)
