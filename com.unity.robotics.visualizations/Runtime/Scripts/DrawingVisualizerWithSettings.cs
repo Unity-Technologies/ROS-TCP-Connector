@@ -37,7 +37,7 @@ namespace Unity.Robotics.Visualizations
 
         public override void Draw(Drawing3d drawing, TMessage message, MessageMetadata meta)
         {
-            m_Settings.Draw(drawing, message, meta);
+            m_Settings.Draw(drawing, message, meta, transform);
         }
 
         public override Action CreateGUI(TMessage message, MessageMetadata meta)

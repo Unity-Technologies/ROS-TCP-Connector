@@ -10,6 +10,7 @@ namespace Unity.Robotics.Visualizations
         None,
         Exact,
         TrackLatest,
+        RelativeToVisualizer,
     }
 
     [System.Serializable]
@@ -76,7 +77,7 @@ namespace Unity.Robotics.Visualizations
             }
         }
 
-        public void SetTFTrackingSettings(TFTrackingSettings tfTrackingType, HeaderMsg headerMsg)
+        public void SetTFTrackingSettings(TFTrackingSettings tfTrackingType, HeaderMsg headerMsg, Transform visualizerTransform)
         {
             switch (tfTrackingType.type)
             {
@@ -97,6 +98,9 @@ namespace Unity.Robotics.Visualizations
                 case TFTrackingType.None:
                     transform.localPosition = Vector3.zero;
                     transform.localRotation = Quaternion.identity;
+                    break;
+                case TFTrackingType.RelativeToVisualizer:
+                    transform.parent = visualizerTransform;
                     break;
             }
         }
@@ -130,7 +134,7 @@ namespace Unity.Robotics.Visualizations
             // Could do this by calling DrawCylinder - but hardcoding it is more efficient
             Vector3 forwardVector = (to - from).normalized;
             Vector3 sideVector;
-            if (Vector3.Dot(forwardVector, Vector3.up) > 0.9f) // just want any vector perpendicular to forwardVector
+            if (Mathf.Abs(Vector3.Dot(forwardVector, Vector3.up)) > 0.9f) // just want any vector perpendicular to forwardVector
                 sideVector = Vector3.Cross(forwardVector, Vector3.forward).normalized * thickness;
             else
                 sideVector = Vector3.Cross(forwardVector, Vector3.up).normalized * thickness;
@@ -315,6 +319,8 @@ namespace Unity.Robotics.Visualizations
         {
             float arrowheadRadius = thickness * arrowheadScale;
             float arrowheadLength = arrowheadRadius / arrowheadGradient;
+            float entireLength = (to - from).magnitude;
+            arrowheadLength = Mathf.Min(arrowheadLength, entireLength * 0.5f);
             Vector3 direction = (to - from).normalized;
             Vector3 arrowheadJoint = to - direction * arrowheadLength;
             DrawLine(from, arrowheadJoint, color, thickness);

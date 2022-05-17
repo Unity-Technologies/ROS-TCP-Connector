@@ -13,7 +13,7 @@ public class TFSystem
     public static TFSystem instance { get; private set; }
     Dictionary<string, TFTopicState> m_TFTopics = new Dictionary<string, TFTopicState>();
 
-    class TFTopicState
+    public class TFTopicState
     {
         string m_TFTopic;
         Dictionary<string, TFStream> m_TransformTable = new Dictionary<string, TFStream>();
@@ -25,7 +25,7 @@ public class TFSystem
             ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
         }
 
-        public TFStream GetOrCreateTFStream(string frame_id)
+        public TFStream GetOrCreateFrame(string frame_id)
         {
             TFStream tf;
             while (frame_id.EndsWith("/"))
@@ -43,7 +43,7 @@ public class TFSystem
                 }
                 else
                 {
-                    var parent = GetOrCreateTFStream(frame_id.Substring(0, slash));
+                    var parent = GetOrCreateFrame(frame_id.Substring(0, slash));
                     tf = new TFStream(parent, singleName, m_TFTopic);
                 }
 
@@ -52,7 +52,7 @@ public class TFSystem
             }
             else if (slash > 0 && tf.Parent == null)
             {
-                tf.SetParent(GetOrCreateTFStream(frame_id.Substring(0, slash)));
+                tf.SetParent(GetOrCreateFrame(frame_id.Substring(0, slash)));
             }
 
             return tf;
@@ -63,7 +63,7 @@ public class TFSystem
             foreach (var tf_message in message.transforms)
             {
                 var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
-                var tf = GetOrCreateTFStream(frame_id);
+                var tf = GetOrCreateFrame(frame_id);
                 tf.Add(
                     tf_message.header.stamp.ToLongTime(),
                     tf_message.transform.translation.From<FLU>(),
@@ -177,11 +177,11 @@ public class TFSystem
 
     public GameObject GetTransformObject(string frame_id, string tfTopic = "/tf")
     {
-        TFStream stream = GetOrCreateTFTopic(tfTopic).GetOrCreateTFStream(frame_id);
+        TFStream stream = GetOrCreateTFTopic(tfTopic).GetOrCreateFrame(frame_id);
         return stream.GameObject;
     }
 
-    TFTopicState GetOrCreateTFTopic(string tfTopic)
+    public TFTopicState GetOrCreateTFTopic(string tfTopic = "/tf")
     {
         TFTopicState tfTopicState;
         if (!m_TFTopics.TryGetValue(tfTopic, out tfTopicState))
@@ -190,5 +190,11 @@ public class TFSystem
             m_TFTopics[tfTopic] = tfTopicState;
         }
         return tfTopicState;
+    }
+
+    public TFStream GetOrCreateFrame(string frame_id, string tfTopic = "/tf")
+    {
+        TFTopicState topicState = GetOrCreateTFTopic(tfTopic);
+        return topicState.GetOrCreateFrame(frame_id);
     }
 }

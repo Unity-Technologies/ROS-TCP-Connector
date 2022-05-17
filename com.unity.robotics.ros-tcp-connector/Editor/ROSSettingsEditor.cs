@@ -131,6 +131,10 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
                 prefab.SleepTimeSeconds);
 
+            EditorGUILayout.Space();
+
+            prefab.listenForTFMessages = EditorGUILayout.Toggle("Listen for TF Messages", prefab.listenForTFMessages);
+
             // TODO: make the settings input update the prefab
             // EditorGUILayout.Space();
             // if (!editor) { editor = UnityEditor.Editor.CreateEditor(this); }

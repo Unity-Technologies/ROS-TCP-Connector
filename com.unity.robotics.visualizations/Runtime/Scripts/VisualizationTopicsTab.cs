@@ -16,6 +16,7 @@ namespace Unity.Robotics.Visualizations
         string IHudTab.Label => "Topics";
 
         string m_TopicFilter = "";
+        bool m_DidLoadLayout = false;
 
         Vector2 m_TopicMenuScrollPosition;
 
@@ -39,7 +40,6 @@ namespace Unity.Robotics.Visualizations
             m_Connection = ROSConnection.GetOrCreateInstance();
             HudPanel.RegisterTab(this, (int)HudTabOrdering.Topics);
             HudPanel.RegisterTab(new VisualizationLayoutTab(this), (int)HudTabOrdering.Layout);
-            LoadLayout();
             m_Connection.ListenForTopics(OnNewTopic, notifyAllExistingTopics: true);
         }
 
@@ -54,6 +54,13 @@ namespace Unity.Robotics.Visualizations
             }
         }
 
+        void Update()
+        {
+            if (!m_DidLoadLayout)
+                LoadLayout();
+
+            this.enabled = false;
+        }
 
         void IHudTab.OnGUI(HudPanel hud)
         {
@@ -237,6 +244,7 @@ namespace Unity.Robotics.Visualizations
 
         void LoadLayout(HUDLayoutSave saveState)
         {
+            m_DidLoadLayout = true;
             foreach (var savedRule in saveState.Rules)
             {
                 RosTopicState topicState = m_Connection.GetOrCreateTopic(savedRule.Topic, savedRule.RosMessageName, savedRule.IsService);

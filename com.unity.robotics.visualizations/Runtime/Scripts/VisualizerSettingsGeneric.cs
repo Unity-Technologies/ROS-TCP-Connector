@@ -18,7 +18,7 @@ namespace Unity.Robotics.Visualizations
             return null;
         }
 
-        public virtual void Draw(Drawing3d drawing, T message, MessageMetadata meta)
+        public virtual void Draw(Drawing3d drawing, T message, MessageMetadata meta, Transform visualizerTransform)
         {
         }
     }

@@ -14,6 +14,11 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
     public float m_SphereRadius = 1;
     [SerializeField]
     public float m_Thickness = 0.01f;
+    [SerializeField]
+    public float m_SizeOfAxes = 0.1f;
+    [SerializeField]
+    [Tooltip("If ticked, draw the axis lines for Unity coordinates. Otherwise, draw the axis lines for ROS coordinates (FLU).")]
+    public bool m_DrawUnityAxes = false;
     bool m_ViewAccel;
     bool m_ViewAngular;
     bool m_ViewOrientation;
@@ -22,13 +27,13 @@ public class ImuDefaultVisualizer : DrawingVisualizer<ImuMsg>
 
     public override void Draw(Drawing3d drawing, ImuMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
-        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
+        Draw<FLU>(message, drawing, SelectColor(m_Color, meta), m_LengthScale, m_SphereRadius, m_Thickness, m_SizeOfAxes, m_DrawUnityAxes);
     }
 
-    public static void Draw<C>(ImuMsg message, Drawing3d drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f) where C : ICoordinateSpace, new()
+    public static void Draw<C>(ImuMsg message, Drawing3d drawing, Color color, float lengthScale = 1, float sphereRadius = 1, float thickness = 0.01f, float axisSize = 0.1f, bool drawUnityAxes = false) where C : ICoordinateSpace, new()
     {
-        QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing);
+        QuaternionDefaultVisualizer.Draw<C>(message.orientation, drawing, null, axisSize, drawUnityAxes);
         drawing.DrawArrow(Vector3.zero, message.linear_acceleration.From<C>() * lengthScale, color, thickness);
         VisualizationUtils.DrawAngularVelocityArrow(drawing, message.angular_velocity.From<C>(), Vector3.zero, color, sphereRadius, thickness);
     }

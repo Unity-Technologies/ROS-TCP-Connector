@@ -35,7 +35,7 @@ public class JointTrajectoryDefaultVisualizer : DrawingVisualizer<JointTrajector
     public override void Draw(Drawing3d drawing, JointTrajectoryMsg message, MessageMetadata meta)
     {
 #if URDF_IMPORTER
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         m_RobotData.DrawJointPaths(drawing, message, SelectColor(m_Color, meta), m_PathThickness);
 #endif
     }

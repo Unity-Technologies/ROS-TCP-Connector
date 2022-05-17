@@ -119,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static long ToLongTime(this TimeMsg message)
         {
-            return (long)message.sec << 32 | message.nanosec;
+            return (long)message.secs << 32 | message.nanosec;
         }
 
         public static DateTime ToDateTime(this TimeMsg message)
@@ -147,7 +147,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
+        public static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
         {
             // Number of channels in this encoding
             int channels = image.GetNumChannels();
@@ -511,12 +511,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "32SC2":
                 case "32SC3":
                 case "32SC4":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32_SInt
                     throw new NotImplementedException("32 bit integer texture formats are not supported");
                 case "32FC1":
                     return TextureFormat.RFloat;
                 case "32FC2":
                     return TextureFormat.RGFloat;
                 case "32FC3":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32G32B32_SFloat
                     throw new NotImplementedException("32FC3 texture format is not supported");
                 case "32FC4":
                     return TextureFormat.RGBAFloat;
@@ -560,15 +562,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             Texture2D tex;
             byte[] data;
+            bool linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             if (debayer && message.IsBayerEncoded())
             {
-                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false, linear);
                 message.DebayerConvert(flipY);
                 data = message.data;
             }
             else
             {
-                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false, linear);
                 data = EncodingConversion(message, convertBGR, flipY);
             }
 
@@ -699,31 +702,36 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public static ImageMsg ToImageMsg(this Texture2D tex, HeaderMsg header)
         {
             byte[] data = null;
-            string encoding = "rgba8";
+            string encoding;
+            int step;
             switch (tex.format)
             {
                 case TextureFormat.RGB24:
                     data = new byte[tex.width * tex.height * 3];
                     tex.GetPixelData<byte>(0).CopyTo(data);
                     encoding = "rgb8";
+                    step = 3 * tex.width;
                     ReverseInBlocks(data, tex.width * 3, tex.height);
                     break;
                 case TextureFormat.RGBA32:
                     data = new byte[tex.width * tex.height * 4];
                     tex.GetPixelData<byte>(0).CopyTo(data);
                     encoding = "rgba8";
+                    step = 4 * tex.width;
                     ReverseInBlocks(data, tex.width * 4, tex.height);
                     break;
                 case TextureFormat.R8:
                     data = new byte[tex.width * tex.height];
                     tex.GetPixelData<byte>(0).CopyTo(data);
                     encoding = "8UC1";
+                    step = 1 * tex.width;
                     ReverseInBlocks(data, tex.width, tex.height);
                     break;
                 case TextureFormat.R16:
                     data = new byte[tex.width * tex.height * 2];
                     tex.GetPixelData<byte>(0).CopyTo(data);
                     encoding = "16UC1";
+                    step = 2 * tex.width;
                     ReverseInBlocks(data, tex.width * 2, tex.height);
                     break;
                 default:
@@ -742,9 +750,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                     }
                     ReverseInBlocks(data, tex.width * 4, tex.height);
                     encoding = "rgba8";
+                    step = 4 * tex.width;
                     break;
             }
-            return new ImageMsg(header, height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: 4, data: data);
+            return new ImageMsg(header, height: (uint)tex.height, width: (uint)tex.width, encoding: encoding, is_bigendian: 0, step: (uint)step, data: data);
         }
 
         public static string ToLatLongString(this NavSatFixMsg message)

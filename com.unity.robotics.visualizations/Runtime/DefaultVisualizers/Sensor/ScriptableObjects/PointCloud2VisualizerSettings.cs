@@ -60,9 +60,9 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
     public bool UseSizeChannel { get => m_UseSizeChannel; set => m_UseSizeChannel = value; }
     bool m_UseSizeChannel = true;
 
-    public override void Draw(Drawing3d drawing, PointCloud2Msg message, MessageMetadata meta)
+    public override void Draw(Drawing3d drawing, PointCloud2Msg message, MessageMetadata meta, Transform visualizerTransform)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, visualizerTransform);
         var pointCloud = drawing.AddPointCloud((int)(message.data.Length / message.point_step));
 
         Channels = message.fields.Select(field => field.name).ToArray();
@@ -137,6 +137,8 @@ public class PointCloud2VisualizerSettings : VisualizerSettingsGeneric<PointClou
             var x = BitConverter.ToSingle(message.data, iPointStep + xChannelOffset);
             var y = BitConverter.ToSingle(message.data, iPointStep + yChannelOffset);
             var z = BitConverter.ToSingle(message.data, iPointStep + zChannelOffset);
+            if (float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z) || float.IsInfinity(x) || float.IsInfinity(y) || float.IsInfinity(z))
+                continue;
             Vector3<FLU> rosPoint = new Vector3<FLU>(x, y, z);
             Vector3 unityPoint = rosPoint.toUnity;
 

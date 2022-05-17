@@ -6,8 +6,10 @@
         "GUID:5db6cbfd5d0e86a46862a70f4b4067f2"
     ],
     "includePlatforms": [
-        "CloudRendering",
+		"CloudRendering",
+        "Android",
         "Editor",
+        "iOS",
         "LinuxStandalone64",
         "macOSStandalone",
         "WSA",
