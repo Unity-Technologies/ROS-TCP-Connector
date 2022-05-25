@@ -16,44 +16,26 @@ namespace RosMessageTypes.Std
         //  This is generally used to communicate timestamped data
         //  in a particular coordinate frame.
 
-#if !ROS2
         //  sequence ID: consecutively increasing ID
-        public uint seq;
-#endif
+        // we don't support this field. (it's deprecated in ROS1 and doesn't exist in ROS2). 
+        //public uint seq;
 
         //  Two-integer timestamp that is expressed as seconds and nanoseconds.
         public BuiltinInterfaces.TimeMsg stamp;
         //  Transform frame with which this data is associated.
         public string frame_id;
 
-#if !ROS2
         public HeaderMsg()
         {
-            this.seq = 0;
             this.stamp = new BuiltinInterfaces.TimeMsg();
             this.frame_id = "";
         }
 
+        // Note, seq is ignored; provided for backwards compatibility
         public HeaderMsg(uint seq, BuiltinInterfaces.TimeMsg stamp, string frame_id)
         {
-            this.seq = seq;
             this.stamp = stamp;
             this.frame_id = frame_id;
-        }
-
-        public static HeaderMsg Deserialize(MessageDeserializer deserializer) => new HeaderMsg(deserializer);
-
-        HeaderMsg(MessageDeserializer deserializer)
-        {
-            deserializer.Read(out this.seq);
-            this.stamp = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
-            deserializer.Read(out this.frame_id);
-        }
-#else
-        public HeaderMsg()
-        {
-            this.stamp = new BuiltinInterfaces.TimeMsg();
-            this.frame_id = "";
         }
 
         public HeaderMsg(BuiltinInterfaces.TimeMsg stamp, string frame_id)
@@ -66,15 +48,19 @@ namespace RosMessageTypes.Std
 
         HeaderMsg(MessageDeserializer deserializer)
         {
+            uint seq_unused;
+            if (!deserializer.IsRos2)
+                deserializer.Read(out seq_unused);
+
             this.stamp = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
             deserializer.Read(out this.frame_id);
         }
-#endif
+
         public override void SerializeTo(MessageSerializer serializer)
         {
-#if !ROS2
-            serializer.Write(seq);
-#endif
+            if (!serializer.IsRos2)
+                serializer.Write(0U);
+
             serializer.Write(stamp);
             serializer.Write(this.frame_id);
         }
@@ -82,9 +68,6 @@ namespace RosMessageTypes.Std
         public override string ToString()
         {
             return "Header: " +
-#if !ROS2
-            "\nseq: " + seq.ToString() +
-#endif
             "\nstamp: " + stamp.ToString() +
             "\nframe_id: " + frame_id.ToString();
         }

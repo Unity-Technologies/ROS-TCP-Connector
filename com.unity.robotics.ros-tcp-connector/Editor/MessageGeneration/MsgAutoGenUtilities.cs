@@ -148,7 +148,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return CapitalizeFirstLetter(s);
         }
 
-        public static string InitializeOnLoad(string subtopicArgument = "")
+        public static string InitializeOnLoad(string className, string subtopicArgument = "")
         {
             return "\n" +
                 "#if UNITY_EDITOR\n" +
@@ -158,7 +158,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 "#endif\n" +
                 TWO_TABS + "public static void Register()\n" +
                 TWO_TABS + "{\n" +
-                THREE_TABS + $"MessageRegistry.Register(k_RosMessageName, Deserialize{subtopicArgument});\n" +
+                THREE_TABS + $"MessageRegistry.Register<{className}>(k_RosMessageName, Deserialize{subtopicArgument});\n" +
                 TWO_TABS + "}\n";
         }
     }

@@ -98,7 +98,7 @@ namespace Unity.Robotics.Visualizations
                 if (result != null)
                     return result.Best;
 
-                if (MessageRegistry.GetDeserializeFunction(rosMessageName) != null)
+                if (MessageRegistry.GetRosDeserializeFunction(rosMessageName) != null)
                     return (subtopic != MessageSubtopic.Response) ? s_DefaultVisualFactory : s_DefaultResponseVisualFactory;
             }
 
@@ -122,7 +122,7 @@ namespace Unity.Robotics.Visualizations
                 s_TypeVisualFactories.TryGetValue(rosMessageName, out result);
                 if (result != null)
                     typeVisualizers = result.All;
-                else if (MessageRegistry.GetDeserializeFunction(rosMessageName) != null)
+                else if (MessageRegistry.GetRosDeserializeFunction(rosMessageName) != null)
                     typeVisualizers = new IVisualFactory[] { s_DefaultVisualFactory };
             }
 

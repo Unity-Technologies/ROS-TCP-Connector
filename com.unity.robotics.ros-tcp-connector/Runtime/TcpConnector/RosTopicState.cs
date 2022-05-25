@@ -28,7 +28,7 @@ namespace Unity.Robotics.ROSTCPConnector
         ROSConnection m_Connection;
         public ROSConnection Connection => m_Connection;
         ROSConnection.InternalAPI m_ConnectionInternal;
-        Func<MessageDeserializer, Message> m_Deserializer;
+        Func<IMessageDeserializer, byte[], Message> m_Deserializer;
 
         Func<Message, Message> m_ServiceImplementation;
         Func<Message, Task<Message>> m_ServiceImplementationAsync;
@@ -141,10 +141,9 @@ namespace Unity.Robotics.ROSTCPConnector
         Message Deserialize(byte[] data)
         {
             if (m_Deserializer == null)
-                m_Deserializer = MessageRegistry.GetDeserializeFunction(m_RosMessageName, m_Subtopic);
+                m_Deserializer = MessageRegistry.GetGenericDeserializeFunction(m_RosMessageName, m_Subtopic);
 
-            m_ConnectionInternal.Deserializer.InitWithBuffer(data);
-            return m_Deserializer(m_ConnectionInternal.Deserializer);
+            return m_Deserializer(m_ConnectionInternal.Deserializer, data);
         }
 
         public void AddSubscriber(Action<Message> callback)
@@ -154,11 +153,11 @@ namespace Unity.Robotics.ROSTCPConnector
             RegisterSubscriber();
         }
 
-        void RegisterSubscriber(NetworkStream stream = null)
+        void RegisterSubscriber()
         {
             if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName);
                 SentSubscriberRegistration = true;
             }
         }

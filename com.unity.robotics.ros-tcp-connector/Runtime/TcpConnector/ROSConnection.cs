@@ -10,6 +10,7 @@ using UnityEngine.Serialization;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -36,6 +37,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
 
         [SerializeField]
+        bool m_IsRos2 = false;
+        public bool IsRos2 { get => m_IsRos2; set => m_IsRos2 = value; }
+
+        [SerializeField]
         [Tooltip("If nothing has been sent for this long (seconds), send a keepalive message to check the connection is still working.")]
         float m_KeepaliveTime = 1;
         public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
@@ -47,7 +52,6 @@ namespace Unity.Robotics.ROSTCPConnector
         [SerializeField]
         float m_SleepTimeSeconds = 0.01f;
         public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
-
 
         [SerializeField]
         [FormerlySerializedAs("showHUD")]
@@ -126,8 +130,11 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Topics.TryGetValue(topic, out info) && info.HasSubscriberCallback;
         }
 
-        MessageSerializer m_MessageSerializer = new MessageSerializer();
-        MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
+        ISerializationProvider m_SerializationProvider;
+        public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
+        IMessageSerializer m_MessageSerializer;
+        IMessageDeserializer m_MessageDeserializer;
+
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
         List<Action<TimeSpan>> m_PingCallbacks = new List<Action<TimeSpan>>();
@@ -212,7 +219,7 @@ namespace Unity.Robotics.ROSTCPConnector
         // Version for when the message type is unknown at compile time
         public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback)
         {
-            var constructor = MessageRegistry.GetDeserializeFunction(rosMessageName);
+            var constructor = MessageRegistry.GetRosDeserializeFunction(rosMessageName);
             if (constructor == null)
             {
                 Debug.LogError($"Failed to subscribe to topic {topic} - no class has RosMessageName \"{rosMessageName}\"!");
@@ -299,9 +306,6 @@ namespace Unity.Robotics.ROSTCPConnector
         // Send a request to a ros service
         public async Task<RESPONSE> SendServiceMessage<RESPONSE>(string rosServiceName, Message serviceRequest) where RESPONSE : Message, new()
         {
-            m_MessageSerializer.Clear();
-            m_MessageSerializer.SerializeMessage(serviceRequest);
-            byte[] requestBytes = m_MessageSerializer.GetBytes();
             TaskPauser pauser = new TaskPauser();
 
             int srvID;
@@ -378,11 +382,11 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public InternalAPI(ROSConnection self) { m_Self = self; }
 
-            public MessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
+            public IMessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
             public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
             }
 
             public void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
@@ -506,9 +510,14 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
+            m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
+            m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
+            m_MessageSerializer = m_SerializationProvider.CreateSerializer();
+
             Task.Run(() => ConnectionThread(
                 RosIPAddress,
                 RosPort,
+                m_SerializationProvider,
                 m_NetworkTimeoutSeconds,
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
@@ -777,6 +786,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
+            ISerializationProvider serializationProvider,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
@@ -789,7 +799,7 @@ namespace Unity.Robotics.ROSTCPConnector
             //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
-            MessageSerializer messageSerializer = new MessageSerializer();
+            IMessageSerializer messageSerializer = serializationProvider.CreateSerializer();
 
             while (!token.IsCancellationRequested)
             {
@@ -979,7 +989,7 @@ namespace Unity.Robotics.ROSTCPConnector
         void SendSysCommand(string command, object param, NetworkStream stream = null)
         {
             if (stream != null)
-                SendSysCommandImmediate(command, param, stream);
+                SendSysCommandImmediate(command, param, m_MessageSerializer, stream);
             else
                 QueueSysCommand(command, param);
         }
@@ -992,39 +1002,14 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
+        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer, [NotNull] NetworkStream stream)
         {
-            messageSerializer.Clear();
-            // syscommands are sent as:
-            // 4 byte command length, followed by that many bytes of the command
-            // (all command names start with __ to distinguish them from ros topics)
-            messageSerializer.Write(command);
-            // 4-byte json length, followed by a json string of that length
-            string json = JsonUtility.ToJson(param);
-            messageSerializer.WriteUnaligned(json);
-        }
-
-        static void SendSysCommandImmediate(string command, object param, NetworkStream stream)
-        {
-            if (stream == null)
-            {
-                throw new ArgumentException("stream cannot be null!");
-            }
-            MessageSerializer messageSerializer = new MessageSerializer();
-            PopulateSysCommand(messageSerializer, command, param);
-            messageSerializer.SendTo(stream);
+            messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(JsonUtility.ToJson(param)), stream);
         }
 
         public void QueueSysCommand(string command, object param)
         {
-            PopulateSysCommand(m_MessageSerializer, command, param);
-            m_OutgoingMessageQueue.Enqueue(new SysCommandSender(m_MessageSerializer.GetBytesSequence()));
-        }
-
-        [Obsolete("Use Publish instead of Send", false)]
-        public void Send(string rosTopicName, Message message)
-        {
-            Publish(rosTopicName, message);
+            m_OutgoingMessageQueue.Enqueue(new SysCommandSender(command, param));
         }
 
         public void Publish(string rosTopicName, Message message)

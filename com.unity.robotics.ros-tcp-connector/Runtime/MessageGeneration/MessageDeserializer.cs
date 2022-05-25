@@ -5,48 +5,49 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
-    public class MessageDeserializer
+    public class MessageDeserializer : IMessageDeserializer
     {
         byte[] data;
         int offset;
-#if ROS2
+        public readonly bool IsRos2;
         int alignmentCorrection;
-#endif
+
+        public MessageDeserializer(bool isRos2)
+        {
+            this.IsRos2 = isRos2;
+        }
 
         public Message DeserializeMessage(string rosMessageName, byte[] data, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             InitWithBuffer(data);
-            return MessageRegistry.GetDeserializeFunction(rosMessageName, subtopic)(this);
+            return MessageRegistry.GetRosDeserializeFunction(rosMessageName, subtopic)(this);
         }
 
         public T DeserializeMessage<T>(byte[] data) where T : Message
         {
             InitWithBuffer(data);
-            return (T)MessageRegistry.GetDeserializeFunction<T>()(this);
+            return (T)MessageRegistry.GetRosDeserializeFunction<T>()(this);
         }
 
         public void DeserializeMessage<T>(byte[] data, out T result) where T : Message
         {
             InitWithBuffer(data);
-            result = (T)MessageRegistry.GetDeserializeFunction<T>()(this);
+            result = (T)MessageRegistry.GetRosDeserializeFunction<T>()(this);
         }
 
         public void InitWithBuffer(byte[] data)
         {
             this.data = data;
             this.offset = 0;
-#if ROS2
             // skip ROS2's 4 byte header
-            offset = 4;
-            alignmentCorrection = -4;
-#endif
+            offset = IsRos2 ? 4 : 0;
+            alignmentCorrection = -offset;
         }
 
         void Align(int dataSize)
         {
-#if ROS2
-            offset += (dataSize - ((offset + alignmentCorrection) % dataSize)) & (dataSize - 1);
-#endif
+            if (IsRos2)
+                offset += (dataSize - ((offset + alignmentCorrection) % dataSize)) & (dataSize - 1);
         }
 
         public int ReadLength()
@@ -134,12 +135,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public void Read(out string value)
         {
             var length = ReadLength();
-#if !ROS2
-            value = System.Text.Encoding.UTF8.GetString(data, offset, length);
-#else
+
             // ROS2 strings have a null byte at the end
-            value = System.Text.Encoding.UTF8.GetString(data, offset, length - 1);
-#endif
+            value = System.Text.Encoding.UTF8.GetString(data, offset, length - (IsRos2 ? 1 : 0));
+
             offset += length;
         }
 

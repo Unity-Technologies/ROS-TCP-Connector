@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public abstract class SysCommand
+    public static class SysCommand
     {
         public const string k_SysCommand_Handshake = "__handshake";
         public const string k_SysCommand_Log = "__log";
@@ -24,39 +24,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string k_SysCommand_RemoveUnityService = "__remove_unity_service";
         public const string k_SysCommand_Ping = "__ping";
         public const string k_SysCommand_PingResponse = "__ping_response";
-
-        public abstract string Command
-        {
-            get;
-        }
-
-        public virtual object BuildParam()
-        {
-            return this;
-
-        }
-        public void PopulateSysCommand(MessageSerializer messageSerializer)
-        {
-            messageSerializer.Clear();
-            // syscommands are sent as:
-            // 4 byte command length, followed by that many bytes of the command
-            // (all command names start with __ to distinguish them from ros topics)
-            messageSerializer.Write(Command);
-            // 4-byte json length, followed by a json string of that length
-            string json = JsonUtility.ToJson(BuildParam());
-            messageSerializer.WriteUnaligned(json);
-        }
-
-        public void SendTo([NotNull] Stream stream, MessageSerializer messageSerializer = null)
-        {
-            if (messageSerializer == null)
-            {
-                messageSerializer = new MessageSerializer();
-            }
-
-            PopulateSysCommand(messageSerializer);
-            messageSerializer.SendTo(stream);
-        }
     }
 
     public struct SysCommand_Topic

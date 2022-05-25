@@ -7,40 +7,65 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<MessageDeserializer, Message>>[] s_DeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>[]{
+        static Dictionary<string, Func<MessageDeserializer, Message>>[] s_RosDeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>[]{
             new Dictionary<string, Func<MessageDeserializer, Message>>(), // default
             new Dictionary<string, Func<MessageDeserializer, Message>>(), // response
             new Dictionary<string, Func<MessageDeserializer, Message>>(), // goal
             new Dictionary<string, Func<MessageDeserializer, Message>>(), // feedback
             new Dictionary<string, Func<MessageDeserializer, Message>>(), // result
         };
+
+        static Dictionary<string, Func<IMessageDeserializer, byte[], Message>>[] s_GenericDeserializeFunctionsByName = new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>[]{
+            new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>(), // default
+            new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>(), // response
+            new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>(), // goal
+            new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>(), // feedback
+            new Dictionary<string, Func<IMessageDeserializer, byte[], Message>>(), // result
+        };
         class RegistryEntry<T>
         {
             public static string s_RosMessageName;
-            public static Func<MessageDeserializer, T> s_DeserializeFunction;
+            public static Func<MessageDeserializer, T> s_RosDeserializeFunction;
             public static MessageSubtopic s_Subtopic;
+            public static Func<IMessageDeserializer, byte[], T> s_GenericDeserializeFunction;
         }
 
-        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> deserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
+        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
             RegistryEntry<T>.s_RosMessageName = rosMessageName;
-            RegistryEntry<T>.s_DeserializeFunction = deserialize;
+            RegistryEntry<T>.s_RosDeserializeFunction = rosDeserialize;
             RegistryEntry<T>.s_Subtopic = subtopic;
-            if (s_DeserializeFunctionsByName[(int)subtopic].ContainsKey(rosMessageName))
+            Func<IMessageDeserializer, byte[], T> genericDeserialize = (IMessageDeserializer deserializer, byte[] data) => deserializer.DeserializeMessage<T>(data);
+            RegistryEntry<T>.s_GenericDeserializeFunction = genericDeserialize;
+
+            if (s_RosDeserializeFunctionsByName[(int)subtopic].ContainsKey(rosMessageName))
                 Debug.LogWarning($"More than one message was registered as \"{rosMessageName}\" \"{subtopic}\"");
-            s_DeserializeFunctionsByName[(int)subtopic][rosMessageName] = deserialize;
+            s_RosDeserializeFunctionsByName[(int)subtopic][rosMessageName] = rosDeserialize;
+            s_GenericDeserializeFunctionsByName[(int)subtopic][rosMessageName] = genericDeserialize;
         }
 
-        public static Func<MessageDeserializer, Message> GetDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
+        public static Func<MessageDeserializer, Message> GetRosDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             Func<MessageDeserializer, Message> result;
-            s_DeserializeFunctionsByName[(int)subtopic].TryGetValue(rosMessageName, out result);
+            s_RosDeserializeFunctionsByName[(int)subtopic].TryGetValue(rosMessageName, out result);
             return result;
         }
 
-        public static Func<MessageDeserializer, Message> GetDeserializeFunction<T>() where T : Message
+        public static Func<MessageDeserializer, Message> GetRosDeserializeFunction<T>() where T : Message
         {
-            return RegistryEntry<T>.s_DeserializeFunction;
+            return RegistryEntry<T>.s_RosDeserializeFunction;
+        }
+
+        public static Func<IMessageDeserializer, byte[], Message> GetGenericDeserializeFunction<T>() where T : Message
+        {
+            return RegistryEntry<T>.s_GenericDeserializeFunction;
+        }
+
+        public static Func<IMessageDeserializer, byte[], Message> GetGenericDeserializeFunction(string messageName, MessageSubtopic subtopic = MessageSubtopic.Default)
+        {
+            Func<IMessageDeserializer, byte[], Message> result;
+            s_GenericDeserializeFunctionsByName[(int)subtopic].TryGetValue(messageName, out result);
+            return result;
         }
 
         public static string GetRosMessageName<T>() where T : Message
