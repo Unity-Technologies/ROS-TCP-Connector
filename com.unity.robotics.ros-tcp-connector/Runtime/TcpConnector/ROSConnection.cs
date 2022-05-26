@@ -384,47 +384,47 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public IMessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
-            public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
+            public void SendSubscriberRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
             }
 
-            public void SendRosServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
+            public void SendRosServiceRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
             }
 
-            public void SendUnityServiceRegistration(string topic, string rosMessageName, NetworkStream stream = null)
+            public void SendUnityServiceRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
             }
 
-            public void SendSubscriberUnregistration(string topic, NetworkStream stream = null)
+            public void SendSubscriberUnregistration(string topic, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveSubscriber, new SysCommand_Topic { topic = topic }, stream);
             }
 
-            public void SendPublisherUnregistration(string topic, NetworkStream stream = null)
+            public void SendPublisherUnregistration(string topic, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RemovePublisher, new SysCommand_Topic { topic = topic }, stream);
             }
 
-            public void SendRosServiceUnregistration(string topic, NetworkStream stream = null)
+            public void SendRosServiceUnregistration(string topic, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveRosService, new SysCommand_Topic { topic = topic }, stream);
             }
 
-            public void SendUnityServiceUnregistration(string topic, NetworkStream stream = null)
+            public void SendUnityServiceUnregistration(string topic, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, stream);
             }
 
-            public void SendUnityServiceResponse(int serviceId, NetworkStream stream = null)
+            public void SendUnityServiceResponse(int serviceId, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceId }, stream);
             }
 
-            public void SendPublisherRegistration(string topic, string message_name, int queueSize, bool latch, NetworkStream stream = null)
+            public void SendPublisherRegistration(string topic, string message_name, int queueSize, bool latch, System.IO.Stream stream = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_Publish,
                     new SysCommand_PublisherRegistration { topic = topic, message_name = message_name, queue_size = queueSize, latch = latch }
@@ -904,7 +904,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
+        static async Task ReaderThread(int readerIdx, System.IO.Stream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
             // First message should be the handshake
             Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
@@ -939,14 +939,11 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ReadToByteArray(NetworkStream networkStream, byte[] array, int length, int sleepMilliseconds, CancellationToken token)
+        static async Task ReadToByteArray(System.IO.Stream networkStream, byte[] array, int length, int sleepMilliseconds, CancellationToken token)
         {
             int read = 0;
             while (read < length && networkStream.CanRead)
             {
-                while (!token.IsCancellationRequested && !networkStream.DataAvailable)
-                    await Task.Delay(sleepMilliseconds);
-
                 token.ThrowIfCancellationRequested();
                 read += await networkStream.ReadAsync(array, read, length - read, token);
             }
@@ -958,7 +955,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static byte[] s_FourBytes = new byte[4];
         static byte[] s_TopicScratchSpace = new byte[64];
 
-        static async Task<Tuple<string, byte[]>> ReadMessageContents(NetworkStream networkStream, int sleepMilliseconds, CancellationToken token)
+        static async Task<Tuple<string, byte[]>> ReadMessageContents(System.IO.Stream networkStream, int sleepMilliseconds, CancellationToken token)
         {
             // Get first bytes to determine length of topic name
             await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
@@ -986,7 +983,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Disconnect();
         }
 
-        void SendSysCommand(string command, object param, NetworkStream stream = null)
+        void SendSysCommand(string command, object param, System.IO.Stream stream = null)
         {
             if (stream != null)
                 SendSysCommandImmediate(command, param, m_MessageSerializer, stream);
@@ -1002,7 +999,7 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer, [NotNull] NetworkStream stream)
+        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer, [NotNull] System.IO.Stream stream)
         {
             messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(JsonUtility.ToJson(param)), stream);
         }

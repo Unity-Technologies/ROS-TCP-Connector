@@ -240,7 +240,7 @@ namespace Unity.Robotics.ROSTCPConnector
             OnMessageSent(requestMessage);
         }
 
-        internal void OnConnectionEstablished(NetworkStream stream)
+        internal void OnConnectionEstablished(System.IO.Stream stream)
         {
             if (m_SubscriberCallbacks.Count > 0 && !SentSubscriberRegistration)
             {
