@@ -49,7 +49,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public static Vector3<C> FromUnityAngularVelocity(Vector3 angularVelocityRUF)
         {
-            return new Vector3<C> { internalVector = s_CoordinateSpace.ConvertAngularVelocityFromRUF(angularVelocityRUF) };
+            return MakeInternal(s_CoordinateSpace.ConvertAngularVelocityFromRUF(angularVelocityRUF));
         }
 
         // for internal use only - this function does not convert coordinate spaces correctly

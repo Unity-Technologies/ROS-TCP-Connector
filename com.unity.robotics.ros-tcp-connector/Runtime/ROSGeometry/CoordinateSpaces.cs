@@ -256,6 +256,12 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
             return new Vector3<C>(self);
         }
 
+        public static Vector3<C> AngularVelocityTo<C>(this Vector3 self)
+            where C : ICoordinateSpace, new()
+        {
+            return Vector3<C>.FromUnityAngularVelocity(self);
+        }
+
         public static Quaternion<C> To<C>(this Quaternion self)
             where C : ICoordinateSpace, new()
         {
@@ -269,7 +275,12 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public static Vector3 From<C>(this PointMsg self) where C : ICoordinateSpace, new()
         {
-            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
+            return self.As<C>().toUnity;
+        }
+
+        public static Vector3 AngularVelocityFrom<C>(this PointMsg self) where C : ICoordinateSpace, new()
+        {
+            return self.As<C>().toUnityAngularVelocity;
         }
 
         public static Vector3<C> As<C>(this Point32Msg self) where C : ICoordinateSpace, new()
@@ -279,7 +290,12 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public static Vector3 From<C>(this Point32Msg self) where C : ICoordinateSpace, new()
         {
-            return new Vector3<C>(self.x, self.y, self.z).toUnity;
+            return self.As<C>().toUnity;
+        }
+
+        public static Vector3 AngularVelocityFrom<C>(this Point32Msg self) where C : ICoordinateSpace, new()
+        {
+            return self.As<C>().toUnityAngularVelocity;
         }
 
         public static Vector3<C> As<C>(this Vector3Msg self) where C : ICoordinateSpace, new()
@@ -289,7 +305,11 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public static Vector3 From<C>(this Vector3Msg self) where C : ICoordinateSpace, new()
         {
-            return new Vector3<C>((float)self.x, (float)self.y, (float)self.z).toUnity;
+            return self.As<C>().toUnity;
+        }
+        public static Vector3 AngularVelocityFrom<C>(this Vector3Msg self) where C : ICoordinateSpace, new()
+        {
+            return self.As<C>().toUnityAngularVelocity;
         }
 
         public static Quaternion<C> As<C>(this QuaternionMsg self) where C : ICoordinateSpace, new()
@@ -299,7 +319,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
         public static Quaternion From<C>(this QuaternionMsg self) where C : ICoordinateSpace, new()
         {
-            return new Quaternion<C>((float)self.x, (float)self.y, (float)self.z, (float)self.w).toUnity;
+            return self.As<C>().toUnity;
         }
 
         public static TransformMsg To<C>(this Transform transform) where C : ICoordinateSpace, new()
