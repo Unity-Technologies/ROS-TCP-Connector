@@ -37,9 +37,11 @@ Hence, writing 3d data into a message can often be as simple as writing:
 	}
 	ros.Send("imu", msg);
 
-Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So creating a geometry_msgs/Transform message typically looks like this:
+# Angular Velocity vectors
 
-    TransformMsg msg = myGameObject.transform.To<FLU>());
+Although angular velocity values are stored using the same Vector3 structure as other vectors, they can't be converted the same way: to correctly convert an angular velocity between a left-handed and right-handed coordinate system, the vector needs to be negated.
+
+To convert a vector that represents an angular velocity, instead of using To<FLU>() and From<FLU>(), you should use the AngularVelocityTo<FLU>() and AngularVelocityFrom<FLU>() methods.
 
 # Internal details
 
