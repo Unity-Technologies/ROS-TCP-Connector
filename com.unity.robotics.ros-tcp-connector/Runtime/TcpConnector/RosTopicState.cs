@@ -240,23 +240,23 @@ namespace Unity.Robotics.ROSTCPConnector
             OnMessageSent(requestMessage);
         }
 
-        internal void OnConnectionEstablished(System.IO.Stream stream)
+        internal void OnConnectionEstablished(IMessageSerializer serializer)
         {
             if (m_SubscriberCallbacks.Count > 0 && !SentSubscriberRegistration)
             {
-                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName, serializer);
                 SentSubscriberRegistration = true;
             }
 
             if (IsUnityService)
             {
-                m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName, serializer);
             }
 
             if (IsPublisher)
             {
                 //Register the publisher before sending anything.
-                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, m_MessageSender.QueueSize, IsPublisherLatched, stream);
+                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, m_MessageSender.QueueSize, IsPublisherLatched, serializer);
                 if (IsPublisherLatched)
                 {
                     m_MessageSender.PrepareLatchMessage();
@@ -266,7 +266,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             if (m_IsRosService)
             {
-                m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, stream);
+                m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName, serializer);
             }
         }
 

@@ -20,9 +20,9 @@ namespace Unity.Robotics.ROSTCPConnector
             return new MessageDeserializer(m_IsRos2);
         }
 
-        public IMessageSerializer CreateSerializer()
+        public IMessageSerializer CreateSerializer(System.IO.Stream stream)
         {
-            return new MessageSerializer(m_IsRos2);
+            return new MessageSerializer(stream, m_IsRos2);
         }
     }
 }

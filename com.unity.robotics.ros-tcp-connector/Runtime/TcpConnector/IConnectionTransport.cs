@@ -11,7 +11,7 @@ namespace Unity.Robotics.ROSTCPConnector
     {
         void Init(
             ISerializationProvider serializationProvider,
-            Action<Stream> onConnectionStartedCallback,
+            Action<IMessageSerializer> onConnectionStartedCallback,
             Action onConnectionLostCallback);
 
         void Connect();
@@ -24,6 +24,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void Send(string topic, string text);
         void Send(string topic, Message msg);
-        void Send(IOutgoingMessageSender sender);
+        void Send(ISendQueueItem sender);
     }
 }

@@ -29,10 +29,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         int m_LengthCorrection; // alignment ignores the ros2 header etc, so add this to get actual length
         public int Length => m_AlignmentOffset + m_LengthCorrection;
         List<byte[]> m_ListOfSerializations = new List<byte[]>();
-        public readonly bool IsRos2;
+        Stream m_Stream;
+        public bool IsRos2 { get; private set; }
 
-        public MessageSerializer(bool isRos2)
+        public MessageSerializer(Stream stream, bool isRos2)
         {
+            m_Stream = stream;
             this.IsRos2 = isRos2;
         }
 
@@ -43,20 +45,20 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_ListOfSerializations.Clear();
         }
 
-        public void SendMessage(string topic, Message msg, Stream outStream)
+        public void SendMessage(string topic, Message msg)
         {
             Clear();
             Write(topic);
             SerializeMessageWithLength(msg);
-            SendTo(outStream);
+            Send();
         }
 
-        public void SendString(string topic, string str, Stream outStream)
+        public void SendString(string topic, string str)
         {
             Clear();
             Write(topic);
             Write(str);
-            SendTo(outStream);
+            Send();
         }
 
         public void SerializeMessageWithLength(Message message)
@@ -107,10 +109,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return result;
         }
 
-        public void SendTo(System.IO.Stream stream)
+        void Send()
         {
             foreach (byte[] statement in m_ListOfSerializations)
-                stream.Write(statement, 0, statement.Length);
+                m_Stream.Write(statement, 0, statement.Length);
         }
 
         // Alignment, offset, padding

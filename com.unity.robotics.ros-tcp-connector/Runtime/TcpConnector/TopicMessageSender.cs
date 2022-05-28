@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class TopicMessageSender : IOutgoingMessageSender
+    public class TopicMessageSender : ISendQueueItem
     {
         public string RosMessageName { get; private set; }
 
@@ -63,9 +63,9 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        IOutgoingMessageSender.SendToState GetMessageToSend(out Message messageToSend)
+        ISendQueueItem.SendToState GetMessageToSend(out Message messageToSend)
         {
-            IOutgoingMessageSender.SendToState result = IOutgoingMessageSender.SendToState.NoMessageToSendError;
+            ISendQueueItem.SendToState result = ISendQueueItem.SendToState.NoMessageToSendError;
             messageToSend = null;
             lock (m_OutgoingMessages)
             {
@@ -75,14 +75,14 @@ namespace Unity.Robotics.ROSTCPConnector
                     //This could potentially be bad as it means that we are dropping messages!
                     m_QueueOverflowUnsentCounter--;
                     messageToSend = null;
-                    result = IOutgoingMessageSender.SendToState.QueueFullWarning;
+                    result = ISendQueueItem.SendToState.QueueFullWarning;
                 }
                 else if (m_OutgoingMessages.Count > 0)
                 {
                     //Retrieve the next message and populate messageToSend.
                     messageToSend = m_OutgoingMessages.First.Value;
                     m_OutgoingMessages.RemoveFirst();
-                    result = IOutgoingMessageSender.SendToState.Normal;
+                    result = ISendQueueItem.SendToState.Normal;
                 }
             }
 
@@ -106,11 +106,6 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        void SendMessageWithStream(IMessageSerializer messageSerializer, Stream stream, Message message)
-        {
-            messageSerializer.SendMessage(TopicName, message, stream);
-        }
-
         public void PrepareLatchMessage()
         {
             if (m_LastMessageSent != null && !m_OutgoingMessages.Any())
@@ -121,20 +116,20 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public IOutgoingMessageSender.SendToState SendInternal(IMessageSerializer messageSerializer, Stream stream)
+        public ISendQueueItem.SendToState DoSend(IMessageSerializer messageSerializer)
         {
-            IOutgoingMessageSender.SendToState sendToState = GetMessageToSend(out Message toSend);
-            if (sendToState == IOutgoingMessageSender.SendToState.Normal)
+            ISendQueueItem.SendToState sendToState = GetMessageToSend(out Message msg);
+            if (sendToState == ISendQueueItem.SendToState.Normal)
             {
-                SendMessageWithStream(messageSerializer, stream, toSend);
+                messageSerializer.SendMessage(TopicName, msg);
 
                 //Recycle the message (if applicable).
-                if (m_LastMessageSent != null && m_LastMessageSent != toSend)
+                if (m_LastMessageSent != null && m_LastMessageSent != msg)
                 {
                     TryRecycleMessage(m_LastMessageSent);
                 }
 
-                m_LastMessageSent = toSend;
+                m_LastMessageSent = msg;
             }
 
             return sendToState;

@@ -65,7 +65,6 @@ namespace Unity.Robotics.ROSTCPConnector
         ISerializationProvider m_SerializationProvider;
         public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
 
-        IMessageSerializer m_MessageSerializer;
         IMessageDeserializer m_MessageDeserializer;
 
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
@@ -317,47 +316,47 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public IMessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
-            public void SendSubscriberRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
+            public void SendSubscriberRegistration(string topic, string rosMessageName, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName });
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_Subscribe, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, serializer);
             }
 
-            public void SendRosServiceRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
+            public void SendRosServiceRegistration(string topic, string rosMessageName, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_RosService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, serializer);
             }
 
-            public void SendUnityServiceRegistration(string topic, string rosMessageName, System.IO.Stream stream = null)
+            public void SendUnityServiceRegistration(string topic, string rosMessageName, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_UnityService, new SysCommand_TopicAndType { topic = topic, message_name = rosMessageName }, serializer);
             }
 
-            public void SendSubscriberUnregistration(string topic, System.IO.Stream stream = null)
+            public void SendSubscriberUnregistration(string topic, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveSubscriber, new SysCommand_Topic { topic = topic }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveSubscriber, new SysCommand_Topic { topic = topic }, serializer);
             }
 
-            public void SendPublisherUnregistration(string topic, System.IO.Stream stream = null)
+            public void SendPublisherUnregistration(string topic, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemovePublisher, new SysCommand_Topic { topic = topic }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemovePublisher, new SysCommand_Topic { topic = topic }, serializer);
             }
 
-            public void SendRosServiceUnregistration(string topic, System.IO.Stream stream = null)
+            public void SendRosServiceUnregistration(string topic, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveRosService, new SysCommand_Topic { topic = topic }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveRosService, new SysCommand_Topic { topic = topic }, serializer);
             }
 
-            public void SendUnityServiceUnregistration(string topic, System.IO.Stream stream = null)
+            public void SendUnityServiceUnregistration(string topic, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_RemoveUnityService, new SysCommand_Topic { topic = topic }, serializer);
             }
 
-            public void SendUnityServiceResponse(int serviceId, System.IO.Stream stream = null)
+            public void SendUnityServiceResponse(int serviceId, IMessageSerializer serializer = null)
             {
-                m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceId }, stream);
+                m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceResponse, new SysCommand_Service { srv_id = serviceId }, serializer);
             }
 
-            public void SendPublisherRegistration(string topic, string message_name, int queueSize, bool latch, System.IO.Stream stream = null)
+            public void SendPublisherRegistration(string topic, string message_name, int queueSize, bool latch, IMessageSerializer serializer = null)
             {
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_Publish,
                     new SysCommand_PublisherRegistration { topic = topic, message_name = message_name, queue_size = queueSize, latch = latch }
@@ -369,7 +368,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = serviceId });
             }
 
-            public void AddSenderToQueue(IOutgoingMessageSender sender)
+            public void AddSenderToQueue(ISendQueueItem sender)
             {
                 m_Self.m_ConnectionTransport.Send(sender);
             }
@@ -425,12 +424,12 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
             m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
-            m_MessageSerializer = m_SerializationProvider.CreateSerializer();
 
             m_ConnectionTransport = GetComponent<IConnectionTransport>();
             if (m_ConnectionTransport == null)
             {
-
+                Debug.LogError("Unable to find a ConnectionTransport!");
+                return;
             }
 
             m_ConnectionTransport.Init(m_SerializationProvider, OnConnectionStartedCallback, OnConnectionLostCallback);
@@ -445,7 +444,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
 
         // NB this callback is not running on the main thread, be cautious about modifying data here
-        void OnConnectionStartedCallback(System.IO.Stream stream)
+        void OnConnectionStartedCallback(IMessageSerializer serializer)
         {
             m_SpecialIncomingMessageHandler = HandshakeHandler;
 
@@ -456,7 +455,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             foreach (RosTopicState topicInfo in topics.ToArray())
-                topicInfo.OnConnectionEstablished(stream);
+                topicInfo.OnConnectionEstablished(serializer);
 
             RefreshTopicsList();
         }
@@ -693,10 +692,10 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionTransport.Disconnect();
         }
 
-        void SendSysCommand(string command, object param, System.IO.Stream stream = null)
+        void SendSysCommand(string command, object param, IMessageSerializer serializer = null)
         {
-            if (stream != null)
-                SendSysCommandImmediate(command, param, m_MessageSerializer, stream);
+            if (serializer != null)
+                SendSysCommandImmediate(command, param, serializer);
             else
                 QueueSysCommand(command, param);
         }
@@ -709,9 +708,9 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer, [NotNull] System.IO.Stream stream)
+        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer)
         {
-            messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(JsonUtility.ToJson(param)), stream);
+            messageSerializer.SendString(command, JsonUtility.ToJson(param));
         }
 
         public void QueueSysCommand(string command, object param)

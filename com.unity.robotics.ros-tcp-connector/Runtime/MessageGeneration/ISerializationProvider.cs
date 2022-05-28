@@ -6,7 +6,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public interface ISerializationProvider
     {
-        IMessageSerializer CreateSerializer();
+        IMessageSerializer CreateSerializer(System.IO.Stream stream);
         IMessageDeserializer CreateDeserializer();
     }
 }

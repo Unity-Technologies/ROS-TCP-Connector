@@ -101,16 +101,16 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
 
-            prefabConnectionTransport.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefabConnectionTransport.RosIPAddress);
-            prefabConnectionTransport.RosPort = EditorGUILayout.IntField("ROS Port", prefabConnectionTransport.RosPort);
+            prefabConnectionTransport.IPAddress = EditorGUILayout.TextField("ROS IP Address", prefabConnectionTransport.IPAddress);
+            prefabConnectionTransport.Port = EditorGUILayout.IntField("ROS Port", prefabConnectionTransport.Port);
 
             // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
-            ConnectionTransportTcp.SetIPPref(prefabConnectionTransport.RosIPAddress);
-            ConnectionTransportTcp.SetPortPref(prefabConnectionTransport.RosPort);
+            ConnectionTransportTcp.SetIPPref(prefabConnectionTransport.IPAddress);
+            ConnectionTransportTcp.SetPortPref(prefabConnectionTransport.Port);
 
             EditorGUILayout.Space();
 
-            if (!ConnectionTransportTcp.IPFormatIsCorrect(prefabConnectionTransport.RosIPAddress))
+            if (!ConnectionTransportTcp.IPFormatIsCorrect(prefabConnectionTransport.IPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
