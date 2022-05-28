@@ -45,10 +45,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasSubscriberCallback => m_SubscriberCallbacks.Count > 0;
         public bool SentSubscriberRegistration { get; private set; }
 
-        float m_LastMessageReceivedRealtime;
-        float m_LastMessageSentRealtime;
-        public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
-        public float LastMessageSentRealtime => m_LastMessageSentRealtime;
+        DateTime m_LastMessageReceived;
+        DateTime m_LastMessageSent;
+        public DateTime LastMessageReceivedRealtime => m_LastMessageReceived;
+        public DateTime LastMessageSentRealtime => m_LastMessageSent;
 
         internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, bool isService, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
@@ -74,7 +74,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         internal void OnMessageReceived(byte[] data)
         {
-            m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+            m_LastMessageReceived = DateTime.Now;
             if (m_IsRosService && m_ServiceResponseTopic != null)
             {
                 //  For a service, incoming messages are a different type from outgoing messages.
@@ -96,7 +96,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnMessageSent(Message message)
         {
-            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
+            m_LastMessageSent = DateTime.Now;
             if (m_RosMessageName == null)
             {
                 ChangeRosMessageName(message.RosMessageName);
@@ -155,7 +155,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void RegisterSubscriber()
         {
-            if (m_Connection.HasConnectionThread && !SentSubscriberRegistration && !IsService)
+            if (m_Connection.HasConnection && !SentSubscriberRegistration && !IsService)
             {
                 m_ConnectionInternal.SendSubscriberRegistration(m_Topic, m_RosMessageName);
                 SentSubscriberRegistration = true;
@@ -209,7 +209,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Publish(Message message)
         {
-            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
+            m_LastMessageSent = DateTime.Now;
             OnMessageSent(message);
             m_MessageSender.Queue(message);
             m_ConnectionInternal.AddSenderToQueue(m_MessageSender);

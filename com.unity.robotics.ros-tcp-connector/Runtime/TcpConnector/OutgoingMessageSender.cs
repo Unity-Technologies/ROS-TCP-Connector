@@ -4,9 +4,8 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public abstract class OutgoingMessageSender
+    public interface IOutgoingMessageSender
     {
-
         public enum SendToState
         {
             Normal,
@@ -14,38 +13,64 @@ namespace Unity.Robotics.ROSTCPConnector
             QueueFullWarning
         }
 
-        public abstract SendToState SendInternal(IMessageSerializer m_MessageSerializer, System.IO.Stream stream);
+        SendToState SendInternal(IMessageSerializer m_MessageSerializer, Stream stream);
 
-        public abstract void ClearAllQueuedData();
+        void ClearAllQueuedData();
     }
 
     /**
      * Simple implementation of a OutgoingMessageSender that is used for sys commands
      * as they are handled differently to typical ROS messages and sent as JSON strings.
      */
-    public class SysCommandSender : OutgoingMessageSender
+    public class StringSender : IOutgoingMessageSender
     {
         string command;
-        string json;
+        string str;
 
-        public SysCommandSender(string command, object param)
+        public StringSender(string command, string json)
         {
             this.command = command;
-            this.json = UnityEngine.JsonUtility.ToJson(param);
+            this.str = json;
         }
 
-        public override SendToState SendInternal(IMessageSerializer m_MessageSerializer, Stream stream)
+        public IOutgoingMessageSender.SendToState SendInternal(IMessageSerializer m_MessageSerializer, Stream stream)
         {
-            if (json != null)
+            if (str != null)
             {
-                m_MessageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(json), stream);
+                m_MessageSerializer.SendString(command, str, stream);
             }
-            return SendToState.Normal;
+            return IOutgoingMessageSender.SendToState.Normal;
         }
 
-        public override void ClearAllQueuedData()
+        public void ClearAllQueuedData()
         {
-            json = null;
+            str = null;
+        }
+    }
+
+    public class SimpleMessageSender : IOutgoingMessageSender
+    {
+        string command;
+        Message msg;
+
+        public SimpleMessageSender(string command, Message msg)
+        {
+            this.command = command;
+            this.msg = msg;
+        }
+
+        public IOutgoingMessageSender.SendToState SendInternal(IMessageSerializer m_MessageSerializer, Stream stream)
+        {
+            if (msg != null)
+            {
+                m_MessageSerializer.SendMessage(command, msg, stream);
+            }
+            return IOutgoingMessageSender.SendToState.Normal;
+        }
+
+        public void ClearAllQueuedData()
+        {
+            msg = null;
         }
     }
 }

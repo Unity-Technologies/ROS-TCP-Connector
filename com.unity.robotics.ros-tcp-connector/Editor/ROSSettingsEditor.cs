@@ -20,7 +20,8 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
         }
 
         GameObject prefabObj;
-        Unity.Robotics.ROSTCPConnector.ROSConnection prefab;
+        Unity.Robotics.ROSTCPConnector.ROSConnection prefabRosConnection;
+        Unity.Robotics.ROSTCPConnector.ConnectionTransportTcp prefabConnectionTransport;
         GeometryCompass geometryCompassPrefab;
 
         public enum RosProtocol
@@ -42,26 +43,30 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
         protected virtual void OnGUI()
         {
-            if (prefab == null)
+            if (prefabRosConnection == null)
             {
                 prefabObj = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefabObj != null)
-                    prefab = prefabObj.GetComponent<ROSConnection>();
+                    prefabRosConnection = prefabObj.GetComponent<ROSConnection>();
 
-                if (prefab == null)
+                if (prefabRosConnection == null)
                 {
                     GameObject sceneObj = new GameObject("ROSConnection");
                     sceneObj.AddComponent<ROSConnection>();
+                    sceneObj.AddComponent<ConnectionTransportTcp>();
                     if (!Directory.Exists("Assets/Resources"))
                         Directory.CreateDirectory("Assets/Resources");
                     prefabObj = PrefabUtility.SaveAsPrefabAsset(sceneObj, "Assets/Resources/ROSConnectionPrefab.prefab");
                     if (prefabObj != null)
-                        prefab = prefabObj.GetComponent<ROSConnection>();
+                    {
+                        prefabRosConnection = prefabObj.GetComponent<ROSConnection>();
+                        prefabConnectionTransport = prefabObj.GetComponent<ConnectionTransportTcp>();
+                    }
                     DestroyImmediate(sceneObj);
                 }
             }
 
-            prefab.ConnectOnStart = EditorGUILayout.Toggle("Connect on Startup", prefab.ConnectOnStart);
+            prefabRosConnection.ConnectOnStart = EditorGUILayout.Toggle("Connect on Startup", prefabRosConnection.ConnectOnStart);
 
             if (m_SelectedProtocol == k_AlternateProtocol)
             {
@@ -96,44 +101,44 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
 
-            prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
-            prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+            prefabConnectionTransport.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefabConnectionTransport.RosIPAddress);
+            prefabConnectionTransport.RosPort = EditorGUILayout.IntField("ROS Port", prefabConnectionTransport.RosPort);
 
             // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
-            ROSConnection.SetIPPref(prefab.RosIPAddress);
-            ROSConnection.SetPortPref(prefab.RosPort);
+            ConnectionTransportTcp.SetIPPref(prefabConnectionTransport.RosIPAddress);
+            ConnectionTransportTcp.SetPortPref(prefabConnectionTransport.RosPort);
 
             EditorGUILayout.Space();
 
-            if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
+            if (!ConnectionTransportTcp.IPFormatIsCorrect(prefabConnectionTransport.RosIPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
 
             EditorGUILayout.Space();
 
-            prefab.ShowHud = EditorGUILayout.Toggle("Show HUD", prefab.ShowHud);
+            prefabRosConnection.ShowHud = EditorGUILayout.Toggle("Show HUD", prefabRosConnection.ShowHud);
 
             EditorGUILayout.Space();
 
-            prefab.KeepaliveTime = EditorGUILayout.FloatField(
+            prefabConnectionTransport.KeepaliveTime = EditorGUILayout.FloatField(
                 new GUIContent("KeepAlive time (secs)",
                     "If no other messages are being sent, test the connection this often. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
-                prefab.KeepaliveTime);
+                prefabConnectionTransport.KeepaliveTime);
 
-            prefab.NetworkTimeoutSeconds = EditorGUILayout.FloatField(
+            prefabConnectionTransport.NetworkTimeoutSeconds = EditorGUILayout.FloatField(
                 new GUIContent("Network timeout (secs)",
                     "If a network message takes this long to send, assume the connection has failed. (The longer this time is, the longer it will take for ROSConnection to notice the Endpoint has stopped responding)."),
-                prefab.NetworkTimeoutSeconds);
+                prefabConnectionTransport.NetworkTimeoutSeconds);
 
-            prefab.SleepTimeSeconds = EditorGUILayout.FloatField(
+            prefabConnectionTransport.SleepTimeSeconds = EditorGUILayout.FloatField(
                 new GUIContent("Sleep time (secs)",
                     "Sleep this long before checking for new network messages. (Decreasing this time will make it respond faster, but consume more CPU)."),
-                prefab.SleepTimeSeconds);
+                prefabConnectionTransport.SleepTimeSeconds);
 
             EditorGUILayout.Space();
 
-            prefab.listenForTFMessages = EditorGUILayout.Toggle("Listen for TF Messages", prefab.listenForTFMessages);
+            prefabRosConnection.listenForTFMessages = EditorGUILayout.Toggle("Listen for TF Messages", prefabRosConnection.listenForTFMessages);
 
             // TODO: make the settings input update the prefab
             // EditorGUILayout.Space();
@@ -142,7 +147,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             if (GUI.changed)
             {
-                PrefabUtility.SavePrefabAsset(prefab.gameObject);
+                PrefabUtility.SavePrefabAsset(prefabRosConnection.gameObject);
             }
 
             // ROS Geometry Compass Settings

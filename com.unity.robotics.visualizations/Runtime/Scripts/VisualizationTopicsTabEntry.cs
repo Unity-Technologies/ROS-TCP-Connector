@@ -114,10 +114,10 @@ namespace Unity.Robotics.Visualizations
 
             GUILayout.Space(40);
             Rect space = GUILayoutUtility.GetLastRect();
-            ROSConnection.DrawConnectionArrows(false,
+            ConnectionTransportTcp.DrawConnectionArrows(false,
                 space.x + 5, space.y,
-                Time.realtimeSinceStartup - TopicState.LastMessageReceivedRealtime,
-                Time.realtimeSinceStartup - TopicState.LastMessageSentRealtime,
+                DateTime.Now - TopicState.LastMessageReceivedRealtime,
+                DateTime.Now - TopicState.LastMessageSentRealtime,
                 TopicState.IsPublisher,
                 TopicState.SentSubscriberRegistration,
                 m_TopicState.Connection.HasConnectionError);

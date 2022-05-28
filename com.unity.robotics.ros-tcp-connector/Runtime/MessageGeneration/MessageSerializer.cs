@@ -43,19 +43,19 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_ListOfSerializations.Clear();
         }
 
-        public byte[] SerializeMessage(string topic, Message msg)
-        {
-            Clear();
-            Write(topic);
-            SerializeMessageWithLength(msg);
-            return GetBytes();
-        }
-
         public void SendMessage(string topic, Message msg, Stream outStream)
         {
             Clear();
             Write(topic);
             SerializeMessageWithLength(msg);
+            SendTo(outStream);
+        }
+
+        public void SendString(string topic, string str, Stream outStream)
+        {
+            Clear();
+            Write(topic);
+            Write(str);
             SendTo(outStream);
         }
 

@@ -19,19 +19,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
 
-        // Variables required for ROS communication
-        [SerializeField]
-        [FormerlySerializedAs("hostName")]
-        [FormerlySerializedAs("rosIPAddress")]
-        string m_RosIPAddress = "127.0.0.1";
-        public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
-
-        [SerializeField]
-        [FormerlySerializedAs("hostPort")]
-        [FormerlySerializedAs("rosPort")]
-        int m_RosPort = 10000;
-        public int RosPort { get => m_RosPort; set => m_RosPort = value; }
-
         [SerializeField]
         bool m_ConnectOnStart = true;
         public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
@@ -39,19 +26,6 @@ namespace Unity.Robotics.ROSTCPConnector
         [SerializeField]
         bool m_IsRos2 = false;
         public bool IsRos2 { get => m_IsRos2; set => m_IsRos2 = value; }
-
-        [SerializeField]
-        [Tooltip("If nothing has been sent for this long (seconds), send a keepalive message to check the connection is still working.")]
-        float m_KeepaliveTime = 1;
-        public float KeepaliveTime { get => m_KeepaliveTime; set => m_KeepaliveTime = value; }
-
-        [SerializeField]
-        float m_NetworkTimeoutSeconds = 2;
-        public float NetworkTimeoutSeconds { get => m_NetworkTimeoutSeconds; set => m_NetworkTimeoutSeconds = value; }
-
-        [SerializeField]
-        float m_SleepTimeSeconds = 0.01f;
-        public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
 
         [SerializeField]
         [FormerlySerializedAs("showHUD")]
@@ -69,42 +43,6 @@ namespace Unity.Robotics.ROSTCPConnector
         internal HudPanel m_HudPanel = null;
         public HudPanel HUDPanel => m_HudPanel;
 
-        class OutgoingMessageQueue
-        {
-            ConcurrentQueue<OutgoingMessageSender> m_OutgoingMessageQueue;
-            public readonly ManualResetEvent NewMessageReadyToSendEvent;
-
-            public OutgoingMessageQueue()
-            {
-                m_OutgoingMessageQueue = new ConcurrentQueue<OutgoingMessageSender>();
-                NewMessageReadyToSendEvent = new ManualResetEvent(false);
-            }
-
-            public void Enqueue(OutgoingMessageSender outgoingMessageSender)
-            {
-                m_OutgoingMessageQueue.Enqueue(outgoingMessageSender);
-                NewMessageReadyToSendEvent.Set();
-            }
-
-            public bool TryDequeue(out OutgoingMessageSender outgoingMessageSender)
-            {
-                return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
-            }
-        }
-
-        OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
-
-        ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
-        CancellationTokenSource m_ConnectionThreadCancellation;
-        public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
-
-        static bool m_HasConnectionError = false;
-        static bool m_HasOutputConnectionError = false;
-        public bool HasConnectionError => m_HasConnectionError;
-
-        // only the main thread can access Time.*, so make a copy here
-        public static float s_RealTimeSinceStartup = 0.0f;
-
         readonly object m_ServiceRequestLock = new object();
 
         int m_NextSrvID = 101;
@@ -112,17 +50,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool listenForTFMessages = true;
 
-        float m_LastMessageReceivedRealtime;
-        float m_LastMessageSentRealtime;
-        public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
-        public float LastMessageSentRealtime => m_LastMessageSentRealtime;
-
-        // For the IP address field we show in the hud, we store the IP address and port in PlayerPrefs.
-        // This is used to remember the last IP address the player typed into the HUD, in builds where ConnectOnStart is not checked
-        public const string PlayerPrefsKey_ROS_IP = "ROS_IP";
-        public const string PlayerPrefsKey_ROS_TCP_PORT = "ROS_TCP_PORT";
-        public static string RosIPAddressPref => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
-        public static int RosPortPref => PlayerPrefs.GetInt(PlayerPrefsKey_ROS_TCP_PORT, 10000);
+        public bool HasConnection => m_ConnectionTransport.HasConnection;
+        public bool HasConnectionError => m_ConnectionTransport.HasConnectionError;
 
         public bool HasSubscriber(string topic)
         {
@@ -130,8 +59,12 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Topics.TryGetValue(topic, out info) && info.HasSubscriberCallback;
         }
 
+        IConnectionTransport m_ConnectionTransport;
+        public IConnectionTransport ConnectionTransport { get => m_ConnectionTransport; set => m_ConnectionTransport = value; }
+
         ISerializationProvider m_SerializationProvider;
         public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
+
         IMessageSerializer m_MessageSerializer;
         IMessageDeserializer m_MessageDeserializer;
 
@@ -436,9 +369,9 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = serviceId });
             }
 
-            public void AddSenderToQueue(OutgoingMessageSender sender)
+            public void AddSenderToQueue(IOutgoingMessageSender sender)
             {
-                m_Self.m_OutgoingMessageQueue.Enqueue(sender);
+                m_Self.m_ConnectionTransport.Send(sender);
             }
         }
 
@@ -487,61 +420,58 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             InitializeHUD();
 
-            HudPanel.RegisterHeader(DrawHeaderGUI);
-
             if (listenForTFMessages)
                 TFSystem.GetOrCreateInstance();
-
-            if (ConnectOnStart)
-                Connect();
-        }
-
-        public void Connect(string ipAddress, int port)
-        {
-            RosIPAddress = ipAddress;
-            RosPort = port;
-            Connect();
-        }
-
-        public void Connect()
-        {
-            if (!IPFormatIsCorrect(RosIPAddress))
-                Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
-
-            m_ConnectionThreadCancellation = new CancellationTokenSource();
 
             m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
             m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
             m_MessageSerializer = m_SerializationProvider.CreateSerializer();
 
-            Task.Run(() => ConnectionThread(
-                RosIPAddress,
-                RosPort,
-                m_SerializationProvider,
-                m_NetworkTimeoutSeconds,
-                m_KeepaliveTime,
-                (int)(m_SleepTimeSeconds * 1000.0f),
-                OnConnectionStartedCallback,
-                OnConnectionLostCallback,
-                m_OutgoingMessageQueue,
-                m_IncomingMessages,
-                m_ConnectionThreadCancellation.Token
-            ));
+            m_ConnectionTransport = GetComponent<IConnectionTransport>();
+            if (m_ConnectionTransport == null)
+            {
+
+            }
+
+            m_ConnectionTransport.Init(m_SerializationProvider, OnConnectionStartedCallback, OnConnectionLostCallback);
+
+            if (ConnectOnStart)
+                m_ConnectionTransport.Connect();
         }
 
-        // NB this callback is not running on the main thread, be cautious about modifying data here
-        void OnConnectionStartedCallback(NetworkStream stream)
+        public void Connect()
         {
+        }
+
+
+        // NB this callback is not running on the main thread, be cautious about modifying data here
+        void OnConnectionStartedCallback(System.IO.Stream stream)
+        {
+            m_SpecialIncomingMessageHandler = HandshakeHandler;
+
             RosTopicState[] topics;
             lock (m_Topics)
             {
                 topics = AllTopics.ToArray();
             }
 
-            foreach (RosTopicState topicInfo in m_Topics.Values.ToArray())
+            foreach (RosTopicState topicInfo in topics.ToArray())
                 topicInfo.OnConnectionEstablished(stream);
 
             RefreshTopicsList();
+        }
+
+        void HandshakeHandler(string name, byte[] payload)
+        {
+            // this is how we handle the first message on a new connection
+            if (name == SysCommand.k_SysCommand_Handshake)
+            {
+                ReceiveSysCommand(name, Encoding.UTF8.GetString(payload));
+            }
+            else
+            {
+                Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: 0.6.0 or older. Expected: {k_Version}.");
+            }
         }
 
         void OnConnectionLostCallback()
@@ -559,36 +489,21 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void Disconnect()
-        {
-            m_ConnectionThreadCancellation?.Cancel();
-            //The thread may be waiting on a ManualResetEvent, if so, this will wake it so it can exit immediately.
-            m_OutgoingMessageQueue?.NewMessageReadyToSendEvent?.Set();
-            m_ConnectionThreadCancellation = null;
-        }
-
-        void OnValidate()
-        {
-            // the prefab is not the instance!
-            if (gameObject.scene.name == null)
-                return;
-
-            if (_instance == null)
-                _instance = this;
-        }
-
         Action<string, byte[]> m_SpecialIncomingMessageHandler;
 
         void Update()
         {
-            s_RealTimeSinceStartup = Time.realtimeSinceStartup;
-
-            Tuple<string, byte[]> data;
-            while (m_IncomingMessages.TryDequeue(out data))
+            if (m_ConnectionTransport.HasConnection &&
+                m_TopicsRefreshRequested &&
+                Time.realtimeSinceStartup - m_LastTopicsRequestSentRealtime > k_TimeBetweenTopicsUpdates)
             {
-                (string topic, byte[] contents) = data;
-                m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+                SendTopicsRequest();
+            }
 
+            string topic;
+            byte[] contents;
+            while (m_ConnectionTransport.TryRead(out topic, out contents))
+            {
                 if (m_SpecialIncomingMessageHandler != null)
                 {
                     m_SpecialIncomingMessageHandler(topic, contents);
@@ -620,16 +535,20 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        float m_LastTopicsRequestRealtime = -1;
+        bool m_TopicsRefreshRequested;
+        float m_LastTopicsRequestSentRealtime = -1;
         const float k_TimeBetweenTopicsUpdates = 5.0f;
 
         public void RefreshTopicsList()
         {
-            // cap the rate of requests
-            if (m_LastTopicsRequestRealtime != -1 && s_RealTimeSinceStartup - m_LastTopicsRequestRealtime <= k_TimeBetweenTopicsUpdates)
-                return;
+            m_TopicsRefreshRequested = true;
+        }
 
-            m_LastTopicsRequestRealtime = s_RealTimeSinceStartup;
+        void SendTopicsRequest()
+        {
+            m_LastTopicsRequestSentRealtime = Time.realtimeSinceStartup;
+            m_TopicsRefreshRequested = false;
+
             GetTopicAndTypeList((data) =>
             {
                 foreach (KeyValuePair<string, string> kv in data)
@@ -769,218 +688,9 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static void SendKeepalive(NetworkStream stream)
-        {
-            // 8 zeroes = a ros message with topic "" and no message data.
-            stream.Write(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 8);
-        }
-
-        static void ClearMessageQueue(OutgoingMessageQueue queue)
-        {
-            while (queue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
-            {
-                sendsOutgoingMessages.ClearAllQueuedData();
-            }
-        }
-
-        static async Task ConnectionThread(
-            string rosIPAddress,
-            int rosPort,
-            ISerializationProvider serializationProvider,
-            float networkTimeoutSeconds,
-            float keepaliveTime,
-            int sleepMilliseconds,
-            Action<NetworkStream> OnConnectionStartedCallback,
-            Action DeregisterAll,
-            OutgoingMessageQueue outgoingQueue,
-            ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
-            CancellationToken token)
-        {
-            //Debug.Log("ConnectionThread begins");
-            int nextReaderIdx = 101;
-            int nextReconnectionDelay = 1000;
-            IMessageSerializer messageSerializer = serializationProvider.CreateSerializer();
-
-            while (!token.IsCancellationRequested)
-            {
-                TcpClient client = null;
-                CancellationTokenSource readerCancellation = null;
-
-                try
-                {
-                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
-
-                    client = new TcpClient();
-                    client.Connect(rosIPAddress, rosPort);
-
-                    NetworkStream networkStream = client.GetStream();
-                    networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
-
-                    SendKeepalive(networkStream);
-                    OnConnectionStartedCallback(networkStream);
-
-                    readerCancellation = new CancellationTokenSource();
-                    _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
-                    nextReaderIdx++;
-
-                    if (m_HasOutputConnectionError)
-                    {
-                        Debug.Log($"ROS Connection to {rosIPAddress}:{rosPort} succeeded!");
-                        m_HasOutputConnectionError = false;
-                    }
-
-                    // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
-                    float waitingSinceRealTime = s_RealTimeSinceStartup;
-                    while (true)
-                    {
-                        bool messageReadyEventWasSet = outgoingQueue.NewMessageReadyToSendEvent.WaitOne(sleepMilliseconds);
-                        token.ThrowIfCancellationRequested();
-
-                        if (messageReadyEventWasSet)
-                        {
-                            outgoingQueue.NewMessageReadyToSendEvent.Reset();
-                        }
-                        else
-                        {
-                            if (s_RealTimeSinceStartup > waitingSinceRealTime + keepaliveTime)
-                            {
-                                SendKeepalive(networkStream);
-                                waitingSinceRealTime = s_RealTimeSinceStartup;
-                            }
-                        }
-
-                        while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
-                        {
-                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
-                            switch (sendToState)
-                            {
-                                case OutgoingMessageSender.SendToState.Normal:
-                                    //This is normal operation.
-                                    break;
-                                case OutgoingMessageSender.SendToState.QueueFullWarning:
-                                    //Unable to send messages to ROS as fast as we're generating them.
-                                    //This could be caused by a TCP connection that is too slow.
-                                    Debug.LogWarning($"Queue full! Messages are getting dropped! " +
-                                                     "Try check your connection speed is fast enough to handle the traffic.");
-                                    break;
-                                case OutgoingMessageSender.SendToState.NoMessageToSendError:
-                                    //This indicates
-                                    Debug.LogError(
-                                        "Logic Error! A 'SendsOutgoingMessages' was queued but did not have any messages to send.");
-                                    break;
-                            }
-
-                            token.ThrowIfCancellationRequested();
-                            waitingSinceRealTime = s_RealTimeSinceStartup;
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception e)
-                {
-                    ROSConnection.m_HasConnectionError = true;
-                    if (!m_HasOutputConnectionError)
-                    {
-                        Debug.LogError($"ROS Connection to {rosIPAddress}:{rosPort} failed - " + e);
-                        m_HasOutputConnectionError = true;
-                    }
-                    await Task.Delay(nextReconnectionDelay);
-                }
-                finally
-                {
-                    if (readerCancellation != null)
-                        readerCancellation.Cancel();
-
-                    if (client != null)
-                        client.Close();
-
-                    // clear the message queue
-                    ClearMessageQueue(outgoingQueue);
-                    DeregisterAll();
-                }
-                await Task.Yield();
-            }
-        }
-
-        static async Task ReaderThread(int readerIdx, System.IO.Stream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
-        {
-            // First message should be the handshake
-            Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-            if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
-            {
-                ROSConnection.m_HasConnectionError = false;
-                queue.Enqueue(handshakeContent);
-            }
-            else
-            {
-                Debug.LogError($"Invalid ROS-TCP-Endpoint version detected: 0.6.0 or older. Expected: {k_Version}.");
-            }
-
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    ROSConnection.m_HasConnectionError = false;
-
-                    if (content.Item1 != "") // ignore keepalive messages
-                        queue.Enqueue(content);
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception e)
-                {
-                    ROSConnection.m_HasConnectionError = true;
-                    Debug.Log("Reader " + readerIdx + " exception! " + e);
-                }
-            }
-        }
-
-        static async Task ReadToByteArray(System.IO.Stream networkStream, byte[] array, int length, int sleepMilliseconds, CancellationToken token)
-        {
-            int read = 0;
-            while (read < length && networkStream.CanRead)
-            {
-                token.ThrowIfCancellationRequested();
-                read += await networkStream.ReadAsync(array, read, length - read, token);
-            }
-
-            if (read < length)
-                throw new SocketException(); // the connection has closed
-        }
-
-        static byte[] s_FourBytes = new byte[4];
-        static byte[] s_TopicScratchSpace = new byte[64];
-
-        static async Task<Tuple<string, byte[]>> ReadMessageContents(System.IO.Stream networkStream, int sleepMilliseconds, CancellationToken token)
-        {
-            // Get first bytes to determine length of topic name
-            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
-            int topicLength = BitConverter.ToInt32(s_FourBytes, 0);
-
-            // If our topic buffer isn't large enough, make a larger one (and keep it that size; assume that's the new standard)
-            if (topicLength > s_TopicScratchSpace.Length)
-                s_TopicScratchSpace = new byte[topicLength];
-
-            // Read and convert topic name
-            await ReadToByteArray(networkStream, s_TopicScratchSpace, topicLength, sleepMilliseconds, token);
-            string topicName = Encoding.ASCII.GetString(s_TopicScratchSpace, 0, topicLength);
-
-            await ReadToByteArray(networkStream, s_FourBytes, 4, sleepMilliseconds, token);
-            int full_message_size = BitConverter.ToInt32(s_FourBytes, 0);
-
-            byte[] readBuffer = new byte[full_message_size];
-            await ReadToByteArray(networkStream, readBuffer, full_message_size, sleepMilliseconds, token);
-
-            return Tuple.Create(topicName, readBuffer);
-        }
-
         void OnApplicationQuit()
         {
-            Disconnect();
+            m_ConnectionTransport.Disconnect();
         }
 
         void SendSysCommand(string command, object param, System.IO.Stream stream = null)
@@ -1006,7 +716,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void QueueSysCommand(string command, object param)
         {
-            m_OutgoingMessageQueue.Enqueue(new SysCommandSender(command, param));
+            m_ConnectionTransport.Send(command, JsonUtility.ToJson(param));
         }
 
         public void Publish(string rosTopicName, Message message)
@@ -1038,162 +748,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             m_HudPanel.isEnabled = m_ShowHUD;
-        }
-
-        void DrawHeaderGUI()
-        {
-            GUIStyle labelStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.white },
-                fontStyle = FontStyle.Bold,
-                fixedWidth = 250
-            };
-
-            GUIStyle contentStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 0, 0, 5),
-                normal = { textColor = Color.white },
-            };
-
-
-            // ROS IP Setup
-            GUILayout.BeginHorizontal(GUILayout.Width(300));
-            DrawConnectionArrows(
-                true,
-                0,
-                0,
-                Time.realtimeSinceStartup - LastMessageReceivedRealtime,
-                Time.realtimeSinceStartup - LastMessageSentRealtime,
-                HasConnectionThread,
-                HasConnectionThread,
-                HasConnectionError
-            );
-
-#if ROS2
-            string protocolName = "ROS2";
-#else
-            string protocolName = "ROS";
-#endif
-
-            GUILayout.Space(30);
-            GUILayout.Label($"{protocolName} IP: ", labelStyle, GUILayout.Width(100));
-
-            if (!HasConnectionThread)
-            {
-                // if you've never run a build on this machine before, initialize the playerpref settings to the ones from the RosConnection
-                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_IP))
-                    SetIPPref(RosIPAddress);
-                if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_TCP_PORT))
-                    SetPortPref(RosPort);
-
-                // NB, here the user is editing the PlayerPrefs values, not the ones in the RosConnection.
-                // (So that the hud remembers what IP you used last time you ran this build.)
-                // The RosConnection receives the edited values when you click Connect.
-                SetIPPref(GUILayout.TextField(RosIPAddressPref));
-                SetPortPref(Convert.ToInt32(GUILayout.TextField(RosPortPref.ToString())));
-
-                GUILayout.EndHorizontal();
-                GUILayout.Label("(Not connected)");
-                if (GUILayout.Button("Connect"))
-                    Connect(RosIPAddressPref, RosPortPref);
-            }
-            else
-            {
-                GUILayout.Label($"{RosIPAddress}:{RosPort}", contentStyle);
-
-                if (HasConnectionError)
-                {
-                    if (GUI.Button(new Rect(250, 2, 50, 22), "Set IP"))
-                        Disconnect();
-                }
-
-                GUILayout.EndHorizontal();
-            }
-        }
-
-        static GUIStyle s_ConnectionArrowStyle;
-
-        public static void DrawConnectionArrows(bool withBar, float x, float y, float receivedTime, float sentTime, bool isPublisher, bool isSubscriber, bool hasError)
-        {
-            if (s_ConnectionArrowStyle == null)
-            {
-                s_ConnectionArrowStyle = new GUIStyle
-                {
-                    alignment = TextAnchor.MiddleLeft,
-                    normal = { textColor = Color.white },
-                    fontSize = 22,
-                    fontStyle = FontStyle.Bold,
-                    fixedWidth = 250
-                };
-            }
-
-            var baseColor = GUI.color;
-            GUI.color = Color.white;
-            if (withBar)
-                GUI.Label(new Rect(x + 4, y + 5, 25, 15), "I", s_ConnectionArrowStyle);
-            GUI.color = GetConnectionColor(receivedTime, isSubscriber, hasError);
-            GUI.Label(new Rect(x + 8, y + 6, 25, 15), "\u2190", s_ConnectionArrowStyle);
-            GUI.color = GetConnectionColor(sentTime, isPublisher, hasError);
-            GUI.Label(new Rect(x + 8, y + 0, 25, 15), "\u2192", s_ConnectionArrowStyle);
-            GUI.color = baseColor;
-        }
-
-        public static void SetIPPref(string ipAddress)
-        {
-            PlayerPrefs.SetString(PlayerPrefsKey_ROS_IP, ipAddress);
-        }
-
-        public static void SetPortPref(int port)
-        {
-            PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
-        }
-
-        public static Color GetConnectionColor(float elapsedTime, bool hasConnection, bool hasError)
-        {
-            var bright = new Color(1, 1, 0.5f);
-            var mid = new Color(0, 1, 1);
-            var dark = new Color(0, 0.5f, 1);
-            const float brightDuration = 0.03f;
-            const float fadeToDarkDuration = 1.0f;
-
-            if (!hasConnection)
-                return Color.gray;
-            if (hasError)
-                return Color.red;
-
-            if (elapsedTime <= brightDuration)
-                return bright;
-            return Color.Lerp(mid, dark, elapsedTime / fadeToDarkDuration);
-        }
-
-        public static bool IPFormatIsCorrect(string ipAddress)
-        {
-            if (ipAddress == null || ipAddress == "")
-                return false;
-
-            // If IP address is set using static lookup tables https://man7.org/linux/man-pages/man5/hosts.5.html
-            if (Char.IsLetter(ipAddress[0]))
-            {
-                foreach (Char subChar in ipAddress)
-                {
-                    if (!(Char.IsLetterOrDigit(subChar) || subChar == '-' || subChar == '.'))
-                        return false;
-                }
-
-                if (!Char.IsLetterOrDigit(ipAddress[ipAddress.Length - 1]))
-                    return false;
-                return true;
-            }
-
-            string[] subAdds = ipAddress.Split('.');
-            if (subAdds.Length != 4)
-            {
-                return false;
-            }
-            IPAddress parsedipAddress;
-            return IPAddress.TryParse(ipAddress, out parsedipAddress);
         }
     }
 }
