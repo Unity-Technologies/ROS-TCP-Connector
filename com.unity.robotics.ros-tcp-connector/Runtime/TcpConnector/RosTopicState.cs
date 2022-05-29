@@ -19,8 +19,8 @@ namespace Unity.Robotics.ROSTCPConnector
         string m_RosMessageName;
         public string RosMessageName => m_RosMessageName;
 
-        TopicMessageSender m_MessageSender;
-        public TopicMessageSender MessageSender => m_MessageSender;
+        TopicPublisherQueue m_PublisherQueue;
+        public TopicPublisherQueue PublisherQueue => m_PublisherQueue;
         public bool IsPublisher { get; private set; }
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
@@ -134,8 +134,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
             // send the response message back
             m_ConnectionInternal.SendUnityServiceResponse(serviceId);
-            m_MessageSender.Queue(response);
-            m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
+            m_PublisherQueue.Queue(response);
+            m_ConnectionInternal.AddSenderToQueue(m_PublisherQueue);
         }
 
         Message Deserialize(byte[] data)
@@ -178,7 +178,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 return implementation((TRequest)msg);
             };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            CreateMessageSender(queueSize);
+            CreatePublisherQueue(queueSize);
         }
 
         public void ImplementService<TRequest, TResponse>(Func<TRequest, Task<TResponse>> implementation, int queueSize)
@@ -191,7 +191,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 return response;
             };
             m_ConnectionInternal.SendUnityServiceRegistration(m_Topic, m_RosMessageName);
-            CreateMessageSender(queueSize);
+            CreatePublisherQueue(queueSize);
         }
 
         public void RegisterPublisher(int queueSize, bool latch)
@@ -204,39 +204,39 @@ namespace Unity.Robotics.ROSTCPConnector
             IsPublisher = true;
             IsPublisherLatched = latch;
             m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, queueSize, latch);
-            CreateMessageSender(queueSize);
+            CreatePublisherQueue(queueSize);
         }
 
         public void Publish(Message message)
         {
             m_LastMessageSent = DateTime.Now;
             OnMessageSent(message);
-            m_MessageSender.Queue(message);
-            m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
+            m_PublisherQueue.Queue(message);
+            m_ConnectionInternal.AddSenderToQueue(m_PublisherQueue);
         }
 
-        void CreateMessageSender(int queueSize)
+        void CreatePublisherQueue(int queueSize)
         {
-            m_MessageSender = new TopicMessageSender(Topic, m_RosMessageName, queueSize);
+            m_PublisherQueue = new TopicPublisherQueue(Topic, m_RosMessageName, queueSize);
         }
 
         public void SetMessagePool(IMessagePool messagePool)
         {
-            m_MessageSender.SetMessagePool(messagePool);
+            m_PublisherQueue.SetMessagePool(messagePool);
         }
 
         public void RegisterRosService(string responseMessageName, int queueSize)
         {
             m_IsRosService = true;
             m_ConnectionInternal.SendRosServiceRegistration(m_Topic, m_RosMessageName);
-            CreateMessageSender(queueSize);
+            CreatePublisherQueue(queueSize);
         }
 
         internal void SendServiceRequest(Message requestMessage, int serviceId)
         {
             m_ConnectionInternal.SendServiceRequest(serviceId);
-            m_MessageSender.Queue(requestMessage);
-            m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
+            m_PublisherQueue.Queue(requestMessage);
+            m_ConnectionInternal.AddSenderToQueue(m_PublisherQueue);
             OnMessageSent(requestMessage);
         }
 
@@ -256,11 +256,11 @@ namespace Unity.Robotics.ROSTCPConnector
             if (IsPublisher)
             {
                 //Register the publisher before sending anything.
-                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, m_MessageSender.QueueSize, IsPublisherLatched, serializer);
+                m_ConnectionInternal.SendPublisherRegistration(m_Topic, m_RosMessageName, m_PublisherQueue.QueueSize, IsPublisherLatched, serializer);
                 if (IsPublisherLatched)
                 {
-                    m_MessageSender.PrepareLatchMessage();
-                    m_ConnectionInternal.AddSenderToQueue(m_MessageSender);
+                    m_PublisherQueue.PrepareLatchMessage();
+                    m_ConnectionInternal.AddSenderToQueue(m_PublisherQueue);
                 }
             }
 

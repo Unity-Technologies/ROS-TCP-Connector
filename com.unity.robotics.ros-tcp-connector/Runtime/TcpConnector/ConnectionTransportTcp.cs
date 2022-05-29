@@ -37,6 +37,10 @@ namespace Unity.Robotics.ROSTCPConnector
         float m_SleepTimeSeconds = 0.01f;
         public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
 
+        [SerializeField]
+        bool m_ShowHUD = true;
+        public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
+
         DateTime m_LastMessageReceived;
         DateTime m_LastMessageSent;
         public DateTime LastMessageReceived => m_LastMessageReceived;
@@ -59,30 +63,30 @@ namespace Unity.Robotics.ROSTCPConnector
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
         }
 
-        class OutgoingMessageQueue
+        class SendQueue
         {
-            ConcurrentQueue<ISendQueueItem> m_OutgoingMessageQueue;
+            ConcurrentQueue<IConnectionTransport.ISendQueueItem> m_OutgoingMessageQueue;
             public readonly ManualResetEvent NewMessageReadyToSendEvent;
 
-            public OutgoingMessageQueue()
+            public SendQueue()
             {
-                m_OutgoingMessageQueue = new ConcurrentQueue<ISendQueueItem>();
+                m_OutgoingMessageQueue = new ConcurrentQueue<IConnectionTransport.ISendQueueItem>();
                 NewMessageReadyToSendEvent = new ManualResetEvent(false);
             }
 
-            public void Enqueue(ISendQueueItem outgoingMessageSender)
+            public void Enqueue(IConnectionTransport.ISendQueueItem outgoingMessageSender)
             {
                 m_OutgoingMessageQueue.Enqueue(outgoingMessageSender);
                 NewMessageReadyToSendEvent.Set();
             }
 
-            public bool TryDequeue(out ISendQueueItem outgoingMessageSender)
+            public bool TryDequeue(out IConnectionTransport.ISendQueueItem outgoingMessageSender)
             {
                 return m_OutgoingMessageQueue.TryDequeue(out outgoingMessageSender);
             }
         }
 
-        OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
+        SendQueue m_OutgoingMessageQueue = new SendQueue();
         ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
 
@@ -90,42 +94,41 @@ namespace Unity.Robotics.ROSTCPConnector
         static bool m_HasConnectionError = false;
         static bool m_HasOutputConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
+        IConnectionConsumer m_ConnectionConsumer;
 
-        /*public Stream Connect()
-        {
-            if (!IPFormatIsCorrect(RosIPAddress))
-                Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
-
-            TcpClient client = new TcpClient();
-            client.Connect(m_RosIPAddress, m_RosPort);
-            return client.GetStream();
-        }*/
+        // GUI window variables
+        internal HudPanel m_HudPanel = null;
+        public HudPanel HUDPanel => m_HudPanel;
 
         public void Start()
         {
+            InitializeHUD();
+
             HudPanel.RegisterHeader(DrawHeaderGUI);
+
+            m_ConnectionConsumer = GetComponent<IConnectionConsumer>();
+            if (m_ConnectionConsumer == null)
+            {
+                Debug.LogError("Unable to find a ConnectionConsumer!");
+                return;
+            }
+            m_ConnectionConsumer.ConnectionTransport = this;
+
+            if (m_ConnectionConsumer.ConnectOnStart)
+                Connect();
         }
 
-        ISerializationProvider m_SerializationProvider;
-        Action<IMessageSerializer> m_OnConnectionStartedCallback;
-        Action m_OnConnectionLostCallback;
-
-        public void Init(
-            ISerializationProvider serializationProvider,
-            Action<IMessageSerializer> onConnectionStartedCallback,
-            Action onConnectionLostCallback)
+        void OnApplicationQuit()
         {
-            m_SerializationProvider = serializationProvider;
-            m_OnConnectionStartedCallback = onConnectionStartedCallback;
-            m_OnConnectionLostCallback = onConnectionLostCallback;
+            Disconnect();
         }
 
-        /*public void Connect(string ipAddress, int port)
+        public void Connect(string ipAddress, int port)
         {
-            RosIPAddress = ipAddress;
-            RosPort = port;
+            IPAddress = ipAddress;
+            Port = port;
             Connect();
-        }*/
+        }
 
         public void Connect()
         {
@@ -137,12 +140,10 @@ namespace Unity.Robotics.ROSTCPConnector
             Task.Run(() => ConnectionThread(
                 IPAddress,
                 Port,
-                m_SerializationProvider,
+                m_ConnectionConsumer,
                 m_NetworkTimeoutSeconds,
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
-                m_OnConnectionStartedCallback,
-                m_OnConnectionLostCallback,
                 SetHasConnectionError,
                 m_OutgoingMessageQueue,
                 m_IncomingMessages,
@@ -163,9 +164,9 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionThreadCancellation = null;
         }
 
-        static void ClearMessageQueue(OutgoingMessageQueue queue)
+        static void ClearMessageQueue(SendQueue queue)
         {
-            while (queue.TryDequeue(out ISendQueueItem sendsOutgoingMessages))
+            while (queue.TryDequeue(out IConnectionTransport.ISendQueueItem sendsOutgoingMessages))
             {
                 sendsOutgoingMessages.ClearAllQueuedData();
             }
@@ -189,17 +190,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public void Send(string topic, string text)
-        {
-            m_OutgoingMessageQueue.Enqueue(new StringSender(topic, text));
-        }
-
-        public void Send(string topic, Message msg)
-        {
-            m_OutgoingMessageQueue.Enqueue(new SimpleMessageSender(topic, msg));
-        }
-
-        public void Send(ISendQueueItem sender)
+        public void Send(IConnectionTransport.ISendQueueItem sender)
         {
             m_OutgoingMessageQueue.Enqueue(sender);
         }
@@ -327,6 +318,18 @@ namespace Unity.Robotics.ROSTCPConnector
             return Color.Lerp(mid, dark, (float)timeSeconds / fadeToDarkDuration);
         }
 
+        void InitializeHUD()
+        {
+            if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
+                return;
+
+            if (m_HudPanel == null)
+            {
+                m_HudPanel = gameObject.AddComponent<HudPanel>();
+            }
+
+            m_HudPanel.isEnabled = m_ShowHUD;
+        }
 
 
         public static bool IPFormatIsCorrect(string ipAddress)
@@ -366,14 +369,12 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string IPAddress,
             int Port,
-            ISerializationProvider serializationProvider,
+            IConnectionConsumer connectionConsumer,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
-            Action<IMessageSerializer> OnConnectionStartedCallback,
-            Action OnConnectionLostCallback,
             Action<bool> SetHasConnectionError,
-            OutgoingMessageQueue outgoingQueue,
+            SendQueue outgoingQueue,
             ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
         {
@@ -396,10 +397,10 @@ namespace Unity.Robotics.ROSTCPConnector
                     NetworkStream networkStream = client.GetStream();
                     networkStream.ReadTimeout = (int)(networkTimeoutSeconds * 1000);
 
-                    IMessageSerializer messageSerializer = serializationProvider.CreateSerializer(networkStream);
+                    IMessageSerializer messageSerializer = connectionConsumer.SerializationProvider.CreateSerializer(networkStream);
 
                     SendKeepalive(networkStream);
-                    OnConnectionStartedCallback(messageSerializer);
+                    connectionConsumer.OnConnectionStartedCallback(messageSerializer);
 
                     readerCancellation = new CancellationTokenSource();
                     _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, SetHasConnectionError, readerCancellation.Token));
@@ -431,21 +432,21 @@ namespace Unity.Robotics.ROSTCPConnector
                             }
                         }
 
-                        while (outgoingQueue.TryDequeue(out ISendQueueItem sendsOutgoingMessages))
+                        while (outgoingQueue.TryDequeue(out IConnectionTransport.ISendQueueItem sendsOutgoingMessages))
                         {
-                            ISendQueueItem.SendToState sendToState = sendsOutgoingMessages.DoSend(messageSerializer);
+                            IConnectionTransport.SendToState sendToState = sendsOutgoingMessages.DoSend(messageSerializer);
                             switch (sendToState)
                             {
-                                case ISendQueueItem.SendToState.Normal:
+                                case IConnectionTransport.SendToState.Normal:
                                     //This is normal operation.
                                     break;
-                                case ISendQueueItem.SendToState.QueueFullWarning:
+                                case IConnectionTransport.SendToState.QueueFullWarning:
                                     //Unable to send messages as fast as we're generating them.
                                     //This could be caused by a TCP connection that is too slow.
                                     Debug.LogWarning($"Queue full! Messages are getting dropped! " +
                                                      "Try check your connection speed is fast enough to handle the traffic.");
                                     break;
-                                case ISendQueueItem.SendToState.NoMessageToSendError:
+                                case IConnectionTransport.SendToState.NoMessageToSendError:
                                     //This indicates
                                     Debug.LogError(
                                         "Logic Error! An 'IOutgoingMessageSender' was queued but did not have any messages to send.");
@@ -480,7 +481,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                     // clear the message queue
                     ClearMessageQueue(outgoingQueue);
-                    OnConnectionLostCallback();
+                    connectionConsumer.OnConnectionLostCallback();
                 }
                 await Task.Yield();
             }

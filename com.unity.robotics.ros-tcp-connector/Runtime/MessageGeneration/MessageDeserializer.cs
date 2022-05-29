@@ -35,6 +35,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             result = (T)MessageRegistry.GetRosDeserializeFunction<T>()(this);
         }
 
+        public string DeserializeString(byte[] data)
+        {
+            return System.Text.Encoding.UTF8.GetString(data);
+        }
+
         public void InitWithBuffer(byte[] data)
         {
             this.data = data;

@@ -117,7 +117,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             EditorGUILayout.Space();
 
-            prefabRosConnection.ShowHud = EditorGUILayout.Toggle("Show HUD", prefabRosConnection.ShowHud);
+            prefabConnectionTransport.ShowHud = EditorGUILayout.Toggle("Show HUD", prefabConnectionTransport.ShowHud);
 
             EditorGUILayout.Space();
 

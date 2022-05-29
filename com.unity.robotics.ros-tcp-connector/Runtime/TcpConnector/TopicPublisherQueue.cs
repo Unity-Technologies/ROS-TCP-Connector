@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class TopicMessageSender : ISendQueueItem
+    public class TopicPublisherQueue : IConnectionTransport.ISendQueueItem
     {
         public string RosMessageName { get; private set; }
 
@@ -32,7 +32,7 @@ namespace Unity.Robotics.ROSTCPConnector
         IMessagePool m_MessagePool;
         public bool MessagePoolEnabled => m_MessagePool != null;
 
-        public TopicMessageSender(string topicName, string rosMessageName, int queueSize)
+        public TopicPublisherQueue(string topicName, string rosMessageName, int queueSize)
         {
             if (queueSize < 1)
             {
@@ -63,9 +63,9 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        ISendQueueItem.SendToState GetMessageToSend(out Message messageToSend)
+        IConnectionTransport.SendToState GetMessageToSend(out Message messageToSend)
         {
-            ISendQueueItem.SendToState result = ISendQueueItem.SendToState.NoMessageToSendError;
+            IConnectionTransport.SendToState result = IConnectionTransport.SendToState.NoMessageToSendError;
             messageToSend = null;
             lock (m_OutgoingMessages)
             {
@@ -75,14 +75,14 @@ namespace Unity.Robotics.ROSTCPConnector
                     //This could potentially be bad as it means that we are dropping messages!
                     m_QueueOverflowUnsentCounter--;
                     messageToSend = null;
-                    result = ISendQueueItem.SendToState.QueueFullWarning;
+                    result = IConnectionTransport.SendToState.QueueFullWarning;
                 }
                 else if (m_OutgoingMessages.Count > 0)
                 {
                     //Retrieve the next message and populate messageToSend.
                     messageToSend = m_OutgoingMessages.First.Value;
                     m_OutgoingMessages.RemoveFirst();
-                    result = ISendQueueItem.SendToState.Normal;
+                    result = IConnectionTransport.SendToState.Normal;
                 }
             }
 
@@ -116,10 +116,10 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public ISendQueueItem.SendToState DoSend(IMessageSerializer messageSerializer)
+        public IConnectionTransport.SendToState DoSend(IMessageSerializer messageSerializer)
         {
-            ISendQueueItem.SendToState sendToState = GetMessageToSend(out Message msg);
-            if (sendToState == ISendQueueItem.SendToState.Normal)
+            IConnectionTransport.SendToState sendToState = GetMessageToSend(out Message msg);
+            if (sendToState == IConnectionTransport.SendToState.Normal)
             {
                 messageSerializer.SendMessage(TopicName, msg);
 

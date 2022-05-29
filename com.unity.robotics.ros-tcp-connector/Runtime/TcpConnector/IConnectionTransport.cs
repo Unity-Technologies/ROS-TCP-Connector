@@ -9,10 +9,19 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public interface IConnectionTransport
     {
-        void Init(
-            ISerializationProvider serializationProvider,
-            Action<IMessageSerializer> onConnectionStartedCallback,
-            Action onConnectionLostCallback);
+        public interface ISendQueueItem
+        {
+            SendToState DoSend(IMessageSerializer m_MessageSerializer);
+
+            void ClearAllQueuedData();
+        }
+
+        public enum SendToState
+        {
+            Normal,
+            NoMessageToSendError,
+            QueueFullWarning
+        }
 
         void Connect();
         void Disconnect();
@@ -22,8 +31,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         bool TryRead(out string topic, out byte[] data);
 
-        void Send(string topic, string text);
-        void Send(string topic, Message msg);
         void Send(ISendQueueItem sender);
     }
 }

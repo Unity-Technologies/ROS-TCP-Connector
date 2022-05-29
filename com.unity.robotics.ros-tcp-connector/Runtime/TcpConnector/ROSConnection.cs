@@ -14,34 +14,25 @@ using JetBrains.Annotations;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class ROSConnection : MonoBehaviour
+    public class ROSConnection : MonoBehaviour, IConnectionConsumer
     {
         public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
-
-        [SerializeField]
-        bool m_ConnectOnStart = true;
-        public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
 
         [SerializeField]
         bool m_IsRos2 = false;
         public bool IsRos2 { get => m_IsRos2; set => m_IsRos2 = value; }
 
         [SerializeField]
-        [FormerlySerializedAs("showHUD")]
-        bool m_ShowHUD = true;
-        public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
-
-        [SerializeField]
         string[] m_TFTopics = { "/tf" };
         public string[] TFTopics { get => m_TFTopics; set => m_TFTopics = value; }
 
+        [SerializeField]
+        bool m_ConnectOnStart = true;
+        public bool ConnectOnStart { get => m_ConnectOnStart; set => m_ConnectOnStart = value; }
+
         const int k_DefaultPublisherQueueSize = 10;
         const bool k_DefaultPublisherLatch = false;
-
-        // GUI window variables
-        internal HudPanel m_HudPanel = null;
-        public HudPanel HUDPanel => m_HudPanel;
 
         readonly object m_ServiceRequestLock = new object();
 
@@ -50,8 +41,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool listenForTFMessages = true;
 
-        public bool HasConnection => m_ConnectionTransport.HasConnection;
-        public bool HasConnectionError => m_ConnectionTransport.HasConnectionError;
+        public bool HasConnection => m_ConnectionTransport != null && m_ConnectionTransport.HasConnection;
+        public bool HasConnectionError => m_ConnectionTransport != null && m_ConnectionTransport.HasConnectionError;
 
         public bool HasSubscriber(string topic)
         {
@@ -73,6 +64,16 @@ namespace Unity.Robotics.ROSTCPConnector
         List<Action<RosTopicState>> m_NewTopicCallbacks = new List<Action<RosTopicState>>();
 
         Dictionary<string, RosTopicState> m_Topics = new Dictionary<string, RosTopicState>();
+
+        public void Connect()
+        {
+            m_ConnectionTransport.Connect();
+        }
+
+        public void Disconnect()
+        {
+            m_ConnectionTransport.Disconnect();
+        }
 
         public void ListenForTopics(Action<RosTopicState> callback, bool notifyAllExistingTopics = false)
         {
@@ -368,7 +369,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Self.SendSysCommand(SysCommand.k_SysCommand_ServiceRequest, new SysCommand_Service { srv_id = serviceId });
             }
 
-            public void AddSenderToQueue(ISendQueueItem sender)
+            public void AddSenderToQueue(IConnectionTransport.ISendQueueItem sender)
             {
                 m_Self.m_ConnectionTransport.Send(sender);
             }
@@ -413,38 +414,19 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (_instance == null)
                 _instance = this;
+
+            m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
+            m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
         }
 
         void Start()
         {
-            InitializeHUD();
-
             if (listenForTFMessages)
                 TFSystem.GetOrCreateInstance();
-
-            m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
-            m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
-
-            m_ConnectionTransport = GetComponent<IConnectionTransport>();
-            if (m_ConnectionTransport == null)
-            {
-                Debug.LogError("Unable to find a ConnectionTransport!");
-                return;
-            }
-
-            m_ConnectionTransport.Init(m_SerializationProvider, OnConnectionStartedCallback, OnConnectionLostCallback);
-
-            if (ConnectOnStart)
-                m_ConnectionTransport.Connect();
         }
-
-        public void Connect()
-        {
-        }
-
 
         // NB this callback is not running on the main thread, be cautious about modifying data here
-        void OnConnectionStartedCallback(IMessageSerializer serializer)
+        void IConnectionConsumer.OnConnectionStartedCallback(IMessageSerializer serializer)
         {
             m_SpecialIncomingMessageHandler = HandshakeHandler;
 
@@ -465,7 +447,7 @@ namespace Unity.Robotics.ROSTCPConnector
             // this is how we handle the first message on a new connection
             if (name == SysCommand.k_SysCommand_Handshake)
             {
-                ReceiveSysCommand(name, Encoding.UTF8.GetString(payload));
+                ReceiveSysCommand(name, payload);
             }
             else
             {
@@ -473,7 +455,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void OnConnectionLostCallback()
+        void IConnectionConsumer.OnConnectionLostCallback()
         {
             RosTopicState[] topics;
             lock (m_Topics)
@@ -509,7 +491,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else if (topic.StartsWith("__"))
                 {
-                    ReceiveSysCommand(topic, Encoding.UTF8.GetString(contents));
+                    ReceiveSysCommand(topic, contents);
                 }
                 else
                 {
@@ -528,7 +510,6 @@ namespace Unity.Robotics.ROSTCPConnector
                         {
                             Debug.LogException(e);
                         }
-
                     }
                 }
             }
@@ -561,8 +542,9 @@ namespace Unity.Robotics.ROSTCPConnector
             });
         }
 
-        void ReceiveSysCommand(string topic, string json)
+        void ReceiveSysCommand(string topic, byte[] payload)
         {
+            string json = m_MessageDeserializer.DeserializeString(payload);
             switch (topic)
             {
                 case SysCommand.k_SysCommand_Handshake:
@@ -687,17 +669,13 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void OnApplicationQuit()
-        {
-            m_ConnectionTransport.Disconnect();
-        }
-
         void SendSysCommand(string command, object param, IMessageSerializer serializer = null)
         {
+            string json = JsonUtility.ToJson(param);
             if (serializer != null)
-                SendSysCommandImmediate(command, param, serializer);
+                serializer.SendString(command, json);
             else
-                QueueSysCommand(command, param);
+                m_ConnectionTransport.Send(new SimpleStringSender(command, json));
         }
 
         public void Ping(Action<TimeSpan> callback)
@@ -708,45 +686,15 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer)
-        {
-            messageSerializer.SendString(command, JsonUtility.ToJson(param));
-        }
-
-        public void QueueSysCommand(string command, object param)
-        {
-            m_ConnectionTransport.Send(command, JsonUtility.ToJson(param));
-        }
-
         public void Publish(string rosTopicName, Message message)
         {
-            if (rosTopicName.StartsWith("__"))
+            RosTopicState rosTopic = GetTopic(rosTopicName);
+            if (rosTopic == null || !rosTopic.IsPublisher)
             {
-                QueueSysCommand(rosTopicName, message);
-            }
-            else
-            {
-                RosTopicState rosTopic = GetTopic(rosTopicName);
-                if (rosTopic == null || !rosTopic.IsPublisher)
-                {
-                    throw new Exception($"No registered publisher on topic {rosTopicName} for type {message.RosMessageName}!");
-                }
-
-                rosTopic.Publish(message);
-            }
-        }
-
-        void InitializeHUD()
-        {
-            if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
-                return;
-
-            if (m_HudPanel == null)
-            {
-                m_HudPanel = gameObject.AddComponent<HudPanel>();
+                throw new Exception($"No registered publisher on topic {rosTopicName} for type {message.RosMessageName}!");
             }
 
-            m_HudPanel.isEnabled = m_ShowHUD;
+            rosTopic.Publish(message);
         }
     }
 }
