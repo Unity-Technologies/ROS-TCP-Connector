@@ -133,7 +133,7 @@ namespace Unity.Robotics.ROSTCPConnector
         ISerializationProvider m_SerializationProvider;
         public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
         IMessageSerializer m_MessageSerializer;
-        IMessageDeserializer m_MessageDeserializer;
+        MessageDeserializer m_MessageDeserializer;
 
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
@@ -205,6 +205,21 @@ namespace Unity.Robotics.ROSTCPConnector
                 else
                 {
                     Debug.LogError($"Subscriber to '{topic}' expected '{rosMessageName}' but received '{msg.RosMessageName}'!?");
+                }
+            });
+        }
+
+        public void Subscribe(string topic, string messageType, Action<Message> callback)
+        {
+            AddSubscriberInternal(topic, messageType, (Message msg) =>
+            {
+                if (msg.MessageType == messageType)
+                {
+                    callback(msg);
+                }
+                else
+                {
+                    Debug.LogError($"Subscriber to '{topic}' expected '{messageType}' but received '{msg.MessageType}'!?");
                 }
             });
         }
@@ -392,7 +407,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public InternalAPI(ROSConnection self) { m_Self = self; }
 
-            public IMessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
+            public MessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
             public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
             {
@@ -521,7 +536,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
             m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
-            m_MessageDeserializer = m_SerializationProvider.CreateDeserializer();
+            m_MessageDeserializer = (MessageDeserializer)m_SerializationProvider.CreateDeserializer();
             m_MessageSerializer = m_SerializationProvider.CreateSerializer();
 
             Task.Run(() => ConnectionThread(

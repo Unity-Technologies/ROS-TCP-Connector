@@ -14,6 +14,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         }
 
         public virtual string RosMessageName => throw new NotImplementedException();
+        public string MessageType => RosMessageName;
 
         // The following should never be used, they're here for backwards compatibility only.
         public virtual List<byte[]> SerializationStatements() => throw new NotImplementedException();
