@@ -3,11 +3,12 @@
     "rootNamespace": "Unity.Robotics.ROSTCPConnector",
     "references": [
         "GUID:ba58c43074cf72549aa2ac5937dae44b",
-        "GUID:5db6cbfd5d0e86a46862a70f4b4067f2"
+        "GUID:5db6cbfd5d0e86a46862a70f4b4067f2",
+        "GUID:04376767bc1f3b428aefa3d20743e819"
     ],
     "includePlatforms": [
-		"CloudRendering",
         "Android",
+        "CloudRendering",
         "Editor",
         "iOS",
         "LinuxStandalone64",
