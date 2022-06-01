@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class TopicMessageSender : OutgoingMessageSender
+    public class EndpointPublisherQueue : OutgoingMessageSender
     {
         public string RosMessageName { get; private set; }
 
@@ -32,7 +32,7 @@ namespace Unity.Robotics.ROSTCPConnector
         IMessagePool m_MessagePool;
         public bool MessagePoolEnabled => m_MessagePool != null;
 
-        public TopicMessageSender(string topicName, string rosMessageName, int queueSize)
+        public EndpointPublisherQueue(string topicName, string rosMessageName, int queueSize)
         {
             if (queueSize < 1)
             {

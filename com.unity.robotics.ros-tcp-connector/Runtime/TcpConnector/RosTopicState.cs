@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class RosTopicState
+    public class RosTopicState : IPublisher//, ISubscriber, ITopicInfo
     {
         string m_Topic;
         public string Topic => m_Topic;
@@ -17,10 +17,10 @@ namespace Unity.Robotics.ROSTCPConnector
         public MessageSubtopic Subtopic => m_Subtopic;
 
         string m_RosMessageName;
-        public string RosMessageName => m_RosMessageName;
+        public string MessageType => m_RosMessageName;
 
-        TopicMessageSender m_MessageSender;
-        public TopicMessageSender MessageSender => m_MessageSender;
+        EndpointPublisherQueue m_MessageSender;
+        public EndpointPublisherQueue MessageSender => m_MessageSender;
         public bool IsPublisher { get; private set; }
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
@@ -217,7 +217,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void CreateMessageSender(int queueSize)
         {
-            m_MessageSender = new TopicMessageSender(Topic, m_RosMessageName, queueSize);
+            m_MessageSender = new EndpointPublisherQueue(Topic, m_RosMessageName, queueSize);
         }
 
         public void SetMessagePool(IMessagePool messagePool)

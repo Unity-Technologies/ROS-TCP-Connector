@@ -14,7 +14,7 @@ using JetBrains.Annotations;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class ROSConnection : MonoBehaviour
+    public class ROSConnection : MonoBehaviour, IConnection
     {
         public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
@@ -178,7 +178,7 @@ namespace Unity.Robotics.ROSTCPConnector
             RosTopicState state = GetTopic(topic);
             if (state != null)
             {
-                if (state.RosMessageName != rosMessageName)
+                if (state.MessageType != rosMessageName)
                 {
                     state.ChangeRosMessageName(rosMessageName);
                 }
@@ -342,13 +342,23 @@ namespace Unity.Robotics.ROSTCPConnector
         {
         }
 
-        public RosTopicState RegisterPublisher<T>(string rosTopicName,
+        public IPublisher RegisterPublisher<T>(string rosTopicName) where T : Message
+        {
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), null, null);
+        }
+
+        public IPublisher RegisterPublisher<T>(string rosTopicName,
             int? queue_size = null, bool? latch = null) where T : Message
         {
             return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), queue_size, latch);
         }
 
-        public RosTopicState RegisterPublisher(string rosTopicName, string rosMessageName,
+        public IPublisher RegisterPublisher(string rosTopicName, string rosMessageName)
+        {
+            return RegisterPublisher(rosTopicName, rosMessageName, null, null);
+        }
+
+        public IPublisher RegisterPublisher(string rosTopicName, string rosMessageName,
             int? queueSize = null, bool? latch = null)
         {
             RosTopicState topicState = GetOrCreateTopic(rosTopicName, rosMessageName);
@@ -635,7 +645,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 foreach (KeyValuePair<string, string> kv in data)
                 {
                     RosTopicState state = GetOrCreateTopic(kv.Key, kv.Value);
-                    if (state.RosMessageName != kv.Value)
+                    if (state.MessageType != kv.Value)
                     {
                         state.ChangeRosMessageName(kv.Value);
                     }
