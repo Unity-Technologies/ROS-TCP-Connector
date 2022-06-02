@@ -41,6 +41,15 @@ namespace RosMessageTypes.Std
             serializer.Write(this.data);
         }
 
+        static string[] fieldNames = new string[] { "data" };
+
+        public override void SerializeTo(IMessageSerializer serializer)
+        {
+            serializer.BeginMessage(fieldNames);
+            serializer.Write(this.data);
+            serializer.EndMessage();
+        }
+
         public override string ToString()
         {
             return "StringMsg: " +

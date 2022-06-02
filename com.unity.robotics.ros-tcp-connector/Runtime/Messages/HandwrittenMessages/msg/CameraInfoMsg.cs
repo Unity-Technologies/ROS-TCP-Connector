@@ -245,6 +245,28 @@ namespace RosMessageTypes.Sensor
             "\nroi: " + roi.ToString();
         }
 
+        static string[] ros1FieldNames = new string[] { "header", "height", "width", "distortion_model", "D", "K", "R", "P", "binning_x", "binning_y", "roi" };
+        static string[] ros2FieldNames = new string[] { "header", "height", "width", "distortion_model", "d", "k", "r", "p", "binning_x", "binning_y", "roi" };
+
+        public override void SerializeTo(IMessageSerializer serializer)
+        {
+            serializer.BeginMessage(serializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+
+            this.header.SerializeTo(serializer);
+            serializer.Write(this.height);
+            serializer.Write(this.width);
+            serializer.Write(this.distortion_model);
+            serializer.Write(this.D);
+            serializer.Write(this.K);
+            serializer.Write(this.R);
+            serializer.Write(this.P);
+            serializer.Write(this.binning_x);
+            serializer.Write(this.binning_y);
+            this.roi.SerializeTo(serializer);
+
+            serializer.EndMessage();
+        }
+
 #if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
 #else

@@ -132,7 +132,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         ISerializationProvider m_SerializationProvider;
         public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
-        IMessageSerializer m_MessageSerializer;
+        MessageSerializer m_MessageSerializer;
         MessageDeserializer m_MessageDeserializer;
 
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
@@ -537,12 +537,12 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
             m_MessageDeserializer = (MessageDeserializer)m_SerializationProvider.CreateDeserializer();
-            m_MessageSerializer = m_SerializationProvider.CreateSerializer();
+            m_MessageSerializer = (MessageSerializer)m_SerializationProvider.CreateSerializer();
 
             Task.Run(() => ConnectionThread(
                 RosIPAddress,
                 RosPort,
-                m_SerializationProvider,
+                (MessageSerializer)m_SerializationProvider.CreateSerializer(),
                 m_NetworkTimeoutSeconds,
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
@@ -811,7 +811,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
-            ISerializationProvider serializationProvider,
+            MessageSerializer messageSerializer,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
@@ -824,7 +824,6 @@ namespace Unity.Robotics.ROSTCPConnector
             //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
-            IMessageSerializer messageSerializer = serializationProvider.CreateSerializer();
 
             while (!token.IsCancellationRequested)
             {
@@ -1027,7 +1026,7 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void SendSysCommandImmediate(string command, object param, [NotNull] IMessageSerializer messageSerializer, [NotNull] NetworkStream stream)
+        static void SendSysCommandImmediate(string command, object param, [NotNull] MessageSerializer messageSerializer, [NotNull] NetworkStream stream)
         {
             messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(JsonUtility.ToJson(param)), stream);
         }

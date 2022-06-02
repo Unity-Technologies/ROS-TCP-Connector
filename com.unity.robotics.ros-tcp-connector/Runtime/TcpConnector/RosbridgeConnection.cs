@@ -27,6 +27,13 @@ namespace Unity.Robotics.ROSTCPConnector
         Queue<string> m_DeferredMessages = new Queue<string>();
         Dictionary<string, List<Action<Message>>> m_SubscriberCallbacks = new Dictionary<string, List<Action<Message>>>();
         bool m_IsConnected = false;
+        JsonSerializer m_JsonSerializer;
+
+        void Awake()
+        {
+            m_JsonSerializer = new JsonSerializer(m_IsRos2);
+        }
+
         public async void Connect()
         {
             m_Websocket = new WebSocket(m_Address);
@@ -112,7 +119,6 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 callbacks = new List<Action<Message>>();
                 m_SubscriberCallbacks.Add(topic, callbacks);
-                Debug.Log("Sending subscribe");
                 string json = $"{{\"op\":\"subscribe\",\"topic\":\"{topic}\"}}";//,\"type\":\"{messageType}\"}}";
                 Send(json);
             }
@@ -132,7 +138,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_Websocket.DispatchMessageQueue();
         }
 
-        class RosbridgePublisher : IPublisher
+        public class RosbridgePublisher : IPublisher
         {
             string m_Topic;
             public string Topic => m_Topic;
@@ -148,9 +154,31 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Connection = connection;
             }
 
+            public System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
             public void Publish(Message msg)
             {
-                string json = $"{{\"op\":\"publish\",\"topic\":\"{m_Topic}\",\"msg\":{JsonUtility.ToJson(msg)}}}";
+                string msgjson = "";
+                const int numRepeats = 100000;
+                stopwatch.Start();
+                for (int Idx = 0; Idx < numRepeats; ++Idx)
+                {
+                    msgjson = m_Connection.m_JsonSerializer.GetJsonString(msg);
+                }
+                stopwatch.Stop();
+                Debug.Log("Mine serialized in " + stopwatch.ElapsedMilliseconds + "ms");
+                stopwatch.Reset();
+                string msgjson2 = "";
+                stopwatch.Start();
+                for (int Idx = 0; Idx < numRepeats; ++Idx)
+                {
+                    msgjson2 = JsonUtility.ToJson(msg);
+                }
+                stopwatch.Stop();
+                Debug.Log("JsonUtility serialized in " + stopwatch.ElapsedMilliseconds + "ms");
+                if (msgjson != msgjson2)
+                    Debug.Log("Discrepancy! " + msgjson + "\nvs " + msgjson2);
+                string json = $"{{\"op\":\"publish\",\"topic\":\"{m_Topic}\",\"msg\":{msgjson}}}";
                 m_Connection.Send(json);
             }
         }

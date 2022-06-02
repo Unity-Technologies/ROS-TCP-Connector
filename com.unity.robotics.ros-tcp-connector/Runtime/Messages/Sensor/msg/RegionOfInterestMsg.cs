@@ -83,6 +83,20 @@ namespace RosMessageTypes.Sensor
             "\ndo_rectify: " + do_rectify.ToString();
         }
 
+        static string[] fieldNames = new string[] { "x_offset", "y_offset", "height", "width", "do_rectify" };
+
+        public override void SerializeTo(IMessageSerializer serializer)
+        {
+            serializer.BeginMessage(fieldNames);
+
+            serializer.Write(this.x_offset);
+            serializer.Write(this.y_offset);
+            serializer.Write(this.height);
+            serializer.Write(this.width);
+            serializer.Write(this.do_rectify);
+
+            serializer.EndMessage();
+        }
 #if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]
 #else

@@ -6,6 +6,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace RosMessageTypes.BuiltinInterfaces
 {
+    [Serializable]
     public class TimeMsg : Message
     {
 #if !ROS2
@@ -64,7 +65,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 
         // for convenience when writing ROS2 agnostic code
         public uint secs { get => (uint)sec; set => sec = (int)value; }
-        public uint nsecs { get => nsecs; set => nsecs = value; }
+        public uint nsecs { get => nanosec; set => nanosec = value; }
 
         public TimeMsg()
         {
@@ -99,6 +100,22 @@ namespace RosMessageTypes.BuiltinInterfaces
             "\nnanosec: " + nanosec.ToString();
         }
 #endif
+
+        static string[] ros1FieldNames = new string[] { "secs", "nsecs" };
+        static string[] ros2FieldNames = new string[] { "sec", "nanosec" };
+
+        public override void SerializeTo(IMessageSerializer serializer)
+        {
+            serializer.BeginMessage(serializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+
+            if (serializer.IsRos2)
+                serializer.Write(this.secs); // uint
+            else
+                serializer.Write(this.sec); // int
+            serializer.Write(this.nsecs);
+
+            serializer.EndMessage();
+        }
 
 #if UNITY_EDITOR
         [UnityEditor.InitializeOnLoadMethod]

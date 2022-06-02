@@ -26,6 +26,12 @@ namespace RosMessageTypes.BuiltinInterfaces
             this.sec = sec;
             this.nanosec = nanosec;
         }
+
+        public DurationMsg(int sec, uint nanosec)
+        {
+            this.sec = sec;
+            this.nanosec = (int)nanosec;
+        }
 #else
         public const string k_RosMessageName = "builtin_interfaces/Duration";
         public override string RosMessageName => k_RosMessageName;
@@ -49,6 +55,12 @@ namespace RosMessageTypes.BuiltinInterfaces
         {
             this.sec = sec;
             this.nanosec = nanosec;
+        }
+
+        public DurationMsg(int sec, int nanosec)
+        {
+            this.sec = sec;
+            this.nanosec = (uint)nanosec;
         }
 #endif
 

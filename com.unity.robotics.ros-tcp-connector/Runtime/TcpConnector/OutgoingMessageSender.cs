@@ -14,7 +14,7 @@ namespace Unity.Robotics.ROSTCPConnector
             QueueFullWarning
         }
 
-        public abstract SendToState SendInternal(IMessageSerializer m_MessageSerializer, System.IO.Stream stream);
+        public abstract SendToState SendInternal(MessageSerializer messageSerializer, System.IO.Stream stream);
 
         public abstract void ClearAllQueuedData();
     }
@@ -34,11 +34,11 @@ namespace Unity.Robotics.ROSTCPConnector
             this.json = UnityEngine.JsonUtility.ToJson(param);
         }
 
-        public override SendToState SendInternal(IMessageSerializer m_MessageSerializer, Stream stream)
+        public override SendToState SendInternal(MessageSerializer messageSerializer, Stream stream)
         {
             if (json != null)
             {
-                m_MessageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(json), stream);
+                messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(json), stream);
             }
             return SendToState.Normal;
         }

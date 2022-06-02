@@ -6,6 +6,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace RosMessageTypes.Std
 {
+    [Serializable]
     public class HeaderMsg : Message
     {
         public const string k_RosMessageName = "std_msgs/Header";
@@ -17,8 +18,11 @@ namespace RosMessageTypes.Std
         //  in a particular coordinate frame.
 
         //  sequence ID: consecutively increasing ID
-        // we don't support this field. (it's deprecated in ROS1 and doesn't exist in ROS2). 
-        //public uint seq;
+        // we don't support this field. (it's deprecated in ROS1 and doesn't exist in ROS2).
+        // It's only here in this class so that serializers will write it.
+#if !ROS2
+        public uint seq;
+#endif
 
         //  Two-integer timestamp that is expressed as seconds and nanoseconds.
         public BuiltinInterfaces.TimeMsg stamp;
@@ -70,6 +74,21 @@ namespace RosMessageTypes.Std
             return "Header: " +
             "\nstamp: " + stamp.ToString() +
             "\nframe_id: " + frame_id.ToString();
+        }
+
+        static string[] ros1FieldNames = new string[] { "seq", "stamp", "frame_id" };
+        static string[] ros2FieldNames = new string[] { "stamp", "frame_id" };
+
+        public override void SerializeTo(IMessageSerializer serializer)
+        {
+            serializer.BeginMessage(serializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+
+            if (!serializer.IsRos2)
+                serializer.Write(0U);
+            this.stamp.SerializeTo(serializer);
+            serializer.Write(this.frame_id);
+
+            serializer.EndMessage();
         }
 
 #if UNITY_EDITOR

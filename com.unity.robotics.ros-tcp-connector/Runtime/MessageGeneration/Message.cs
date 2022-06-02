@@ -12,6 +12,10 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             throw new NotImplementedException("Your message class needs to be rebuilt");
         }
+        public virtual void SerializeTo(IMessageSerializer serializer)// where T : IMessageSerializer
+        {
+            throw new NotImplementedException("Your message class needs to be rebuilt");
+        }
 
         public virtual string RosMessageName => throw new NotImplementedException();
         public string MessageType => RosMessageName;

@@ -106,7 +106,7 @@ namespace Unity.Robotics.ROSTCPConnector
             return result;
         }
 
-        void SendMessageWithStream(IMessageSerializer messageSerializer, Stream stream, Message message)
+        void SendMessageWithStream(MessageSerializer messageSerializer, Stream stream, Message message)
         {
             messageSerializer.SendMessage(TopicName, message, stream);
         }
@@ -121,7 +121,7 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        public override SendToState SendInternal(IMessageSerializer messageSerializer, Stream stream)
+        public override SendToState SendInternal(MessageSerializer messageSerializer, Stream stream)
         {
             SendToState sendToState = GetMessageToSend(out Message toSend);
             if (sendToState == SendToState.Normal)

@@ -6,7 +6,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public interface IMessageSerializer
     {
-        byte[] SerializeMessage(string topic, Message msg);
-        void SendMessage(string topic, Message msg, System.IO.Stream outStream);
+        //byte[] SerializeMessage(string topic, Message msg);
+        //void SendMessage(string topic, Message msg, System.IO.Stream outStream);
+        bool IsRos2 { get; }
+        void BeginMessage(string[] fieldNames);
+        void Write(string data);
+        void Write(uint data);
+        void Write(int data);
+        void Write(double[] data);
+        void Write(bool data);
+        void EndMessage();
     }
 }
