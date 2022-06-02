@@ -18,9 +18,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public bool IsRos2 { get; private set; }
 #if ROS2
-        bool canUseJsonUtility => false;//IsRos2;
+        bool canUseJsonUtility => IsRos2;
 #else
-        bool canUseJsonUtility => false;//!IsRos2;
+        bool canUseJsonUtility => !IsRos2;
 #endif
 
         struct MessageInProgress
