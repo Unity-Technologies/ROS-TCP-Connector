@@ -115,7 +115,7 @@ namespace UnitTests
         public T MessageRoundTrip<T>(T inMsg, Func<MessageDeserializer, T> deserialize) where T : Message
         {
             RosBinarySerializer ser = new RosBinarySerializer(false);
-            ser.SerializeMessage(inMsg);
+            ser.WriteMessageWithHeader(inMsg);
             MessageDeserializer deser = new MessageDeserializer(false);
             deser.InitWithBuffer(ser.GetBytes());
             return deserialize(deser);

@@ -43,11 +43,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_ListOfSerializations.Clear();
         }
 
-        public void SendString(string topic, string payload, Stream outStream)
+        public void SendSyscommand(string topic, string payload, Stream outStream)
         {
             Clear();
             Write(topic);
-            WriteUnaligned(payload);
+            m_AlignmentOffset = 0;
+            Write(payload);
             SendTo(outStream);
         }
 
@@ -55,7 +56,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             Clear();
             Write(topic);
-            SerializeMessageWithLength(msg);
+            WriteMessageWithLengthAndHeader(msg);
             return GetBytes();
         }
 
@@ -63,11 +64,11 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             Clear();
             Write(topic);
-            SerializeMessageWithLength(msg);
+            WriteMessageWithLengthAndHeader(msg);
             SendTo(outStream);
         }
 
-        public void SerializeMessageWithLength(Message message)
+        public void WriteMessageWithLengthAndHeader(Message message)
         {
             // insert a gap to put the length into
             int lengthIndex = m_ListOfSerializations.Count;
@@ -75,13 +76,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_LengthCorrection += 4;
             int preambleLength = Length;
 
-            SerializeMessage(message);
+            WriteMessageWithHeader(message);
 
             // fill in the gap, now that we know the length
             m_ListOfSerializations[lengthIndex] = BitConverter.GetBytes(Length - preambleLength);
         }
 
-        public void SerializeMessage(Message message)
+        public void WriteMessageWithHeader(Message message)
         {
             // insert the ros2 header
             if (IsRos2)
@@ -134,9 +135,9 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
         }
 
-        public void Write(Message message)
+        void WriteLength<T>(T[] values)
         {
-            message.SerializeTo(this);
+            Write(values.Length);
         }
 
         public void Write(bool value)
@@ -145,89 +146,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += sizeof(bool);
         }
 
-        public void Write(byte value)
-        {
-            m_ListOfSerializations.Add(new byte[] { value });
-            m_AlignmentOffset += sizeof(byte);
-        }
-
-        public void Write(sbyte value)
-        {
-            m_ListOfSerializations.Add(new byte[] { (byte)value });
-            m_AlignmentOffset += sizeof(sbyte);
-        }
-
-        public void Write(short value)
-        {
-            Align(sizeof(short));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(short);
-        }
-
-        public void Write(ushort value)
-        {
-            Align(sizeof(ushort));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(ushort);
-        }
-
-        public void Write(int value)
-        {
-            Align(sizeof(int));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(int);
-        }
-
-        public void Write(uint value)
-        {
-            Align(sizeof(uint));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(uint);
-        }
-
-        public void Write(long value)
-        {
-            Align(sizeof(long));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(long);
-        }
-
-        public void Write(ulong value)
-        {
-            Align(sizeof(ulong));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(ulong);
-        }
-
-        public void Write(float value)
-        {
-            Align(sizeof(float));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(float);
-        }
-
-        public void Write(double value)
-        {
-            Align(sizeof(double));
-            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
-            m_AlignmentOffset += sizeof(double);
-        }
-
-        public void WriteLength<T>(T[] values)
-        {
-            Write(values.Length);
-        }
-
-        public void Write<T>(T[] values) where T : Message
-        {
-            foreach (T entry in values)
-            {
-                entry.SerializeTo(this);
-            }
-        }
-
         public void Write(bool[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(bool[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -237,8 +164,21 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += values.Length;
         }
 
+        public void Write(byte value)
+        {
+            m_ListOfSerializations.Add(new byte[] { value });
+            m_AlignmentOffset += sizeof(byte);
+        }
+
         public void Write(byte[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(byte[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -246,8 +186,21 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += values.Length;
         }
 
+        public void Write(sbyte value)
+        {
+            m_ListOfSerializations.Add(new byte[] { (byte)value });
+            m_AlignmentOffset += sizeof(sbyte);
+        }
+
         public void Write(sbyte[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(sbyte[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -257,8 +210,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(short value)
+        {
+            Align(sizeof(short));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(short);
+        }
+
         public void Write(short[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(short[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -269,8 +236,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(ushort value)
+        {
+            Align(sizeof(ushort));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(ushort);
+        }
+
         public void Write(ushort[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(ushort[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -281,8 +262,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(int value)
+        {
+            Align(sizeof(int));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(int);
+        }
+
         public void Write(int[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(int[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -293,8 +288,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(uint value)
+        {
+            Align(sizeof(uint));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(uint);
+        }
+
         public void Write(uint[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(uint[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -305,8 +314,74 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset += buffer.Length;
         }
 
+        public void Write(long value)
+        {
+            Align(sizeof(long));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(long);
+        }
+
+        public void Write(long[] values)
+        {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(long[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
+            if (values.Length == 0)
+                return;
+
+            Align(sizeof(long));
+            byte[] buffer = new byte[values.Length * sizeof(long)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
+        }
+
+        public void Write(ulong value)
+        {
+            Align(sizeof(ulong));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(ulong);
+        }
+
+        public void Write(ulong[] values)
+        {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(ulong[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
+            if (values.Length == 0)
+                return;
+
+            Align(sizeof(ulong));
+            byte[] buffer = new byte[values.Length * sizeof(ulong)];
+            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
+            m_ListOfSerializations.Add(buffer);
+            m_AlignmentOffset += buffer.Length;
+        }
+
+        public void Write(float value)
+        {
+            Align(sizeof(float));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(float);
+        }
+
         public void Write(float[] values)
         {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(float[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
             if (values.Length == 0)
                 return;
 
@@ -315,6 +390,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
             m_ListOfSerializations.Add(buffer);
             m_AlignmentOffset += buffer.Length;
+        }
+
+        public void Write(double value)
+        {
+            Align(sizeof(double));
+            m_ListOfSerializations.Add(BitConverter.GetBytes(value));
+            m_AlignmentOffset += sizeof(double);
         }
 
         public void Write(double[] values)
@@ -331,30 +413,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
             Align(sizeof(double));
             byte[] buffer = new byte[fixedLength * sizeof(double)];
-            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
-            m_ListOfSerializations.Add(buffer);
-            m_AlignmentOffset += buffer.Length;
-        }
-
-        public void Write(long[] values)
-        {
-            if (values.Length == 0)
-                return;
-
-            Align(sizeof(long));
-            byte[] buffer = new byte[values.Length * sizeof(long)];
-            Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
-            m_ListOfSerializations.Add(buffer);
-            m_AlignmentOffset += buffer.Length;
-        }
-
-        public void Write(ulong[] values)
-        {
-            if (values.Length == 0)
-                return;
-
-            Align(sizeof(ulong));
-            byte[] buffer = new byte[values.Length * sizeof(ulong)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
             m_ListOfSerializations.Add(buffer);
             m_AlignmentOffset += buffer.Length;
@@ -383,33 +441,37 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             }
         }
 
-        public void WriteUnaligned(string inputString)
+        public void Write(string[] values)
         {
-            byte[] encodedString = Encoding.UTF8.GetBytes(inputString);
-
-            if (!IsRos2)
-            {
-                m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length));
-                m_ListOfSerializations.Add(encodedString);
-
-                m_AlignmentOffset += 4 + encodedString.Length;
-            }
-            else
-            {
-                // ROS2 strings are 4-byte aligned, and padded with a null byte at the end
-                m_ListOfSerializations.Add(BitConverter.GetBytes(encodedString.Length + 1));
-                m_ListOfSerializations.Add(encodedString);
-                m_ListOfSerializations.Add(k_NullByte);
-
-                m_AlignmentOffset += 4 + encodedString.Length + 1;
-            }
+            WriteLength(values);
+            Write(values, values.Length);
         }
 
-        public void Write(string[] values)
+        public void Write(string[] values, int fixedLength)
         {
             foreach (string entry in values)
             {
                 Write(entry);
+            }
+        }
+
+        public void Write(Message message)
+        {
+            message.SerializeTo(this);
+        }
+
+        public void Write<T>(T[] values) where T : Message
+        {
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write<T>(T[] values, int fixedLength) where T : Message
+        {
+            Debug.Assert(values.Length == fixedLength);
+            foreach (T entry in values)
+            {
+                entry.SerializeTo(this);
             }
         }
 

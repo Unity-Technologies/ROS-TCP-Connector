@@ -38,7 +38,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (json != null)
             {
-                messageSerializer.SendString(command, json, stream);
+                messageSerializer.SendSyscommand(command, json, stream);
             }
             return SendToState.Normal;
         }

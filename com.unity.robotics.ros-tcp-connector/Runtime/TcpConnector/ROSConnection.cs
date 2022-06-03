@@ -1025,7 +1025,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         static void SendSysCommandImmediate(string command, object param, [NotNull] RosBinarySerializer messageSerializer, [NotNull] NetworkStream stream)
         {
-            messageSerializer.SendString(command, JsonUtility.ToJson(param), stream);
+            messageSerializer.SendSyscommand(command, JsonUtility.ToJson(param), stream);
         }
 
         public void QueueSysCommand(string command, object param)
