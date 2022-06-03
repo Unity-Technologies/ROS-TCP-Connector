@@ -22,7 +22,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public IMessageSerializer CreateSerializer()
         {
-            return new MessageSerializer(m_IsRos2);
+            return new RosBinarySerializer(m_IsRos2);
         }
     }
 }

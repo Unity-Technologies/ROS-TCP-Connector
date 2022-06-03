@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
-    public class MessageSerializer : IMessageSerializer
+    public class RosBinarySerializer : IMessageSerializer
     {
         // static data to insert into the serialization list, so that we don't have to alloc
         static readonly byte[] k_Ros2Header = new byte[] { 0, 1, 0, 0 };
@@ -31,7 +31,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         List<byte[]> m_ListOfSerializations = new List<byte[]>();
         public bool IsRos2 { get; private set; }
 
-        public MessageSerializer(bool isRos2)
+        public RosBinarySerializer(bool isRos2)
         {
             this.IsRos2 = isRos2;
         }
@@ -41,6 +41,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             m_AlignmentOffset = 0;
             m_LengthCorrection = 0;
             m_ListOfSerializations.Clear();
+        }
+
+        public void SendString(string topic, string payload, Stream outStream)
+        {
+            Clear();
+            Write(topic);
+            WriteUnaligned(payload);
+            SendTo(outStream);
         }
 
         public byte[] SerializeMessage(string topic, Message msg)
@@ -107,7 +115,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return result;
         }
 
-        public void SendTo(System.IO.Stream stream)
+        public void SendTo(Stream stream)
         {
             foreach (byte[] statement in m_ListOfSerializations)
                 stream.Write(statement, 0, statement.Length);
@@ -311,11 +319,18 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public void Write(double[] values)
         {
-            if (values.Length == 0)
+            WriteLength(values);
+            Write(values, values.Length);
+        }
+
+        public void Write(double[] values, int fixedLength)
+        {
+            Debug.Assert(values.Length == fixedLength);
+            if (fixedLength == 0)
                 return;
 
             Align(sizeof(double));
-            byte[] buffer = new byte[values.Length * sizeof(double)];
+            byte[] buffer = new byte[fixedLength * sizeof(double)];
             Buffer.BlockCopy(values, 0, buffer, 0, buffer.Length);
             m_ListOfSerializations.Add(buffer);
             m_AlignmentOffset += buffer.Length;

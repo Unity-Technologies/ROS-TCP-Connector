@@ -36,11 +36,6 @@ namespace RosMessageTypes.Std
             deserializer.Read(out this.data);
         }
 
-        public override void SerializeTo(MessageSerializer serializer)
-        {
-            serializer.Write(this.data);
-        }
-
         static string[] fieldNames = new string[] { "data" };
 
         public override void SerializeTo(IMessageSerializer serializer)

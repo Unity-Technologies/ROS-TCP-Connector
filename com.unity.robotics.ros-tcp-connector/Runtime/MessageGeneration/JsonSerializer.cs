@@ -53,8 +53,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void BeginMessage(string[] fieldNames)
         {
-            if (m_MessageStack.Count > 0)
-                WriteFieldName();
             m_MessageStack.Push(new MessageInProgress { fieldNames = fieldNames });
             m_Builder.Append("{");
         }
@@ -70,20 +68,16 @@ namespace Unity.Robotics.ROSTCPConnector
             m_MessageStack.Push(current);
         }
 
-        [System.Serializable]
-        struct StringContainer
+        public void Write(Message msg)
         {
-            public string s;
+            WriteFieldName();
+            msg.SerializeTo(this);
         }
 
         public void Write(string data)
         {
             WriteFieldName();
-            m_Builder.Append('"' + data + '"'); // JsonConvert.ToString(data));
-            //string escapedJson = JsonUtility.ToJson(new StringContainer { s = data });
-            //string escaped = escapedJson.Substring(5, escapedJson.Length-6);
-            //m_Builder.Append(escaped);
-            //m_Builder.Append(JsonConvert.ToString(data));
+            m_Builder.Append(JsonConvert.ToString(data));
         }
 
         public void Write(uint data)
@@ -122,6 +116,12 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 m_Builder.Append("]");
             }
+        }
+
+        public void Write(double[] data, int fixedLength)
+        {
+            Debug.Assert(data.Length == fixedLength);
+            Write(data);
         }
 
         public void EndMessage()

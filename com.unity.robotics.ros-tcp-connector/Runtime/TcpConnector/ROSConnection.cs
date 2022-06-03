@@ -130,9 +130,7 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Topics.TryGetValue(topic, out info) && info.HasSubscriberCallback;
         }
 
-        ISerializationProvider m_SerializationProvider;
-        public ISerializationProvider SerializationProvider { get => m_SerializationProvider; set => m_SerializationProvider = value; }
-        MessageSerializer m_MessageSerializer;
+        RosBinarySerializer m_MessageSerializer;
         MessageDeserializer m_MessageDeserializer;
 
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
@@ -535,14 +533,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
-            m_SerializationProvider = new RosSerializationProvider(m_IsRos2);
-            m_MessageDeserializer = (MessageDeserializer)m_SerializationProvider.CreateDeserializer();
-            m_MessageSerializer = (MessageSerializer)m_SerializationProvider.CreateSerializer();
+            m_MessageDeserializer = new MessageDeserializer(m_IsRos2);
+            m_MessageSerializer = new RosBinarySerializer(m_IsRos2);
 
             Task.Run(() => ConnectionThread(
                 RosIPAddress,
                 RosPort,
-                (MessageSerializer)m_SerializationProvider.CreateSerializer(),
+                new RosBinarySerializer(m_IsRos2),
                 m_NetworkTimeoutSeconds,
                 m_KeepaliveTime,
                 (int)(m_SleepTimeSeconds * 1000.0f),
@@ -811,7 +808,7 @@ namespace Unity.Robotics.ROSTCPConnector
         static async Task ConnectionThread(
             string rosIPAddress,
             int rosPort,
-            MessageSerializer messageSerializer,
+            RosBinarySerializer messageSerializer,
             float networkTimeoutSeconds,
             float keepaliveTime,
             int sleepMilliseconds,
@@ -1026,9 +1023,9 @@ namespace Unity.Robotics.ROSTCPConnector
             SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
         }
 
-        static void SendSysCommandImmediate(string command, object param, [NotNull] MessageSerializer messageSerializer, [NotNull] NetworkStream stream)
+        static void SendSysCommandImmediate(string command, object param, [NotNull] RosBinarySerializer messageSerializer, [NotNull] NetworkStream stream)
         {
-            messageSerializer.SendMessage(command, new RosMessageTypes.Std.StringMsg(JsonUtility.ToJson(param)), stream);
+            messageSerializer.SendString(command, JsonUtility.ToJson(param), stream);
         }
 
         public void QueueSysCommand(string command, object param)

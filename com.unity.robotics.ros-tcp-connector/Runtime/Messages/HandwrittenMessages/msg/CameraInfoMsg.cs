@@ -213,22 +213,6 @@ namespace RosMessageTypes.Sensor
             this.roi = RegionOfInterestMsg.Deserialize(deserializer);
         }
 
-        public override void SerializeTo(MessageSerializer serializer)
-        {
-            serializer.Write(this.header);
-            serializer.Write(this.height);
-            serializer.Write(this.width);
-            serializer.Write(this.distortion_model);
-            serializer.WriteLength(this.d);
-            serializer.Write(this.d);
-            serializer.Write(this.k);
-            serializer.Write(this.r);
-            serializer.Write(this.p);
-            serializer.Write(this.binning_x);
-            serializer.Write(this.binning_y);
-            serializer.Write(this.roi);
-        }
-
         public override string ToString()
         {
             return "CameraInfoMsg: " +
@@ -252,17 +236,17 @@ namespace RosMessageTypes.Sensor
         {
             serializer.BeginMessage(serializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
 
-            this.header.SerializeTo(serializer);
+            serializer.Write(this.header);
             serializer.Write(this.height);
             serializer.Write(this.width);
             serializer.Write(this.distortion_model);
             serializer.Write(this.D);
-            serializer.Write(this.K);
-            serializer.Write(this.R);
-            serializer.Write(this.P);
+            serializer.Write(this.K, 9);
+            serializer.Write(this.R, 9);
+            serializer.Write(this.P, 12);
             serializer.Write(this.binning_x);
             serializer.Write(this.binning_y);
-            this.roi.SerializeTo(serializer);
+            serializer.Write(this.roi);
 
             serializer.EndMessage();
         }

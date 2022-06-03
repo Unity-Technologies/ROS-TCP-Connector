@@ -60,15 +60,6 @@ namespace RosMessageTypes.Std
             deserializer.Read(out this.frame_id);
         }
 
-        public override void SerializeTo(MessageSerializer serializer)
-        {
-            if (!serializer.IsRos2)
-                serializer.Write(0U);
-
-            serializer.Write(stamp);
-            serializer.Write(this.frame_id);
-        }
-
         public override string ToString()
         {
             return "Header: " +

@@ -8,10 +8,6 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public class Message
     {
-        public virtual void SerializeTo(MessageSerializer state)
-        {
-            throw new NotImplementedException("Your message class needs to be rebuilt");
-        }
         public virtual void SerializeTo(IMessageSerializer serializer)// where T : IMessageSerializer
         {
             throw new NotImplementedException("Your message class needs to be rebuilt");
@@ -21,6 +17,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public string MessageType => RosMessageName;
 
         // The following should never be used, they're here for backwards compatibility only.
+        public virtual void SerializeTo(MessageSerializer state) => throw new NotImplementedException();
         public virtual List<byte[]> SerializationStatements() => throw new NotImplementedException();
         public virtual int Deserialize(byte[] data, int offset) => throw new NotImplementedException();
         public byte[] Serialize(bool omitMessageSize = true) => throw new NotImplementedException();
