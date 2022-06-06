@@ -60,6 +60,13 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             return GetBytes();
         }
 
+        public byte[] SerializeMessageWithHeader(Message msg)
+        {
+            Clear();
+            WriteMessageWithHeader(msg);
+            return GetBytes();
+        }
+
         public void SendMessage(string topic, Message msg, Stream outStream)
         {
             Clear();

@@ -32,13 +32,7 @@ namespace RosMessageTypes.BuiltinInterfaces
             this.nsecs = nsecs;
         }
 
-        public static TimeMsg Deserialize(MessageDeserializer deserializer) => new TimeMsg(deserializer);
-
-        TimeMsg(MessageDeserializer deserializer)
-        {
-            deserializer.Read(out this.secs);
-            deserializer.Read(out this.nsecs);
-        }
+        public static TimeMsg Deserialize(MessageDeserializer deserializer) => throw new NotImplementedException();
 
         public override void SerializeTo(MessageSerializer serializer)
         {
@@ -104,6 +98,16 @@ namespace RosMessageTypes.BuiltinInterfaces
         static string[] ros1FieldNames = new string[] { "secs", "nsecs" };
         static string[] ros2FieldNames = new string[] { "sec", "nanosec" };
 
+        public static TimeMsg DeserializeFrom(IMessageDeserializer deserializer) => new TimeMsg(deserializer);
+
+        TimeMsg(IMessageDeserializer deserializer)
+        {
+            deserializer.BeginMessage(deserializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+            deserializer.Read(out this.secs);
+            deserializer.Read(out this.nsecs);
+            deserializer.EndMessage();
+        }
+
         public override void SerializeTo(IMessageSerializer serializer)
         {
             serializer.BeginMessage(serializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
@@ -124,7 +128,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

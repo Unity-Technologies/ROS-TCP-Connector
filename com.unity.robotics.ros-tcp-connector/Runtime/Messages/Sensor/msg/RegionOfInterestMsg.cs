@@ -53,15 +53,18 @@ namespace RosMessageTypes.Sensor
             this.do_rectify = do_rectify;
         }
 
-        public static RegionOfInterestMsg Deserialize(MessageDeserializer deserializer) => new RegionOfInterestMsg(deserializer);
+        public static RegionOfInterestMsg Deserialize(MessageDeserializer deserializer) => throw new NotImplementedException();
+        public static RegionOfInterestMsg DeserializeFrom(IMessageDeserializer deserializer) => new RegionOfInterestMsg(deserializer);
 
-        private RegionOfInterestMsg(MessageDeserializer deserializer)
+        private RegionOfInterestMsg(IMessageDeserializer deserializer)
         {
+            deserializer.BeginMessage(fieldNames);
             deserializer.Read(out this.x_offset);
             deserializer.Read(out this.y_offset);
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.do_rectify);
+            deserializer.EndMessage();
         }
 
         public override void SerializeTo(MessageSerializer serializer)
@@ -104,7 +107,7 @@ namespace RosMessageTypes.Sensor
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

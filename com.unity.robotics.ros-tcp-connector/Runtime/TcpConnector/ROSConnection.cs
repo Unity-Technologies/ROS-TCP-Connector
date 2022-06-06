@@ -131,7 +131,7 @@ namespace Unity.Robotics.ROSTCPConnector
         }
 
         RosBinarySerializer m_MessageSerializer;
-        MessageDeserializer m_MessageDeserializer;
+        RosBinaryDeserializer m_MessageDeserializer;
 
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
@@ -232,7 +232,7 @@ namespace Unity.Robotics.ROSTCPConnector
         // Version for when the message type is unknown at compile time
         public void SubscribeByMessageName(string topic, string rosMessageName, Action<Message> callback)
         {
-            var constructor = MessageRegistry.GetRosDeserializeFunction(rosMessageName);
+            var constructor = MessageRegistry.GetDeserializeFunction(rosMessageName);
             if (constructor == null)
             {
                 Debug.LogError($"Failed to subscribe to topic {topic} - no class has RosMessageName \"{rosMessageName}\"!");
@@ -405,7 +405,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public InternalAPI(ROSConnection self) { m_Self = self; }
 
-            public MessageDeserializer Deserializer => m_Self.m_MessageDeserializer;
+            public RosBinaryDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
             public void SendSubscriberRegistration(string topic, string rosMessageName, NetworkStream stream = null)
             {
@@ -533,7 +533,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
-            m_MessageDeserializer = new MessageDeserializer(m_IsRos2);
+            m_MessageDeserializer = new RosBinaryDeserializer(m_IsRos2);
             m_MessageSerializer = new RosBinarySerializer(m_IsRos2);
 
             Task.Run(() => ConnectionThread(

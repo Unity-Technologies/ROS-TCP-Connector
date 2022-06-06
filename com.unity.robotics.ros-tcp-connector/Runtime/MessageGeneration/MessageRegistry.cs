@@ -8,12 +8,12 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<MessageDeserializer, Message>>[] s_RosDeserializeFunctionsByName = new Dictionary<string, Func<MessageDeserializer, Message>>[]{
-            new Dictionary<string, Func<MessageDeserializer, Message>>(), // default
-            new Dictionary<string, Func<MessageDeserializer, Message>>(), // response
-            new Dictionary<string, Func<MessageDeserializer, Message>>(), // goal
-            new Dictionary<string, Func<MessageDeserializer, Message>>(), // feedback
-            new Dictionary<string, Func<MessageDeserializer, Message>>(), // result
+        static Dictionary<string, Func<IMessageDeserializer, Message>>[] s_RosDeserializeFunctionsByName = new Dictionary<string, Func<IMessageDeserializer, Message>>[]{
+            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // default
+            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // response
+            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // goal
+            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // feedback
+            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // result
         };
 
         static Dictionary<string, Func<JObject, Message>>[] s_JsonDeserializeFunctionsByName = new Dictionary<string, Func<JObject, Message>>[]{
@@ -26,12 +26,19 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         class RegistryEntry<T>
         {
             public static string s_RosMessageName;
-            public static Func<MessageDeserializer, T> s_RosDeserializeFunction;
+            public static Func<IMessageDeserializer, T> s_RosDeserializeFunction;
             public static MessageSubtopic s_Subtopic;
             public static Func<JObject, T> s_JsonDeserializeFunction;
         }
 
         public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
+        {
+            // TODO: throw NotImplementedException here once generator is working
+            RegistryEntry<T>.s_RosMessageName = rosMessageName;
+            RegistryEntry<T>.s_Subtopic = subtopic;
+        }
+
+        public static void Register<T>(string rosMessageName, Func<IMessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
             RegistryEntry<T>.s_RosMessageName = rosMessageName;
             RegistryEntry<T>.s_RosDeserializeFunction = rosDeserialize;
@@ -45,14 +52,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
             s_JsonDeserializeFunctionsByName[(int)subtopic][rosMessageName] = genericDeserialize;
         }
 
-        public static Func<MessageDeserializer, Message> GetRosDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
+        public static Func<IMessageDeserializer, Message> GetDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
-            Func<MessageDeserializer, Message> result;
+            Func<IMessageDeserializer, Message> result;
             s_RosDeserializeFunctionsByName[(int)subtopic].TryGetValue(rosMessageName, out result);
             return result;
         }
 
-        public static Func<MessageDeserializer, Message> GetRosDeserializeFunction<T>() where T : Message
+        public static Func<IMessageDeserializer, Message> GetDeserializeFunction<T>() where T : Message
         {
             return RegistryEntry<T>.s_RosDeserializeFunction;
         }

@@ -189,11 +189,14 @@ namespace RosMessageTypes.Sensor
             this.roi = roi;
         }
 
-        public static CameraInfoMsg Deserialize(MessageDeserializer deserializer) => new CameraInfoMsg(deserializer);
+        public static CameraInfoMsg Deserialize(MessageDeserializer deserializer) => throw new NotImplementedException();
+        public static CameraInfoMsg DeserializeFrom(IMessageDeserializer deserializer) => new CameraInfoMsg(deserializer);
 
-        private CameraInfoMsg(MessageDeserializer deserializer)
+        private CameraInfoMsg(IMessageDeserializer deserializer)
         {
-            this.header = Std.HeaderMsg.Deserialize(deserializer);
+            deserializer.BeginMessage(deserializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+
+            deserializer.Read(out this.header);
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.distortion_model);
@@ -203,14 +206,16 @@ namespace RosMessageTypes.Sensor
             deserializer.Read(out this.r, sizeof(double), 9);
             deserializer.Read(out this.p, sizeof(double), 12);
 #else
-            deserializer.Read(out this.D, sizeof(double), deserializer.ReadLength());
-            deserializer.Read(out this.K, sizeof(double), 9);
-            deserializer.Read(out this.R, sizeof(double), 9);
-            deserializer.Read(out this.P, sizeof(double), 12);
+            deserializer.Read(out this.D);
+            deserializer.Read(out this.K, 9);
+            deserializer.Read(out this.R, 9);
+            deserializer.Read(out this.P, 12);
 #endif
             deserializer.Read(out this.binning_x);
             deserializer.Read(out this.binning_y);
-            this.roi = RegionOfInterestMsg.Deserialize(deserializer);
+            deserializer.Read(out this.roi);
+
+            deserializer.EndMessage();
         }
 
         public override string ToString()
@@ -258,7 +263,7 @@ namespace RosMessageTypes.Sensor
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

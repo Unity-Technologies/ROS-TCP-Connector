@@ -37,7 +37,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_Builder.Clear();
         }
 
-        public string GetJsonString(Message msg)
+        public string ToJsonString(Message msg)
         {
             if (canUseJsonUtility)
             {

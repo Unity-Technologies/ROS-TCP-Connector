@@ -163,7 +163,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 stopwatch.Start();
                 for (int Idx = 0; Idx < numRepeats; ++Idx)
                 {
-                    msgjson = m_Connection.m_JsonSerializer.GetJsonString(msg);
+                    msgjson = m_Connection.m_JsonSerializer.ToJsonString(msg);
                 }
                 stopwatch.Stop();
                 Debug.Log("Mine serialized in " + stopwatch.ElapsedMilliseconds + "ms");

@@ -48,16 +48,21 @@ namespace RosMessageTypes.Std
             this.frame_id = frame_id;
         }
 
-        public static HeaderMsg Deserialize(MessageDeserializer deserializer) => new HeaderMsg(deserializer);
+        public static HeaderMsg Deserialize(MessageDeserializer deserializer) => throw new NotImplementedException();
+        public static HeaderMsg DeserializeFrom(IMessageDeserializer deserializer) => new HeaderMsg(deserializer);
 
-        HeaderMsg(MessageDeserializer deserializer)
+        HeaderMsg(IMessageDeserializer deserializer)
         {
+            deserializer.BeginMessage(deserializer.IsRos2 ? ros2FieldNames : ros1FieldNames);
+
             uint seq_unused;
             if (!deserializer.IsRos2)
                 deserializer.Read(out seq_unused);
 
-            this.stamp = BuiltinInterfaces.TimeMsg.Deserialize(deserializer);
+            deserializer.Read(out this.stamp);
             deserializer.Read(out this.frame_id);
+
+            deserializer.EndMessage();
         }
 
         public override string ToString()
@@ -76,7 +81,7 @@ namespace RosMessageTypes.Std
 
             if (!serializer.IsRos2)
                 serializer.Write(0U);
-            this.stamp.SerializeTo(serializer);
+            serializer.Write(this.stamp);
             serializer.Write(this.frame_id);
 
             serializer.EndMessage();
@@ -89,7 +94,7 @@ namespace RosMessageTypes.Std
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }
