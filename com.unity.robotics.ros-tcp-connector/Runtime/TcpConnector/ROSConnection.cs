@@ -193,7 +193,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
-            string rosMessageName = MessageRegistry.GetRosMessageName<T>();
+            string rosMessageName = MessageRegistry.GetMessageTypeString<T>();
             AddSubscriberInternal(topic, rosMessageName, (Message msg) =>
             {
                 if (msg.RosMessageName == rosMessageName)
@@ -263,7 +263,7 @@ namespace Unity.Robotics.ROSTCPConnector
             where TRequest : Message
             where TResponse : Message
         {
-            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<TRequest>();
+            string rosMessageName = rosMessageName = MessageRegistry.GetMessageTypeString<TRequest>();
 
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
@@ -285,7 +285,7 @@ namespace Unity.Robotics.ROSTCPConnector
             where TRequest : Message
             where TResponse : Message
         {
-            string rosMessageName = rosMessageName = MessageRegistry.GetRosMessageName<TRequest>();
+            string rosMessageName = rosMessageName = MessageRegistry.GetMessageTypeString<TRequest>();
 
             RosTopicState info;
             if (!m_Topics.TryGetValue(topic, out info))
@@ -357,13 +357,13 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public IPublisher RegisterPublisher<T>(string rosTopicName) where T : Message
         {
-            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), null, null);
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetMessageTypeString<T>(), null, null);
         }
 
         public IPublisher RegisterPublisher<T>(string rosTopicName,
             int? queue_size = null, bool? latch = null) where T : Message
         {
-            return RegisterPublisher(rosTopicName, MessageRegistry.GetRosMessageName<T>(), queue_size, latch);
+            return RegisterPublisher(rosTopicName, MessageRegistry.GetMessageTypeString<T>(), queue_size, latch);
         }
 
         public IPublisher RegisterPublisher(string rosTopicName, string rosMessageName)
@@ -384,7 +384,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void RegisterRosService<TRequest, TResponse>(string topic) where TRequest : Message where TResponse : Message
         {
-            RegisterRosService(topic, MessageRegistry.GetRosMessageName<TRequest>(), MessageRegistry.GetRosMessageName<TResponse>());
+            RegisterRosService(topic, MessageRegistry.GetMessageTypeString<TRequest>(), MessageRegistry.GetMessageTypeString<TResponse>());
         }
 
         public void RegisterRosService(string topic, string requestMessageName, string responseMessageName, int? queueSize = null)

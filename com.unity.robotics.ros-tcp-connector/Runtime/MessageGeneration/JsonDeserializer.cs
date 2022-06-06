@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
-public class JsonDeserializer : IMessageDeserializer
+public class JsonDeserializer : IMessageDeserializer, MessageRegistry.IGenericInvokable
 {
     public bool IsRos2 { get; private set; }
 #if ROS2
     bool canUseJsonUtility => IsRos2;
 #else
-    bool canUseJsonUtility => !IsRos2;
+    bool canUseJsonUtility => false;//!IsRos2;
 #endif
 
     struct MessageInProgress
@@ -27,6 +27,34 @@ public class JsonDeserializer : IMessageDeserializer
     public JsonDeserializer(bool isRos2)
     {
         IsRos2 = isRos2;
+    }
+
+    public Message DeserializeMessage(string json, string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
+    {
+        return MessageRegistry.InvokeGeneric(this, json, messageType, subtopic);
+    }
+
+    public Message DeserializeMessage(JObject json, string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
+    {
+        return MessageRegistry.InvokeGeneric(this, json, messageType, subtopic);
+    }
+
+    Message MessageRegistry.IGenericInvokable.Invoke<T>(object jsonObj)
+    {
+        if (jsonObj is JObject jobj)
+        {
+            Init(jobj);
+            return (T)MessageRegistry.GetDeserializeFunction<T>()(this);
+        }
+        else
+        {
+            string json = (string)jsonObj;
+            if (canUseJsonUtility)
+                return JsonUtility.FromJson<T>(json);
+
+            Init(json);
+            return (T)MessageRegistry.GetDeserializeFunction<T>()(this);
+        }
     }
 
     public T DeserializeMessage<T>(string json) where T : Message

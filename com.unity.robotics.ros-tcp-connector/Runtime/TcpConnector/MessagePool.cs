@@ -35,7 +35,7 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (!(message is T))
             {
-                throw new System.ArgumentException($"MessagePool<{MessageRegistry.GetRosMessageName<T>()}> can't store a \"{message.RosMessageName}\" message.");
+                throw new System.ArgumentException($"MessagePool<{MessageRegistry.GetMessageTypeString<T>()}> can't store a \"{message.RosMessageName}\" message.");
             }
 
             AddMessage((T)message);

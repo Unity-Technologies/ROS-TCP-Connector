@@ -17,21 +17,35 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class RosbridgeConnection : MonoBehaviour, IConnection
     {
+#if ROS2
         [SerializeField]
-        bool m_IsRos2;
+        bool m_IsRos2 = true;
+#else
+        [SerializeField]
+        bool m_IsRos2 = false;
+#endif
         [SerializeField]
         string m_Address = "ws://localhost:9090";
         public string Address { get => m_Address; set => m_Address = value; }
 
         WebSocket m_Websocket;
         Queue<string> m_DeferredMessages = new Queue<string>();
+
+        class Subscriber
+        {
+
+            List<Action<Message>> m_Callbacks;
+        }
+
         Dictionary<string, List<Action<Message>>> m_SubscriberCallbacks = new Dictionary<string, List<Action<Message>>>();
         bool m_IsConnected = false;
         JsonSerializer m_JsonSerializer;
+        JsonDeserializer m_JsonDeserializer;
 
         void Awake()
         {
             m_JsonSerializer = new JsonSerializer(m_IsRos2);
+            m_JsonDeserializer = new JsonDeserializer(m_IsRos2);
         }
 
         public async void Connect()
@@ -77,8 +91,7 @@ namespace Unity.Robotics.ROSTCPConnector
                             if (m_SubscriberCallbacks.TryGetValue((string)message["topic"], out callbacks))
                             {
                                 string typename = "std_msgs/String";// (string)message["type"];
-                                Func<JObject, Message> deserializer = MessageRegistry.GetJsonDeserializeFunction(typename);
-                                Message msg = deserializer((JObject)message["msg"]);
+                                Message msg = m_JsonDeserializer.DeserializeMessage((JObject)message["msg"], typename);
                                 foreach (var callback in callbacks)
                                     callback(msg);
                             }
@@ -97,7 +110,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public IPublisher RegisterPublisher<T>(string topic) where T : Message
         {
-            return RegisterPublisher(topic, MessageRegistry.GetRosMessageName<T>());
+            return RegisterPublisher(topic, MessageRegistry.GetMessageTypeString<T>());
         }
 
         public IPublisher RegisterPublisher(string topic, string messageType)
@@ -109,7 +122,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Subscribe<T>(string topic, Action<T> callback) where T : Message
         {
-            Subscribe(topic, MessageRegistry.GetRosMessageName<T>(), (Message msg) => callback((T)msg));
+            Subscribe(topic, MessageRegistry.GetMessageTypeString<T>(), (Message msg) => callback((T)msg));
         }
 
         public void Subscribe(string topic, string messageType, Action<Message> callback)

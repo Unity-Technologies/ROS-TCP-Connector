@@ -31,11 +31,21 @@ namespace RosMessageTypes.Diagnostic
         }
 
         public static KeyValueMsg Deserialize(MessageDeserializer deserializer) => new KeyValueMsg(deserializer);
+        public static KeyValueMsg DeserializeFrom(IMessageDeserializer deserializer) => new KeyValueMsg(deserializer);
 
         private KeyValueMsg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.key);
             deserializer.Read(out this.value);
+        }
+
+        static readonly string[] k_FieldNames = { "key", "value" };
+        private KeyValueMsg(IMessageDeserializer deserializer)
+        {
+            deserializer.BeginMessage(k_FieldNames);
+            deserializer.Read(out this.key);
+            deserializer.Read(out this.value);
+            deserializer.EndMessage();
         }
 
         public override void SerializeTo(MessageSerializer serializer)
@@ -58,7 +68,7 @@ namespace RosMessageTypes.Diagnostic
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

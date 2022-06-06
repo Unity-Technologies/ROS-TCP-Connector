@@ -26,7 +26,7 @@ namespace UnitTests
 
             MessageRegistry.Register(rosMessageName, deserializer);
 
-            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestMessage>());
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetMessageTypeString<TestMessage>());
             Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction<TestMessage>());
             Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction(rosMessageName));
         }
@@ -41,8 +41,8 @@ namespace UnitTests
             MessageRegistry.Register(rosMessageName, deserializer, MessageSubtopic.Default);
             MessageRegistry.Register(rosMessageName, deserializer2, MessageSubtopic.Response);
 
-            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestMessage>());
-            Assert.AreEqual(rosMessageName, MessageRegistry.GetRosMessageName<TestResponse>());
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetMessageTypeString<TestMessage>());
+            Assert.AreEqual(rosMessageName, MessageRegistry.GetMessageTypeString<TestResponse>());
             Assert.AreEqual(MessageSubtopic.Default, MessageRegistry.GetSubtopic<TestMessage>());
             Assert.AreEqual(MessageSubtopic.Response, MessageRegistry.GetSubtopic<TestResponse>());
             Assert.AreEqual(deserializer, MessageRegistry.GetDeserializeFunction<TestMessage>());

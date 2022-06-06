@@ -8,87 +8,94 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 {
     public static class MessageRegistry
     {
-        static Dictionary<string, Func<IMessageDeserializer, Message>>[] s_RosDeserializeFunctionsByName = new Dictionary<string, Func<IMessageDeserializer, Message>>[]{
-            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // default
-            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // response
-            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // goal
-            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // feedback
-            new Dictionary<string, Func<IMessageDeserializer, Message>>(), // result
+        struct RegistryDataByName
+        {
+            public Func<IMessageDeserializer, Message> m_Deserialize;
+            public Func<IGenericInvokable, object, Message> m_GenericInvoke;
+        }
+
+        static Dictionary<string, RegistryDataByName>[] s_RegistryByName = new Dictionary<string, RegistryDataByName>[]{
+            new Dictionary<string, RegistryDataByName>(), // default
+            new Dictionary<string, RegistryDataByName>(), // response
+            new Dictionary<string, RegistryDataByName>(), // goal
+            new Dictionary<string, RegistryDataByName>(), // feedback
+            new Dictionary<string, RegistryDataByName>(), // result
         };
 
-        static Dictionary<string, Func<JObject, Message>>[] s_JsonDeserializeFunctionsByName = new Dictionary<string, Func<JObject, Message>>[]{
-            new Dictionary<string, Func<JObject, Message>>(), // default
-            new Dictionary<string, Func<JObject, Message>>(), // response
-            new Dictionary<string, Func<JObject, Message>>(), // goal
-            new Dictionary<string, Func<JObject, Message>>(), // feedback
-            new Dictionary<string, Func<JObject, Message>>(), // result
-        };
         class RegistryEntry<T>
         {
-            public static string s_RosMessageName;
-            public static Func<IMessageDeserializer, T> s_RosDeserializeFunction;
+            public static string s_MessageType;
+            public static Func<IMessageDeserializer, T> s_DeserializeFunction;
             public static MessageSubtopic s_Subtopic;
-            public static Func<JObject, T> s_JsonDeserializeFunction;
         }
 
-        public static void Register<T>(string rosMessageName, Func<MessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
+        public static void Register<T>(string messageType, Func<MessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
             // TODO: throw NotImplementedException here once generator is working
-            RegistryEntry<T>.s_RosMessageName = rosMessageName;
+            RegistryEntry<T>.s_MessageType = messageType;
             RegistryEntry<T>.s_Subtopic = subtopic;
         }
 
-        public static void Register<T>(string rosMessageName, Func<IMessageDeserializer, T> rosDeserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
+        public static void Register<T>(string messageType, Func<IMessageDeserializer, T> deserialize, MessageSubtopic subtopic = MessageSubtopic.Default) where T : Message
         {
-            RegistryEntry<T>.s_RosMessageName = rosMessageName;
-            RegistryEntry<T>.s_RosDeserializeFunction = rosDeserialize;
+            RegistryEntry<T>.s_MessageType = messageType;
+            RegistryEntry<T>.s_DeserializeFunction = deserialize;
             RegistryEntry<T>.s_Subtopic = subtopic;
-            Func<JObject, T> genericDeserialize = (JObject json) => json.ToObject<T>();
-            RegistryEntry<T>.s_JsonDeserializeFunction = genericDeserialize;
 
-            if (s_RosDeserializeFunctionsByName[(int)subtopic].ContainsKey(rosMessageName))
-                Debug.LogWarning($"More than one message was registered as \"{rosMessageName}\" \"{subtopic}\"");
-            s_RosDeserializeFunctionsByName[(int)subtopic][rosMessageName] = rosDeserialize;
-            s_JsonDeserializeFunctionsByName[(int)subtopic][rosMessageName] = genericDeserialize;
+            if (s_RegistryByName[(int)subtopic].ContainsKey(messageType))
+                Debug.LogWarning($"More than one message was registered as \"{messageType}\" \"{subtopic}\"");
+            s_RegistryByName[(int)subtopic][messageType] = new RegistryDataByName
+            {
+                m_Deserialize = deserialize,
+                m_GenericInvoke = (invokable, arg) => invokable.Invoke<T>(arg)
+            };
         }
 
-        public static Func<IMessageDeserializer, Message> GetDeserializeFunction(string rosMessageName, MessageSubtopic subtopic = MessageSubtopic.Default)
+        public static Func<IMessageDeserializer, Message> GetDeserializeFunction(string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
-            Func<IMessageDeserializer, Message> result;
-            s_RosDeserializeFunctionsByName[(int)subtopic].TryGetValue(rosMessageName, out result);
-            return result;
+            RegistryDataByName data;
+            if (!s_RegistryByName[(int)subtopic].TryGetValue(messageType, out data))
+            {
+                Debug.LogError($"Can't find MessageRegistry entry for '{messageType}'!");
+            }
+            return data.m_Deserialize;
         }
 
         public static Func<IMessageDeserializer, Message> GetDeserializeFunction<T>() where T : Message
         {
-            return RegistryEntry<T>.s_RosDeserializeFunction;
+            return RegistryEntry<T>.s_DeserializeFunction;
         }
 
-        public static Func<JObject, Message> GetJsonDeserializeFunction<T>() where T : Message
+        public static string GetMessageTypeString<T>() where T : Message
         {
-            return RegistryEntry<T>.s_JsonDeserializeFunction;
-        }
-
-        public static Func<JObject, Message> GetJsonDeserializeFunction(string messageName, MessageSubtopic subtopic = MessageSubtopic.Default)
-        {
-            Func<JObject, Message> result;
-            s_JsonDeserializeFunctionsByName[(int)subtopic].TryGetValue(messageName, out result);
-            return result;
-        }
-
-        public static string GetRosMessageName<T>() where T : Message
-        {
-            if (string.IsNullOrEmpty(RegistryEntry<T>.s_RosMessageName))
+            if (string.IsNullOrEmpty(RegistryEntry<T>.s_MessageType))
             {
                 Debug.LogError($"Can't find MessageRegistry entry for {typeof(T)}! If Register<T> is called before " +
                                $"Start(), please specify ROS message name, or move initialization to Start().");
             }
-            return RegistryEntry<T>.s_RosMessageName;
+            return RegistryEntry<T>.s_MessageType;
         }
 
         public static MessageSubtopic GetSubtopic<T>() where T : Message
         {
             return RegistryEntry<T>.s_Subtopic;
         }
+
+        public interface IGenericInvokable
+        {
+            Message Invoke<T>(object arg) where T : Message;
+        }
+
+        public static Message InvokeGeneric(IGenericInvokable invokable, object arg, string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
+        {
+            RegistryDataByName data;
+            if (!s_RegistryByName[(int)subtopic].TryGetValue(messageType, out data))
+            {
+                Debug.LogError($"Can't find MessageRegistry entry for '{messageType}'!");
+                return null;
+            }
+            return data.m_GenericInvoke(invokable, arg);
+        }
+
     }
 }

@@ -49,6 +49,7 @@ namespace RosMessageTypes.Diagnostic
         }
 
         public static DiagnosticStatusMsg Deserialize(MessageDeserializer deserializer) => new DiagnosticStatusMsg(deserializer);
+        public static DiagnosticStatusMsg DeserializeFrom(IMessageDeserializer deserializer) => new DiagnosticStatusMsg(deserializer);
 
         private DiagnosticStatusMsg(MessageDeserializer deserializer)
         {
@@ -57,6 +58,19 @@ namespace RosMessageTypes.Diagnostic
             deserializer.Read(out this.message);
             deserializer.Read(out this.hardware_id);
             deserializer.Read(out this.values, KeyValueMsg.Deserialize, deserializer.ReadLength());
+        }
+
+        static readonly string[] k_FieldNames = { "level", "name", "message", "hardware_id", "values" };
+
+        private DiagnosticStatusMsg(IMessageDeserializer deserializer)
+        {
+            deserializer.BeginMessage(k_FieldNames);
+            deserializer.Read(out this.level);
+            deserializer.Read(out this.name);
+            deserializer.Read(out this.message);
+            deserializer.Read(out this.hardware_id);
+            deserializer.Read(out this.values);
+            deserializer.EndMessage();
         }
 
         public override void SerializeTo(MessageSerializer serializer)
@@ -86,7 +100,7 @@ namespace RosMessageTypes.Diagnostic
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

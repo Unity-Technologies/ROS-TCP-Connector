@@ -33,6 +33,8 @@ public class ConnectionTest : MonoBehaviour
     {
         if (index == 30)
         {
+            index++;
+
             var ser = new JsonSerializer(false);
             var deser = new JsonDeserializer(false);
             //Debug.Log("Round trip: "+deser.DeserializeMessage<HeaderMsg>(ser.ToJsonString(new HeaderMsg(new TimeMsg(123, 456), "hello"))));
@@ -61,6 +63,9 @@ public class ConnectionTest : MonoBehaviour
                         stopwatch.Stop();
                         Debug.Log("Read in "+stopwatch.ElapsedMilliseconds+"ms");*/
         }
-        index++;
+        else
+        {
+            index++;
+        }
     }
 }
