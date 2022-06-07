@@ -30,10 +30,20 @@ namespace RosMessageTypes.Std
         }
 
         public static StringMsg Deserialize(MessageDeserializer deserializer) => new StringMsg(deserializer);
+        public static StringMsg DeserializeFrom(IMessageDeserializer deserializer) => new StringMsg(deserializer);
 
         private StringMsg(MessageDeserializer deserializer)
         {
             deserializer.Read(out this.data);
+        }
+
+        static readonly string[] s_FieldNames = { "data" };
+
+        private StringMsg(IMessageDeserializer deserializer)
+        {
+            deserializer.BeginMessage(s_FieldNames);
+            deserializer.Read(out this.data);
+            deserializer.EndMessage();
         }
 
         static string[] fieldNames = new string[] { "data" };
@@ -58,7 +68,7 @@ namespace RosMessageTypes.Std
 #endif
         public static void Register()
         {
-            MessageRegistry.Register(k_RosMessageName, Deserialize);
+            MessageRegistry.Register(k_RosMessageName, DeserializeFrom);
         }
     }
 }

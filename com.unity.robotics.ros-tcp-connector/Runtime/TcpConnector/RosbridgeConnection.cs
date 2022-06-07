@@ -31,13 +31,7 @@ namespace Unity.Robotics.ROSTCPConnector
         WebSocket m_Websocket;
         Queue<string> m_DeferredMessages = new Queue<string>();
 
-        class Subscriber
-        {
-
-            List<Action<Message>> m_Callbacks;
-        }
-
-        Dictionary<string, List<Action<Message>>> m_SubscriberCallbacks = new Dictionary<string, List<Action<Message>>>();
+        Dictionary<string, RosbridgeSubscriber> m_Subscribers = new Dictionary<string, RosbridgeSubscriber>();
         bool m_IsConnected = false;
         JsonSerializer m_JsonSerializer;
         JsonDeserializer m_JsonDeserializer;
@@ -73,6 +67,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 m_Websocket.SendText(m_DeferredMessages.Dequeue());
             }
+            m_DeferredMessages.Clear();
             m_IsConnected = true;
         }
 
@@ -82,18 +77,17 @@ namespace Unity.Robotics.ROSTCPConnector
             JToken opToken = (string)message["op"];
             if (opToken != null)
             {
+                Debug.Log("Message received, " + opToken);
                 switch ((string)opToken)
                 {
                     case "publish":
                         {
-                            // we subscribed and received a published message
-                            List<Action<Message>> callbacks;
-                            if (m_SubscriberCallbacks.TryGetValue((string)message["topic"], out callbacks))
+                            Debug.Log("Publish received");
+                            // we received a published message from a topic we subscribed to (hopefully)
+                            RosbridgeSubscriber subscriber;
+                            if (m_Subscribers.TryGetValue((string)message["topic"], out subscriber))
                             {
-                                string typename = "std_msgs/String";// (string)message["type"];
-                                Message msg = m_JsonDeserializer.DeserializeMessage((JObject)message["msg"], typename);
-                                foreach (var callback in callbacks)
-                                    callback(msg);
+                                subscriber.OnMessageReceived((JObject)message["msg"]);
                             }
                         }
                         break;
@@ -127,15 +121,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Subscribe(string topic, string messageType, Action<Message> callback)
         {
-            List<Action<Message>> callbacks;
-            if (!m_SubscriberCallbacks.TryGetValue(topic, out callbacks))
+            RosbridgeSubscriber subscriber;
+            if (!m_Subscribers.TryGetValue(topic, out subscriber))
             {
-                callbacks = new List<Action<Message>>();
-                m_SubscriberCallbacks.Add(topic, callbacks);
+                subscriber = new RosbridgeSubscriber(m_JsonDeserializer, messageType);
+                m_Subscribers.Add(topic, subscriber);
                 string json = $"{{\"op\":\"subscribe\",\"topic\":\"{topic}\"}}";//,\"type\":\"{messageType}\"}}";
                 Send(json);
             }
-            callbacks.Add(callback);
+            subscriber.AddCallback(callback);
         }
 
         void Send(string json)
@@ -167,32 +161,40 @@ namespace Unity.Robotics.ROSTCPConnector
                 m_Connection = connection;
             }
 
-            public System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-
             public void Publish(Message msg)
             {
-                string msgjson = "";
-                const int numRepeats = 100000;
-                stopwatch.Start();
-                for (int Idx = 0; Idx < numRepeats; ++Idx)
-                {
-                    msgjson = m_Connection.m_JsonSerializer.ToJsonString(msg);
-                }
-                stopwatch.Stop();
-                Debug.Log("Mine serialized in " + stopwatch.ElapsedMilliseconds + "ms");
-                stopwatch.Reset();
-                string msgjson2 = "";
-                stopwatch.Start();
-                for (int Idx = 0; Idx < numRepeats; ++Idx)
-                {
-                    msgjson2 = JsonUtility.ToJson(msg);
-                }
-                stopwatch.Stop();
-                Debug.Log("JsonUtility serialized in " + stopwatch.ElapsedMilliseconds + "ms");
-                if (msgjson != msgjson2)
-                    Debug.Log("Discrepancy! " + msgjson + "\nvs " + msgjson2);
+                string msgjson = m_Connection.m_JsonSerializer.ToJsonString(msg);
                 string json = $"{{\"op\":\"publish\",\"topic\":\"{m_Topic}\",\"msg\":{msgjson}}}";
                 m_Connection.Send(json);
+            }
+        }
+
+        class RosbridgeSubscriber
+        {
+            Func<JObject, Message> m_Deserialize;
+            public readonly string m_MessageTypeName;
+            List<Action<Message>> m_Callbacks = new List<Action<Message>>();
+
+            public RosbridgeSubscriber(JsonDeserializer messageDeserializer, string messageTypeName)
+            {
+                this.m_MessageTypeName = messageTypeName;
+                var invoker = MessageRegistry.GetGenericInvoker(messageTypeName);
+                m_Deserialize = json => invoker(messageDeserializer, json);
+            }
+
+            public void AddCallback(Action<Message> callback)
+            {
+                m_Callbacks.Add(callback);
+            }
+
+            public void OnMessageReceived(JObject message)
+            {
+                if (m_Callbacks.Count > 0)
+                {
+                    Message msg = m_Deserialize(message);
+                    foreach (var callback in m_Callbacks)
+                        callback(msg);
+                }
             }
         }
     }

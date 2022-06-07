@@ -88,14 +88,22 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static Message InvokeGeneric(IGenericInvokable invokable, object arg, string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
+            Func<IGenericInvokable, object, Message> invoker = GetGenericInvoker(messageType, subtopic);
+            if (invoker != null)
+                return invoker(invokable, arg);
+            else
+                return null;
+        }
+
+        public static Func<IGenericInvokable, object, Message> GetGenericInvoker(string messageType, MessageSubtopic subtopic = MessageSubtopic.Default)
+        {
             RegistryDataByName data;
             if (!s_RegistryByName[(int)subtopic].TryGetValue(messageType, out data))
             {
                 Debug.LogError($"Can't find MessageRegistry entry for '{messageType}'!");
                 return null;
             }
-            return data.m_GenericInvoke(invokable, arg);
+            return data.m_GenericInvoke;
         }
-
     }
 }
