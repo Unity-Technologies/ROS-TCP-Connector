@@ -25,9 +25,9 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool IsPublisherLatched { get; private set; }
         public bool SentPublisherRegistration { get; private set; }
 
-        ROSConnection m_Connection;
-        public ROSConnection Connection => m_Connection;
-        ROSConnection.InternalAPI m_ConnectionInternal;
+        RosEndpointConnection m_Connection;
+        public RosEndpointConnection Connection => m_Connection;
+        RosEndpointConnection.InternalAPI m_ConnectionInternal;
         Func<IMessageDeserializer, Message> m_Deserializer;
 
         Func<Message, Message> m_ServiceImplementation;
@@ -50,7 +50,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
         public float LastMessageSentRealtime => m_LastMessageSentRealtime;
 
-        internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, bool isService, MessageSubtopic subtopic = MessageSubtopic.Default)
+        internal RosTopicState(string topic, string rosMessageName, RosEndpointConnection connection, RosEndpointConnection.InternalAPI connectionInternal, bool isService, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             m_Topic = topic;
             m_Subtopic = subtopic;
@@ -96,7 +96,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void OnMessageSent(Message message)
         {
-            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
+            m_LastMessageSentRealtime = RosEndpointConnection.s_RealTimeSinceStartup;
             if (m_RosMessageName == null)
             {
                 ChangeRosMessageName(message.RosMessageName);
@@ -210,7 +210,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Publish(Message message)
         {
-            m_LastMessageSentRealtime = ROSConnection.s_RealTimeSinceStartup;
+            m_LastMessageSentRealtime = RosEndpointConnection.s_RealTimeSinceStartup;
             OnMessageSent(message);
             m_MessageSender.Queue(message);
             m_ConnectionInternal.AddSenderToQueue(m_MessageSender);

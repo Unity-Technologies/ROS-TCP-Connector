@@ -20,7 +20,7 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
         }
 
         GameObject prefabObj;
-        Unity.Robotics.ROSTCPConnector.ROSConnection prefab;
+        Unity.Robotics.ROSTCPConnector.RosEndpointConnection prefab;
         GeometryCompass geometryCompassPrefab;
 
         public enum RosProtocol
@@ -46,17 +46,17 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
             {
                 prefabObj = Resources.Load<GameObject>("ROSConnectionPrefab");
                 if (prefabObj != null)
-                    prefab = prefabObj.GetComponent<ROSConnection>();
+                    prefab = prefabObj.GetComponent<RosEndpointConnection>();
 
                 if (prefab == null)
                 {
                     GameObject sceneObj = new GameObject("ROSConnection");
-                    sceneObj.AddComponent<ROSConnection>();
+                    sceneObj.AddComponent<RosEndpointConnection>();
                     if (!Directory.Exists("Assets/Resources"))
                         Directory.CreateDirectory("Assets/Resources");
                     prefabObj = PrefabUtility.SaveAsPrefabAsset(sceneObj, "Assets/Resources/ROSConnectionPrefab.prefab");
                     if (prefabObj != null)
-                        prefab = prefabObj.GetComponent<ROSConnection>();
+                        prefab = prefabObj.GetComponent<RosEndpointConnection>();
                     DestroyImmediate(sceneObj);
                 }
             }
@@ -96,23 +96,23 @@ namespace Unity.Robotics.ROSTCPConnector.Editor
 
             EditorGUILayout.LabelField("Settings for a new ROSConnection.instance", EditorStyles.boldLabel);
 
-            prefab.RosIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.RosIPAddress);
-            prefab.RosPort = EditorGUILayout.IntField("ROS Port", prefab.RosPort);
+            prefab.EndpointIPAddress = EditorGUILayout.TextField("ROS IP Address", prefab.EndpointIPAddress);
+            prefab.EndpointPort = EditorGUILayout.IntField("ROS Port", prefab.EndpointPort);
 
             // Also set the player prefs, for users who hit play in the editor: they will expect the last-used IP address to appear in the hud
-            ROSConnection.SetIPPref(prefab.RosIPAddress);
-            ROSConnection.SetPortPref(prefab.RosPort);
+            RosEndpointConnection.SetIPPref(prefab.EndpointIPAddress);
+            RosEndpointConnection.SetPortPref(prefab.EndpointPort);
 
             EditorGUILayout.Space();
 
-            if (!ROSConnection.IPFormatIsCorrect(prefab.RosIPAddress))
+            if (!RosEndpointConnection.IPFormatIsCorrect(prefab.EndpointIPAddress))
             {
                 EditorGUILayout.HelpBox("ROS IP is invalid", MessageType.Warning);
             }
 
             EditorGUILayout.Space();
 
-            prefab.ShowHud = EditorGUILayout.Toggle("Show HUD", prefab.ShowHud);
+            prefab.ShowInHud = EditorGUILayout.Toggle("Show HUD", prefab.ShowInHud);
 
             EditorGUILayout.Space();
 

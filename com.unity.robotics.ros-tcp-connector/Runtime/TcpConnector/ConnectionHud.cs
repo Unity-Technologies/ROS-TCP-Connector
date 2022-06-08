@@ -9,23 +9,23 @@ namespace Unity.Robotics.ROSTCPConnector
     public interface IHudTab
     {
         string Label { get; }
-        void OnGUI(HudPanel hud);
+        void OnGUI(ConnectionHud hud);
         void OnSelected();
         void OnDeselected();
     }
 
-    public class HudPanel : MonoBehaviour
+    public class ConnectionHud : MonoBehaviour
     {
         public static GUIStyle s_BoldStyle;
 
         // these are static so that anyone can register tabs and windows without needing to worry about whether the hud has been initialized
-        static SortedList<int, IHudTab> s_HUDTabs = new SortedList<int, IHudTab>();
+        static SortedList<int, IHudTab> s_HudTabs = new SortedList<int, IHudTab>();
         static SortedList<int, Action> s_HeaderContents = new SortedList<int, Action>();
         static List<HudWindow> s_ActiveWindows = new List<HudWindow>();
         static int s_NextWindowID = 101;
+        static ConnectionHud s_Instance;
 
-        // ROS Message variables
-        internal bool isEnabled;
+        internal bool isEnabled = true;
 
         HudWindow m_DraggingWindow;
 
@@ -51,7 +51,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             GUILayout.BeginHorizontal();
 
-            foreach (IHudTab tab in s_HUDTabs.Values)
+            foreach (IHudTab tab in s_HudTabs.Values)
             {
                 var wasSelected = tab == m_SelectedTab;
                 var selected = GUILayout.Toggle(wasSelected, tab.Label, GUI.skin.button);
@@ -104,17 +104,24 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public static void RegisterTab(IHudTab tab, int index = 0)
         {
-            if (s_HUDTabs.ContainsKey(index))
+            if (!Application.isPlaying)
+                return;
+
+            if (s_HudTabs.ContainsKey(index))
             {
-                Debug.LogWarning($"HUDPanel already contains a tab registered at index {index}! Registering at index {s_HUDTabs.Count} instead.");
-                index = s_HUDTabs.Count;
+                Debug.LogWarning($"HUDPanel already contains a tab registered at index {index}! Registering at index {s_HudTabs.Count} instead.");
+                index = s_HudTabs.Count;
             }
 
-            s_HUDTabs.Add(index, tab);
+            s_HudTabs.Add(index, tab);
+            Instantiate();
         }
 
         public static void RegisterHeader(Action headerContent, int index = 0)
         {
+            if (!Application.isPlaying)
+                return;
+
             if (s_HeaderContents.ContainsKey(index))
             {
                 Debug.LogWarning($"HUDPanel already contains a header registered at index {index}! Registering at index {s_HeaderContents.Count} instead.");
@@ -122,6 +129,19 @@ namespace Unity.Robotics.ROSTCPConnector
             }
 
             s_HeaderContents.Add(index, headerContent);
+            Instantiate();
+        }
+
+        public static void Instantiate()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (s_Instance == null)
+            {
+                GameObject gameObject = new GameObject("ConnectionHud");
+                s_Instance = gameObject.AddComponent<ConnectionHud>();
+            }
         }
 
         public static void AddWindow(HudWindow window)
@@ -217,11 +237,57 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             if (change == UnityEditor.PlayModeStateChange.ExitingEditMode)
             {
-                s_HUDTabs.Clear();
+                s_HudTabs.Clear();
                 s_HeaderContents.Clear();
                 s_ActiveWindows.Clear();
+                s_Instance = null;
             }
         }
 #endif
+
+        static GUIStyle s_ConnectionArrowStyle;
+
+        public static void DrawConnectionArrows(bool withBar, float x, float y, float receivedTime, float sentTime, bool isPublisher, bool isSubscriber, bool hasError)
+        {
+            if (s_ConnectionArrowStyle == null)
+            {
+                s_ConnectionArrowStyle = new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    normal = { textColor = Color.white },
+                    fontSize = 22,
+                    fontStyle = FontStyle.Bold,
+                    fixedWidth = 250
+                };
+            }
+
+            var baseColor = GUI.color;
+            GUI.color = Color.white;
+            if (withBar)
+                GUI.Label(new Rect(x + 4, y + 5, 25, 15), "I", s_ConnectionArrowStyle);
+            GUI.color = GetConnectionColor(receivedTime, isSubscriber, hasError);
+            GUI.Label(new Rect(x + 8, y + 6, 25, 15), "\u2190", s_ConnectionArrowStyle);
+            GUI.color = GetConnectionColor(sentTime, isPublisher, hasError);
+            GUI.Label(new Rect(x + 8, y + 0, 25, 15), "\u2192", s_ConnectionArrowStyle);
+            GUI.color = baseColor;
+        }
+
+        public static Color GetConnectionColor(float elapsedTime, bool hasConnection, bool hasError)
+        {
+            var bright = new Color(1, 1, 0.5f);
+            var mid = new Color(0, 1, 1);
+            var dark = new Color(0, 0.5f, 1);
+            const float brightDuration = 0.03f;
+            const float fadeToDarkDuration = 1.0f;
+
+            if (!hasConnection)
+                return Color.gray;
+            if (hasError)
+                return Color.red;
+
+            if (elapsedTime <= brightDuration)
+                return bright;
+            return Color.Lerp(mid, dark, elapsedTime / fadeToDarkDuration);
+        }
     }
 }

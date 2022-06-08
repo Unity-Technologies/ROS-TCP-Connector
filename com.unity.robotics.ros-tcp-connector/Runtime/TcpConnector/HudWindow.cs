@@ -32,7 +32,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public HudWindow(string title, Rect rect)
         {
             m_Title = title;
-            m_WindowID = HudPanel.GetNextWindowID();
+            m_WindowID = ConnectionHud.GetNextWindowID();
             m_IsActive = true;
             m_AutoLayout = false;
             m_WindowRect = rect;
@@ -41,7 +41,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public HudWindow(string title)
         {
             m_Title = title;
-            m_WindowID = HudPanel.GetNextWindowID();
+            m_WindowID = ConnectionHud.GetNextWindowID();
             m_IsActive = true;
             m_AutoLayout = true;
         }
@@ -63,7 +63,7 @@ namespace Unity.Robotics.ROSTCPConnector
             m_GuiMenu = guiMenu;
         }
 
-        public void DrawWindow(HudPanel hud)
+        public void DrawWindow(ConnectionHud hud)
         {
             if (m_IsActive && m_GuiDrawer != null)
             {

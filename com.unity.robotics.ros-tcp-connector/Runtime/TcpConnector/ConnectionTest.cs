@@ -18,7 +18,7 @@ public class ConnectionTest : MonoBehaviour
     void Start()
     {
         IConnection connection = GetComponent<IConnection>();
-        connection.Connect();
+        //connection.Connect();
         //publisher = connection.RegisterPublisher<CameraInfoMsg>("/strtest");
         connection.Subscribe<DiagnosticArrayMsg>("/strtest", OnMessage);
     }

@@ -17,7 +17,7 @@ namespace UnitTests
         [Test]
         public void GetOrCreateInstance_CallOnce_ReturnsValidInstance()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             Assert.NotNull(ros);
         }
@@ -25,10 +25,10 @@ namespace UnitTests
         [Test]
         public void GetOrCreateInstance_CallTwice_ReturnsSameInstance()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             Assert.NotNull(ros);
             ros.ConnectOnStart = false;
-            ROSConnection ros2 = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros2 = RosEndpointConnection.GetOrCreateInstance();
             Assert.AreEqual(ros, ros2);
         }
     }

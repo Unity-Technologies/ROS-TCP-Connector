@@ -22,7 +22,7 @@ public class TFSystem
         public TFTopicState(string tfTopic = "/tf")
         {
             m_TFTopic = tfTopic;
-            ROSConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
+            RosEndpointConnection.GetOrCreateInstance().Subscribe<TFMessageMsg>(tfTopic, ReceiveTF);
         }
 
         public TFStream GetOrCreateFrame(string frame_id)
@@ -120,7 +120,7 @@ public class TFSystem
         if (instance != null)
             return instance;
 
-        ROSConnection ros = ROSConnection.GetOrCreateInstance();
+        RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
         instance = new TFSystem();
         foreach (string s in ros.TFTopics)
         {

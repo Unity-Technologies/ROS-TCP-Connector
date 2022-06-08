@@ -42,7 +42,7 @@ namespace UnitTests
         [Test]
         public void ReceiveTF_SingleMessage_ReturnsSameTranslation()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             TFSystem system = TFSystem.GetOrCreateInstance();
             TFSystem.TFTopicState topic = system.GetOrCreateTFTopic();
@@ -64,7 +64,7 @@ namespace UnitTests
         [Test]
         public void ReceiveTF_FrameWithParent_ReturnsSameTranslation()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             TFSystem system = TFSystem.GetOrCreateInstance();
             TFSystem.TFTopicState topic = system.GetOrCreateTFTopic();
@@ -92,7 +92,7 @@ namespace UnitTests
         [Test]
         public void GetOrCreateFrame_Hierarchy_BuildsValidHierarchy()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             TFSystem.TFTopicState topic = TFSystem.GetOrCreateInstance().GetOrCreateTFTopic();
             TFStream stream = topic.GetOrCreateFrame(composite_frame_id);
@@ -110,7 +110,7 @@ namespace UnitTests
         [Test]
         public void ReceiveTF_MultipleMessages_InterpolatesTimes()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             TFSystem.TFTopicState topic = TFSystem.GetOrCreateInstance().GetOrCreateTFTopic();
             TFStream stream = topic.GetOrCreateFrame(simple_frame_id);
@@ -143,7 +143,7 @@ namespace UnitTests
         [Test]
         public void ReceiveTF_MultipleMessagesOutOfOrder_InterpolatesTimes()
         {
-            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            RosEndpointConnection ros = RosEndpointConnection.GetOrCreateInstance();
             ros.ConnectOnStart = false;
             TFSystem.TFTopicState topic = TFSystem.GetOrCreateInstance().GetOrCreateTFTopic();
             TFStream stream = topic.GetOrCreateFrame(simple_frame_id);

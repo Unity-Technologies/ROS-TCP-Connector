@@ -14,7 +14,7 @@ using JetBrains.Annotations;
 
 namespace Unity.Robotics.ROSTCPConnector
 {
-    public class ROSConnection : MonoBehaviour, IConnection
+    public class RosEndpointConnection : MonoBehaviour, IConnection
     {
         public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
@@ -23,14 +23,14 @@ namespace Unity.Robotics.ROSTCPConnector
         [SerializeField]
         [FormerlySerializedAs("hostName")]
         [FormerlySerializedAs("rosIPAddress")]
-        string m_RosIPAddress = "127.0.0.1";
-        public string RosIPAddress { get => m_RosIPAddress; set => m_RosIPAddress = value; }
+        string m_EndpointIPAddress = "127.0.0.1";
+        public string EndpointIPAddress { get => m_EndpointIPAddress; set => m_EndpointIPAddress = value; }
 
         [SerializeField]
         [FormerlySerializedAs("hostPort")]
         [FormerlySerializedAs("rosPort")]
-        int m_RosPort = 10000;
-        public int RosPort { get => m_RosPort; set => m_RosPort = value; }
+        int m_EndpointPort = 10000;
+        public int EndpointPort { get => m_EndpointPort; set => m_EndpointPort = value; }
 
         [SerializeField]
         bool m_ConnectOnStart = true;
@@ -54,9 +54,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public float SleepTimeSeconds { get => m_SleepTimeSeconds; set => m_SleepTimeSeconds = value; }
 
         [SerializeField]
-        [FormerlySerializedAs("showHUD")]
         bool m_ShowHUD = true;
-        public bool ShowHud { get => m_ShowHUD; set => m_ShowHUD = value; }
+        public bool ShowInHud { get => m_ShowHUD; set => m_ShowHUD = value; }
 
         [SerializeField]
         string[] m_TFTopics = { "/tf" };
@@ -64,10 +63,6 @@ namespace Unity.Robotics.ROSTCPConnector
 
         const int k_DefaultPublisherQueueSize = 10;
         const bool k_DefaultPublisherLatch = false;
-
-        // GUI window variables
-        internal HudPanel m_HudPanel = null;
-        public HudPanel HUDPanel => m_HudPanel;
 
         class OutgoingMessageQueue
         {
@@ -121,8 +116,8 @@ namespace Unity.Robotics.ROSTCPConnector
         // This is used to remember the last IP address the player typed into the HUD, in builds where ConnectOnStart is not checked
         public const string PlayerPrefsKey_ROS_IP = "ROS_IP";
         public const string PlayerPrefsKey_ROS_TCP_PORT = "ROS_TCP_PORT";
-        public static string RosIPAddressPref => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
-        public static int RosPortPref => PlayerPrefs.GetInt(PlayerPrefsKey_ROS_TCP_PORT, 10000);
+        public static string GetEndpointIPAddressPref() => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
+        public static int GetEndpointPortPref() => PlayerPrefs.GetInt(PlayerPrefsKey_ROS_TCP_PORT, 10000);
 
         public bool HasSubscriber(string topic)
         {
@@ -401,9 +396,9 @@ namespace Unity.Robotics.ROSTCPConnector
 
         internal struct InternalAPI
         {
-            ROSConnection m_Self;
+            RosEndpointConnection m_Self;
 
-            public InternalAPI(ROSConnection self) { m_Self = self; }
+            public InternalAPI(RosEndpointConnection self) { m_Self = self; }
 
             public RosBinaryDeserializer Deserializer => m_Self.m_MessageDeserializer;
 
@@ -465,14 +460,14 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static ROSConnection _instance;
+        static RosEndpointConnection _instance;
 
-        public static ROSConnection GetOrCreateInstance()
+        public static RosEndpointConnection GetOrCreateInstance()
         {
             if (_instance == null)
             {
                 // Prefer to use the ROSConnection in the scene, if any
-                _instance = FindObjectOfType<ROSConnection>();
+                _instance = FindObjectOfType<RosEndpointConnection>();
                 if (_instance != null)
                     return _instance;
 
@@ -481,18 +476,18 @@ namespace Unity.Robotics.ROSTCPConnector
                 {
                     Debug.LogWarning("No settings for ROSConnection.instance! Open \"ROS Settings\" from the Robotics menu to configure it.");
                     GameObject instance = new GameObject("ROSConnection");
-                    _instance = instance.AddComponent<ROSConnection>();
+                    _instance = instance.AddComponent<RosEndpointConnection>();
                 }
                 else
                 {
-                    _instance = Instantiate(prefab).GetComponent<ROSConnection>();
+                    _instance = Instantiate(prefab).GetComponent<RosEndpointConnection>();
                 }
             }
             return _instance;
         }
 
         [Obsolete("Please call ROSConnection.GetOrCreateInstance()")]
-        public static ROSConnection instance
+        public static RosEndpointConnection instance
         {
             get
             {
@@ -508,9 +503,8 @@ namespace Unity.Robotics.ROSTCPConnector
 
         void Start()
         {
-            InitializeHUD();
-
-            HudPanel.RegisterHeader(DrawHeaderGUI);
+            if (ShowInHud)
+                ConnectionHud.RegisterHeader(DrawHeaderGUI);
 
             if (listenForTFMessages)
                 TFSystem.GetOrCreateInstance();
@@ -521,15 +515,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         public void Connect(string ipAddress, int port)
         {
-            RosIPAddress = ipAddress;
-            RosPort = port;
+            EndpointIPAddress = ipAddress;
+            EndpointPort = port;
             Connect();
         }
 
         public void Connect()
         {
-            if (!IPFormatIsCorrect(RosIPAddress))
-                Debug.LogWarning("Invalid ROS IP address: " + RosIPAddress);
+            if (!IPFormatIsCorrect(EndpointIPAddress))
+                Debug.LogWarning("Invalid Endpoint IP address: " + EndpointIPAddress);
 
             m_ConnectionThreadCancellation = new CancellationTokenSource();
 
@@ -537,8 +531,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_MessageSerializer = new RosBinarySerializer(m_IsRos2);
 
             Task.Run(() => ConnectionThread(
-                RosIPAddress,
-                RosPort,
+                EndpointIPAddress,
+                EndpointPort,
                 new RosBinarySerializer(m_IsRos2),
                 m_NetworkTimeoutSeconds,
                 m_KeepaliveTime,
@@ -829,7 +823,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                 try
                 {
-                    ROSConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
+                    RosEndpointConnection.m_HasConnectionError = true; // until we actually see a reply back, assume there's a problem
 
                     client = new TcpClient();
                     client.Connect(rosIPAddress, rosPort);
@@ -901,7 +895,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
+                    RosEndpointConnection.m_HasConnectionError = true;
                     if (!m_HasOutputConnectionError)
                     {
                         Debug.LogError($"ROS Connection to {rosIPAddress}:{rosPort} failed - " + e);
@@ -931,7 +925,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
             if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
             {
-                ROSConnection.m_HasConnectionError = false;
+                RosEndpointConnection.m_HasConnectionError = false;
                 queue.Enqueue(handshakeContent);
             }
             else
@@ -944,7 +938,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 try
                 {
                     Tuple<string, byte[]> content = await ReadMessageContents(networkStream, sleepMilliseconds, token);
-                    ROSConnection.m_HasConnectionError = false;
+                    RosEndpointConnection.m_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
                         queue.Enqueue(content);
@@ -954,7 +948,7 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 catch (Exception e)
                 {
-                    ROSConnection.m_HasConnectionError = true;
+                    RosEndpointConnection.m_HasConnectionError = true;
                     Debug.Log("Reader " + readerIdx + " exception! " + e);
                 }
             }
@@ -1051,19 +1045,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        void InitializeHUD()
-        {
-            if (!Application.isPlaying || (!m_ShowHUD && m_HudPanel == null))
-                return;
-
-            if (m_HudPanel == null)
-            {
-                m_HudPanel = gameObject.AddComponent<HudPanel>();
-            }
-
-            m_HudPanel.isEnabled = m_ShowHUD;
-        }
-
         void DrawHeaderGUI()
         {
             GUIStyle labelStyle = new GUIStyle
@@ -1084,7 +1065,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             // ROS IP Setup
             GUILayout.BeginHorizontal(GUILayout.Width(300));
-            DrawConnectionArrows(
+            ConnectionHud.DrawConnectionArrows(
                 true,
                 0,
                 0,
@@ -1095,37 +1076,33 @@ namespace Unity.Robotics.ROSTCPConnector
                 HasConnectionError
             );
 
-#if ROS2
-            string protocolName = "ROS2";
-#else
-            string protocolName = "ROS";
-#endif
+            string protocolName = m_IsRos2 ? "ROS2" : "ROS";
 
             GUILayout.Space(30);
-            GUILayout.Label($"{protocolName} IP: ", labelStyle, GUILayout.Width(100));
+            GUILayout.Label($"{protocolName} Endpoint IP: ", labelStyle, GUILayout.Width(100));
 
             if (!HasConnectionThread)
             {
                 // if you've never run a build on this machine before, initialize the playerpref settings to the ones from the RosConnection
                 if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_IP))
-                    SetIPPref(RosIPAddress);
+                    SetIPPref(EndpointIPAddress);
                 if (!PlayerPrefs.HasKey(PlayerPrefsKey_ROS_TCP_PORT))
-                    SetPortPref(RosPort);
+                    SetPortPref(EndpointPort);
 
                 // NB, here the user is editing the PlayerPrefs values, not the ones in the RosConnection.
                 // (So that the hud remembers what IP you used last time you ran this build.)
                 // The RosConnection receives the edited values when you click Connect.
-                SetIPPref(GUILayout.TextField(RosIPAddressPref));
-                SetPortPref(Convert.ToInt32(GUILayout.TextField(RosPortPref.ToString())));
+                SetIPPref(GUILayout.TextField(GetEndpointIPAddressPref()));
+                SetPortPref(Convert.ToInt32(GUILayout.TextField(GetEndpointPortPref().ToString())));
 
                 GUILayout.EndHorizontal();
                 GUILayout.Label("(Not connected)");
                 if (GUILayout.Button("Connect"))
-                    Connect(RosIPAddressPref, RosPortPref);
+                    Connect(GetEndpointIPAddressPref(), GetEndpointPortPref());
             }
             else
             {
-                GUILayout.Label($"{RosIPAddress}:{RosPort}", contentStyle);
+                GUILayout.Label($"{EndpointIPAddress}:{EndpointPort}", contentStyle);
 
                 if (HasConnectionError)
                 {
@@ -1137,33 +1114,6 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static GUIStyle s_ConnectionArrowStyle;
-
-        public static void DrawConnectionArrows(bool withBar, float x, float y, float receivedTime, float sentTime, bool isPublisher, bool isSubscriber, bool hasError)
-        {
-            if (s_ConnectionArrowStyle == null)
-            {
-                s_ConnectionArrowStyle = new GUIStyle
-                {
-                    alignment = TextAnchor.MiddleLeft,
-                    normal = { textColor = Color.white },
-                    fontSize = 22,
-                    fontStyle = FontStyle.Bold,
-                    fixedWidth = 250
-                };
-            }
-
-            var baseColor = GUI.color;
-            GUI.color = Color.white;
-            if (withBar)
-                GUI.Label(new Rect(x + 4, y + 5, 25, 15), "I", s_ConnectionArrowStyle);
-            GUI.color = GetConnectionColor(receivedTime, isSubscriber, hasError);
-            GUI.Label(new Rect(x + 8, y + 6, 25, 15), "\u2190", s_ConnectionArrowStyle);
-            GUI.color = GetConnectionColor(sentTime, isPublisher, hasError);
-            GUI.Label(new Rect(x + 8, y + 0, 25, 15), "\u2192", s_ConnectionArrowStyle);
-            GUI.color = baseColor;
-        }
-
         public static void SetIPPref(string ipAddress)
         {
             PlayerPrefs.SetString(PlayerPrefsKey_ROS_IP, ipAddress);
@@ -1172,24 +1122,6 @@ namespace Unity.Robotics.ROSTCPConnector
         public static void SetPortPref(int port)
         {
             PlayerPrefs.SetInt(PlayerPrefsKey_ROS_TCP_PORT, port);
-        }
-
-        public static Color GetConnectionColor(float elapsedTime, bool hasConnection, bool hasError)
-        {
-            var bright = new Color(1, 1, 0.5f);
-            var mid = new Color(0, 1, 1);
-            var dark = new Color(0, 0.5f, 1);
-            const float brightDuration = 0.03f;
-            const float fadeToDarkDuration = 1.0f;
-
-            if (!hasConnection)
-                return Color.gray;
-            if (hasError)
-                return Color.red;
-
-            if (elapsedTime <= brightDuration)
-                return bright;
-            return Color.Lerp(mid, dark, elapsedTime / fadeToDarkDuration);
         }
 
         public static bool IPFormatIsCorrect(string ipAddress)
