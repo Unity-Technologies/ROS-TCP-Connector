@@ -13,7 +13,8 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
 
     public class GeometryCompass : ScriptableObject
     {
-        public const string k_CompassSettingsAsset = "GeometryCompassSettings.asset";
+        public const string k_CompassSettingsName = "GeometryCompassSettings";
+        public const string k_CompassSettingsAsset = k_CompassSettingsName + ".asset";
 
         [SerializeField] CardinalDirection m_ZAxisDirection;
 
@@ -36,7 +37,7 @@ namespace Unity.Robotics.ROSTCPConnector.ROSGeometry
                 UnityEditor.AssetDatabase.SaveAssets();
             }
 #else
-            s_Instance = Resources.Load<GeometryCompass>(k_CompassSettingsAsset);
+            s_Instance = Resources.Load<GeometryCompass>(k_CompassSettingsName);
 #endif
             return s_Instance;
         }
