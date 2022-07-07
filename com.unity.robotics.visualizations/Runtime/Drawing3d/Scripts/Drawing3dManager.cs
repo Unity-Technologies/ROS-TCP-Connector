@@ -35,6 +35,11 @@ namespace Unity.Robotics.Visualizations
         List<Drawing3d> m_Dirty = new List<Drawing3d>();
 
         [SerializeField]
+        DrawingLayer m_VisualizationLayer = new DrawingLayer();
+
+        public int VisualizationLayer => m_VisualizationLayer.LayerNumber;
+
+        [SerializeField]
         Material m_UnlitVertexColorMaterial;
         [SerializeField]
         Material m_UnlitColorMaterial;
@@ -68,6 +73,8 @@ namespace Unity.Robotics.Visualizations
         public static Drawing3d CreateDrawing(float duration = -1, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("Drawing");
+            if (Drawing3dManager.instance.VisualizationLayer != -1)
+                newDrawingObj.layer = Drawing3dManager.instance.VisualizationLayer;
             Drawing3d newDrawing = newDrawingObj.AddComponent<Drawing3d>();
             newDrawing.Init(instance, material != null ? material : instance.UnlitVertexColorMaterial, duration);
             instance.m_Drawings.Add(newDrawing);
