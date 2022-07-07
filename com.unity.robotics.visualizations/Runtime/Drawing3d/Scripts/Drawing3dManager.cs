@@ -73,8 +73,7 @@ namespace Unity.Robotics.Visualizations
         public static Drawing3d CreateDrawing(float duration = -1, Material material = null)
         {
             GameObject newDrawingObj = new GameObject("Drawing");
-            if (Drawing3dManager.instance.VisualizationLayer != -1)
-                newDrawingObj.layer = Drawing3dManager.instance.VisualizationLayer;
+            newDrawingObj.layer = Drawing3dManager.instance.VisualizationLayer;
             Drawing3d newDrawing = newDrawingObj.AddComponent<Drawing3d>();
             newDrawing.Init(instance, material != null ? material : instance.UnlitVertexColorMaterial, duration);
             instance.m_Drawings.Add(newDrawing);
