@@ -18,7 +18,7 @@ public class AccelWithCovarianceStampedDefaultVisualizer : DrawingVisualizer<Acc
 
     public override void Draw(Drawing3d drawing, AccelWithCovarianceStampedMsg message, MessageMetadata meta)
     {
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         AccelWithCovarianceDefaultVisualizer.Draw<FLU>(message.accel, drawing, SelectColor(m_Color, meta), m_Origin, m_LengthScale, m_SphereRadius, m_Thickness);
     }
 

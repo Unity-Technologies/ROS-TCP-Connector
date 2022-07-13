@@ -1,12 +1,11 @@
-Shader "Unlit/ImageMsg"
+Shader "Unlit/ImageGradient"
 {
     Properties
     {
         _MainTex("Texture", 2D) = "white" {}
-		[Toggle] _convertBGR("convert BGR", Float) = 0
-		[Toggle] _flipY("Flip Y", Float) = 1
-		[Toggle] _gray("Gray", Float) = 0
+        _Gradient("Gradient", 2D) = "white" {}
         _BrightnessMultiplier("BrightnessMultiplier", Float) = 1
+		[Toggle] _flipY("Flip Y", Float) = 1
     }
 	
 	SubShader
@@ -28,10 +27,10 @@ Shader "Unlit/ImageMsg"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-			float _convertBGR;
-			float _flipY;
-			float _gray;
+            sampler2D _Gradient;
+            float4 _Gradient_ST;
             float _BrightnessMultiplier;
+            float _flipY;
 
             struct appdata
             {
@@ -57,12 +56,8 @@ Shader "Unlit/ImageMsg"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 color = tex2D(_MainTex, i.uv) * _BrightnessMultiplier;
-				if(_gray > 0.5)
-					color = color.rrra;
-				else if(_convertBGR > 0.5)
-					color = color.bgra;
-                color.a = 1;
+                float scalar = tex2D(_MainTex, i.uv).r * _BrightnessMultiplier;
+                fixed4 color = tex2D(_Gradient, float2(scalar, 0));
                 return color;
             }
 			

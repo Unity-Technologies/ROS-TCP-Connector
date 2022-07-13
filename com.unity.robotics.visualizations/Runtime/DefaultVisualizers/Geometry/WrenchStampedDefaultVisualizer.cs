@@ -18,7 +18,7 @@ namespace Unity.Robotics.Visualizations
 
         public override void Draw(Drawing3d drawing, WrenchStampedMsg message, MessageMetadata meta)
         {
-            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+            drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
             WrenchDefaultVisualizer.Draw<FLU>(message.wrench, drawing, SelectColor(m_Color, meta), origin.transform.position, lengthScale, sphereRadius, thickness);
         }
 

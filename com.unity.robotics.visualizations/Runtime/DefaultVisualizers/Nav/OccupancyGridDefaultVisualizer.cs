@@ -118,7 +118,7 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
                 m_Drawing.Clear();
             }
 
-            m_Drawing.SetTFTrackingSettings(m_Settings.m_TFTrackingSettings, m_Message.header);
+            m_Drawing.SetTFTrackingSettings(m_Settings.m_TFTrackingSettings, m_Message.header, m_Settings.transform);
             // offset the mesh by half a grid square, because the message's position defines the CENTER of grid square 0,0
             Vector3 drawOrigin = origin - rotation * new Vector3(scale * 0.5f, 0, scale * 0.5f) + m_Settings.m_Offset;
             m_Drawing.DrawMesh(m_Mesh, drawOrigin, rotation,
@@ -148,7 +148,11 @@ public class OccupancyGridDefaultVisualizer : BaseVisualFactory<OccupancyGridMsg
             }
             else if (m_Message.info.width != m_Texture.width || m_Message.info.height != m_Texture.height)
             {
+#if UNITY_2021_2_OR_NEWER
+                m_Texture.Reinitialize((int)m_Message.info.width, (int)m_Message.info.height);
+#else
                 m_Texture.Resize((int)m_Message.info.width, (int)m_Message.info.height);
+#endif
             }
 
             m_Texture.SetPixelData(m_Message.data, 0);

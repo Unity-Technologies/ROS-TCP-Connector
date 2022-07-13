@@ -119,7 +119,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
 
         public static long ToLongTime(this TimeMsg message)
         {
-            return (long)message.sec << 32 | message.nanosec;
+            return (long)message.secs << 32 | message.nanosec;
         }
 
         public static DateTime ToDateTime(this TimeMsg message)
@@ -147,7 +147,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         /// <summary>
         /// Converts a byte array from BGR to RGB.
         /// </summary>
-        static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
+        public static byte[] EncodingConversion(ImageMsg image, bool convertBGR = true, bool flipY = true)
         {
             // Number of channels in this encoding
             int channels = image.GetNumChannels();
@@ -511,12 +511,14 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
                 case "32SC2":
                 case "32SC3":
                 case "32SC4":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32_SInt
                     throw new NotImplementedException("32 bit integer texture formats are not supported");
                 case "32FC1":
                     return TextureFormat.RFloat;
                 case "32FC2":
                     return TextureFormat.RGFloat;
                 case "32FC3":
+                    // TODO: Experimental.Rendering.GraphicsFormat.R32G32B32_SFloat
                     throw new NotImplementedException("32FC3 texture format is not supported");
                 case "32FC4":
                     return TextureFormat.RGBAFloat;
@@ -560,15 +562,16 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             Texture2D tex;
             byte[] data;
+            bool linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             if (debayer && message.IsBayerEncoded())
             {
-                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false);
+                tex = new Texture2D((int)message.width / 2, (int)message.height / 2, TextureFormat.RGBA32, false, linear);
                 message.DebayerConvert(flipY);
                 data = message.data;
             }
             else
             {
-                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false);
+                tex = new Texture2D((int)message.width, (int)message.height, message.GetTextureFormat(), false, linear);
                 data = EncodingConversion(message, convertBGR, flipY);
             }
 

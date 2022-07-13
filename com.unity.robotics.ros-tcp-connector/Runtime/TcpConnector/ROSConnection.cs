@@ -15,7 +15,7 @@ namespace Unity.Robotics.ROSTCPConnector
 {
     public class ROSConnection : MonoBehaviour
     {
-        public const string k_Version = "v0.7.0";
+        public const string k_Version = "v0.7.1";
         public const string k_CompatibleVersionPrefix = "v0.7.";
 
         // Variables required for ROS communication
@@ -95,6 +95,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
         static bool m_HasConnectionError = false;
+        static bool m_HasOutputConnectionError = false;
         public bool HasConnectionError => m_HasConnectionError;
 
         // only the main thread can access Time.*, so make a copy here
@@ -129,6 +130,7 @@ namespace Unity.Robotics.ROSTCPConnector
         MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
+        List<Action<TimeSpan>> m_PingCallbacks = new List<Action<TimeSpan>>();
         List<Action<RosTopicState>> m_NewTopicCallbacks = new List<Action<RosTopicState>>();
 
         Dictionary<string, RosTopicState> m_Topics = new Dictionary<string, RosTopicState>();
@@ -743,6 +745,18 @@ namespace Unity.Robotics.ROSTCPConnector
                         }
                     }
                     break;
+
+                case SysCommand.k_SysCommand_PingResponse:
+                    {
+                        var pingResponse = JsonUtility.FromJson<SysCommand_PingResponse>(json);
+                        if (m_PingCallbacks.Count > 0)
+                        {
+                            TimeSpan roundTripTime = DateTime.UtcNow - DateTime.Parse(pingResponse.request_time, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                            m_PingCallbacks.ForEach(a => a(roundTripTime));
+                            m_PingCallbacks.Clear();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -799,6 +813,12 @@ namespace Unity.Robotics.ROSTCPConnector
                     _ = Task.Run(() => ReaderThread(nextReaderIdx, networkStream, incomingQueue, sleepMilliseconds, readerCancellation.Token));
                     nextReaderIdx++;
 
+                    if (m_HasOutputConnectionError)
+                    {
+                        Debug.Log($"ROS Connection to {rosIPAddress}:{rosPort} succeeded!");
+                        m_HasOutputConnectionError = false;
+                    }
+
                     // connected, now just watch our queue for outgoing messages to send (or else send a keepalive message occasionally)
                     float waitingSinceRealTime = s_RealTimeSinceStartup;
                     while (true)
@@ -851,7 +871,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 catch (Exception e)
                 {
                     ROSConnection.m_HasConnectionError = true;
-                    Debug.Log($"Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                    if (!m_HasOutputConnectionError)
+                    {
+                        Debug.LogError($"ROS Connection to {rosIPAddress}:{rosPort} failed - " + e);
+                        m_HasOutputConnectionError = true;
+                    }
                     await Task.Delay(nextReconnectionDelay);
                 }
                 finally
@@ -960,6 +984,14 @@ namespace Unity.Robotics.ROSTCPConnector
                 QueueSysCommand(command, param);
         }
 
+        public void Ping(Action<TimeSpan> callback)
+        {
+            m_PingCallbacks.Add(callback);
+
+            string time8601 = DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+            SendSysCommand("__ping", new SysCommand_PingRequest { request_time = time8601 });
+        }
+
         static void PopulateSysCommand(MessageSerializer messageSerializer, string command, object param)
         {
             messageSerializer.Clear();
@@ -1041,12 +1073,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(10, 0, 0, 5),
                 normal = { textColor = Color.white },
-                fixedWidth = 300
             };
 
 
             // ROS IP Setup
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Width(300));
             DrawConnectionArrows(
                 true,
                 0,
@@ -1089,6 +1120,13 @@ namespace Unity.Robotics.ROSTCPConnector
             else
             {
                 GUILayout.Label($"{RosIPAddress}:{RosPort}", contentStyle);
+
+                if (HasConnectionError)
+                {
+                    if (GUI.Button(new Rect(250, 2, 50, 22), "Set IP"))
+                        Disconnect();
+                }
+
                 GUILayout.EndHorizontal();
             }
         }

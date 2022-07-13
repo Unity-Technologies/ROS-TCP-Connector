@@ -30,7 +30,7 @@ public class MultiDOFJointStateDefaultVisualizer : DrawingVisualizer<MultiDOFJoi
     public override void Draw(Drawing3d drawing, MultiDOFJointStateMsg message, MessageMetadata meta)
     {
 #if URDF_IMPORTER
-        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header);
+        drawing.SetTFTrackingSettings(m_TFTrackingSettings, message.header, transform);
         m_RobotData.DrawGhost(drawing, message, SelectColor(m_Color, meta));
 #endif
     }
