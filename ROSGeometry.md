@@ -39,7 +39,7 @@ Hence, writing 3d data into a message can often be as simple as writing:
 
 Unity's standard Transform class also has a `To<C>()` extension method that returns a ROS Transform message. So creating a geometry_msgs/Transform message typically looks like this:
 
-    TransformMsg msg = myGameObject.transform.To<FLU>());
+    TransformMsg msg = myGameObject.transform.To<FLU>();
 
 # Internal details
 
