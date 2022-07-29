@@ -1,7 +1,7 @@
 name: Sonarqube Scan
 agent:
     type: Unity::metal::macmini
-    image: package-ci/mac
+    image: package-ci/mac:v1.8.1-822785
     flavor: m1.mac
 variables:
     PROJECT_PATH: TestRosTcpConnector
