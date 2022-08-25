@@ -258,7 +258,7 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         private MessageToken NextSeperator()
         {
             string token = ReadUntilNewLineAndTrim();
-            if (token.Equals("---"))
+            if (token.StartsWith("---"))
             {
                 reader.Read();
                 lineNum++;
