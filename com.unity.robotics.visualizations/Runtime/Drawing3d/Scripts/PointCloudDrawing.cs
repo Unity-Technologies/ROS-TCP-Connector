@@ -24,6 +24,7 @@ namespace Unity.Robotics.Visualizations
                 newDrawingObj.transform.parent = parent.transform;
                 newDrawingObj.transform.localPosition = Vector3.zero;
                 newDrawingObj.transform.localRotation = Quaternion.identity;
+                newDrawingObj.layer = Drawing3dManager.instance.VisualizationLayer;
             }
             PointCloudDrawing newDrawing = newDrawingObj.AddComponent<PointCloudDrawing>();
             newDrawing.SetCapacity(numPoints);

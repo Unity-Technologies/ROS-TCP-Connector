@@ -21,6 +21,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Fixed
 
+## [0.7.2-preview] - 2022-07-11
+
+Added a Visualization Layer property to DrawingManager3d to allow developers to specify which layer the visualizations render into.
+   Defaults to UI layer, and the sensors in sensors package will set the culling mask to not sense the UI layer. If you add a new layer
+   and choose that (or another builtin layer), you should deselect that layer in the culling mask of any sensors that have a camera component.
 
 ## [0.7.0-preview] - 2022-02-01
 
