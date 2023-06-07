@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Fixed
 
+Fixing bug in ROS2 where the getter TimeMsg nsecs caused a StackOverflowException 
+
 
 ## [0.7.0-preview] - 2022-02-01
 
