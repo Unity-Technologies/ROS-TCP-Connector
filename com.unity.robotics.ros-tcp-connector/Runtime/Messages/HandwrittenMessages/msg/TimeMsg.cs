@@ -64,7 +64,7 @@ namespace RosMessageTypes.BuiltinInterfaces
 
         // for convenience when writing ROS2 agnostic code
         public uint secs { get => (uint)sec; set => sec = (int)value; }
-        public uint nsecs { get => nsecs; set => nsecs = value; }
+        public uint nsecs { get => nanosec; set => nanosec = value; }
 
         public TimeMsg()
         {
